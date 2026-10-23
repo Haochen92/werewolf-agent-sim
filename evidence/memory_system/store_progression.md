@@ -5,6 +5,41 @@ A cross-experiment synthesis of how the episodic-memory store evolved across ~8 
 sourced from a dated evidence folder (cited inline), and the value is the *narrative that connects
 them*. If you read one thing, read the arc below — it turns eight store versions into a single story.
 
+> **Correction (2026-10-22).** Three claims below are out of date or stronger than the evidence. Read
+> them as corrected here; the eras are otherwise left as written.
+>
+> 1. **The June A/B (v5_0) improved the town's decisions, not significantly its wins.** On 30 paired
+>    boards with plain retrieval, the healer saved the real target 37% → 60% (p = 0.005), and town
+>    lynches hit an enemy 47% → 64% (p = 0.028). The town win rate rose 27% → 43%, which was not
+>    significant (p = 0.27). The "+17→+33pp" below joins two arms: +33 points (27% → 60%, p = 0.013) is
+>    the reranked arm, which carries a model-drift caveat. Wolves and the lone killer gained nothing.
+>    Six days later, on the v6 store, the town gain did not repeat (+6 points, p = 0.77).
+> 2. **Compounding was tested, not proven, and the test leaned negative for a cause that was found.**
+>    v6 had shown that lessons were retrieved and followed, yet decisions did not improve. So the limit
+>    was the content: lessons mined from the agents' own mediocre play. Learning from results was the
+>    one lever left to improve it, which is what the v7 loop does: credit each followed lesson by the
+>    decisions it led to, then rewrite and prune the store. In July 2026 a pre-registered paired test
+>    of the finished v7 store found no compounding. With memory, the town's decision score was 0.147
+>    lower, and memory did worse on 19 of 30 boards (p ≈ 0.06, not significant). As committed, it was
+>    reported as "no compounding detected", leaning toward harm.
+>
+>    The cause was traced to credit. To keep a lucky win from making a move look good (the halo, met
+>    earlier in v7), credit grades each decision apart from the game's result. That same choice left
+>    it blind to abstaining: every town abstain was graded neutral, and a lesson without a memory-off
+>    comparison was compared with zero. So a lesson telling the vigilante to abstain scored 0.00 and
+>    was never pruned. In the memory games, 111 of 117 town abstains fell on days that ended with
+>    nobody voted out. Counter-lessons against caution had begun to appear but were outnumbered about
+>    ten to one when the run ended, so whether a longer run would have corrected itself is open. The
+>    scoring was fixed afterwards and checked on recorded games, but the fixed loop was never played.
+>    Sources: [`../execution_plan/report.md`](../execution_plan/report.md) §5;
+>    [`../credit/report.md`](../credit/report.md) §6;
+>    [`../credit/blindspot_fix/experiment_log.md`](../credit/blindspot_fix/experiment_log.md).
+> 3. **"The clean test that says memory works"** (v5_0 heading) should read "the clean test that
+>    showed memory improving the town's decisions", per point 1.
+>
+> All of these games ran on players that did not reason (zero reasoning tokens; see the Era 6 scope
+> note). v8 has not been tested for its effect on play.
+
 > **Addendum (2026-10-15).** This synthesis was written on 2026-06-22 and ends at v7. v8, the memory
 > system rebuilt for the ten-seat game, is [Era 6](#era-6--the-ten-seat-game-v8-addendum-2026-10-15)
 > at the end, with a scope note on the results of Eras 3–5 found since. v8 has not been tested for

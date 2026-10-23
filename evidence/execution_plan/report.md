@@ -78,7 +78,7 @@ A standing rule came out of this: no paid compounding run without first simulati
 
 The project owner signed the pre-registration on 2026-07-16, before any game of the run was played. It fixed in writing:
 
-- **What is compared:** the same boards played with memory and without. Only the town had memory: the loop's lessons, plus a short list of *tells* (public behaviours that hint at a hidden role). A check stops the run if the memory setting that actually runs differs from the declared one, the slip that had spoiled an earlier run.
+- **What is compared:** the same boards played with memory and without. Only the town received the loop's lessons. A short list of *tells* (public behaviours that hint at a hidden role) was shown to every seat in the memory games, wolves included, since it describes public behaviour. A check stops the run if the memory setting that actually runs differs from the declared one, the slip that had spoiled an earlier run.
 - **One main measure:** the town's decision score, compared board by board. Other measures were listed in advance as secondary, never to be promoted to the main result.
 - **Size and budget:** 4 learning generations of 10 games with memory and 10 without, then 60 test games, estimated at $77–98.
 - **No stopping on results:** a fixed number of games; the run could halt only on an automatic validity check.
@@ -96,7 +96,7 @@ The four learning generations finished on 2026-07-19 at a cost of $25.74, leavin
 
 **A secondary measure was clearer.** In the same games, town players with memory voted for a real threat about 15 percentage points less often (the rate without memory was near 50%) and abstained more (31% against about 23%). This measure counts votes one by one, which overstates its certainty somewhat, and it was not the main measure. The likely cause: cautious lessons told the investigator and healer to keep what they knew to themselves and told town players to abstain when unsure, and the loop's scoring could not penalise abstaining. That failure is the case study in [the credit report](../credit/report.md) §6.
 
-On 2026-07-21 the owner closed the memory research without a further run. No memory version was shown to help, no memory was promoted, and the live game runs with memory off.
+On 2026-07-21 the owner closed the memory research without a further run. No memory version was shown to help, no memory was promoted, and every live game starts with memory off (a player can switch it on).
 
 **A caveat found later (2026-10-04).** At the model setting the test games used, the players produced zero reasoning tokens: they answered without a reasoning step. Both sides ran the same way, so the comparison is fair, but the result is about players that do not reason first.
 

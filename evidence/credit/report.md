@@ -195,7 +195,7 @@ Agents followed it 19 times. The store it sat in was then tested on 30 paired bo
 - **No gameplay benefit has been shown** for memory guided by credit. The July test leaned negative before the fix, and the fixed version was never played live. The ten-seat version has run once as a demonstration and has not been tested at scale.
 - **Attribution errors are not shown to be random.** Agents might claim to follow lessons more often on decisions that went well. That would bias the scores, and the 15-case check cannot rule it out.
 - **Tells are not served** in the ten-seat game.
-- **The served game runs with memory off** unless the deployment sets `WW_MEMORY_ENABLED` (`server/config.py`). While it is off, a request for a memory-on game is refused.
+- **On the live site, memory is a per-game choice that starts off.** A player can switch it on because the production settings turn on the deployment's switch (`WW_MEMORY_ENABLED`, `server/config.py`); where that switch is off, a request for a memory-on game is refused. So the site offers a memory whose benefit to play has not been shown.
 
 ## Sources and implementation
 
