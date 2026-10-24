@@ -169,6 +169,72 @@ Instances still to file here: the retrieval reranker (a cross-encoder over cosin
 | 92 | Case study | The field that felt right lowered retrieval: while labelling, a fifth query field, the seat's "core dilemma", seemed obviously useful (two seats on similar boards can face different choices); tested against the owner's labels it ranked worse, was removed, and by that round's scores the removal was the largest single gain. A judge rating queries for quality would not have caught it; a labelled ranking did | 20 frozen nine-seat cases, four roles, 340 labels; hand-written queries 0.83 (NDCG@10); with the field 0.79 vs 0.87 for the queries it replaced (NDCG@5, the 6 fairly scorable cases); final form +0.06 over the original queries (0.76 vs 0.70, @5, fully labelled). Direction, not size; the first comparison also changed the query cap and thinking, so the field's own effect was isolated only by its removal; never re-run on the ten-seat store | retrieval evaluation against human labels (NDCG), a design intuition falsified, ablation | the field's one line of prompt text beside 0.87 → 0.79 (content) | `extraction/situation_summary/report.md` §6; log ③; `extraction/situation_summary/prompt_versions/standards_v2_core_dilemma.py` |
 | 95 | Design | Town memory works at night only (ten-seat ruling D1): town seats are served lessons for night actions, never for day discussion or votes; town day lessons are extracted for the owner's review, and approved advice becomes fixed role-prompt text. Chosen because the July failure came through a town day lesson (abstain when unsure, block 61), so the route is closed by scope as well as by the scoring fix. A forced "report your finding next day" rule (D2) was proposed against memory teaching information roles to hide finds, and dropped after counting first: in 28 saved ten-seat games they already reported almost every time, and with D1 no memory route remains for hiding. Ported only after a code audit found the scoring still assumed the nine-seat cast (a Vigilante's shot on a wolf graded as friendly fire, the pack's votes graded by the town rule, 21 metrics reading 0), with uncomputable metrics set to unscored first, never zero | disclosure counts rough (a claim field or a text match): Investigator after Suspicious 13 of 13, after Not suspicious 25 of 28, Sentinel 42 of 42, Trailseer 44 of 44; D1 and D2 are product choices, not shown to be best play; not tested at scale | system scoping as a safety lever, measure before adding a rule | the one-line ruling with its reason, and the four disclosure counts (content) | `memory_system/v8/decisions.md` §1–2, §5; `memory_system/v8/plan.md` D1–D2 and l.517; code `Agents/memory/retrieval/plan_gating.py` |
 
+### Chapter outline: Evaluation (agreed with the owner 2026-10-24)
+
+The reading structure built over the repo's evaluation folders. The folders stay as they are and are the
+evidence; these titles are what the reader sees. Three levels, each a complete answer at its own depth:
+**the takeaway** (the project overview) → **the engineering decisions** (five sections) → **the evidence**
+(titled links into the repo reports). The blocks in "the instruments", "golden-set construction" and
+"factual errors" below feed it.
+
+**Writing rules for this chapter** (owner: style, clarity and ease of reading matter as much as content):
+- Plain first person, short paragraphs, a number wherever there is one. Phrase choices as decisions: "I
+  chose X over Y because…".
+- No folder or code names in reader-facing text (no "hardening_pass", "model_admission", "nine-seat",
+  "frozen eval sets"); say what the thing is.
+- A cold reader first: one plain sentence of context (LLM agents playing Werewolf) before any method.
+- Headings may be questions; the first sentence under each answers it. No rhetorical opener for the piece.
+- Each level-2 section follows one pattern: **problem → decision and trade-off → one concrete example →
+  result and limitation**. One example per section, not a catalogue.
+- Limitations: one clause at most in level 1; in level 2 they sit beside the claim they qualify, stated as
+  scope ("on the earlier version of the game", "for that one turn"), not as failure.
+- One diagram for the whole chapter: code checks → turn replays → full games, with human labels
+  calibrating the LLM judges.
+
+**Handle with care** (could reflect poorly; owner 2026-10-24: be careful with damaging information):
+- **Keep out of the portfolio:** that most tests are AI-written and unaudited; that there is no CI; that the
+  nightly leak audit is not installed; that a reported statistic's script was not found; records outside
+  git; runs from uncommitted working trees; the "+17pp, p = 0.013" fusion error and the 0.14% rate (never
+  cite either). These stay in the repo record, where they are honest bookkeeping.
+- **Tell as caught and fixed, never as standing faults:** the leak checkers that checked nothing (found
+  and fixed the same day); the thinking level that produced no reasoning (both sides alike, so comparisons
+  stand); the baseline drift (led to side-by-side runs). The point of each is the catch.
+- **Keep scoped, never generalised:** 20/20 → 0/20 is one reproduced failure, not an error rate; the ~3%
+  factual-error rate is the earlier game; the turn replay shows direction, not size; memory results belong
+  to the Memory chapter, with no "memory helps" claim.
+- **The one open gap worth stating:** no person has checked the current game's judges yet; the tooling and
+  the owner's first labelling packets exist. State it once, with the fix.
+
+**Level 1: the takeaway** (about 140 words, in the project overview; title "Evaluation: measuring whether
+the agents improved"). Draft, to be polished in the owner's voice:
+
+> I built LLM agents that play Werewolf, a social-deduction game. The hard part wasn't getting them to play;
+> it was telling whether a change made them better. Win rates are noisy, and the LLM judges grading the
+> agents can be wrong too.
+>
+> So I layered the evaluation: code checks for anything recoverable from game logs, replays of a single
+> frozen game turn to test one change at a time, full games for effects that compound across turns, and
+> human-labelled references to check the judges where I had them.
+>
+> It changed my conclusions. When an agent invented an investigation result, the error reproduced in 20 of
+> 20 replays, then 0 of 20 after I reworded one line of its input: the input was misleading, not the
+> reasoning. And when a fresh baseline dropped from 67% to 10% town wins on identical prompts, I traced it to
+> the model service changing, and from then on ran every comparison side by side.
+
+**Level 2: five sections**, ordered by strength (sections 1–3 in full, 4–5 shorter):
+
+| # | Title | The claim it proves | Lead example | Limitation beside it | Level 3 (titled link → repo report) |
+|---|---|---|---|---|---|
+| 1 | **Turning agent failures into regression tests** | Find an error, freeze the state, tell bad input from bad reasoning by replaying alternatives, keep it as a test so a fix can't regress | The invented check: 20 of 20 → 0 of 20 after rewording the results; the fix rewrites every result as "you investigated…" | One reproduced failure, not a rate | "An invented investigation result, diagnosed by replay" → `evidence/evaluation/factual_errors/report.md` step 3; "What fixed false facts, and what didn't" → `evidence/game_play_enhancement/report.md` |
+| 2 | **Making the evaluators trustworthy** | Code where the answer is computable, a model for meaning, a person to anchor the model; a faulty checker caught and the conclusion changed | Model-written search values recomputed by code: the "swing vote" field scored 61%, worse than always answering no (83%), so a rule set in advance reopened "this filtering doesn't help" and the fields moved to code. Second: three models from one vendor labelled 863 cases, and when their majority said "discard" it was wrong 37% of the time (a person's review showed it) | The current game's judges have no person's check yet; the packets for it exist | "The audit that reopened a memory-filter result" → `evidence/evaluation/deterministic_audits/report.md` case 3; "How each LLM judge was built and checked" → `evidence/evaluation/llm_judge/report.md`; "Labelling: golden sets and one-off reads" → `evidence/evaluation/labeling/report.md` |
+| 3 | **Choosing the right test: one turn, one day or whole games** | A frozen turn isolates a change cheaply (the agent version of a unit test); whole games only for outcomes and compounding effects; side-by-side runs and noise checks keep both fair | A proposed voting sentence: 7 of 10 votes right → 0 of 10, for cents; and the baseline drift that made side-by-side runs the rule | Replays show direction, not size, and miss what happens later in the day; the day-level replay is designed, not built | "Turn, day, game: three scopes of one experiment" → `evidence/evaluation/evaluation_scopes/report.md`; "How a changed baseline led to side-by-side comparisons" → `evidence/evaluation/experimental_controls/report.md` |
+| 4 | **Measuring agent quality beyond win rate** | Grade decisions by the rules against the true roles, then check the scores against winning; re-check when the game changes | On the new ten-seat game the town's lynch scores carried over (+0.49 with winning), while the healer's save rate, trusted before, no longer did | 78 games; most new roles' scores need more games | "Which scores carried over to the new game" → `evidence/evaluation/metrics/report.md` §4 |
+| 5 | **Evaluating models before switching** | Model migration as five questions: quality, integration, cost and speed, reliability, rollout | A model passed 27 of 27 short test prompts and answered half its real turns in prose; and why the replay can reject a weak model but not rank close ones (two runs of one model differed by 6 points) | A gate, not a ranking; a few games per model | "Why the replay can reject weak models but not rank close ones" → `evidence/evaluation/model_admission/report.md` §1–2 |
+
+Statistics (precision and recall, kappa, paired tests) appear inside the sections that use them
+(`evidence/evaluation/scoring/report.md`), not as a section. The learning loop's result goes under Memory;
+this chapter links to it for the controls only.
+
 ### Topic: the instruments (component; provisional, opened by one block; `evaluation/`, `metrics/`, `tracing/` still to walk)
 
 | # | Segment | Block (one line) | Number and caveat | Skill tags | Exhibit (form) | Source |
@@ -452,16 +518,16 @@ are caveats to keep in view while reading, not decisions.
 
 | Folder | Status | Blocks | Pass | Notes |
 |---|---|---|---|---|
-| `evaluation/report.md` + `source_map.md` | pending | | | the hub and the reliability ledger |
-| `evaluation/methodology/` | pending | | | paired A/B; variance-reduction levers |
+| `evaluation/report.md` + `source_map.md` | pending | | | the hub (standalone overview, 2026-10-24) and the slim source map; full ledger in `evaluation/experiment_log.md` |
+| `evaluation/experimental_controls/` | pending | | | paired A/B; variance-reduction levers |
 | `evaluation/metrics/` | pending | | | instrument trust for the de-lucked proxies |
 | `evaluation/llm_judge/` | pending | | | judge misses information gain |
 | `evaluation/labeling/` | pending | | | |
-| `evaluation/sampled_human_review/` | pending | | | |
-| `evaluation/dimension_extraction/` | dissolved 2026-10-23 into `deterministic_audits/` (case 3, log §5) and `sampled_human_review/` (decision tags) | | | |
+| `evaluation/labeling/sampled_reads/` | pending | | | |
+| `evaluation/dimension_extraction/` | dissolved 2026-10-23 into `deterministic_audits/` (case 3, log §5) and `labeling/sampled_reads/` (decision tags) | | | |
 | `evaluation/discussion_tagger/` (moved 2026-10-23 to `evaluation/llm_judge/discussion_tagger.md`) | done 2026-10-22 | — | not needed | no blocks: owner ruled 2026-10-22 to leave the tagger out of the write-up (retired to a diagnostic 2026-07-13, feeds no credit, runs in no game; the numbers are hard to defend in an interview). If `credit/` needs its history, one plain sentence, no tagger detail |
-| `evaluation/replay_screens/` | pending | | | first Haiku game entries already in `eval_exhibits.md` |
-| `evaluation/whole_game_evaluation/` | pending | | | |
+| `evaluation/evaluation_scopes/turn/` | pending | | | first Haiku game entries already in `eval_exhibits.md` |
+| `evaluation/evaluation_scopes/game/` | pending | | | |
 | `evaluation/loop/` | pending | | | |
 | `evaluation/hardening_pass/` | skipped 2026-10-23 (owner) | — | not needed | dated record of the July 2026 review of the memory methods; mentioned briefly in the memory topic, no blocks of its own |
 | `evaluation/factual_errors/` | pending | | | rates ~3% msgs / ~4% notes / 9.6% night; never cite 0.14% |

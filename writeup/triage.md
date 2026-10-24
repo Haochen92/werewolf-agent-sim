@@ -69,7 +69,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 | 55 | `v7_final` | the outside evaluator's review | **MERGE → a clause in block 65 + lesson 15's fourth instance (ruled 2026-10-22)** | no block — *Its findings are already filed (the paired endpoint test is block 65, the fusion correction is on record); what it adds is where the July design came from and one instance of lesson 15, so a clause each, no block.* |
 | 56 | `docs/agentic_ai_encountered_issues.md` | Served game hung on Vertex; rescue model | **KEEP → block 97, one block (ruled 2026-10-22)** | Case study · A turn hung for 301 s with no error, because 30 silent retries hid the stall from the fallback.; Design · Time counts as a failure; two stalls move the game to a rescue model from another family for 300 s.; Gaps · There is no notice to the viewer and no whole-game watchdog. — *Opens the reliability topic. It is part of today's design, it carries a skill no filed block has, and the owner can defend it from one real incident.* |
 | 57 | `evaluation/dimension_extraction` | The situation-field audit, second copy | **MERGE INTO block 88** | None. — *Block 88 already carries every number from the source log, and this page is an out-of-date copy of it, so close it without reading.* |
-| 58 | `evaluation/end_to_end_ab` | How the whole-game memory A/B was run | **MERGE INTO `evaluation/methodology/`** | Verification · pairing on the deal was measured and added almost no power; running the arms together is what controlled the error. — *One walk covers both folders, but the seed finding must be squared with block 65's wording before the page goes out.* |
+| 58 | `evaluation/end_to_end_ab` | How the whole-game memory A/B was run | **MERGE INTO `evaluation/experimental_controls/`** | Verification · pairing on the deal was measured and added almost no power; running the arms together is what controlled the error. — *One walk covers both folders, but the seed finding must be squared with block 65's wording before the page goes out.* |
 | 59 | `evaluation/hallucination_bench` | — | **KEEP** | Verification · A judge checks each statement against a fact sheet built by code, and a turn is kept only if it fails at least 2 of 3 replays; failing turns went wrong in 22% of samples against 3% for controls; Case study · A code audit of how facts travel from engine to prompt found 12 holes, and 8 were fixed in a day; bad samples fell from 97 to 82 of 267, a direction only; Gaps · The frozen sets are nine-seat and do not render on today's prompts, and they hold day turns only, with no vote-only or night cases — *The bench and the fact-path fixes are live, and no filed block shows hallucination evaluation against a code-built fact sheet with a screen for failures that repeat.* |
 | 60 | `evaluation/hardening_pass` | Review and repair of the eval tools | **SKIP** | None (its one Verification block would repeat 88–89). — *Its one key finding is already block 88. The hygiene fixes are real, but none shaped today's design except the canary, which `model_drift/` carries.* |
 | 61 | `evaluation/labeling` | Model panels that agree can still be wrong | **KEEP (one block)** | Case study · Three models agreed on "discard" and were wrong 21.4% of the time (80 of 373); unanimity is not safety. — *It is a labelling skill no filed block shows and is easy to defend in an interview. The labelling sections of the two `fine_tuning/` folders can then close into it.* |
@@ -77,9 +77,9 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 | 63 | `evaluation/loop` | The v7 loop's measurement tools | **SKIP** | Case study · a config slip ran a treatment as the control; the guard now turns that slip into a crash at generation 1 (file it at `v7_final/`). — *Every live piece is covered elsewhere, and its one good story, the arm guard, belongs to `v7_final/`.* |
 | 64 | `evaluation/methodology` | Keeping a 30-game A/B honest | **MERGE INTO `model_drift/`** | Case study · Byte-identical prompts, no code change, and the baseline moved (villagers 67% → 10%, p = 0.0028), so every comparison runs both arms in the same window.; Verification · The design's own check refuted pairing as the source of fairness: the deal explained almost nothing. — *The drift case is key to how every later A/B was run, but its numbers and the fuller story live in `model_drift/`, so it should be filed from there.* |
 | 65 | `evaluation/metrics` | Which game proxies actually track winning | **MERGE INTO `metrics/`** | Verification · Proxies were checked against winning before use; only the town basket passed.; Case study · A wolf proxy hid behind a condition: null pooled, +0.31 once only games wolves could win were counted.; Gaps · No proxy has been validated on the ten-seat game. — *The finding is key (credit and every A/B rest on it), but this file only points at `metrics/`, which is where the walk should happen.* |
-| 66 | `evaluation/replay_screens` | Frozen-turn memory screen and an unbuilt day replay | **SKIP** | Verification · a $1 frozen-turn screen eliminated every cheap memory-use idea before any $20 game run (file it at `memory_system/effectiveness/` if that walk keeps it). — *Blocks 53 and 70 already cover the method, and what the cheap-idea screening taught belongs to the `memory_system/effectiveness/` walk.* |
+| 66 | `evaluation/evaluation_scopes/turn` | Frozen-turn memory screen and an unbuilt day replay | **SKIP** | Verification · a $1 frozen-turn screen eliminated every cheap memory-use idea before any $20 game run (file it at `memory_system/effectiveness/` if that walk keeps it). — *Blocks 53 and 70 already cover the method, and what the cheap-idea screening taught belongs to the `memory_system/effectiveness/` walk.* |
 | 67 | `evaluation/report.md` | The trust ledger for every measuring tool | **SKIP** | no block — *Nothing in it is first-hand, it is stale on the facts that matter most (v7, ten seats, the tagger), and its "self-correction" list is a useful checklist of where to look in the other folders.* |
-| 68 | `evaluation/sampled_human_review` | — | **SKIP** | no block — *The sampler is built but has never been used for a real review and shows no new skill, so only two one-line notes move to blocks 82 and the judge block.* |
+| 68 | `evaluation/labeling/sampled_reads` | — | **SKIP** | no block — *The sampler is built but has never been used for a real review and shows no new skill, so only two one-line notes move to blocks 82 and the judge block.* |
 
 ---
 
@@ -837,7 +837,7 @@ New, small:
 
 **How sure.** Drift is concluded by ruling everything else out, not seen directly. The canary runs are 10 games each. The −40 point town "regression" it explained was drift plus the treatment, mixed.
 
-**Overlap.** Block 27 (a threshold means something only for its model), block 9 (probes); `end_to_end_ab/` and `evaluation/methodology/` (the seed finding).
+**Overlap.** Block 27 (a threshold means something only for its model), block 9 (probes); `end_to_end_ab/` and `evaluation/experimental_controls/` (the seed finding).
 
 **Skill it would add.** Experimental control under an unpinnable vendor model (model drift).
 
@@ -1309,13 +1309,13 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **How sure.** The seed finding rests on one pair of 10-game runs sharing 8 deals, nine-seat, one model. It undercuts block 65's stated reason for the design ("both copies share the deal's luck"), though the paired design still controls drift.
 
-**Overlap.** Blocks 63–65; `evaluation/methodology/` (pending, carries the same seed finding); `model_drift/`.
+**Overlap.** Blocks 63–65; `evaluation/experimental_controls/` (pending, carries the same seed finding); `model_drift/`.
 
 **Skill it would add.** None new (paired A/B and power analysis are already filed).
 
 **Candidate blocks.** Verification · pairing on the deal was measured and added almost no power; running the arms together is what controlled the error.
 
-**Call: MERGE INTO `evaluation/methodology/`.** One walk covers both folders, but the seed finding must be squared with block 65's wording before the page goes out.
+**Call: MERGE INTO `evaluation/experimental_controls/`.** One walk covers both folders, but the seed finding must be squared with block 65's wording before the page goes out.
 
 ### 59. `evaluation/hallucination_bench`
 
@@ -1357,7 +1357,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **How sure.** The fixes are code plus unit tests. Apart from the audit, the folder has no outcome numbers of its own.
 
-**Overlap.** Blocks 88, 89 and 91; `model_drift/` (the canary); `replay_screens/` (wolf-side coverage).
+**Overlap.** Blocks 88, 89 and 91; `model_drift/` (the canary); `evaluation_scopes/turn/` (wolf-side coverage).
 
 **Skill it would add.** None new.
 
@@ -1479,7 +1479,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **Call: MERGE INTO `metrics/`.** The finding is key (credit and every A/B rest on it), but this file only points at `metrics/`, which is where the walk should happen.
 
-### 66. `evaluation/replay_screens` — Frozen-turn memory screen and an unbuilt day replay
+### 66. `evaluation/evaluation_scopes/turn` — Frozen-turn memory screen and an unbuilt day replay
 
 **What it is.** A July 2026 hub page (nine-seat game) on two instruments cheaper than a whole game. The first is the per-turn "decision replay": freeze one recorded turn, swap only the memory block, regenerate the turn and score it against the true roles. The second is a per-day replay, which exists only as a design. The memory findings themselves are in `memory_system/effectiveness/decision_replay/`.
 
@@ -1521,7 +1521,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **Call: SKIP.** Nothing in it is first-hand, it is stale on the facts that matter most (v7, ten seats, the tagger), and its "self-correction" list is a useful checklist of where to look in the other folders.
 
-### 68. `evaluation/sampled_human_review`
+### 68. `evaluation/labeling/sampled_reads`
 
 **What it is.** Most nine-seat prompt decisions were made by reading a few cases by hand: extraction wording, situation-summary wording, the dedup tricky cases, the day-summary saturation call. The reading was ad hoc and left no record. On 2 July 2026 a sampler was built to fix this. It picks cases by a code-computed decision score and a code-computed swing count, adds a seeded stratified group, keeps replay switched off until spend is approved, and writes verdicts to a file.
 
@@ -1602,7 +1602,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 | `evidence/evaluation/llm_judge/golden_set_method.md` | Reference-point golden-set method, never built | plan only (F15) |
 | `evidence/evaluation/llm_judge/report.md` | Audit of six judges and what they decided | F1–F4, F7–F9, F11, F13 |
 
-### `evaluation/sampled_human_review`
+### `evaluation/labeling/sampled_reads`
 
 #### Findings
 | # | Finding (plain claim, one line) | Number and N | Today's design? | Candidate skill tag | Call | Source |
@@ -1616,11 +1616,11 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 #### Files
 | File | What it is (≤10 words) | Role |
 |---|---|---|
-| `evidence/evaluation/sampled_human_review/plan.md` | Sampler build plan, four steps | plan only (F2, F4) |
-| `evidence/evaluation/sampled_human_review/report.md` | Why hand review needs a sampler; build note | F1–F5 |
-| `evidence/evaluation/sampled_human_review/sampler_smoke/cohort_strata.json` | Test-run counts by role, phase, reason | data for F5 |
-| `evidence/evaluation/sampled_human_review/sampler_smoke/review_packets.md` | Nine review packets from the test run | data for F5 |
-| `evidence/evaluation/sampled_human_review/sampler_smoke/verdicts.jsonl` | One placeholder verdict exercising the record path | data for F5 |
+| `evidence/evaluation/labeling/sampled_reads/plan.md` | Sampler build plan, four steps | plan only (F2, F4) |
+| `evidence/evaluation/labeling/sampled_reads/report.md` | Why hand review needs a sampler; build note | F1–F5 |
+| `evidence/evaluation/labeling/sampled_reads/sampler_smoke/cohort_strata.json` | Test-run counts by role, phase, reason | data for F5 |
+| `evidence/evaluation/labeling/sampled_reads/sampler_smoke/review_packets.md` | Nine review packets from the test run | data for F5 |
+| `evidence/evaluation/labeling/sampled_reads/sampler_smoke/verdicts.jsonl` | One placeholder verdict exercising the record path | data for F5 |
 
 ### `extraction/tell_extraction`
 
