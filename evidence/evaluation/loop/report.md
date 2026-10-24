@@ -40,7 +40,7 @@ loop and has not been tested at scale.
 | Check | Question | Result | Trust | Where it is told |
 |---|---|---|---|---|
 | **Batch score** (`loop/measure.py`) | One de-lucked decision score per arm per generation, with no model call | Deterministic and unit-tested; pinned to the rule the July endpoint pre-registered | ✅ | Below |
-| **Fail-loud guards** (`loop/invariants.py`) | Does a wrongly set-up run stop at once? | Both invalid June runs were caught on audit, and each slip became a guard | ✅ | Below; the guards themselves in [methodology](../methodology/report.md) |
+| **Fail-loud guards** (`loop/invariants.py`) | Does a wrongly set-up run stop at once? | Both invalid June runs were caught on audit, and each slip became a guard | ✅ | Below; the guards themselves in [experimental controls](../experimental_controls/report.md) |
 | **The July 19 run** | Did the loop run a declared experiment to its planned end? | Yes, with the guards on | ✅ | Below; the result in the [execution plan](../../execution_plan/report.md) |
 | **Credit validators** | Does a decision's grade carry signal above luck, and which shortcuts fail? | Signal for some channels; override-based decay and a survival window ruled out | 🟡 | Below |
 | **Held-out reproduction** | Does a lesson's score on half the games predict the other half? | r = +0.54 over 31 lessons; 8 of 9 flagged losers stayed negative | 🟡 | [credit](../../credit/report.md) §5 |

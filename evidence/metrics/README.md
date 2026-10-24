@@ -1,5 +1,9 @@
 # De-lucked Proxy Metrics — system hub
 
+*2026-10-24: the plain account of these scores, and how far each can be trusted, is now
+[`../evaluation/metrics/report.md`](../evaluation/metrics/report.md). This folder is the June–July 2026
+design record: how the proxies were built, all 48 candidates, and the July audit logs.*
+
 **What this is.** The one-page assembly of the de-lucked proxy-metrics system, which spans ~7
 locations. Read this first if you want everything needed to judge the system's reliability from a
 single page.
@@ -44,5 +48,5 @@ The trust report's top line summarizes: *Verdict by basket: ✅ Town · 🟡 Inv
 🔴→🟡 Discussion* (the 🔴→🟡 reflects the town-side discussion proxy discovered in the 2026-07-02 audit).
 
 *Note: the variance-reduction levers audit (A/B methodology, not a metric) was relocated 2026-07-07 to
-[`../evaluation/methodology/variance_reduction_levers.md`](../evaluation/methodology/variance_reduction_levers.md),
+[`../evaluation/experimental_controls/variance_reduction_levers.md`](../evaluation/experimental_controls/variance_reduction_levers.md),
 completing the trust report's colocation call.*

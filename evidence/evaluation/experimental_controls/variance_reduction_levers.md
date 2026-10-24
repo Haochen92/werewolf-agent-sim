@@ -36,12 +36,12 @@ sampling noise — don't claim "full reproducibility from seeding."
 
 *Correction 2026-10-23.* The scheduler tie-break is no longer seeded: it went with the proactive tier on
 2026-10-07, so `game_id` now pins the deal of roles to seats and nothing else
-([methodology report](report.md), section 3).
+([experimental controls report](report.md), section 1).
 
 ## Lever 2 — CUPED / regression adjustment  *(verdict: not applicable)*
 
 CUPED needs a **pre-treatment covariate** that predicts the outcome; none exists here. Games are
-structurally identical (same 9-player cast, same line-up, same config within an arm) → no scenario
+structurally identical (same nine-seat cast, same line-up, same config within an arm) → no scenario
 difficulty to adjust for. All between-game variance is temp=1.0 **sampling**, which is exactly what
 CUPED cannot touch (not predictable from anything observable pre-game). The covariates we *do* record
 (game length, vote counts, role exits) are **post-treatment** — adjusting on them would bias the
