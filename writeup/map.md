@@ -260,7 +260,26 @@ ballots then replayed from cache); `server_design_notes.md` §5 (a sync engine i
 is closed); the parked LangGraph `Send` note below. From the triage: card 46 (the code scheduler) and
 card 10 (errors spreading through the shared transcript, the agents' shared state).
 
-### Topic: hallucination, measuring and containing factual errors (skill topic, provisional, opened 2026-10-22; "how do you deal with hallucination?" is a common interview question and the project has measured answers)
+### Topic: factual errors, measuring and containing them (skill topic, provisional, opened 2026-10-22 as "hallucination"; renamed 2026-10-23 by the owner, with hallucination as one subtopic; "how do you deal with hallucination?" is a common interview question and the project has measured answers)
+
+A factual error is a statement the game record contradicts: a grounding failure, where what the agent
+says no longer matches the true state of the game. The project measured the symptom; causes were
+diagnosed case by case (`evidence/evaluation/factual_errors/report.md`, "What counts as a factual
+error"). Subtopics, one per cause:
+- **Hallucination (fabrication):** invented vote records and attacks, invented own actions (the
+  investigator's check), invented claims repeated by other players, claim misattribution.
+- **Reasoning failures:** miscounting who is left (the largest census class, 221 of 368), invalid
+  inferences. Cross-reference: the deduction topic's Problem block (48) is this cause.
+- **Misreading correct information:** a visit read the wrong way round, an empty watch read as an empty
+  house.
+- **Losing track of state:** a dead player treated as alive, a dead player's role misstated.
+- **Missing or confusing input:** the code audit's findings (the healer had no record of its own
+  protections; engine facts rendered like summaries).
+
+How each cause was found and reduced, with sources: `evidence/evaluation/factual_errors/report.md`, step 3
+(the cause table) and step 4. What was tried against the errors and what worked (telling the model did not;
+giving it the fact or moving the check into code did): `evidence/game_play_enhancement/report.md`, problem 1
+(2026-10-24).
 
 To gather when their folders are walked: triage card 19 (the error census: code flags every candidate,
 a cheap model reads, a stronger one rechecks, the owner checks; about 3% of public messages, 4% of notes,
@@ -354,6 +373,32 @@ after the backend. Listed here so the Organisation step draws on them.
 Not in the project (another project covers them): tool calling (a deliberate choice: one structured
 output per decision), MCP, CI/CD.
 
+### Evaluation hardening tasks (owner 2026-10-23; pending)
+
+Three small tasks that close the weak spots an interviewer is most likely to probe. The owner does the
+labelling when there is low-focus time; the blind packet is prepared ahead.
+
+1. **Calibrate the judges behind page numbers** (one blind-labelling session, packets prepared ahead; the
+   full list, with what each set backs in the deployed game, is the table "Golden sets against what is
+   deployed today" in `evidence/evaluation/labeling/report.md`; rows 1 and 4 there were added 2026-10-23):
+   (a) the hallucination-bench judge, first, since every prompt or model change runs through it (today
+   10 of 12 hand-checked plus 40 controls; 50–100 verdicts); (b) the silence-calibration readers behind
+   the echo gate's "12 of 29 held, 0 of 36 worthwhile" (four blind Sonnet subagents), if card 46 keeps
+   its numbers on the page; (c) the rule-error screen readers behind 9% → 20% → 6% (Claude subagents
+   that disagreed, 4 vs 13 flags per quarter), if card 30 makes the page. 30–50 items each for (b) and
+   (c); report agreement with the owner. The echo gate's "20 of 20" belongs to its June
+   predecessor (a standalone novelty label on 20 constructed eight-seat transcripts), so today's gate
+   rests on (b) alone. Not needed: the 96-lookup fit readers (interview depth now), the memory-era judges
+   (not cited, not served; stated as uncalibrated).
+2. **Audit the critical tests, then add CI** (owner 2026-10-23: the tests, frontend included, are
+   AI-written, so they may be redundant or miss things, and a count proves nothing). 2a: coverage, a
+   mutation-testing sample and duplicate checks on the rules engine, payload builders, deduction, credit
+   grading and the translator; cite only the deliberate tests (leak tests, the deduction oracle) until
+   then; the frontend tests belong to the frontend walk. 2b: a pytest CI workflow over the deterministic
+   suite (no model calls); no CI exists today.
+3. **Install the nightly leak-audit cron:** the line is in `server/housekeeping/leak_audit.py`; checked
+   2026-10-23, not installed (no crontab entry, no log).
+
 ## Folder walk
 
 One row per evidence folder, in the order of `evidence/README.md`. **Status** is `pending` or `done`.
@@ -413,13 +458,13 @@ are caveats to keep in view while reading, not decisions.
 | `evaluation/llm_judge/` | pending | | | judge misses information gain |
 | `evaluation/labeling/` | pending | | | |
 | `evaluation/sampled_human_review/` | pending | | | |
-| `evaluation/dimension_extraction/` | pending | | | |
-| `evaluation/discussion_tagger/` | done 2026-10-22 | — | not needed | no blocks: owner ruled 2026-10-22 to leave the tagger out of the write-up (retired to a diagnostic 2026-07-13, feeds no credit, runs in no game; the numbers are hard to defend in an interview). If `credit/` needs its history, one plain sentence, no tagger detail |
+| `evaluation/dimension_extraction/` | dissolved 2026-10-23 into `deterministic_audits/` (case 3, log §5) and `sampled_human_review/` (decision tags) | | | |
+| `evaluation/discussion_tagger/` (moved 2026-10-23 to `evaluation/llm_judge/discussion_tagger.md`) | done 2026-10-22 | — | not needed | no blocks: owner ruled 2026-10-22 to leave the tagger out of the write-up (retired to a diagnostic 2026-07-13, feeds no credit, runs in no game; the numbers are hard to defend in an interview). If `credit/` needs its history, one plain sentence, no tagger detail |
 | `evaluation/replay_screens/` | pending | | | first Haiku game entries already in `eval_exhibits.md` |
-| `evaluation/end_to_end_ab/` | pending | | | |
+| `evaluation/whole_game_evaluation/` | pending | | | |
 | `evaluation/loop/` | pending | | | |
-| `evaluation/hardening_pass/` | pending | | | |
-| `evaluation/hallucination_bench/` | pending | | | rates ~3% msgs / ~4% notes / 9.6% night; never cite 0.14% |
+| `evaluation/hardening_pass/` | skipped 2026-10-23 (owner) | — | not needed | dated record of the July 2026 review of the memory methods; mentioned briefly in the memory topic, no blocks of its own |
+| `evaluation/factual_errors/` | pending | | | rates ~3% msgs / ~4% notes / 9.6% night; never cite 0.14% |
 | `metrics/` (+ design, metrics_audit) | pending | | | metric design journey; de-lucked per-role proxies |
 | `tracing/` | pending | | | capture half of eval |
 | `tracing/fingerprinting/` | pending | | | provenance by runtime fingerprint |
