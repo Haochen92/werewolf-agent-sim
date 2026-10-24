@@ -1,5 +1,13 @@
 # Extraction — Evaluation Apparatus Report
 
+> **Status 2026-10-23 (read this first).** A dated record of the nine-seat extractor (May–July 2026), not
+> current. What has changed: the judge defaults to Claude Haiku 5.5; the harness is
+> `evaluation/src/cli_runner/regen_replay/judge/extraction_judge.py` (`eval-extraction`) and the dataset
+> builder `evaluation/src/data/builders/extraction.py` (the `experiments/` paths below are gone); the
+> prompt's "eight" versus "five" dimensions contradiction below is still there; and ten-seat extraction
+> (per-role, offline batch) is not checked by this judge but by the de-halo pass and the decision tagger
+> ([report.md](report.md), case 5). The current account is [report.md](report.md).
+
 > **Scope: the apparatus, not the design.** Covers *how we measure* extraction quality (post-game mining of
 > obs/SP + v7 synthesis) and *how far to trust it* (L1 + L2). The extraction **design** (per-role fan-out,
 > v7 credit-aware synthesis) stays in [`../../extraction/post_game/`](../../extraction/post_game/) (destination

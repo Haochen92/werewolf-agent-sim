@@ -1,5 +1,12 @@
 # Dedup — Evaluation Apparatus Report
 
+> *Correction 2026-10-23: code paths.* `evaluation/src/experiments/` no longer exists. The golden scorers are
+> `evaluation/src/audits/dedup_score.py` (console `eval-dedup-score`) and `evaluation/src/audits/batch_dedup_score.py`
+> (`python -m`). The online quality judge runs from `evaluation/src/cli_runner/regen_replay/judge/dedup_judge.py`
+> (`eval-dedup`), the batch one from `cli_runner/regen_replay/both/batch_dedup_judge.py` (`eval-batch-dedup`);
+> the batch merge eval and the prefilter calibration are in `evaluation/src/studies/`. The dataset builder is
+> `evaluation/src/data/builders/dedup.py`; the replays are in `evaluation/src/replay/`. Paths below are as written in June.
+
 > **Scope: the apparatus, not the design.** This covers *how we measure* whether dedup meets its objective
 > and *how far to trust that measurement* (L1 + L2). The dedup **design** (the 3-pass mechanism, the
 > gate-partition, prompt v1→v11b) is the memory-pipeline story and stays in

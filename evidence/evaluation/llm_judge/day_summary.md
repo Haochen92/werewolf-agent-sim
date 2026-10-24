@@ -1,5 +1,16 @@
 # Day-Summary — Evaluation Apparatus Report
 
+> **Status 2026-10-23 (read this first).** A dated record, not current, and the judge should not be re-run
+> as it is. Day summary v4 (2026-10-04) only transcribes accusations and role claims, and code keeps the
+> claim ledger; the "village dynamics" and alliances sections are gone. This judge's rubric still scores
+> `village_dynamics` (`evaluation/src/judges/prompts/day_summary.py`), so it grades a section that no
+> longer exists. Today's summaries are checked by code, in the summary-claim replay
+> ([factual_errors](../factual_errors/report.md), step 4). Two claims below no longer hold: day summary
+> *is* a measured weak point on the ten-seat game (22 summary errors in ten audited games, the commonest
+> error), and the harness is now `evaluation/src/cli_runner/regen_replay/both/day_summary_judge.py`
+> (`eval-day-summary`; the links below now point there). The judge model
+> default is Claude Haiku 5.5. The current account is [report.md](report.md).
+
 > **Scope: the apparatus, not the design.** This doc covers two things: *how we measure* day-summary
 > quality (the judge and its harness — the L1 layer), and *how far to trust that measurement* (the L2
 > layer). The day-summary **design** — the extractor, the prompt from v1 to v4b, the move to structured
@@ -28,7 +39,7 @@ question below.) It scores five dimensions on a 1-5 rubric — `completeness`, `
 retries once, then returns `None` on a parse or validation failure.
 
 **The harness.** `day_summary_eval.py`
-([`experiments/day_summary_eval.py`](../../../evaluation/src/experiments/day_summary_eval.py)) regenerates a
+([`cli_runner/regen_replay/both/day_summary_judge.py`](../../../evaluation/src/cli_runner/regen_replay/both/day_summary_judge.py)) regenerates a
 summary from a frozen transcript with a chosen generation model, then judges it, then aggregates
 per-dimension avg/min/max plus a per-pair table. It is module-only: run it with
 `python -m evaluation.experiments.day_summary_eval`, there is no console script.
@@ -139,7 +150,7 @@ If it did need to become a real metric, the cheapest upgrade is two moves:
 ## Evidence: code and L2 artifacts
 
 - **The instrument (code):** [`judges/day_summary.py`](../../../evaluation/src/judges/day_summary.py),
-  [`experiments/day_summary_eval.py`](../../../evaluation/src/experiments/day_summary_eval.py),
+  [`cli_runner/regen_replay/both/day_summary_judge.py`](../../../evaluation/src/cli_runner/regen_replay/both/day_summary_judge.py),
   `core/schemas.py::DaySummaryScores`, `judges/prompts/day_summary.py::DAY_SUMMARY_*`.
 - **L2 artifacts:** the per-config score tables in
   [`../../extraction/day_summary/`](../../extraction/day_summary/) (`eval_summary_*.txt`) are the only

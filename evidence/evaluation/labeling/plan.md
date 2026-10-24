@@ -1,7 +1,7 @@
 # Labeling Pipeline — Build Plan (the second half)
 
 > **What this is.** The build plan for the label-*validation* half of the pipeline — the calibration /
-> bias-detection / confidence layer that [`report.md`](report.md) §3 lists as the headline gap. The
+> bias-detection / confidence layer that the old report's §3 listed as the headline gap (now [`experiment_log.md`](experiment_log.md), Appendix A). The
 > *design* is not invented here: it is the pre-registered protocol in
 > [`../../retrieval/context_eval/experiment_log.md`](../../retrieval/context_eval/experiment_log.md) §6.
 > This doc maps that protocol onto concrete code. **Status: designed, not built. Gated** (see §Gates).

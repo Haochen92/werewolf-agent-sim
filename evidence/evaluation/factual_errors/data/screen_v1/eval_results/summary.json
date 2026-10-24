@@ -1,0 +1,43 @@
+{
+  "label": "screen_v1",
+  "run_at": "2026-10-03T10:38:06.599714+00:00",
+  "config": {
+    "label": "screen_v1",
+    "dataset": "evaluation/eval_results/hallucination_bench/candidates_v1.jsonl",
+    "n": 3,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "current",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none"
+      }
+    ]
+  },
+  "n_cases": 268,
+  "arms": {
+    "current": {
+      "bad": {
+        "all": "157/804 (20%)",
+        "phase:day_discussion": "141/633 (22%)",
+        "phase:day_vote": "16/171 (9%)",
+        "role:healer": "17/81 (21%)",
+        "role:investigator": "0/45 (0%)",
+        "role:serial_killer": "21/114 (18%)",
+        "role:vigilante": "53/144 (37%)",
+        "role:villager": "54/282 (19%)",
+        "role:wolf": "12/138 (9%)",
+        "slice:control": "4/120 (3%)",
+        "slice:positive": "153/684 (22%)",
+        "source:census": "157/801 (20%)",
+        "source:checkpoint": "0/3 (0%)"
+      },
+      "deception": 2,
+      "invalid": 0
+    }
+  },
+  "paired_vs_first": {}
+}
