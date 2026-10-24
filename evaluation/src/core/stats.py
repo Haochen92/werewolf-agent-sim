@@ -7,6 +7,7 @@ eyeballed ones. McNemar/Wilcoxon for the paired A/B landed here with that batch
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 
 from scipy import stats
@@ -41,6 +42,43 @@ def binomial_ci(wins: int, n: int, confidence: float = 0.95) -> tuple[float, flo
     """Exact (Clopper–Pearson) confidence interval for a win proportion."""
     ci = stats.binomtest(wins, n).proportion_ci(confidence)
     return (ci.low, ci.high)
+
+
+def cohens_kappa(labels_a: list[str], labels_b: list[str]) -> float:
+    """Cohen's kappa: how far two raters agree beyond what chance alone would give.
+
+    Kappa is (observed agreement - expected agreement) / (1 - expected agreement), where the
+    expected agreement is what two raters with these same label frequencies would reach by
+    chance. 1.0 is perfect agreement, 0.0 is chance level, below 0 is worse than chance.
+
+    Edge case: when the expected agreement is 1 (both raters used one single label for every
+    item), the formula divides by zero; this returns 1.0 if they agree on every item, else 0.0.
+
+    Args:
+        labels_a: the first rater's label per item, e.g. ["yes", "no", "yes"].
+        labels_b: the second rater's label for the same items, in the same order.
+
+    Returns:
+        The kappa value. Raises ValueError if the lists are empty or differ in length.
+    """
+    if len(labels_a) != len(labels_b):
+        raise ValueError("labels_a and labels_b must be equal-length (one label per item each)")
+    n_items = len(labels_a)
+    if n_items == 0:
+        raise ValueError("cohens_kappa needs at least one item")
+
+    n_agree = sum(1 for label_a, label_b in zip(labels_a, labels_b) if label_a == label_b)
+    observed_agreement = n_agree / n_items
+
+    counts_a = Counter(labels_a)
+    counts_b = Counter(labels_b)
+    expected_agreement = 0.0
+    for label in set(counts_a) | set(counts_b):
+        expected_agreement += (counts_a[label] / n_items) * (counts_b[label] / n_items)
+
+    if expected_agreement == 1.0:
+        return 1.0 if observed_agreement == 1.0 else 0.0
+    return (observed_agreement - expected_agreement) / (1 - expected_agreement)
 
 
 def compare_proportions(wins_a: int, n_a: int, wins_b: int, n_b: int) -> ProportionComparison:
