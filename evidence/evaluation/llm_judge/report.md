@@ -287,7 +287,7 @@ memories to each other, takes reading. Less clear for de-halo, chosen on one gam
 **How far to trust it.** 🟡 to ⚠️. A blind reader catches a classifier that disagrees with a stronger model,
 but not a bias both share, and none of these readers has been checked against a person. The keep-or-discard
 decision has a person's 65 and 111 labels, from the nine-seat game. Detail:
-[sampled_human_review](../sampled_human_review/report.md).
+[sampled reads](../labeling/sampled_reads/report.md).
 
 **What would strengthen it.** Re-run the dedup checks on Haiku (top-ups 2 and 3); point-dedup itself needs
 work.

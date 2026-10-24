@@ -5,7 +5,7 @@ on, how a judge or model is scored against a golden set, and how two versions ar
 shared by the two pages that use it most: [golden sets](../labeling/report.md), where labels are made,
 and [LLM judges](../llm_judge/report.md), where models give them. Scores that code computes from a game
 record to say how well agents played (vote accuracy, decision grades) are in [metrics](../metrics/report.md);
-the safeguards on a comparison (power, drift, the arm guard) are in [methodology](../methodology/report.md).
+the safeguards on a comparison (power, drift, the arm guard) are in [experimental controls](../experimental_controls/report.md).
 How it all fits together is in [the hub](../report.md).
 
 ## Three questions, kept apart
@@ -71,7 +71,7 @@ games instead.
 | Design | Test | When | Example in the project |
 |---|---|---|---|
 | The same cases under both versions, a yes-or-no outcome per case | **McNemar** (exact): only the cases where the two versions differ count | Prompt or model changes on a frozen test set | The July prompt bundle: 29 cases better, 11 worse, p = 0.003; the October fixes: 24 better, 14 worse, p = 0.14 (a direction, not proof) |
-| The same cases or deals, a score per case | **Wilcoxon** (signed-rank) | Paired decision scores in game A/Bs | The whole-game memory comparisons ([whole_game_evaluation](../whole_game_evaluation/report.md)) |
+| The same cases or deals, a score per case | **Wilcoxon** (signed-rank) | Paired decision scores in game A/Bs | The whole-game memory comparisons ([whole games](../evaluation_scopes/game/report.md)) |
 | Two independent groups, a rate each | **Fisher's exact test** | Win rates from unpaired batches | `core/stats.compare_proportions` |
 | One judge against a person, binary | **McNemar on the disagreements** | Does the judge lean one way (flag too much or too little)? | Part of the acceptance gate in the calibration stage, from 2026-10-23 |
 

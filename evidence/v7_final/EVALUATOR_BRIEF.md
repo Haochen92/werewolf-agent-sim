@@ -180,7 +180,7 @@ trustworthy numbers are the deterministic and outcome-anchored ones.**
 - **Silent-N paths** — parse-fail rows silently dropped from averages; retrieval efficiency fallback
   pooled; a structured-field instruction ignored → ~⅓ of notes silently skipped (several since fixed).
 - **What LLM judges structurally MISS:** information gain, subtle fabrication, "does this read right to a
-  person" → the **sampled-human-review rung is underbuilt** (`sampled_human_review/report.md`).
+  person" → the **sampled-human-review rung is underbuilt** (`labeling/sampled_reads/report.md`).
 
 ---
 

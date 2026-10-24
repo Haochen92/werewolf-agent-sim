@@ -652,7 +652,7 @@ change. The pin file's history shows two:
 
 *Moved here on 2026-10-23 from `evaluation/dimension_extraction/`, which was dissolved: its checks
 that use code alone are this section, and its blind read of the decision tags moved to
-[`../sampled_human_review/`](../sampled_human_review/report.md) (Instrument 4). The text below is
+[`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md) (the decision-tag read). The text below is
 kept as it was written, with its dated corrections. The memory holds two kinds of note:
 *observations* (a model's account, written after a game, of one play and what it led to) and
 *strategy points* (advice for a role, drawn from several observations). A model fills fields on each
@@ -786,7 +786,7 @@ Most errors gave the count after the night's action instead of before it. The "s
 mostly a last use written as 0, which would hide a "spend your last one" lesson from the seats it is for.
 Rewording the definition raised exact agreement but did not fix the comparison the stage filter makes.
 The record's conclusion is to compute the count from the record once each observation names its
-decision (the decision tags, now in [`../sampled_human_review/`](../sampled_human_review/report.md), Instrument 4).
+decision (the decision tags, now in [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md), the decision-tag read).
 
 **Limits.** The check covers one field. The other stored numbers have only had internal-consistency
 bounds (for example `|distance_to_parity| ≤ players_alive`, passed 100% on v6_1 in July), which rule
@@ -849,12 +849,12 @@ stored, and which one synthesis reads is a setting (`TickConfig.synth_outcome`).
    lopsided: in July, villagers marked themselves `safe` 2,164 times against 134 `exposed`.
 2. **⚠️ Stored numerics beyond uses left have no truth check.** A stored lesson has no single board, so
    only consistency bounds apply. The planned fix computes stored counts from each observation's tagged
-   decision (§5c; the decision tags are in [`../sampled_human_review/`](../sampled_human_review/report.md)).
+   decision (§5c; the decision tags are in [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md)).
 3. **The verdict halo is measured against an unvalidated grade** (§5d). It shows the verdict follows the
    win; it cannot say the grade is the right measure of a good decision.
 4. **The model-written prose is not audited.** The situation text on both sides and the observation's
    end-of-game rationale (`impact_on_final_game_outcome`) are read only by the sampled reads catalogued
-   in [`../sampled_human_review/`](../sampled_human_review/report.md) (for example, the 40-game store read
+   in [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md) (for example, the 40-game store read
    found 37 of 605 points stating a wrong rule). De-halo rewrites the verdict word, not that rationale.
 
 ---

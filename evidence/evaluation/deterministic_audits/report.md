@@ -52,15 +52,17 @@ experiment's own setup.
 | Memory search filters, recomputed | When a player asks memory for help, a model fills fields (players alive, bullets left, swing vote) that search filters lessons by; code recomputes each from the game state | Players alive right 97% of the time, bullets left 16%; these fields are now computed by code | ✅ (record, July 2026) | 3 | log §5a–b |
 | Stored uses-left count, recomputed | Observations written after a game state how many uses of a limited ability were left; code replays the game's nights to get the true count | 84% exact (196 observations); 89% after the definition was reworded (527) | 🟡 | 3 | log §5c |
 | Verdict halo | Whether the extraction model's verdict on a play (positive or negative) follows the decision's grade or just whether the player's side won | The verdict follows the win about twice as strongly as the grade (1,472 observations) | 🟡 (the grade itself is not validated) | 3 | log §5d |
-| Vote accuracy | Whether each vote named a real threat (a wolf or the lone killer), from the true roles | The score used for every replayed vote | ✅ as a count | 3 | [metrics](../metrics/report.md) B3 |
+| Vote accuracy | Whether each vote named a real threat (a wolf or the lone killer), from the true roles | The score used for every replayed vote | ✅ as a count | 3 | [metrics log](../metrics/experiment_log.md) B3 |
+| Ten-seat metrics and decision grades | Each game's scores rebuilt from its night record, and each decision graded good, neutral or bad by the owner's table | Exact counts; hand-checked on one pilot game; grades reached 1,711 of 2,277 observations | ⚠️ (grades never tested against win as a whole) | 3 | [metrics](../metrics/report.md) §6 |
+| Check of each score against winning (ten-seat) | Whether each score goes with its side's win, over 78 ten-seat games, within batch and with memory off | Lynch scores, power roles lost at night and wolf blending carry over; the healer save rate does not; most new roles' scores need more games | 🟡 (one run, mixed models) | — | [metrics](../metrics/report.md) §4 |
 | Duplicate-filter scoring | Whether memory's duplicate filter kept, dropped or merged each lesson the way a human labeller did | The best setup matched 99 of 111 human decisions (89%) | 🟡 | 3 | [labeling](../labeling/dedup.md) |
 | Factual-error pre-screen | Code finds every statement that mentions a dead player, a role whose holders are all dead, or a player count, so a model reader can check those | Passed 2,461 of 7,846 statements to the reader; about 3% of public messages had an error | ✅ within its scope | 4 | [factual_errors](../factual_errors/report.md), Case 1 |
-| Memory-setup guard ("arm guard") | In a memory-on vs memory-off experiment, each side really ran the memory setup it declared; the run stops if not | Added after a run gave memory to every side by mistake; held in the July run | ✅ | 5 | [methodology](../methodology/report.md) |
-| Run-stamp check ("fingerprint") | Model, backend, prompt version and commit do not change partway through a learning-loop run | Stops the run on any change | ✅ | 5 | [methodology](../methodology/report.md) |
+| Memory-setup guard ("arm guard") | In a memory-on vs memory-off experiment, each side really ran the memory setup it declared; the run stops if not | Added after a run gave memory to every side by mistake; held in the July run | ✅ | 5 | [experimental controls](../experimental_controls/report.md) |
+| Run-stamp check ("fingerprint") | Model, backend, prompt version and commit do not change partway through a learning-loop run | Stops the run on any change | ✅ | 5 | [experimental controls](../experimental_controls/report.md) |
 | Embedding-model check | The embedding model behind memory search has not changed without notice: 12 fixed text pairs must score as pinned | Never seen to fire; runs in batches, not on the live site | ✅ | 5 | log §4 |
-| Same-deal test ("seedability") | A game id always deals the same roles to the same seats, so both sides of an experiment can play the same deals | Passes | ✅ | 5 | [methodology](../methodology/report.md) |
-| Prompt snapshot ("prompt golden") | The day-discussion prompt renders exactly as stored, so it cannot change by accident | Passes; covers this one prompt only | 🟡 | 5 | [methodology](../methodology/report.md) |
-| New-model format checks | A candidate model returns replies the game can parse, on short test prompts and on real turns | Caught DeepSeek V4 Pro: passed 27 of 27 test prompts, answered 3 of 6 real turns in plain text | 🟡 | 5 | [model_admission](../model_admission/report.md) §1 |
+| Same-deal test ("seedability") | A game id always deals the same roles to the same seats, so both sides of an experiment can play the same deals | Passes | ✅ | 5 | [experimental controls](../experimental_controls/report.md) |
+| Prompt snapshot ("prompt golden") | The day-discussion prompt renders exactly as stored, so it cannot change by accident | Passes; covers this one prompt only | 🟡 | 5 | [experimental controls](../experimental_controls/report.md) |
+| New-model format checks | A candidate model returns replies the game can parse, on short test prompts and on real turns | Caught DeepSeek V4 Pro: passed 27 of 27 test prompts, answered 3 of 6 real turns in plain text | 🟡 | 5 | [model_admission](../model_admission/report.md) §2 |
 | Speaking-order audit (nine-seat) | From saved games: did the rule that picks who speaks next keep any role from talking | No; investigators with news spoke before the vote on 58 of 58 days | 🟡 | 3 | log §3a |
 | Failed-attack audit (nine-seat) | From saved games: when an attack on the night-immune serial killer failed, did the attacker act on it the next day | Only when told: the vigilante did on 6 of 8 and 8 of 9; the wolves, not told, ignored it in 45 of 66 notes. Wolves are now told | 🟡 | 3 | log §3b |
 | Do-or-die turn flags (nine-seat) | A rule marking critical turns (wolves near parity, four or fewer alive) to point the lesson writer at them | Did not help: 3 of 12 turns captured with or without the flags | ⚠️ | — | log §3c |
@@ -234,7 +236,7 @@ check never runs on the live site.
 
 **Code and data.** `evaluation/src/loop/invariants.py`, `Agents/run_fingerprint.py`,
 `evaluation/src/audits/embedding_canary.py`, `tests/engine/test_seedability.py`; detail in
-[methodology](../methodology/report.md) and [model_admission](../model_admission/report.md).
+[experimental controls](../experimental_controls/report.md) and [model_admission](../model_admission/report.md).
 
 ---
 
@@ -256,4 +258,5 @@ Also open, with no plan: a check that the memory store served matches the player
 wrote it to look for.
 
 *Written 2026-10-23 and checked against the working tree on `feature-frontend-v1`. Which commit each
-count ran on, and which files are not yet in git, is in [the source map](../source_map.md).*
+count ran on is in the full evaluation ledger ([experiment log](../experiment_log.md), Part 2); which files are not
+in git, in [the source map](../source_map.md).*

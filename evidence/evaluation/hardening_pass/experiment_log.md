@@ -101,7 +101,7 @@ Wolf day-offense being unmeasured by a deterministic proxy is a *finding*, not a
 clean lead-vs-blend build was run and was null, with a strong datum (109/169 mislynch days had no
 wolf among the accusers — town mislynches itself), and the tagger is the validated instrument for
 wolf discussion skill. The sampled-human-review gap was confirmed exactly as documented in
-[`../sampled_human_review/report.md`](../sampled_human_review/report.md); its existing plan is
+[`../labeling/sampled_reads/report.md`](../labeling/sampled_reads/report.md); its existing plan is
 sound and is executed in this pass rather than redesigned.
 
 ### §2.6 The resulting plan
@@ -312,7 +312,7 @@ second LLM call per turn; flagged in code.
 ## §7 · Phase 3 (build half) — the diagnosis sampler exists (done 2026-07-02)
 
 Rung ② of the modality ladder gets its apparatus (§2.5; spec = the pre-existing
-[`../sampled_human_review/plan.md`](../sampled_human_review/plan.md)). Built at $0; suite
+[`../labeling/sampled_reads/plan.md`](../labeling/sampled_reads/plan.md)). Built at $0; suite
 431 → 445 passed (14 new tests). The spot-check that *uses* it (the enum-kappa half of the §5
 decision rule) needs ~2h of human labeling and stays pending.
 
@@ -331,7 +331,7 @@ review packet.
 
 **Smoke result (real data, read-only).** A 9-case cohort from `ab_nh_town`: 3 outlier / 3
 leverage / 4 stratified; roles and phases mixed; byte-identical strata across two same-seed runs.
-Artifacts under [`../sampled_human_review/sampler_smoke/`](../sampled_human_review/sampler_smoke/).
+Artifacts under [`../labeling/sampled_reads/sampler_smoke/`](../labeling/sampled_reads/sampler_smoke/).
 
 **One deviation from the spec, disclosed.** The plan's "flag every `is_swing` case" anchor
 selected 126/143 cases on real data — late game is structurally pivotal, so an all-swing anchor
@@ -347,7 +347,7 @@ refinement forced by data, not a scope change.
 
 - Review inputs: [`../source_map.md`](../source_map.md) (reliability ledger + 06-28 verify-pass),
   [`../report.md`](../report.md), [`../../memory_system/store_progression.md`](../../memory_system/store_progression.md),
-  the per-modality spokes under `../llm_judge/` · `../labeling/` · `../sampled_human_review/`.
+  the per-modality spokes under `../llm_judge/` · `../labeling/` · `../labeling/sampled_reads/`.
 - Code read at `4b1449e`: `evaluation/src/experiments/decision_replay.py`,
   `evaluation/src/replay/*`, `evaluation/src/loop/{decision_scoring,discussion_tagger,credit,measure}.py`,
   `evaluation/src/judges/retrieval.py`, `Agents/compute_metrics.py`, `Agents/schemas/memory.py`,

@@ -107,7 +107,7 @@ The table lists every method by the step it serves:
 | Step | Method | What it produced | Trust | Detail |
 |---|---|---|---|---|
 | 1. Find | The census (July 2026, nine-seat) | The only error rate: about 3% of public messages (68 of 2,292), 4% of private notes | ✅ code screen · 🟡 model reader | log §1 |
-| 1. Find | Playing games as a human, and reading games against a rubric (October 2026) | Specific failures from real games, sorted by kind for ten games; no rate | 🟡 (rated in [sampled_human_review](../sampled_human_review/report.md)) | log §6 |
+| 1. Find | Playing games as a human, and reading games against a rubric (October 2026) | Specific failures from real games, sorted by kind for ten games; no rate | 🟡 (rated in [sampled reads](../labeling/sampled_reads/report.md)) | log §6 |
 | 2. Freeze | The nine-seat test set (built 2026-10-03) | 129 cases: turns that still fail, controls, a random slice, pinned failures | 🟡 | log §3 |
 | 2. Freeze | Ten-seat pinned cases (October 2026) | Failing turns from ten-seat games, each with a written expectation | 🟡 | log §6 |
 | 3. Diagnose | Reading each failing turn's input by hand | The cause of most errors: whether the fact was given, and how it was worded | 🟡 (one reader) | step 3 |
@@ -203,7 +203,7 @@ an ability can see, and the summariser distorting plain claims
 **How far to trust it.** Playing finds the errors that cost the most, but only in the games that were
 played, and only what caught the owner's eye. Ten audited games are too few for a rate, and the readers
 did not always keep a fair hunch ("they helped catch a killer, so I trust them more") apart from a wrong
-proof. The reads are rated in [sampled_human_review](../sampled_human_review/report.md).
+proof. The reads are rated in [sampled reads](../labeling/sampled_reads/report.md).
 
 ### How each symptom is found and judged
 
@@ -397,4 +397,4 @@ its counts are floors. Everything since asks a narrower question, whether a chan
 failure, and answers it on replayed turns read by hand.
 
 *Written 2026-10-23 and checked against the records named above. Which commit and judge each run used is
-in the detailed record and [the source map](../source_map.md).*
+in the detailed record and the full evaluation ledger ([experiment log](../experiment_log.md), Part 2).*

@@ -1,387 +1,306 @@
-# Evaluation: what we measure, how, and how far to trust it
+# Evaluation: how the project checks its agents, and how far to trust each check
 
-*Rewritten 2026-10-23 as the hub for all evaluation (was: the memory pipeline only, July 2026).*
+**The system being checked.** Werewolf, a hidden-role game, played by AI agents. Around the players the
+project built a memory of lessons from past games, a deduction engine that writes certain conclusions into
+each player's prompt, a catalogue of models the players can run on, and a public website.
 
-**What this page is.** The hub for evaluation. It explains how every part of the project is checked,
-and how far each of those measurements can be trusted.
+**What this page is.** The overview of the project's evaluation: what is evaluated, the methods used, how
+to choose between them, what the methods caught about themselves, and how far each can be trusted. It is
+meant to be read on its own. Each method has its own page with the detail, linked below. Two questions are
+kept apart throughout:
+1. **Does a part work?** (does memory improve play, does a prompt fix help) That is answered in the design
+   folders named in the first table.
+2. **Is the check that judged it any good?** That is answered here and in the method pages.
 
-**The system being checked.** Werewolf, a hidden-role game, played by AI agents. The project adds a
-memory of lessons from past games, and a deduction engine that writes conclusions into each player's
-prompt. It also has a catalogue of models the players can run on, and a public website.
+The earlier version of this page, with the dated memory-campaign section and the full instrument ledger, is
+kept whole in the [experiment log](experiment_log.md). Records that live outside git, and the data every
+method reads, are in [the source map](source_map.md).
 
-**Two questions this page keeps apart.**
+## In short
 
-1. **Does a part work?** For example, does memory improve play? That is answered in the design
-   folders, which the first table below names for each subject.
-2. **Is the check that judged it any good?** That is answered here.
+- **Seven methods, cheapest first.** Code checks with no model; LLM judges; labelling by readers (one-off
+  sampled reads and reusable golden sets); tests of a change at three scopes (one frozen turn, one day,
+  whole games); scores computed from the game record; and the controls that keep every comparison fair.
+  Two pipelines are built from them: the factual-error checks and model admission.
+- **The rule that runs through all of it:** use code wherever the answer can be computed from the game
+  record or the rules, and a reader only for meaning, with readers anchored to a person.
+- **The apparatus caught its own errors, repeatedly**: a drifted baseline, a misconfigured memory arm, leak
+  checkers that checked nothing, a thinking level that produced no reasoning, a test that let a replayed
+  vote see its own result.
+- **What holds:** code checks, exact counts and scores against the true roles, and the nine-seat gold sets.
+  **What is directional only:** model judges and model readers, none checked against a person on the
+  ten-seat game.
+- **The largest gaps:** no person's check on any ten-seat label set, no factual-error rate on the ten-seat
+  game, no CI, and the nightly leak audit not installed.
 
-**Where things live.**
+## What is evaluated
 
-- Each family of checks has its own report. Every one is linked in the status board further down.
-- [The ledger (`source_map.md`)](source_map.md) lists every check with its trust mark, where its code
-  and its records are, what has changed since July 2026, and the dated results of checking each
-  report against the code.
-- The frozen cases are recorded separately, in [the tracing report](../tracing/report.md). These are
-  saved game moments that the checks replay.
+Six subjects. Memory was the first, and since the memory research closed in July 2026 most evaluation work
+has been on the other five.
 
-## What is evaluated, and with what
-
-Six subjects are evaluated. Memory is one of them, and since the memory research closed in July 2026
-most evaluation work has been on the other five.
-
-| Subject | The question | Main instruments | Design verdict lives in |
+| Subject | The question | Main methods | Design verdict lives in |
 |---|---|---|---|
-| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | paired game A/B, decision-replay screen, the LLM-free loop measure and credit validators, memory-component judges, golden labels, field audits | [`memory_system/`](../memory_system/store_progression.md), [`execution_plan/report.md`](../execution_plan/report.md), [`credit/report.md`](../credit/report.md) |
-| **Play quality** | do prompt, rule and card changes make the agents argue, vote and talk better | frozen-turn replays, blind packet reads, ten-seat metrics, read Brier score, vote-target counts, same-deal game pairs, balance batches | [`game_play_enhancement/discussion_evidence.md`](../game_play_enhancement/discussion_evidence.md), [`sequential_discussion/`](../sequential_discussion/report.md) |
-| **Factual errors** | how often agents state something the game record contradicts, and does a change reduce it | the census (code screen plus model reader), the hallucination bench, pinned-case replays, the summary-claim replay | [`generation_prompt/`](../generation_prompt/validation_plan.md), `discussion_evidence.md` §6 and §8 |
-| **The deduction engine** | is every line it injects true in every legal game; does it help the seat | soundness tests over random legal nights, a brute-force oracle, acceptance cases, solver and block censuses, injection and placement replays | [`reasoning_failures/`](../reasoning_failures/report.md) |
-| **Models and cost** | can a candidate model play the game's turns; is it worse than the default; what does a game cost | admission probes, bench arms against the default, a thinking-budget replay, seat-model games, cost and cache accounting | [`caching/report.md`](../caching/report.md), [`model_selection/report.md`](../model_selection/report.md), `reasoning_failures/experiment_log.md` |
-| **The information boundary** | does any prompt carry another seat's private information | batch leak checks, payload leak tests, the served-game leak audit, information-fidelity pins | [`agent_boundaries/report.md`](../agent_boundaries/report.md) |
+| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | whole-game A/Bs, the decision replay, the loop's credit validators, memory-component judges, golden sets, field audits | [`memory_system/`](../memory_system/store_progression.md), [`execution_plan/`](../execution_plan/report.md), [`credit/`](../credit/report.md) |
+| **Play quality** | do prompt, rule and card changes make the agents argue, vote and talk better | turn replays, blind sampled reads, ten-seat metrics, the read Brier score, vote-target counts, same-deal games, balance batches | [`game_play_enhancement/`](../game_play_enhancement/report.md), [`sequential_discussion/`](../sequential_discussion/report.md) |
+| **Factual errors** | how often agents state something the record contradicts, and does a change reduce it | the census (code screen plus model reader), the factual-error test sets, pinned-case replays | [`game_play_enhancement/`](../game_play_enhancement/report.md) (problem 1), [`generation_prompt/`](../generation_prompt/validation_plan.md) |
+| **The deduction engine** | is every line it writes true in every legal game; does it help the seat | soundness tests over random legal nights, a brute-force oracle, acceptance cases, censuses, injection and placement replays | [`reasoning_failures/`](../reasoning_failures/report.md) |
+| **Models and cost** | can a candidate model play the game's turns; is it worse than the current one; what does a game cost | test prompts, replays against the current model, real games, cost and cache accounting | [`caching/`](../caching/report.md), [`model_selection/`](../model_selection/report.md) |
+| **The information boundary** | does any prompt carry another seat's private information | batch leak checks, payload leak tests, the served-game leak audit, fidelity pins | [`agent_boundaries/`](../agent_boundaries/report.md) |
 
-A seventh layer, **methodology**, serves all six: drift guards, the arm guard, the runtime fingerprint,
-seedability, the power gate and the prompt golden.
+**The game changed under the methods.** Through July 2026 the game had nine seats, was played by Gemini
+flash-lite, and evaluation centred on memory. Since 2026-10-09 the live game has ten seats drawn from a
+twelve-role cast, seats default to Claude Haiku 5.5, and memory is a per-game choice served from a Postgres
+store. Most memory results describe the nine-seat game; most play, factual-error and deduction results
+describe the ten-seat game. The status board says which.
 
-**The game changed under the apparatus.** Through July 2026 the game had nine seats, was played by
-Gemini flash-lite, and evaluation centred on memory. Since 2026-10-09 the live game has ten seats drawn
-from a twelve-role cast. Seats default to Claude Haiku 5.5 (`DEFAULT_GAME_MODEL`,
-`Agents/llm_factory/accessors.py`). Memory is off unless the player switches it on for a game
-(`server/game/run_config.py`), and lessons come from a Postgres store
-(`Agents/memory/persistence/postgres.py`). Most memory instruments describe the nine-seat game; most
-play-quality, factual-error and deduction instruments describe the ten-seat game. The status board says
-which.
+## The methods
 
-## The one distinction that organizes everything
+### Judging one output, cheapest first
 
-Every evidence folder braids two threads. This chapter follows one of them.
+A single output (a line, a vote, a summary, a stored lesson) is judged by one or more of these.
 
-| Level | Question | A better one means | Home |
-|------|----------|--------------------|------|
-| **L0 — the design** | does the memory, the deduction engine or a prompt change meet its goal? | a better *design* | the design folders (table above) |
-| **L1 — the apparatus** | how do we *measure* whether it meets its goal? | a better *measurement* | **here** |
-| **L2 — trust** | is that measurement itself any good: anchored, calibrated, low-noise? | a *more trustworthy* measurement | **here** ([`source_map.md`](source_map.md) marks) |
+0. **Code checks with no model** ([deterministic_audits](deterministic_audits/report.md)). Pass-or-fail
+   checks and exact counts over prompts, game records and the engine: leak checks after every batch game,
+   the deduction engine tested against a brute-force oracle over 20,000 random legal nights per test,
+   model-written numbers recomputed from the board. Free and noiseless; they find only what a rule someone
+   wrote can see. The information boundary and the deduction engine's soundness rest entirely on them.
+1. **LLM judges** ([llm_judge](llm_judge/report.md)). One model scores another against a rubric: the
+   factual-error readers, the in-game classifiers (the echo gate, the opening filter, the speakers'
+   accusation tags), labelling at scale, the memory-era 1–5 rubric judges. The page explains how the judges
+   were built: decide whether a model is the right tool, choose the kind of judging, design the rubric,
+   validate it against a golden set, a stronger model or a real outcome. Only the factual-error judges were
+   checked against a person, in the nine-seat Gemini era.
+2. **Labelling by readers** ([labeling](labeling/report.md)). Readers label items against a rubric, for two
+   uses: **golden sets**, kept as a reference a cheaper check is scored against, and **sampled reads**
+   ([sampled_reads](labeling/sampled_reads/report.md)), made once to decide between two versions. Both use
+   the same techniques: draw items blind to the outcome, hide the source behind a key file, fix the rubric
+   and the bar first, measure agreement, anchor to a person. The gold sets (labelled or checked by a
+   person) are nine-seat, May–July 2026; every ten-seat set is silver (model readers) or a hand-written
+   expectation. The code to score model labels against a person's was built on 2026-10-23, and owner-check
+   packets for three model sources wait on the owner's labels.
+3. **Scales and scores** ([scoring](scoring/report.md)). How a label is recorded (binary, categorical,
+   graded, pairwise, probability), how a judge is scored against a golden set (precision and recall, kappa,
+   NDCG, Brier), and the paired tests that compare two versions.
 
-So a spoke catalogues an **instrument** and rates **its** reliability; it does not re-argue what the
-design found. Where a measurement is thin or uncalibrated, **that absence is itself a finding.** It is
-why the July wolf-memory null was read as measurement-limited rather than as a ceiling, and why no
-ten-seat play score can yet be called validated.
-
-## What the apparatus is good for
-
-The strongest thing to say about this evaluation system is not any single score. It is that **the
-apparatus repeatedly caught its own errors.**
-
-In June and July 2026 (nine-seat, memory):
-- It discarded a baseline after detecting an epoch shift between runs (Fisher p=0.0028), then made a
-  same-epoch fresh baseline mandatory.
-- It caught a config slip that had let the memory arm run every faction instead of the town only, and
-  turned the check into an arm guard that now fails the run before spending.
-- It retracted an inflated engagement metric (about 0.70 to 0.55) once it found the model had been
-  silently skipping a third of its inputs.
-- It re-ran an investigator proxy that had come out significantly wrong-sign (+0.38, p=0.039, n=30) at
-  six times the sample, and found the sign was small-sample noise (+0.15, not significant, N=180).
-- It flagged both of its own June paid loop runs as invalid before they could be reported.
-- A $0 audit of model-filled memory fields fired its own pre-registered re-open condition: a field the
-  retrieval gate keyed on was worse than a constant (0.606 against 0.827 for always-False).
-- It refuted part of its own design: a canary showed that pairing arms by deal buys almost no variance
-  reduction, so the same-epoch baseline was the load-bearing part all along.
-
-In October 2026 (ten-seat, play, factual errors, models):
-- Three leak checkers were found to have been no-ops on every live game, because the batch runner never
-  passed them their inputs. That was found on 2026-10-14 and closed the same day.
-- A probe found that every memory game had run at a thinking level that produced zero reasoning tokens.
-  The runtime fingerprints of 680 records (398 June A/B, 222 loop, 60 endpoint) confirmed it. Both arms
-  ran the same way, so the comparisons stand, but every memory verdict is about players that do not
-  reason first.
-- The bench's first build let a replayed vote turn see its own result. Reading the controls by hand
-  caught it before v1, and showed the July ship test had the same leak.
-- The admission run's short probes passed DeepSeek V4 Pro 27 of 27, but its real turns came back in
-  prose 3 times in 6. The runner now counts real-turn failures in its recommendation.
-- A replay screen read an 8-of-10 against 1-of-10 split on an identical prompt as noise, then got a
-  stable rate (about one in three) only by shuffling every arm into one schedule at n=25.
-- Re-embedding a 232-case calibration set showed that dedup thresholds re-derived for a new embedding
-  model would auto-discard two labelled keeps.
-
-Self-correction at this rate, across subjects, is the best evidence the harness is real rather than
-decorative.
-
-The second thing: **the apparatus knows which of its instruments to trust.** The trustworthy numbers are
-the ones no model decides. These are the code checks (the leak checks, the deduction oracle, the arm
-guard, seedability, the embedding canary), exact counts against the game record (vote targets, winners,
-structural counts, the LLM-free loop measure), and judgments anchored to people (the dedup golden keys,
-the census reader's hand check, hand-written expectations, the deduction acceptance cases). The
-nine-seat town proxies, validated against faction win at |r|≈0.6, belong here too, for the nine-seat
-game only. Uncalibrated LLM judges and Claude model readers are treated as directional smoke alarms,
-not gauges. Knowing the difference is the whole point of the L2 column.
-
-## The ladder: four ways we judge, cheapest first
-
-A single output (a line, a vote, a summary, a stored lesson) is judged on one or more of four rungs.
-
-0. **Code checks with no model** → [`deterministic_audits/report.md`](deterministic_audits/report.md).
-   Pass/fail checks or exact counts over prompts, game records and the engine. They cost nothing and have
-   no noise. Their limit is scope: a code check finds only a violation of a rule someone wrote down. The
-   information boundary and the deduction engine's soundness rest entirely on this rung, because no judge
-   can see across thousands of prompts or enumerate every legal deal. Two code checks are homed with
-   their subject: the census screen (in the bench spoke) and the dedup golden scorers (in labeling).
-1. **LLM judge** → [`llm_judge/report.md`](llm_judge/report.md). One model scores another against a
-   rubric. Cheap and fast, and most judges here are uncalibrated. The exceptions are the factual-error
-   judges. The census reader was hand-checked in July: all 90 public-message positives were read, and
-   sampled precision on private notes was about 0.8. The bench reader had 10 of 12 checked verdicts
-   upheld. The golden-expectation judge works from hand-written expectations whose verdicts were read by
-   hand. Since 2026-10-12 every judge defaults to Claude Haiku 5.5, the same model the players use.
-2. **Sampled or blind read** → [`sampled_human_review/report.md`](sampled_human_review/report.md). Cases
-   are drawn and read against a rubric. In July this was the weakest-built rung: no case sampler, no
-   durable record. A sampler was built on 2026-07-02 and has never been used for a real review. Since
-   October the blind packet read (seeded packets, a hidden key, verdict files, code that unblinds) has
-   been the main play-quality instrument. Its readers are Claude subagents, not people. Each item gets
-   one reader, agreement between readers has never been measured, and no rubric has been checked against
-   the owner's labels.
-3. **Golden labels** → [`labeling/report.md`](labeling/report.md), which lists every golden set in the
-   project and who labelled it. The gold sets (the dedup decision sets, the census reader's
-   23-case set, the owner's census read) are all nine-seat, May to July 2026. Every ten-seat reference
-   set is model-read or a hand-written expectation, with no person's check. The labelling pipeline
-   produces labels but has no code that measures a panel against a human anchor.
-
-Rungs ①–③ form a calibration chain: golden labels can calibrate the judges and readers below them. In
-practice the links are mostly unconnected. The application judge's calibration was designed and never
-run, and calibrating the bench judge and the blind readers against the owner is pending. Rung 0 sits
-below the chain: it needs no calibration, because it only answers questions that can be written as
-rules.
-
-Above the rungs sits the **A/B and instrument layer** that decides "did it work" and keeps the
-measurement honest: paired games, frozen-turn replays, play metrics, the hallucination bench, the
-memory-field audits, the v7 loop and its credit, model admission, and methodology.
-
-```
-        ┌──────────────────────────────────────────────────────────────────┐
- above  │ DECIDING + INSTRUMENT LAYER                                       │
- rungs  │ paired games · frozen-turn replays · play metrics · the bench     │
-        │ memory-field audits · v7 loop + credit · model admission          │
-        │ methodology (drift guards, arm guard, seedability, power gate)    │
-        └──────────────────────────────────────────────────────────────────┘
- subjects ─── memory · play quality · factual errors · deduction engine
-              · models and cost · information boundary
- how one output is judged, cheapest first ─────────────────────────────────
-   ⓪ code check (no model; exact; only what is encoded)
-   → ① LLM judge (cheap; mostly uncalibrated)
-   → ② sampled or blind read (Claude readers; one per item)
-   → ③ golden labels (people; can calibrate ① and ②)
-```
-
-## Choosing the instrument: two rules the record supports
-
-*Added 2026-10-23. Both rules are drawn from instruments described in the spokes; each example names
-its source.*
-
-**1. Code checks what has a ground truth it can compute; meaning needs a reader.** A code check (rung 0)
-is reliable when the answer is computable from the game state or drawn from a closed vocabulary. Five
-kinds recur here:
-
-| Kind | Example | Source |
-|---|---|---|
-| A structured field against the truth | the vote target, the night pick or the claimed role against the true roles; the legality of a move | [`metrics/`](metrics/report.md), [`replay_screens/`](replay_screens/report.md) |
-| A forbidden term in text | a seat id written into a lesson, counted by script; another seat's private information in a prompt | [`deterministic_audits/`](deterministic_audits/report.md); `extraction/post_game/report.md` |
-| A number the model wrote, recomputed from the board | players alive was exact in 97% of 6,099 cases; the Vigilante's shots left in 16% of 1,109 | [`deterministic_audits/`](deterministic_audits/report.md) (case 3) |
-| A structured claim against the engine's record | claims in the ledger checked against announced deaths, saves and the cast | [`deterministic_audits/`](deterministic_audits/report.md) |
-| Format and events | schema validity, length caps, retries, timeouts, the rescue model firing | [`model_admission/`](model_admission/report.md) |
-
-Outside these, code loses. A keyword count of meaning said 32 summaries named a quiet player, and
-reading the matches found 4 of 124 (below, failure modes). A regex agreed with the model's addressee
-tags on 63% of 30 cases, so tagging went to the model
-(`../cross_project_synthesis/deterministic_where_reliable.md`). The prose leak pass is substring
-matching, so a paraphrased leak passes ([`deterministic_audits/`](deterministic_audits/report.md)).
-
-**2. When a model screens for a human, set it to catch too much.** A screener makes two errors: a false
-alarm (it flags something fine) and a miss (it passes something wrong). When a person checks every
-flag, a false alarm costs seconds and a miss is never seen, so the screen is set for recall over
-precision. The factual-error census is the worked example
-([`factual_errors/`](factual_errors/report.md)): code first flags every unit that names a
-dead player, a dead role or a count, so nothing in that scope is skipped; a cheap model reads each flag
-as the recall layer; a stronger model re-reads its positives as the precision layer; the owner checks
-the result. A sample of the precision layer's rejections is read too, because those are the one place
-misses hide: 2 to 3 of 15 were real errors, so the published counts are floors. The cascade's numbers are
-only as good as its readers, which is why calibrating them against the owner's labels is on the
-pending list.
-
-## Status board
-
-Marks: ✅ sound · 🟡 usable with caveats · ⚠️ smoke-test only · ⏸ design-only · ⛔ underbuilt. Each mark
-is the report's own verdict. "9" and "10" mark the nine-seat and ten-seat games. Code and record paths
-for every row are in [`source_map.md`](source_map.md).
-
-### Judging one output
-
-The ladder above, one report per rung.
-
-| Report | Subject | What it covers | Trust |
-|---|---|---|---|
-| [**Deterministic audits**](deterministic_audits/report.md) (rung 0) | information boundary · deduction engine · memory · play quality | batch leak checks on every `run_batch` game; payload leak tests; served-game leak audit; fidelity pins; deduction soundness over 20,000 random legal nights per test and a brute-force oracle; 4 acceptance cases; solver and block censuses; scheduler and whiff record audits (9); pivotal-turn flags (9); embedding canary; model-written memory fields recomputed from the record: search filters (9), stored uses-left count and verdict halo (10) | ✅ leak checks, payload tests, fidelity pins (narrow), deduction soundness and oracle, solver census (one run), canary (batch runner only) · 🟡 served-game audit (built and tested; not running, cron found not installed 2026-10-23), acceptance cases (the only coverage test), block census, record audits · 🟡 stored uses-left count, verdict halo (against an unvalidated grade) · ✅ search-filter recompute, as a record · ⏸ category labels never validated · ⚠️ pivotal-turn flags |
-| [**LLM judges**](llm_judge/report.md) (rung ①); notes: [agent decision](llm_judge/agent_decision.md), [extraction](llm_judge/extraction.md), [day summary](llm_judge/day_summary.md), [discussion tagger (retired)](llm_judge/discussion_tagger.md) | memory · play quality · factual errors | every judge in the project by kind: narrow judges against given facts (census reader, expectation judge), in-game judges (echo gate, opening filter, the speakers' accusation tags), labelling at scale (decision tagger, de-halo, point dedup), the memory-era 1–5 rubric judges; what each was checked against; the top-ups for today's game; [detailed record](llm_judge/experiment_log.md) | 🟡 factual-error judges (person-checked, nine-seat, Gemini era) · 🟡 echo gate (blind model readers) · ⚠️ opening filter and accusation tags · ⚠️ memory-era rubric judges (records; none checked against people) |
-| [**Sampled and blind reads**](sampled_human_review/report.md) (rung ②) | play quality · memory | outcome-blind case sampler (9); the blind packet protocol, used by seven October screens (10); Phase 3 hand-read games; June discussion-quality gate; v8 retrieval and store reads; decision-tag read (10); credit attribution spot-check | 🟡 blind packet reads (no longer underbuilt; one Claude reader per item, no agreement or owner calibration) · 🟡 failure modes / ⚠️ counts for the hand reads · 🟡 v8 reads · ✅ decision-tag read (98 of 102, above a 90% bar set beforehand; model readers) · ⚠️ spot-check (n=15) · case sampler built, tested, never used (unrated) |
-| [**Golden labels**](labeling/report.md) (rung ③); [dedup scorers](labeling/dedup.md) | memory · play quality · factual errors | every golden set in the project, gold or silver, by how it was labelled (a person, a model panel with review, models only, a written expectation); the multi-model labelling pipeline; dedup golden scorers | 🟡 pipeline (calibration half not built) · 🟡 dedup decision scorer (human keys; scores predate v6 and today's models) · 🟡 prefilter sets (65 human labels; the 232 are model labels) · ⚠️ tell-detector cases and readers' duplicate groups (model labels) |
-| [**Scales and scores**](scoring/report.md) | all | the scale of one label (binary, categorical, graded, 1–5, pairwise, probability); how a judge is scored against a golden set (precision and recall, kappa, NDCG, Brier); the paired tests for comparing versions | 🟡 standard scores built and used · ⚠️ no score of a 1–5 judge against people |
+The rungs form a calibration chain: a person's labels calibrate the judges and readers, which then label at
+scale. In practice the links are mostly unconnected; the first owner checks are the step that connects them.
+Code checks sit below the chain: they answer only questions written as rules, so they need no calibration.
 
 ### Testing a change
 
-How a change is compared with what it replaces.
+4. **Evaluation scopes** ([evaluation_scopes](evaluation_scopes/report.md)). The same controlled experiment
+   at three scopes, like unit, integration and end-to-end tests:
+   - **[One frozen turn](evaluation_scopes/turn/report.md)**: a recorded turn's whole input rebuilt exactly,
+     each version answering it many times. Holding everything else fixed makes an effect visible from tens
+     of samples, at under $0.01 to about $0.25 a screen. Fourteen screens, June–October 2026.
+   - **One day**: replay one day live with the earlier days frozen. Designed in July 2026, not built.
+   - **[Whole games](evaluation_scopes/game/report.md)**: the same deals played with and without the
+     change. The only way to see outcomes and effects that cascade across days; noisy (30 games a side show
+     only a win gap of about 35 points).
+5. **Play metrics** ([metrics](metrics/report.md)). Scores code computes from a game record: decisions
+   graded by the rules against the true roles, then checked against each side's win. On the nine-seat game
+   the check chose the scores (48 tried, 11 kept); on the ten-seat game the rules define a good move and the
+   check confirms or questions it (78 games, 2026-10-24).
+6. **Experimental controls** ([experimental_controls](experimental_controls/report.md)). What keeps any A/B
+   fair: both sides in one time window, one change per side, the same judge for both, a runtime fingerprint
+   that stops a run if anything underneath changes, the arm guard for memory runs, a power check before a
+   paid run.
 
-| Report | Subject | What it covers | Trust |
+### Pipelines built from these
+
+7. **Factual errors** ([factual_errors](factual_errors/report.md)). Find errors in played games, freeze them
+   as test cases, measure a rate with the census (a code screen, then a cheap reader, then a stronger
+   re-read of its positives, then the owner), and check every fix on the test set. About 3% of public
+   messages had an error in July (nine-seat); the problem side, what was tried and what worked, is in
+   [the gameplay report](../game_play_enhancement/report.md).
+8. **Model admission** ([model_admission](model_admission/report.md)). Five questions of a model migration:
+   quality (replays against the current model), integration (can the code use it), cost and speed,
+   reliability (rate limits, the rescue model, drift), rollout and records. Since 2026-10-24 one command
+   runs the checks for a candidate with pass criteria fixed beforehand; it has not yet been run on one.
+
+```
+ how one output is judged, cheapest first
+   ⓪ code check (no model; exact; only what a rule encodes)
+   → ① LLM judge (cheap; mostly uncalibrated)
+   → ② labelling: sampled reads (one-off) · golden sets (reusable; a person anchors them)
+ how a change is tested
+   one frozen turn → one day (not built) → whole games      scored by play metrics
+   kept fair by experimental controls
+ pipelines: factual errors · model admission
+```
+
+## Choosing the method: two rules
+
+**1. Code checks what has a ground truth it can compute; meaning needs a reader.** Five kinds of code check
+recur:
+
+| Kind | Example | Where |
+|---|---|---|
+| A structured field against the truth | the vote target, the night pick or the claimed role against the true roles | [metrics](metrics/report.md), [turn replays](evaluation_scopes/turn/report.md) |
+| A forbidden term in text | a seat id written into a lesson; another seat's private information in a prompt | [deterministic_audits](deterministic_audits/report.md) |
+| A number the model wrote, recomputed from the board | players alive exact in 97% of 6,099 cases; the Vigilante's shots left in 16% of 1,109 | [deterministic_audits](deterministic_audits/report.md), case 3 |
+| A structured claim against the engine's record | claims in the ledger checked against announced deaths, saves and the cast | [deterministic_audits](deterministic_audits/report.md) |
+| Format and events | schema validity, retries, timeouts, the rescue model firing | [model_admission](model_admission/report.md) |
+
+Outside these, code loses. A keyword count of meaning said 32 summaries named a quiet player, and reading
+the matches found 4 of 124. A regex agreed with the model's addressee tags on 63% of 30 cases, so tagging
+went to the model. The prose leak pass is substring matching, so a paraphrased leak passes.
+
+**2. When a model screens for a person, set it to catch too much.** When a person checks every flag, a false
+alarm costs seconds and a miss is never seen. The factual-error census is the worked example: code flags
+every unit that names a dead player, a dead role or a count; a cheap model reads each flag; a stronger model
+re-reads its positives; the owner checks the result. A sample of the rejections is read too, because misses
+hide there: 2 to 3 of 15 were real errors, so the published counts are floors.
+
+## What the methods caught about themselves
+
+The strongest evidence that the evaluation is real is that it repeatedly found its own faults.
+
+**June and July 2026 (nine-seat, memory):**
+- A fresh no-memory baseline came back with the villagers winning 10% of games against 67% before, on
+  identical prompts (Fisher p = 0.0028): the model service had drifted. Old baselines were dropped, and both
+  sides of a comparison now run in one time window.
+- A configuration slip let the memory side run memory for every faction instead of the town only. The check
+  became the arm guard, which stops the run before spending.
+- An engagement score was retracted (about 0.70 to 0.55) once the model was found to have silently skipped a
+  third of its inputs.
+- An investigator score that came out significantly backwards (+0.38, p = 0.039, 30 games) was re-run at six
+  times the sample and the sign was noise (+0.15, not significant, 180 games).
+- Both of the June paid loop runs were flagged invalid by the loop's own checks before they were reported.
+- A free audit of model-filled memory fields fired its own pre-registered re-open condition: a field the
+  retrieval gate keyed on was worse than a constant (0.606 against 0.827 for always-False).
+- A check showed that pairing the two sides by deal buys almost no noise reduction, so running both sides in
+  one window was what made comparisons fair.
+
+**October 2026 (ten-seat, play, factual errors, models):**
+- Three leak checkers had checked nothing on every live game, because the batch runner never passed them
+  their inputs; found and fixed on 2026-10-14.
+- Every memory game had run at a thinking level that produced zero reasoning tokens, confirmed in 680
+  records. Both sides ran alike, so the comparisons stand, but every memory verdict is about players that do
+  not reason first.
+- The factual-error test set's first build let a replayed vote turn see its own result; reading the controls
+  by hand caught it, and showed the July ship test had the same leak.
+- DeepSeek V4 Pro passed 27 of 27 test prompts and answered 3 of 6 real turns in prose; real turns now count
+  in admission.
+- A replay read an 8-of-10 against 1-of-10 split on an identical prompt as noise, and got a stable rate
+  (about one in three) only by shuffling every arm into one schedule at 25 samples.
+- Re-embedding a 232-pair calibration set showed that dedup thresholds re-derived for a new embedding model
+  would discard two labelled keeps.
+- The ten-seat check of play scores against win (2026-10-24) showed the healer's save rate, trusted on nine
+  seats, no longer goes with winning.
+
+## Status board
+
+Marks: ✅ sound · 🟡 usable with caveats · ⚠️ smoke test only · ❌ does not hold · ⏸ designed, not built ·
+⛔ underbuilt. Each mark is the method page's own verdict. "9" and "10" mark the nine-seat and ten-seat games.
+
+### Judging one output
+
+| Page | Subject | What it covers | Trust |
 |---|---|---|---|
-| [**Frozen-turn replays**](replay_screens/report.md) | memory · play quality · deduction engine | memory decision-replay screen (9); checkpoint replay (9); tell-book screen (9); stage-filter replay (10); night-1 target check (9); about ten October prompt, wording and deduction-line screens (10); per-day replay design | ✅ decision-replay screen (triage), night-1 target check · 🟡 October screens (direction, not size), checkpoint replay · ⚠️ tell-book, counter-claim and private-note screens · ⏸ per-day replay |
-| [**Whole-game evaluation**](whole_game_evaluation/report.md) | memory · play quality | arms paired by game id, paired McNemar and Wilcoxon tests; June memory A/B, v6 strategy-point A/B, pre-registered v7 endpoint (9); persona-voice and evil-cover pairs, 8 deals each (10) | 🟡 nine-seat memory harness (win underpowered, MDE about 36 points; pairing buys almost no variance; the endpoint's paired statistic has no committed code) · ⚠️ ten-seat same-deal pairs |
+| [**Code checks**](deterministic_audits/report.md) | information boundary · deduction engine · memory · play | batch leak checks; payload leak tests; served-game leak audit; fidelity pins; deduction soundness over 20,000 random legal nights per test and a brute-force oracle; 4 acceptance cases; solver and block censuses; record audits (9); embedding check; model-written memory fields recomputed (9, 10) | ✅ leak checks, payload tests, deduction soundness and oracle, embedding check (batch runner only) · 🟡 served-game audit (built; nightly job not installed), acceptance cases (the only coverage test), block census, record audits · ⚠️ pivotal-turn flags |
+| [**LLM judges**](llm_judge/report.md) | memory · play · factual errors | every judge and in-game classifier: how each was built, what it was checked against, top-ups for today's game | 🟡 factual-error judges (person-checked, nine-seat, Gemini era) · 🟡 echo gate (model readers) · ⚠️ opening filter, accusation tags · ⚠️ memory-era rubric judges |
+| [**Labelling**](labeling/report.md): golden sets, [sampled reads](labeling/sampled_reads/report.md) | memory · play · factual errors | the shared techniques; every golden set by who labelled it; the labelling pipeline and its calibration step; the October blind reads, the decision-tag read, hand-read games | 🟡 gold sets (nine-seat) · ⚠️ ten-seat silver sets (no person's check) · 🟡 blind reads (one model reader per item) · ✅ decision-tag read (98 of 102, above a bar set beforehand) · 🟡 calibration step (built 2026-10-23, not yet used) |
+| [**Scales and scores**](scoring/report.md) | all | label scales; scores against a golden set; paired tests | 🟡 standard scores built and used · ⚠️ no 1–5 judge scored against people |
 
-### Measures and fair comparison
+### Testing a change
 
-What a score means, and the guards that keep a comparison fair.
-
-| Report | Subject | What it covers | Trust |
+| Page | Subject | What it covers | Trust |
 |---|---|---|---|
-| [**Play metrics**](metrics/report.md) | play quality · memory | nine-seat de-lucked basket validated against win; trust tiering on the push; ten-seat metrics and decision grades; read Brier; vote-target accuracy; leverage anchor; discussion, Phase 2 and balance counts; two prompt-claim checks | ✅ nine-seat town basket (nine-seat only) · 🟡 investigator, town discussion · ⚠️ deceiver · ⚠️ ten-seat metrics and grades (exact, never validated against win) · 🟡 read Brier · ✅ vote-target accuracy as a count · ✅ counts / 🟡 readings (4–31 games, one model) |
-| [**Fair comparisons (methodology)**](methodology/report.md) | all subjects | which guards apply to a whole-game A/B and to a frozen-turn replay; drift guards, fingerprint, arm guard, paired stats, manifests; embedding canary (since 2026-07-02); power (MDE) gate; seedability test; prompt golden; run graduation; reasoning-token scope probe | 🟡 overall · ✅ arm guard, in-run fingerprint, power gate, seedability · 🟡 prompt golden (one turn type), reasoning-token probe · ⏸ run graduation (built, never used) · manual: the cross-epoch gate, the $3 canary, checking that a setting produced its behaviour |
+| [**Evaluation scopes**](evaluation_scopes/report.md): [turn](evaluation_scopes/turn/report.md) | memory · play · deduction engine | the decision replay (9); checkpoint and tell-book replays (9); stage-filter replay (10); night-1 target check (9); nine October prompt, wording and deduction screens (10) | ✅ decision replay (as a direction-finder), night-1 check · 🟡 October screens (direction, not size), checkpoint replay · ⚠️ tell-book, counter-claim, private-note screens |
+| [**Evaluation scopes**](evaluation_scopes/report.md): day | — | the per-day replay | ⏸ designed July 2026 |
+| [**Evaluation scopes**](evaluation_scopes/report.md): [game](evaluation_scopes/game/report.md) | memory · play | June memory A/B, strategy-point A/B, pre-registered v7 endpoint (9); persona-voice and evil-cover pairs, 8 deals each (10) | 🟡 nine-seat memory harness (wins underpowered; pairing buys little; the endpoint's statistic has no committed script) · ⚠️ ten-seat same-deal pairs |
+| [**Play metrics**](metrics/report.md) | play · memory | decisions graded by the rules; each score checked against its side's win (9: June–July; 10: 78 games); read Brier; vote-target accuracy; prompt and rule counts | ✅ town lynch scores, power roles lost, wolf blending (both games) · ❌ healer save rate on ten seats · 🟡 new roles' scores (too few games) · 🟡 read Brier · ✅ counts / 🟡 readings |
+| [**Experimental controls**](experimental_controls/report.md) | all | same window, fingerprint, arm guard, embedding check, seedability, power gate, prompt golden, run graduation | ✅ arm guard, in-run fingerprint, power gate, seedability · 🟡 prompt golden (one turn type), run graduation (first used 2026-10-23) · manual: cross-epoch comparisons, interleaving a hand-run batch, checking a setting did what it names |
 
 ### Pipelines
 
-A fixed chain of the methods above, run for a recurring decision.
-
-| Report | Subject | What it covers | Trust |
+| Page | Subject | What it covers | Trust |
 |---|---|---|---|
-| [**Factual errors**](factual_errors/report.md) | factual errors · models | July census (code screen, two-model reader, owner hand check) (9); T1b, T2 and T1c replays (9); the bench, with frozen sets and paired arms; invented-check replay; ten-seat pinned cases; summary-claim replay (10) | ✅ census screen within its scope · ✅ invented-check replay, for its one turn · 🟡 reader, July replays, bench and ten-seat replays, as regression checks not rates · ⛔ no factual-error rate on the ten-seat game |
-| [**Model admission and cost**](model_admission/report.md) | models and cost | probe battery (`eval-model-admission`); live schema gate; bench arms against the default; thinking-budget replay; summariser comparison; seat-model games; memory-job model comparisons; July selection; cost and cache accounting | 🟡 usable as a gate, not a ranking (bench spread about 6 points at 70 samples) · 🟡 thinking-budget replay, cost accounting · ⚠️ summariser comparison, seat-model games, memory-job comparisons, live schema gate, July selection |
+| [**Factual errors**](factual_errors/report.md) | factual errors · models | the July census (9); the nine-seat test set and ten-seat test turns; pinned cases; the summary-claim replay (10) | ✅ census screen within its scope · 🟡 reader, test-set runs (regression checks, not rates) · ⛔ no factual-error rate on the ten-seat game |
+| [**Model admission**](model_admission/report.md) | models and cost | the five migration questions; test prompts, replays against the current model, real games; thinking level for votes; summariser and memory-job models; rate limits and rescue; cost accounting; the one-command pipeline | 🟡 as a gate, not a ranking (replay spread about 6 points at 70 samples) · ✅ rescue path (deployed) · ⚠️ summariser and memory-job comparisons, seat-model games, live schema check · ⏸ the pipeline (built, never run on a candidate) |
 
-**Dated records, kept for provenance, not current:** [`loop/`](loop/report.md) (the measurement kit of the v7 learning loop, closed July 2026), [`hardening_pass/`](hardening_pass/report.md) (the July 2026 review of the memory methods). The discussion tagger, a judge retired from credit 2026-07-13 and out of the write-up, is kept as a note in the LLM-judge folder: [`llm_judge/discussion_tagger.md`](llm_judge/discussion_tagger.md). `dimension_extraction/` was dissolved on 2026-10-23: its code checks are in deterministic_audits and its blind read in sampled_human_review.
+**Dated records, kept for provenance:** [`loop/`](loop/report.md) (the v7 learning loop's checks, closed July
+2026; part of the memory chapter), [`hardening_pass/`](hardening_pass/report.md) (the July review of the
+memory methods), and the retired discussion tagger ([llm_judge/discussion_tagger.md](llm_judge/discussion_tagger.md)).
 
 ## Cross-cutting findings
 
-Read across all the spokes, five findings recur, plus a short list of named failure modes.
+**1. What can be trusted.**
+- **Code checks.** The batch leak checks have run on every batch game since 2026-06-06; their one confirmed
+  catch was 109 violations from a refactor, 0 after the fix. Every "certain" line of the deduction engine
+  holds over 20,000 random legal nights per test and against every allowed deal. The arm guard and the
+  in-run fingerprint stop a run rather than warn. Their limit is what they encode: a paraphrased leak or a
+  rule nobody wrote down passes.
+- **Exact and outcome-anchored scores.** Vote targets and winners counted by code; the town's lynch scores,
+  which go with winning on both games (about +0.5 to +0.65); the decision tags against a bar set beforehand;
+  test-set sign tests whose effect clears the set's own noise (re-judging moved totals by 1–2 of 267; reruns
+  moved an arm by about 6 points at 70).
+- **Gold sets.** The dedup decision keys, the census reader's July hand check, the hand-written expectations,
+  the four deduction acceptance cases.
 
-**1. What can be trusted.** Three kinds of instrument hold up.
-- **Code checks.** The batch leak checks have run on every batch game since 2026-06-06. Their one
-  confirmed true positive was 109 violations from a refactor, and 0 after the fix. Every "certain" line
-  of the deduction engine holds over 20,000 random legal nights per test and against every allowed deal.
-  The arm guard and the in-run fingerprint fail a run rather than warn. The limit is what they encode:
-  paraphrased leaks and rules nobody wrote down pass.
-- **Outcome-anchored or exact scores.** The nine-seat town basket (|r|≈0.55–0.65 against win), exact
-  vote-target and winner counts, the LLM-free loop measure, the decision tags against a bar set
-  beforehand, and bench sign tests whose effect clears the bench's own noise. Re-judging moved bench
-  totals by 1–2 samples of 267, and reruns moved an arm by about 6 points at 70.
-- **Goldens.** The dedup decision keys, the census reader's July hand check, the hand-written
-  expectations, and the four deduction acceptance cases.
-
-**2. What cannot be trusted as a gauge.**
-- The memory-component judges: none has been checked against people.
-- The discussion-evidence judge and the summariser comparison judge: no human check.
-- The blind model readers. Every October blind read is Claude subagents, one reader per item. When fresh
-  readers re-judged the same lines, labels tied to an observable act held exactly (claims 13 and 33),
-  while judgment labels moved by several items (29 to 19 of 73 in one evil-cover arm).
-- Same-family judging. Every judge now defaults to the players' own model, and the admission runs had
-  Gemini judges grading a Gemini reference arm. Neither bias was measured.
+**2. What is directional only.**
+- The memory-component judges, the discussion-evidence judge and the summariser-comparison judge: none
+  checked against a person.
+- The model readers. Every October blind read is Claude subagents, one per item. Re-read by fresh readers,
+  labels tied to an act held exactly (claims 13 and 33) and judgment labels moved by several items (29 to 19
+  of 73).
+- Same-family judging. Every judge defaults to the players' own model, and the admission replays had Gemini
+  judges grading a Gemini reference. Neither bias was measured.
 
 **3. Where the anchors are thin.**
-- **No validation against win on the ten-seat game.** `VALIDATED_ON_TEN_SEAT_METRICS` is empty, so
-  nothing pushes as "validated" (`Agents/compute_metrics.py`). The ten-seat grade table is an owner
-  ruling that no one has tested, and the verdict-halo study uses it as truth. Balance was read on
-  flash-lite; no balance batch has run on Haiku, the live model.
-- **Factual errors.** The only population rate is July and nine-seat: about 3% of public messages (68 of
-  2,292) and about 4% of private notes. The census has never run on a ten-seat game, and its screen
-  knows only the nine-seat roles. The bench replays day turns only, though July found night notes the
-  worst surface (9.6%). The reader's calibration is Gemini-era; the Haiku default has no recorded check.
-- **The deduction engine's coverage** rests on four acceptance cases. Soundness is tested at scale;
+- **The ten-seat game's labels and scores.** No ten-seat label set has a person's check. The first ten-seat
+  check of play scores against win (78 games) confirmed the core and left most new roles' scores untested;
+  the grade table is an owner ruling never tested as a whole. Balance was read on flash-lite only.
+- **Factual errors.** The only rate is July and nine-seat: about 3% of public messages (68 of 2,292) and
+  about 4% of private notes. The census has never run on a ten-seat game. The test sets replay day turns
+  only, though July found night notes the worst surface (9.6%).
+- **The deduction engine's coverage** rests on four acceptance cases: soundness is tested at scale,
   completeness is not.
-- **Replays.** Ten samples of one case show the spread of answers to one prompt, not ten situations.
-  Only a few screens measured their own noise floor.
-- **Nine-seat role names in three scorers.** `score_vote`, `read_ledger.py` and the discussion-evidence
-  judge's role join run on ten-seat records without error and score the new evil roles as town.
+- **Replays.** Ten samples of one case are the spread of one prompt, not ten situations; few screens
+  measured their own noise.
+- **Scorers tied to role names.** Three scored the new evil roles as town until they were switched to the
+  role registry on 2026-10-24; three places still name the nine-seat roles (two return nothing on ten seats,
+  one research helper miscounts).
 - **Every memory verdict** is about players with zero reasoning tokens.
 
-**4. What is recorded outside version control.**
-- `batch_results/` is gitignored. It holds the June A/B data, the v7 build run and endpoint (including
-  `PREREG_AMENDMENT.md`), and the v6 games the credit validators read.
-- `evaluation/eval_results/` is gitignored. It holds all 20 admission records and the admission bench
-  summaries, the bench's screen run, the R1 samples, the note-screen generations and the Haiku vote
-  outputs.
-- Untracked on 2026-10-23: the solver census runner and output, `reasoning_failures/report.md`, the
-  Haiku vote replay runners, config and data, and the two new spokes `deterministic_audits/` and
-  `model_admission/` themselves.
-- Code not found: the script behind the v7 endpoint's paired statistic, the reasoning-token probe, and a
-  round-filter runner named in a README.
-- The tool built to close this gap, `eval-graduate`, has graduated nothing.
+**4. What is not running.**
+- The nightly leak audit is documented but was found not installed on 2026-10-23, so no served game is known
+  to have been leak-checked.
+- There is no CI; tests run only when someone runs pytest. The tests in `tests/` are largely AI-written and
+  unaudited, so the method pages cite deliberate tests for what they pin, never a test count.
 
-**5. What is not running.**
-- The nightly leak-audit cron is documented but was found not installed on 2026-10-23, so no served game
-  is known to have been leak-checked.
-- There is no CI. Tests run only when someone runs pytest. The embedding canary runs only inside
-  `run_batch`; the server's retrieval never runs it.
-- The tests in `tests/` are largely AI-written and unaudited. The spokes cite deliberate tests (the leak
-  tests, the deduction oracle, seedability, the prompt golden) and never a test count.
-
-**The failure modes worth naming once:**
-- **Flat or saturated judge dimensions** carry no information. Village dynamics was pinned at 5.00, and
-  extraction's original five dimensions clustered near the top.
-- **Regenerating and judging in one harness** confounds generation with scoring.
-- **Outcome halo.** A measure conditioned on whether the side won measures the win. It is now measured
-  on the memory itself: the extraction model's verdict follows the side's win about twice as strongly as
-  the decision's grade (+0.80 against +0.40 per observation).
-- **A setting is not its behaviour.** The record shows what was configured, not what happened. The June
-  loop ran every faction while town-only was believed. "Minimal" thinking produced zero reasoning
-  tokens. Three leak checkers were configured and checked nothing. Short probes kept the schema's field
-  order 17 of 17 times while Haiku's real turns kept it 15 of 24.
+**Failure modes worth naming once:**
+- **Flat judge scores** carry no information (village dynamics pinned at 5.00).
+- **Outcome halo:** a measure that can see who won measures the win. The extraction model's verdict on a
+  play follows the side's win about twice as strongly as the decision's grade.
+- **A setting is not its behaviour:** town-only memory believed while every faction ran it; "minimal"
+  thinking with zero reasoning; leak checkers configured and checking nothing; field order kept 17 of 17
+  times on test prompts and 15 of 24 on real turns.
 - **One case resampled, read as many situations** (the AC2 vote).
-- **Keyword counts of meaning.** A keyword count said 32 summaries named a quiet player; reading the
-  matches found 4 of 124.
-- **A frozen transcript hides the trajectory.** The checkpoint replay could not reproduce the v7 store's
-  abstain cascade: abstains ran 12–18% on frozen turns against 31% in live games.
+- **Keyword counts of meaning** (32 against 4 of 124).
+- **A frozen transcript hides what follows:** abstains ran 12–18% on frozen turns against 31% in live games.
 
-**The cheapest upgrades.** All are on the owner's pending list (`writeup/map.md`, "Evaluation hardening
-tasks"), and none is scheduled:
-1. One owner labelling session on 50–100 bench verdicts. It calibrates the judge that every prompt and
-   model change goes through. A double-read and an owner slice of the silence-calibration readers would
-   follow, if their numbers stay in the write-up.
-2. Audit the critical tests (rules engine, payload builders, deduction, credit grading, translator), then
-   add a pytest CI workflow over the deterministic suite.
-3. Install the leak-audit cron. This is an outward change to the host and needs the owner's yes.
+## What we would do differently next time
 
-The spokes add three small ones: record reasoning tokens per game, move the admission records into
-`evidence/`, and give every replay screen a noise floor.
+| Stage | Change | What was done | What it would buy |
+|---|---|---|---|
+| Design | **1. Anchor every judge and reader to a person when it is built**, with a 30–50 item owner sample | Person checks only in the nine-seat era; ten-seat labels all model-made | Every number that rests on a model label carries an error rate |
+| Design | **2. Write scorers against sides and the role registry, never role names** | Six places tied to the nine-seat roles; three fixed on 2026-10-24 | A new cast scores correctly the day it ships |
+| Testing | **3. Fix each test's measure, pass bar and noise floor before running it** | Done for the v7 endpoint, the decision-tag read and a few screens | Every comparison a test, not a description |
+| Records | **4. Commit every cited run's outputs, and the script behind every reported statistic, at the time** | Outputs graduated into `evidence/` only on 2026-10-23; one endpoint statistic has no script | Every number re-runnable from the record |
+| Operations | **5. Run the deterministic tests in CI, and install the leak audit with the server** | No CI; the nightly audit never installed | Regressions and leaks caught without someone remembering |
 
-## The memory campaign, as of July 2026
+**Bottom line.** The project's evaluation is strongest where code can decide (leaks, the deduction engine,
+votes and winners against the true roles) and where it tests one change at a time on frozen turns with the
+noise measured. It is honest about its weak rung: model judges and readers carry most ten-seat judgments of
+meaning, and none has yet been checked against a person. The tooling to close that gap exists, and the owner
+checks are its first use.
 
-*A dated section, corrected 2026-10-23. The July hub's bottom line is withdrawn: "town play improves
-convergently" overstated the record, the discussion tagger no longer credits anything, and v6 is not the
-live path.*
-
-Everything below is the nine-seat game, played by `gemini-3.1-flash-lite` with zero reasoning tokens.
-
-- **June memory on/off A/B (30 paired boards).** Memory improved the town's *decisions*. Healers saved
-  the real target 37% → 60% (p=0.005), and town lynches hit an enemy 47% → 64% (p=0.028). The town win
-  rate rose 27% → 43%, which was not significant (p=0.27). The figure "+17pp, p=0.013" is a fusion
-  error: p=0.013 belongs to the reranked arm's +33 points, which carries a model-drift caveat. Wolves and
-  the serial killer gained nothing. The decision-replay screen converges with the decision measures, not
-  with a win gain. ([`memory_system/store_progression.md`](../memory_system/store_progression.md),
-  correction of 2026-10-22.)
-- **v6 store (2026-06-17).** The town gain did not repeat (+6 points, p=0.77).
-- **v7 (July).** The test was pre-registered (signed 2026-07-16). The build run finished on 2026-07-19
-  with a 168-lesson store, at $25.74. On the endpoint (2026-07-20, 30 boards), the town's decision score
-  was 0.147 lower with memory (p≈0.06), and lower on 19 of 30 boards. As committed in advance, this was
-  reported as "no compounding detected", leaning toward harm
-  ([`execution_plan/report.md`](../execution_plan/report.md) §5).
-- **The cause was traced to credit's abstain blind spot.** Cautious lessons drove the town's abstains,
-  and credit graded every town abstain neutral, so the loop could not prune them. One abstain lesson had
-  19 follows and a credit of exactly zero. A fix was built on 2026-07-21 and passed 9 of 12 checks on
-  recorded games. A fresh run under the fixed credit was never authorised
-  ([`loop/report.md`](loop/report.md)).
-- **The owner closed the memory research on 2026-07-21.** No store was promoted. The wolf-direct arm
-  never ran and will not.
-- **The ten-seat memory (v8, October 2026) has not been tested at scale.** It serves lessons from a
-  Postgres store when a player switches memory on. Its credit pass ran once, as a demonstration, on 20
-  memory-on games. There is no verdict on it either way.
-
-What the apparatus keeps from the campaign is its method: a pre-registered paired test whose guards
-held, and limits it disclosed itself (win underpowered, pairing buying almost no variance, zero
-reasoning tokens).
-
----
-
-*Hub for all evaluation, distilled from the spokes linked above and checked against their records and
-the working tree on 2026-10-23. The dated verification results and full code pointers live in
-[`source_map.md`](source_map.md). Whether each component actually works, as opposed to how well we can
-measure it, lives in the design folders named at the top.*
+*Rewritten 2026-10-24 as a standalone overview, from the method pages linked above. The previous hub
+(2026-10-23), including the dated memory-campaign section, is kept whole in the
+[experiment log](experiment_log.md), Part 1. The memory campaign's verdicts live in
+[`memory_system/store_progression.md`](../memory_system/store_progression.md) and
+[`execution_plan/report.md`](../execution_plan/report.md): in short, June's memory improved the town's
+decisions but not significantly its wins, the v6 store did not repeat it, and the pre-registered v7 endpoint
+found no compounding, leaning toward harm; the ten-seat memory has not been tested at scale.*

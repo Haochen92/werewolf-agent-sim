@@ -95,7 +95,7 @@ Two kinds of agent text are counted:
 - **Nine-seat only.** The screen knows the six nine-seat roles (`ROLE_ALIASES`: wolf, serial killer, villager, healer, investigator, vigilante). It cannot pick up a ten-seat role word such as the necromancer or the sentinel.
 - **Never re-run.** The plan pre-registered a second measurement on the first batch after the prompt change of 2026-07-09 ([`validation_plan.md`](../../generation_prompt/validation_plan.md), "T1-improvement"). No record of it was found. On 2026-10-10, running the census on ten-seat games was listed as open, at an estimated $2 to $3 (discussion_evidence §8.5, last paragraph).
 
-**The only error count on the ten-seat game** is a hand audit of ten games, about 345 heard lines. Model readers did the reading against a rubric (discussion_evidence §8.4). It is a sampled read, not a census. It is catalogued in [`../sampled_human_review/`](../sampled_human_review/report.md).
+**The only error count on the ten-seat game** is a hand audit of ten games, about 345 heard lines. Model readers did the reading against a rubric (discussion_evidence §8.4). It is a sampled read, not a census. It is catalogued in [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md).
 
 **Code and record.**
 
@@ -293,7 +293,7 @@ They established three things about the bench itself.
 - discussion_evidence carries the counts.
 - Templates: `evaluation/config/template/hallucination_bench_{fidelity_pass,summary_v4,vote_history,record_citation,thinking}.json`. Their judges were edited after the runs (§3, correction of 2026-10-23).
 - Bench arms run to admit a new seat model are catalogued in [`../model_admission/`](../model_admission/report.md).
-- Some later replays reuse this harness to measure votes or deductions, not factual errors. They are the deduction injection, the healer's silence and the Haiku vote replay. They are catalogued in [`../replay_screens/`](../replay_screens/report.md).
+- Some later replays reuse this harness to measure votes or deductions, not factual errors. They are the deduction injection, the healer's silence and the Haiku vote replay. They are catalogued in [`../evaluation_scopes/turn/`](../evaluation_scopes/turn/report.md).
 
 ---
 
@@ -776,6 +776,6 @@ These passing tests cover existing behaviour. They do not cancel out the omissio
 | Phase 3 turn cases | `evaluation/experiments/phase3_turn_cases.py`; `evaluation/config/hallucination_bench_phase3_*.json`; `game_play_enhancement/data/phase3_turn_replay/` |
 | Haiku game cases | `evaluation/experiments/haiku_game_turn_cases.py`; `evaluation/config/hallucination_bench_haiku_game{,_vote_v2}.json`; `game_play_enhancement/data/haiku_turn_replay/` |
 | Summary-claim replay | `evaluation/experiments/summary_claim_replay.py`; `game_play_enhancement/data/phase3_summary_replay/` |
-| Ten-seat hand audit (a sampled read, not here) | discussion_evidence §8.4; `game_play_enhancement/data/phase3_reads/`; [`../sampled_human_review/`](../sampled_human_review/report.md) |
+| Ten-seat hand audit (a sampled read, not here) | discussion_evidence §8.4; `game_play_enhancement/data/phase3_reads/`; [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md) |
 
 *The bench sections were written 2026-10-03. The record was widened on 2026-10-23 against the code and records above, and the code audit and fix check were folded in that day. This file rates how far each method can be trusted. Whether each fix worked is for the design records to say.*
