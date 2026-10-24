@@ -1,0 +1,678 @@
+{
+  "games": 78,
+  "batches": {
+    "ten_seat_pilot": {
+      "games": 4,
+      "model": "gemini-3.5-flash-lite",
+      "memory_on": 0,
+      "winners": {
+        "villagers": 3,
+        "necromancer": 1
+      }
+    },
+    "v8_smoke": {
+      "games": 1,
+      "model": "gemini-3.5-flash-lite",
+      "memory_on": 0,
+      "winners": {
+        "villagers": 1
+      }
+    },
+    "v8_seeding": {
+      "games": 12,
+      "model": "gemini-3.5-flash-lite",
+      "memory_on": 0,
+      "winners": {
+        "villagers": 6,
+        "wolves": 4,
+        "serial_killer": 1,
+        "necromancer": 1
+      }
+    },
+    "v8_demo": {
+      "games": 20,
+      "model": "anthropic/claude-haiku-5-5",
+      "memory_on": 20,
+      "winners": {
+        "villagers": 8,
+        "wolves": 7,
+        "necromancer": 3,
+        "serial_killer": 2
+      }
+    },
+    "v8_gate_haiku": {
+      "games": 4,
+      "model": "anthropic/claude-haiku-5-5",
+      "memory_on": 4,
+      "winners": {
+        "serial_killer": 1,
+        "wolves": 1,
+        "villagers": 2
+      }
+    },
+    "v8_luna_memory": {
+      "games": 3,
+      "model": "openai/gpt-6-luna",
+      "memory_on": 3,
+      "winners": {
+        "wolves": 1,
+        "villagers": 2
+      }
+    },
+    "cache_ab_2026_10_13": {
+      "games": 2,
+      "model": "openai/gpt-6-luna",
+      "memory_on": 2,
+      "winners": {
+        "villagers": 1,
+        "wolves": 1
+      }
+    },
+    "evil_cover_games": {
+      "games": 12,
+      "model": "anthropic/claude-haiku-5-5",
+      "memory_on": 0,
+      "winners": {
+        "villagers": 9,
+        "wolves": 3
+      }
+    },
+    "persona_voice_games": {
+      "games": 16,
+      "model": "anthropic/claude-haiku-5-5",
+      "memory_on": 0,
+      "winners": {
+        "villagers": 11,
+        "necromancer": 3,
+        "serial_killer": 2
+      }
+    },
+    "silence_calibration": {
+      "games": 4,
+      "model": "anthropic/claude-haiku-5-5",
+      "memory_on": 0,
+      "winners": {
+        "serial_killer": 1,
+        "villagers": 3
+      }
+    }
+  },
+  "scores": [
+    {
+      "score": "correct_elimination_rate",
+      "side": "town",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.487,
+      "pooled_p": 0.0,
+      "pooled_range_95": [
+        0.297,
+        0.64
+      ],
+      "within_batch_r": 0.548,
+      "within_batch_p": 0.0,
+      "memory_off_games": 49,
+      "memory_off_r": 0.478,
+      "memory_off_p": 0.001
+    },
+    {
+      "score": "town_mislynch_rate",
+      "side": "town",
+      "june_direction": "-",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": -0.447,
+      "pooled_p": 0.0,
+      "pooled_range_95": [
+        -0.609,
+        -0.249
+      ],
+      "within_batch_r": -0.491,
+      "within_batch_p": 0.0,
+      "memory_off_games": 49,
+      "memory_off_r": -0.478,
+      "memory_off_p": 0.001
+    },
+    {
+      "score": "mislynches",
+      "side": "town",
+      "june_direction": "-",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": -0.376,
+      "pooled_p": 0.001,
+      "pooled_range_95": [
+        -0.552,
+        -0.167
+      ],
+      "within_batch_r": -0.429,
+      "within_batch_p": 0.0,
+      "memory_off_games": 49,
+      "memory_off_r": -0.413,
+      "memory_off_p": 0.003
+    },
+    {
+      "score": "town_vote_accuracy",
+      "side": "town",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.366,
+      "pooled_p": 0.001,
+      "pooled_range_95": [
+        0.157,
+        0.544
+      ],
+      "within_batch_r": 0.423,
+      "within_batch_p": 0.0,
+      "memory_off_games": 49,
+      "memory_off_r": 0.241,
+      "memory_off_p": 0.095
+    },
+    {
+      "score": "wolf_elimination_rate",
+      "side": "town",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.167,
+      "pooled_p": 0.145,
+      "pooled_range_95": [
+        -0.058,
+        0.375
+      ],
+      "within_batch_r": 0.246,
+      "within_batch_p": 0.031,
+      "memory_off_games": 49,
+      "memory_off_r": 0.119,
+      "memory_off_p": 0.415
+    },
+    {
+      "score": "lone_killer_lynched",
+      "side": "town",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.375,
+      "pooled_p": 0.001,
+      "pooled_range_95": [
+        0.167,
+        0.552
+      ],
+      "within_batch_r": 0.404,
+      "within_batch_p": 0.0,
+      "memory_off_games": 49,
+      "memory_off_r": 0.427,
+      "memory_off_p": 0.002
+    },
+    {
+      "score": "power_roles_killed_by_evil",
+      "side": "town",
+      "june_direction": "-",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": -0.554,
+      "pooled_p": 0.0,
+      "pooled_range_95": [
+        -0.691,
+        -0.378
+      ],
+      "within_batch_r": -0.545,
+      "within_batch_p": 0.0,
+      "memory_off_games": 49,
+      "memory_off_r": -0.43,
+      "memory_off_p": 0.002
+    },
+    {
+      "score": "town_accusation_precision",
+      "side": "town",
+      "june_direction": "+",
+      "games": 73,
+      "side_wins": 44,
+      "pooled_r": 0.293,
+      "pooled_p": 0.012,
+      "pooled_range_95": [
+        0.067,
+        0.49
+      ],
+      "within_batch_r": 0.263,
+      "within_batch_p": 0.025,
+      "memory_off_games": 46,
+      "memory_off_r": 0.132,
+      "memory_off_p": 0.384
+    },
+    {
+      "score": "healer_town_save_rate",
+      "side": "town",
+      "june_direction": "+",
+      "games": 75,
+      "side_wins": 44,
+      "pooled_r": -0.032,
+      "pooled_p": 0.786,
+      "pooled_range_95": [
+        -0.257,
+        0.196
+      ],
+      "within_batch_r": -0.066,
+      "within_batch_p": 0.574,
+      "memory_off_games": 47,
+      "memory_off_r": -0.117,
+      "memory_off_p": 0.434
+    },
+    {
+      "score": "healer_save_rate",
+      "side": "town",
+      "june_direction": "+",
+      "games": 75,
+      "side_wins": 44,
+      "pooled_r": -0.055,
+      "pooled_p": 0.64,
+      "pooled_range_95": [
+        -0.278,
+        0.174
+      ],
+      "within_batch_r": -0.087,
+      "within_batch_p": 0.463,
+      "memory_off_games": 47,
+      "memory_off_r": -0.1,
+      "memory_off_p": 0.505
+    },
+    {
+      "score": "healer_friendly_fire_save_rate",
+      "side": "town",
+      "june_direction": "-",
+      "games": 75,
+      "side_wins": 44,
+      "pooled_r": -0.197,
+      "pooled_p": 0.09,
+      "pooled_range_95": [
+        -0.406,
+        0.031
+      ],
+      "within_batch_r": -0.146,
+      "within_batch_p": 0.214,
+      "memory_off_games": 47,
+      "memory_off_r": null,
+      "memory_off_p": null
+    },
+    {
+      "score": "investigator_find_to_lynch_rate",
+      "side": "town",
+      "june_direction": "+",
+      "games": 20,
+      "side_wins": 11,
+      "pooled_r": 0.287,
+      "pooled_p": 0.22,
+      "pooled_range_95": [
+        -0.178,
+        0.647
+      ],
+      "within_batch_r": 0.267,
+      "within_batch_p": 0.318,
+      "memory_off_games": 8,
+      "memory_off_r": 0.258,
+      "memory_off_p": 0.537
+    },
+    {
+      "score": "investigator_wolves_found",
+      "side": "town",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": -0.021,
+      "pooled_p": 0.853,
+      "pooled_range_95": [
+        -0.243,
+        0.202
+      ],
+      "within_batch_r": 0.098,
+      "within_batch_p": 0.396,
+      "memory_off_games": 49,
+      "memory_off_r": -0.006,
+      "memory_off_p": 0.967
+    },
+    {
+      "score": "investigator_find_next_round_convergence",
+      "side": "town",
+      "june_direction": "+",
+      "games": 0,
+      "side_wins": 0,
+      "pooled_r": null,
+      "pooled_p": null,
+      "pooled_range_95": [
+        null,
+        null
+      ],
+      "within_batch_r": null,
+      "within_batch_p": null,
+      "memory_off_games": 0,
+      "memory_off_r": null,
+      "memory_off_p": null
+    },
+    {
+      "score": "vigilante_correct_shot_rate",
+      "side": "town",
+      "june_direction": "+",
+      "games": 19,
+      "side_wins": 12,
+      "pooled_r": 0.287,
+      "pooled_p": 0.234,
+      "pooled_range_95": [
+        -0.192,
+        0.656
+      ],
+      "within_batch_r": 0.251,
+      "within_batch_p": 0.315,
+      "memory_off_games": 14,
+      "memory_off_r": 0.337,
+      "memory_off_p": 0.238
+    },
+    {
+      "score": "vigilante_evil_shots",
+      "side": "town",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.144,
+      "pooled_p": 0.207,
+      "pooled_range_95": [
+        -0.081,
+        0.355
+      ],
+      "within_batch_r": 0.13,
+      "within_batch_p": 0.261,
+      "memory_off_games": 49,
+      "memory_off_r": 0.103,
+      "memory_off_p": 0.481
+    },
+    {
+      "score": "vigilante_friendly_fire_shots",
+      "side": "town",
+      "june_direction": "-",
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": -0.104,
+      "pooled_p": 0.364,
+      "pooled_range_95": [
+        -0.319,
+        0.121
+      ],
+      "within_batch_r": -0.15,
+      "within_batch_p": 0.192,
+      "memory_off_games": 49,
+      "memory_off_r": -0.185,
+      "memory_off_p": 0.203
+    },
+    {
+      "score": "sentinel_watches_naming_evil",
+      "side": "town",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.12,
+      "pooled_p": 0.297,
+      "pooled_range_95": [
+        -0.106,
+        0.333
+      ],
+      "within_batch_r": 0.133,
+      "within_batch_p": 0.249,
+      "memory_off_games": 49,
+      "memory_off_r": 0.191,
+      "memory_off_p": 0.188
+    },
+    {
+      "score": "trailseer_follows_naming_evil",
+      "side": "town",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.028,
+      "pooled_p": 0.808,
+      "pooled_range_95": [
+        -0.196,
+        0.249
+      ],
+      "within_batch_r": 0.036,
+      "within_batch_p": 0.756,
+      "memory_off_games": 49,
+      "memory_off_r": 0.025,
+      "memory_off_p": 0.864
+    },
+    {
+      "score": "sigilist_hits",
+      "side": "town",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 46,
+      "pooled_r": 0.196,
+      "pooled_p": 0.086,
+      "pooled_range_95": [
+        -0.028,
+        0.401
+      ],
+      "within_batch_r": 0.183,
+      "within_batch_p": 0.111,
+      "memory_off_games": 49,
+      "memory_off_r": 0.123,
+      "memory_off_p": 0.401
+    },
+    {
+      "score": "wolf_unconditioned_blending_rate",
+      "side": "wolves",
+      "june_direction": "+",
+      "games": 70,
+      "side_wins": 17,
+      "pooled_r": 0.286,
+      "pooled_p": 0.016,
+      "pooled_range_95": [
+        0.055,
+        0.488
+      ],
+      "within_batch_r": 0.36,
+      "within_batch_p": 0.002,
+      "memory_off_games": 41,
+      "memory_off_r": 0.224,
+      "memory_off_p": 0.159
+    },
+    {
+      "score": "wolf_blending_rate",
+      "side": "wolves",
+      "june_direction": "+",
+      "games": 0,
+      "side_wins": 0,
+      "pooled_r": null,
+      "pooled_p": null,
+      "pooled_range_95": [
+        null,
+        null
+      ],
+      "within_batch_r": null,
+      "within_batch_p": null,
+      "memory_off_games": 0,
+      "memory_off_r": null,
+      "memory_off_p": null
+    },
+    {
+      "score": "wolf_power_kill_rate",
+      "side": "wolves",
+      "june_direction": "+",
+      "games": 78,
+      "side_wins": 17,
+      "pooled_r": 0.166,
+      "pooled_p": 0.145,
+      "pooled_range_95": [
+        -0.058,
+        0.375
+      ],
+      "within_batch_r": 0.238,
+      "within_batch_p": 0.037,
+      "memory_off_games": 49,
+      "memory_off_r": 0.04,
+      "memory_off_p": 0.782
+    },
+    {
+      "score": "chanteuse_blocks_real",
+      "side": "wolves",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 17,
+      "pooled_r": 0.307,
+      "pooled_p": 0.006,
+      "pooled_range_95": [
+        0.09,
+        0.495
+      ],
+      "within_batch_r": 0.28,
+      "within_batch_p": 0.014,
+      "memory_off_games": 49,
+      "memory_off_r": 0.455,
+      "memory_off_p": 0.001
+    },
+    {
+      "score": "chanteuse_blocks_critical",
+      "side": "wolves",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 17,
+      "pooled_r": 0.104,
+      "pooled_p": 0.366,
+      "pooled_range_95": [
+        -0.122,
+        0.319
+      ],
+      "within_batch_r": 0.028,
+      "within_batch_p": 0.807,
+      "memory_off_games": 49,
+      "memory_off_r": 0.18,
+      "memory_off_p": 0.215
+    },
+    {
+      "score": "chanteuse_blocks_wasted",
+      "side": "wolves",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 17,
+      "pooled_r": 0.027,
+      "pooled_p": 0.818,
+      "pooled_range_95": [
+        -0.197,
+        0.248
+      ],
+      "within_batch_r": 0.062,
+      "within_batch_p": 0.594,
+      "memory_off_games": 49,
+      "memory_off_r": -0.083,
+      "memory_off_p": 0.572
+    },
+    {
+      "score": "illusionist_conceals",
+      "side": "wolves",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 17,
+      "pooled_r": 0.105,
+      "pooled_p": 0.361,
+      "pooled_range_95": [
+        -0.121,
+        0.32
+      ],
+      "within_batch_r": 0.15,
+      "within_batch_p": 0.192,
+      "memory_off_games": 49,
+      "memory_off_r": 0.036,
+      "memory_off_p": 0.805
+    },
+    {
+      "score": "illusionist_conceals_hid_record",
+      "side": "wolves",
+      "june_direction": null,
+      "games": 78,
+      "side_wins": 17,
+      "pooled_r": -0.115,
+      "pooled_p": 0.316,
+      "pooled_range_95": [
+        -0.329,
+        0.11
+      ],
+      "within_batch_r": 0.011,
+      "within_batch_p": 0.923,
+      "memory_off_games": 49,
+      "memory_off_r": -0.086,
+      "memory_off_p": 0.558
+    },
+    {
+      "score": "sk_kill_rate",
+      "side": "lone_killer",
+      "june_direction": "+",
+      "games": 45,
+      "side_wins": 7,
+      "pooled_r": 0.251,
+      "pooled_p": 0.097,
+      "pooled_range_95": [
+        -0.046,
+        0.507
+      ],
+      "within_batch_r": 0.251,
+      "within_batch_p": 0.1,
+      "memory_off_games": 29,
+      "memory_off_r": 0.168,
+      "memory_off_p": 0.384
+    },
+    {
+      "score": "sk_power_roles_killed",
+      "side": "lone_killer",
+      "june_direction": "+",
+      "games": 45,
+      "side_wins": 7,
+      "pooled_r": 0.476,
+      "pooled_p": 0.001,
+      "pooled_range_95": [
+        0.212,
+        0.675
+      ],
+      "within_batch_r": 0.577,
+      "within_batch_p": 0.0,
+      "memory_off_games": 29,
+      "memory_off_r": 0.466,
+      "memory_off_p": 0.011
+    },
+    {
+      "score": "sk_unconditioned_blending_rate",
+      "side": "lone_killer",
+      "june_direction": "+",
+      "games": 29,
+      "side_wins": 7,
+      "pooled_r": -0.043,
+      "pooled_p": 0.823,
+      "pooled_range_95": [
+        -0.404,
+        0.328
+      ],
+      "within_batch_r": -0.104,
+      "within_batch_p": 0.604,
+      "memory_off_games": 16,
+      "memory_off_r": -0.255,
+      "memory_off_p": 0.34
+    },
+    {
+      "score": "necromancer_nights_survived",
+      "side": "lone_killer",
+      "june_direction": null,
+      "games": 33,
+      "side_wins": 8,
+      "pooled_r": 0.509,
+      "pooled_p": 0.002,
+      "pooled_range_95": [
+        0.201,
+        0.726
+      ],
+      "within_batch_r": 0.456,
+      "within_batch_p": 0.01,
+      "memory_off_games": 20,
+      "memory_off_r": 0.488,
+      "memory_off_p": 0.029
+    }
+  ]
+}
