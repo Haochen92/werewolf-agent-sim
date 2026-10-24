@@ -1760,3 +1760,50 @@ test('live: the curtain waits for the replay to be filed, then the link comes in
   expect(Math.abs(after.x - before.x)).toBeLessThan(1);
   expect(Math.abs(link.x + link.width - (held.x + held.width))).toBeLessThan(1);
 });
+
+test('live: file switching remains stable while the playhead catches up to a finished game', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.clock.install({ time: T0 });
+  const over = ALL.find((e) => e.type === 'game_over')!;
+  const backlog = ALL.filter((e) => e.seq < over.seq && !seen(e));
+  await mockApi(page, {
+    status: status(356),
+    stream: [...upTo(405), over, ...backlog],
+    filed: false,
+  });
+  await page.goto(`/games/${GAME}`, { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: /^File/ }).click();
+  let clicks = 0;
+  let sectionClicks = 0;
+  let sawEarlierScene = false;
+  for (let t = 0; t < 500; t++) {
+    await page.clock.runFor(500);
+    const beat = (await theatre(page).getAttribute('data-beat')) ?? '';
+    if (/^(day|vote)\./.test(beat)) sawEarlierScene = true;
+    const file = page.locator('[data-film]');
+    if (await file.isVisible()) {
+      const sections = file
+        .getByRole('tablist', { name: 'File sections' })
+        .locator('button:not(:disabled)');
+      if (await sections.count()) {
+        await sections.nth(t % (await sections.count())).click();
+        sectionClicks++;
+      }
+      const tabs = file.getByRole('tab', { name: /^Seat/ });
+      if (await tabs.count()) {
+        await tabs.nth(t % (await tabs.count())).click();
+        clicks++;
+      }
+    }
+    if ((await theatre(page).getAttribute('data-beat')) === 'over.curtain') break;
+  }
+  await expect(theatre(page)).toHaveAttribute('data-beat', 'over.curtain');
+  expect(sawEarlierScene).toBe(true);
+  expect(clicks).toBeGreaterThan(0);
+  expect(sectionClicks).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

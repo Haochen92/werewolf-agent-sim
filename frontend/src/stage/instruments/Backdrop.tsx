@@ -30,6 +30,7 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { SETS, type SetScale } from '@/assets/sets';
 import { useMotionScale } from '../motion';
+import { recordBackdrop } from '../diagnostics';
 import { BackdropContext, useSmall, useStageWidth, type BackdropSpec } from '../set';
 import type { Phase } from '../paint/materials';
 import { BLEED, CAMERA_ZOOM_MAX, STAGE_H, STAGE_W, geometry, type Hud } from '../units';
@@ -130,10 +131,15 @@ export function Backdrop({
   });
   useLayoutEffect(() => {
     if (!set) return;
-    set(JSON.parse(key) as BackdropSpec);
+    const spec = JSON.parse(key) as BackdropSpec;
+    recordBackdrop(spec);
+    set(spec);
     // the next description lands in the same commit as this one's clearing (the next beat's,
     // or the next scene's), so the Stage never draws the gap between them
-    return () => set(null);
+    return () => {
+      recordBackdrop(null);
+      set(null);
+    };
   }, [set, key]);
   return null;
 }

@@ -78,6 +78,7 @@ import { isNineSeat } from '../card-text';
 import { castForRoom, liveCastSize, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
+import { recordLiveFrame } from '../diagnostics';
 import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
 import { SideSlot } from '../SideSlot';
@@ -550,6 +551,32 @@ export function LiveTheatre({
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const [recordPick, setRecordPick] = useState<RecordPick | null>(null);
+  // Keep the displayed beat separate from the server's ending in crash reports: the
+  // stream can finish while this viewer is still reading earlier speeches or the vote.
+  const diagnosticBeat = beat?.id ?? null;
+  const diagnosticSeq = beat?.seq ?? null;
+  const diagnosticSeat = fileSeat?.seat ?? null;
+  useLayoutEffect(() => {
+    recordLiveFrame({
+      gameId,
+      beat: diagnosticBeat,
+      seq: diagnosticSeq,
+      slot: state.slot,
+      revealed: xrayShown,
+      serverOver: xray,
+      fileTab: filmTab,
+      fileSeat: diagnosticSeat,
+    });
+  }, [
+    gameId,
+    diagnosticBeat,
+    diagnosticSeq,
+    state.slot,
+    xrayShown,
+    xray,
+    filmTab,
+    diagnosticSeat,
+  ]);
   // the claim ledger for the file's Record (public, so from the first morning): asked again
   // each time a new day begins, which is a new morning's ledger
   const morning =
