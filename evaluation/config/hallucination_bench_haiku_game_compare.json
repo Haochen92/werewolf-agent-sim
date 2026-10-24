@@ -1,0 +1,16 @@
+{
+  "label": "haiku_game_403f_read_compare",
+  "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "arms": [
+    {"label": "haiku_current", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none",
+     "checkout": "/home/ubuntu/projects/ww-read-baseline"},
+    {"label": "haiku_read_compare", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none",
+     "checkout": "/home/ubuntu/projects/ww-read-compare"}
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "Regression check for the comparative read sentence (see hallucination_bench_haiku_vote_compare.json): the 18 discussion turns of 403f4dbc (§8.6) on the current code and with the sentence, both from worktrees at 1757a49c."
+}

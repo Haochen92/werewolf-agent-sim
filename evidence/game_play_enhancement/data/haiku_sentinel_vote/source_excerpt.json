@@ -1,0 +1,1295 @@
+{
+  "game_id": "403f4dbc-4a16-45fc-bb22-1c5e67bd5936",
+  "source": "Postgres games, events and root LangGraph checkpoints, queried read-only on 2026-10-16",
+  "game": {
+    "created_at": "2026-10-12T04:01:00.967027+00:00",
+    "finished_at": "2026-10-12T04:31:05.807498+00:00",
+    "model": "anthropic/claude-haiku-5-5",
+    "memory": false,
+    "winner": "necromancer"
+  },
+  "checkpoints": [
+    {
+      "timestamp": "2026-10-12T04:27:03.302256+00:00",
+      "step": 30,
+      "day": 5,
+      "day_votes": [
+        {
+          "voter": "player_2",
+          "votee": "player_9"
+        },
+        {
+          "voter": "player_3",
+          "votee": "abstain"
+        },
+        {
+          "voter": "player_9",
+          "votee": "player_3"
+        },
+        {
+          "voter": "player_10",
+          "votee": "player_9"
+        }
+      ],
+      "voted_player": "player_9",
+      "vigilante_strategy": "Two of three players are left, so the necromancer can win by killing one more player; holding fire loses to any necromancer kill. Shooting the necromancer wins, but shooting the other town player also hands the win to the necromancer. I am taking the shot at player_3, a coin flip, because it is the only line that can win before the necromancer acts."
+    },
+    {
+      "timestamp": "2026-10-12T04:27:03.281136+00:00",
+      "step": 29,
+      "day": 5,
+      "day_votes": [
+        {
+          "voter": "player_2",
+          "votee": "player_9"
+        },
+        {
+          "voter": "player_3",
+          "votee": "abstain"
+        },
+        {
+          "voter": "player_9",
+          "votee": "player_3"
+        },
+        {
+          "voter": "player_10",
+          "votee": "player_9"
+        }
+      ],
+      "voted_player": "player_9",
+      "vigilante_strategy": "Two of three players are left, so the necromancer can win by killing one more player; holding fire loses to any necromancer kill. Shooting the necromancer wins, but shooting the other town player also hands the win to the necromancer. I am taking the shot at player_3, a coin flip, because it is the only line that can win before the necromancer acts."
+    },
+    {
+      "timestamp": "2026-10-12T04:25:45.523907+00:00",
+      "step": 28,
+      "day": 5,
+      "day_votes": [
+        {
+          "voter": "player_2",
+          "votee": "player_9"
+        },
+        {
+          "voter": "player_3",
+          "votee": "abstain"
+        },
+        {
+          "voter": "player_9",
+          "votee": "player_3"
+        },
+        {
+          "voter": "player_10",
+          "votee": "player_9"
+        }
+      ],
+      "voted_player": "player_9",
+      "vigilante_strategy": "Both wolves are dead, so the living killer is the necromancer among player_3, player_9 and player_10, and the town must not lynch a town player. Player_9's sentinel claim is unverified and their watch reports are self-reported, so I treat them as the leading suspect. Hold my 2 bullets until a verified contradiction or a clear necromancer pattern appears, since a wrong shot gives the necromancer the win."
+    },
+    {
+      "timestamp": "2026-10-12T04:25:45.500005+00:00",
+      "step": 27,
+      "day": 5,
+      "day_votes": [
+        {
+          "voter": "player_2",
+          "votee": "player_9"
+        },
+        {
+          "voter": "player_3",
+          "votee": "abstain"
+        },
+        {
+          "voter": "player_9",
+          "votee": "player_3"
+        },
+        {
+          "voter": "player_10",
+          "votee": "player_9"
+        }
+      ],
+      "voted_player": "player_9",
+      "vigilante_strategy": "Both wolves are dead, so the living killer is the necromancer among player_3, player_9 and player_10, and the town must not lynch a town player. Player_9's sentinel claim is unverified and their watch reports are self-reported, so I treat them as the leading suspect. Hold my 2 bullets until a verified contradiction or a clear necromancer pattern appears, since a wrong shot gives the necromancer the win."
+    },
+    {
+      "timestamp": "2026-10-12T04:25:45.480230+00:00",
+      "step": 26,
+      "day": 5,
+      "day_votes": [
+        {
+          "voter": "player_2",
+          "votee": "player_9"
+        },
+        {
+          "voter": "player_3",
+          "votee": "abstain"
+        },
+        {
+          "voter": "player_9",
+          "votee": "player_3"
+        },
+        {
+          "voter": "player_10",
+          "votee": "player_9"
+        }
+      ],
+      "voted_player": null,
+      "vigilante_strategy": "Both wolves are dead, so the living killer is the necromancer among player_3, player_9 and player_10, and the town must not lynch a town player. Player_9's sentinel claim is unverified and their watch reports are self-reported, so I treat them as the leading suspect. Hold my 2 bullets until a verified contradiction or a clear necromancer pattern appears, since a wrong shot gives the necromancer the win."
+    },
+    {
+      "timestamp": "2026-10-12T04:23:07.623944+00:00",
+      "step": 25,
+      "day": 5,
+      "day_votes": [],
+      "voted_player": null,
+      "vigilante_strategy": "Both wolves (illusionist and chanteuse) are now dead, so the only remaining threat is the necromancer, who is probably among the living players or the unrevealed dead. I have no verified contradiction to act on, and a wrong shot would cost a town player, so I hold fire again. I will keep my 2 bullets for a player whose claim is contradicted by a verified record or whose behavior clearly matches the necromancer. I will watch for a night attack pattern that shows the necromancer's activity."
+    }
+  ],
+  "events": [
+    {
+      "day": 3,
+      "seq": 281,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "no evidence yet",
+          "player": "player_1",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no evidence yet",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no evidence yet",
+          "player": "player_4",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no evidence yet",
+          "player": "player_5",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "voted to eliminate me on day 2 with no stated reason; the only counted accusation so far",
+          "player": "player_6",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no evidence yet",
+          "player": "player_7",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no evidence yet",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no evidence yet",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_discussion"
+    },
+    {
+      "day": 3,
+      "seq": 282,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "No deaths explained yet beyond player_8's hidden role, so the wolves and lone killer are still unknown. I hold both bullets and will shoot only with a clear wolf or necromancer read. Watch player_6's vote on me and whoever pushes an early lynch without reasons. Keep speaking short and only when I have something new."
+    },
+    {
+      "day": 3,
+      "seq": 305,
+      "type": "speech",
+      "claim": "sentinel",
+      "player": "player_9",
+      "message": "I'm the sentinel. Night 2 I watched player_6, and the visitors were player_4 and player_8. Player_8 died that night, so you can weigh that however you like.",
+      "channel_seq": 7
+    },
+    {
+      "day": 3,
+      "seq": 328,
+      "type": "speech",
+      "claim": "sentinel",
+      "player": "player_9",
+      "message": "Night 1 I watched nobody, so my only result is night 2 on player_6: player_4 and player_8 came to their door. player_4, that fits a check on 6, so if you were there, what did you learn about player_8? player_6, you say you visited nobody that night; did anyone come to you, or did you stay home?",
+      "channel_seq": 13
+    },
+    {
+      "day": 3,
+      "seq": 338,
+      "type": "speech",
+      "claim": "sentinel",
+      "player": "player_9",
+      "message": "Night 1 I watched nobody, so my only result is night 2 on player_6: player_4 and player_8 came to their door. That fits player_4 checking 6, but I can't confirm the check. player_6, my watch only shows who visited you, not where you went, so your no-visit claim isn't contradicted by it.",
+      "channel_seq": 15
+    },
+    {
+      "day": 3,
+      "seq": 343,
+      "type": "speech",
+      "claim": "none",
+      "player": "player_2",
+      "message": "player_6, you voted me on day 2 with no reason given, and now you say you visited nobody on night 2. Who did you go to that night? player_4 and player_9 at least agree with each other, so the lie is more likely in your answers than theirs.",
+      "channel_seq": 16
+    },
+    {
+      "day": 3,
+      "seq": 346,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "I am the vigilante with 2 bullets and no reliable kill target yet. Player_4 and player_9's claims fit each other, so one of them may be lying or both may be honest. Player_6 voted for me without reason and denies visits, so keep watching that. Shoot only on a clear wolf or necromancer read, and keep speaking short."
+    },
+    {
+      "day": 3,
+      "seq": 358,
+      "type": "speech",
+      "claim": "sentinel",
+      "player": "player_9",
+      "message": "Answering you, player_6: my night 2 watch on you showed player_4 and player_8 at your door, and no one else. Night 1 I watched nobody, so that is my whole record. player_4's check fits that visit, but I can't confirm it. Your no-visit claim doesn't fit a watch that shows two visitors, so what did you actually do that night?",
+      "channel_seq": 19
+    },
+    {
+      "day": 3,
+      "seq": 413,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "unchanged; only asked clarifying questions",
+          "player": "player_1",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "abstained on day 2 with no clear reason; no evidence either way",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claims investigator with a Suspicious on player_6, which fits a wolf-side read; conflicts with player_6's account",
+          "player": "player_4",
+          "confidence": "low",
+          "suspected_role": "investigator"
+        },
+        {
+          "why": "abstained with no discussion on record; no evidence",
+          "player": "player_5",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "voted me on day 2 without reason, denies visits that the sentinel's watch contradicts, and got a Suspicious read from the investigator",
+          "player": "player_6",
+          "confidence": "high",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "unchanged; no discussion on record",
+          "player": "player_7",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claims sentinel with a watch that matches player_4's check; no contradiction found",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        },
+        {
+          "why": "unchanged; no discussion on record",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_vote"
+    },
+    {
+      "day": 3,
+      "seq": 414,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "I am the vigilante with 2 bullets; player_8 died to wolves on night 2 with role hidden by an illusionist, so an illusionist is likely still alive. player_6 looks most suspicious: it voted me without reason, denies a visit the sentinel's watch contradicts, and is the target of the investigator's Suspicious read. player_4 and player_9 both claim roles, so one may be lying. Shoot only on a clear wolf or necromancer read, and keep speaking short."
+    },
+    {
+      "day": 3,
+      "seq": 436,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "Voted to eliminate player_4 on day 3 with no visible evidence",
+          "player": "player_1",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "Joined the day 3 lynch of player_6 with no shown reasoning",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "Suspicious check on player_6 matched the lynched illusionist, and player_9's watch placed player_4 at player_6's door",
+          "player": "player_4",
+          "confidence": "high",
+          "suspected_role": "investigator"
+        },
+        {
+          "why": "Joined the day 3 lynch of player_6 with no shown reasoning",
+          "player": "player_5",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "Joined the day 3 lynch of player_6 with no shown reasoning",
+          "player": "player_7",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "Sentinel claim with a watch on player_6 that fits player_4's check and the lynched illusionist",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        },
+        {
+          "why": "Joined the day 3 lynch of player_6 with no shown reasoning",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "night_action"
+    },
+    {
+      "day": 3,
+      "seq": 438,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "player_6, the illusionist, was lynched, which makes player_4's Suspicious check and player_9's sentinel watch more credible as town claims. The remaining wolf is the chanteuse, with the necromancer and speculator also alive. I have no clear wolf or necromancer read tonight, so I hold fire and keep my two bullets. Shoot only when a player's actions or claims are contradicted by a verified result."
+    },
+    {
+      "day": 4,
+      "seq": 482,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "unchanged, no clear evidence either way",
+          "player": "player_1",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "unchanged, no clear evidence either way",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "unchanged, no clear evidence either way",
+          "player": "player_7",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel on day 3; player_6 was the illusionist and player_6 was lynched, so the watch claim is more credible but still unverified",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        },
+        {
+          "why": "unchanged, no clear evidence either way",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_discussion"
+    },
+    {
+      "day": 4,
+      "seq": 483,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Vigilante with 2 bullets and no role revealed. Held fire on nights 1-3 with no verified wolf read. Player_6 (illusionist) is lynched, so player_4's Suspicious check and player_9's sentinel watch now look more credible. Remaining wolf is the chanteuse, with the necromancer and speculator alive. Shoot only on a verified contradiction, and keep my role hidden for now."
+    },
+    {
+      "day": 4,
+      "seq": 498,
+      "type": "speech",
+      "claim": "sentinel",
+      "player": "player_9",
+      "message": "Night 3 I was roleblocked, so I watched nobody and learned nothing. Night 2 my watch on player_6 showed player_4 and player_8 there, which fits player_4's check. I still have one watch and will save it for a claim that needs checking.",
+      "channel_seq": 7
+    },
+    {
+      "day": 4,
+      "seq": 505,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Player_6 (illusionist) is dead and the chanteuse plus necromancer are the remaining threats. Player_9's claimed roleblock on night 3 fits a real town role being targeted, so I lean toward believing the sentinel claim. I still hold 2 bullets and my role hidden. I will shoot only on a verified contradiction, and I will not spend a bullet on a vague read."
+    },
+    {
+      "day": 4,
+      "seq": 521,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Player_6 (illusionist) is dead, so the wolves now have the chanteuse and one more wolf-side threat, and the necromancer is still alive. Player_9's sentinel claim is consistent with a blocked town role, so I lean toward believing it for now. I hold 2 bullets and my role hidden, and I will shoot only on a verified contradiction, not on a vague read. Keep watching who blocks or visits whom, since those patterns point to the chanteuse."
+    },
+    {
+      "day": 4,
+      "seq": 540,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "voted to eliminate investigator player_4 on day 3, the one town role whose check matched the illuminated illusionist, and now presses player_9 hard",
+          "player": "player_1",
+          "confidence": "low",
+          "suspected_role": "chanteuse"
+        },
+        {
+          "why": "voted with the day 3 majority against player_6 and no other evidence either way",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "voted with the day 3 majority against player_6 and offered no independent read",
+          "player": "player_7",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel; the night 2 watch on player_6 matches player_4's Suspicious check, and the night 3 roleblock claim fits a chanteuse target",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        },
+        {
+          "why": "voted with the day 3 majority against player_6 and offered no independent read",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_vote"
+    },
+    {
+      "day": 4,
+      "seq": 541,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Player_6 (illusionist) and player_4 (investigator) are dead, and player_9's sentinel claim fits the night 3 roleblock, so I currently lean toward believing it. player_1 voted to lynch the investigator on day 3 and is now pressing player_9, which makes player_1 my main suspect for a wolf or chanteuse. The chanteuse and the necromancer are still alive, so watch who gets blocked and who visits whom. I hold 2 bullets and will shoot only on a verified contradiction."
+    },
+    {
+      "day": 4,
+      "seq": 563,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "voted to abstain on day 4 after voting to lynch player_4 on day 3; no clear evidence",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "voted with the lynch on player_6 and player_1, no distinctive evidence",
+          "player": "player_7",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel and watched player_6 on night 2 with a result that fits player_4's check; roleblocked on night 3, consistent with the chanteuse's block",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        },
+        {
+          "why": "voted to lynch player_1 on day 4 and player_6 on day 3, with no distinctive evidence",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "night_action"
+    },
+    {
+      "day": 4,
+      "seq": 565,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Both wolves (illusionist and chanteuse) are now dead, so the only remaining threat is the necromancer, who is probably among the living players or the unrevealed dead. I have no verified contradiction to act on, and a wrong shot would cost a town player, so I hold fire again. I will keep my 2 bullets for a player whose claim is contradicted by a verified record or whose behavior clearly matches the necromancer. I will watch for a night attack pattern that shows the necromancer's activity."
+    },
+    {
+      "day": 5,
+      "seq": 580,
+      "type": "phase_change",
+      "phase": "day"
+    },
+    {
+      "day": 5,
+      "seq": 581,
+      "type": "input_request",
+      "round": "opening",
+      "bodies": [],
+      "player": "player_3",
+      "deadline": null,
+      "candidates": [],
+      "action_kind": "discuss"
+    },
+    {
+      "day": 5,
+      "seq": 582,
+      "type": "round_opened",
+      "round": "opening",
+      "players": [
+        "player_2",
+        "player_3",
+        "player_9",
+        "player_10"
+      ]
+    },
+    {
+      "day": 5,
+      "seq": 583,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "voted to abstain on day 2 and day 4 only, no concrete evidence either way; necromancer is among the three living players",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel with a night 2 watch that matches player_4's check, but roleblocked claim on night 3 is unverified; could be the necromancer",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        },
+        {
+          "why": "voted to eliminate the wolves on days 3 and 4 with no other evidence; no claim yet",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_discussion"
+    },
+    {
+      "day": 5,
+      "seq": 584,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Both wolves are dead; the necromancer is one of the three living players (player_3, player_9, player_10), since the reanimated illusionist and reanimated wolves struck on nights 3 and 4. I hold 2 bullets and will only shoot against a verified contradiction or a clear necromancer pattern, because a wrong shot hands the necromancer a win. Nothing new to add in the opening round, so I pass and watch the claims, especially player_9's sentinel claim."
+    },
+    {
+      "day": 5,
+      "seq": 585,
+      "role": "speculator",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "no new evidence; 2 voted to eliminate player_6 on day 3 and to eliminate player_1 on day 4, both lynches that hit wolves",
+          "player": "player_2",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "no new evidence; 3 abstained on day 4 after voting to eliminate player_4 on day 3, which was a mistake since player_4 was the investigator",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel; the night 2 watch fit player_4's check and the night 3 roleblock is unverified, so the claim is plausible but not confirmed",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "sentinel"
+        }
+      ],
+      "round": 0,
+      "player": "player_10",
+      "action_phase": "day_discussion"
+    },
+    {
+      "day": 5,
+      "seq": 586,
+      "type": "strategy_update",
+      "player": "player_10",
+      "strategy": "Town is ahead: both wolves are lynched and the necromancer is the only killer left, and it has been acting through the illusionist and chanteuse bodies. I have no new information to share, so I pass this opening round and watch how 2, 3 and 9 handle the necromancer question. I stay neutral until someone gives me a concrete claim to test."
+    },
+    {
+      "day": 5,
+      "seq": 587,
+      "role": "sentinel",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "unchanged",
+          "player": "player_2",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "No one visited player_3 on night 4 per my watch, so no visible night action from them",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "Has voted with the town so far, no evidence either way",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_9",
+      "action_phase": "day_discussion"
+    },
+    {
+      "day": 5,
+      "seq": 588,
+      "type": "strategy_update",
+      "player": "player_9",
+      "strategy": "Both wolves are gone, so the remaining threat is the necromancer, who attacks through the reanimated illusionist body and killed the healer on night 4. My last watch is precious: use it on a player whose visits would show the necromancer's movements. My night 4 watch on player_3 found no visitors, which clears player_3 of any visible night action. Vote based on evidence, and keep the speculator's pick in mind."
+    },
+    {
+      "day": 5,
+      "seq": 589,
+      "type": "pass_marker",
+      "gated": false,
+      "player": "player_2",
+      "channel_seq": 0,
+      "pass_reason": "voluntary",
+      "gated_candidate": null
+    },
+    {
+      "day": 5,
+      "seq": 590,
+      "type": "pass_marker",
+      "gated": false,
+      "player": "player_3",
+      "channel_seq": 1,
+      "pass_reason": "voluntary",
+      "gated_candidate": null
+    },
+    {
+      "day": 5,
+      "seq": 591,
+      "type": "speech",
+      "claim": "sentinel",
+      "player": "player_9",
+      "message": "Sharing my night 4 result since it's new: my watch on player_3 found no one visited them, so they did nothing that night. Night 4 went to the reanimated illusionist killing player_7, so the necromancer is still active.",
+      "channel_seq": 2
+    },
+    {
+      "day": 5,
+      "seq": 592,
+      "type": "pass_marker",
+      "gated": false,
+      "player": "player_10",
+      "channel_seq": 3,
+      "pass_reason": "voluntary",
+      "gated_candidate": null
+    },
+    {
+      "day": 5,
+      "seq": 593,
+      "type": "turn_started",
+      "player": "player_2"
+    },
+    {
+      "day": 5,
+      "seq": 594,
+      "type": "pass_marker",
+      "gated": false,
+      "player": "player_2",
+      "channel_seq": 4,
+      "pass_reason": "voluntary",
+      "gated_candidate": null
+    },
+    {
+      "day": 5,
+      "seq": 595,
+      "owes": [],
+      "tier": "proactive",
+      "type": "firing_reason",
+      "player": "player_2",
+      "about_channel_seq": 4
+    },
+    {
+      "day": 5,
+      "seq": 596,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Both wolves are dead, so the necromancer is one of player_3, player_9, or player_10. I hold 2 bullets and will shoot only against a verified contradiction or a clear necromancer pattern, since a wrong shot gives the necromancer the win. Track player_9's sentinel claim against any watch results they report, and watch for a sentinel counter-claim or a conflicting account."
+    },
+    {
+      "day": 5,
+      "seq": 597,
+      "type": "turn_started",
+      "player": "player_3"
+    },
+    {
+      "day": 5,
+      "seq": 598,
+      "type": "input_request",
+      "round": "proactive",
+      "bodies": [],
+      "player": "player_3",
+      "deadline": null,
+      "candidates": [],
+      "action_kind": "discuss"
+    },
+    {
+      "day": 5,
+      "seq": 599,
+      "type": "pass_marker",
+      "gated": false,
+      "player": "player_3",
+      "channel_seq": 5,
+      "pass_reason": "voluntary",
+      "gated_candidate": null
+    },
+    {
+      "day": 5,
+      "seq": 600,
+      "owes": [],
+      "tier": "proactive",
+      "type": "firing_reason",
+      "player": "player_3",
+      "about_channel_seq": 5
+    },
+    {
+      "day": 5,
+      "seq": 601,
+      "type": "turn_started",
+      "player": "player_10"
+    },
+    {
+      "day": 5,
+      "seq": 602,
+      "type": "pass_marker",
+      "gated": false,
+      "player": "player_10",
+      "channel_seq": 6,
+      "pass_reason": "voluntary",
+      "gated_candidate": null
+    },
+    {
+      "day": 5,
+      "seq": 603,
+      "owes": [],
+      "tier": "proactive",
+      "type": "firing_reason",
+      "player": "player_10",
+      "about_channel_seq": 6
+    },
+    {
+      "day": 5,
+      "seq": 604,
+      "type": "strategy_update",
+      "player": "player_10",
+      "strategy": "Town is ahead with both wolves lynched. The necromancer is the remaining killer and is acting through dead wolf bodies. I stay quiet until a concrete claim can be tested, and I keep my speculator identity hidden, playing as an ordinary town member. I should be ready to vote with the town once a lynch target has real evidence behind it."
+    },
+    {
+      "day": 5,
+      "seq": 605,
+      "type": "day_summary",
+      "summary": "Key accusations and defenses: None.\nRole claims: player_9 claimed sentinel \u2014 Night 4: watched player_3; says no one visited them"
+    },
+    {
+      "day": 5,
+      "seq": 606,
+      "data": {
+        "accusations": [],
+        "role_claims": [
+          {
+            "kind": "claimed",
+            "player": "player_9",
+            "claimed_role": "sentinel",
+            "night_actions": [
+              {
+                "seen": [],
+                "night": 4,
+                "action": "watch",
+                "reason": "",
+                "result": "no_visitors",
+                "target": "player_3"
+              }
+            ],
+            "planned_actions": []
+          }
+        ]
+      },
+      "type": "day_summary_structured"
+    },
+    {
+      "day": 5,
+      "seq": 607,
+      "type": "input_request",
+      "round": null,
+      "bodies": [],
+      "player": "player_3",
+      "deadline": null,
+      "candidates": [
+        "player_2",
+        "player_9",
+        "player_10",
+        "abstain"
+      ],
+      "action_kind": "vote"
+    },
+    {
+      "day": 5,
+      "seq": 608,
+      "type": "phase_change",
+      "phase": "voting"
+    },
+    {
+      "day": 5,
+      "seq": 609,
+      "role": "speculator",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "pushed accusations on player_6 with reasons, no sign of killer play",
+          "player": "player_2",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "abstained on day 4 with no lynch pressure; no evidence either way",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel, but night 3 roleblock claim and night 4 watch are unverifiable and the killer is still acting",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_10",
+      "action_phase": "day_vote"
+    },
+    {
+      "day": 5,
+      "seq": 610,
+      "type": "strategy_update",
+      "player": "player_10",
+      "strategy": "Town needs the necromancer gone, and it is one of player_2, player_3, or player_9. I picked Town on day 3, so my vote now serves Town. Player_9's sentinel claim is the only unverified claim I can test, and their night 3 roleblock and night 4 watch both rest on their word. I will keep my speculator identity hidden and vote with Town on the most suspicious living claim."
+    },
+    {
+      "day": 5,
+      "seq": 611,
+      "role": "sentinel",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "voted player_6 on day 3 and the chanteuse on day 4, consistent with town; no night evidence against them",
+          "player": "player_2",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "abstained on day 4 after player_1 pointed at them; my night 4 watch found no visitors, which does not clear them of acting",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "necromancer"
+        },
+        {
+          "why": "voted player_6 on day 3 and the chanteuse on day 4, consistent with town; no night evidence against them",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_9",
+      "action_phase": "day_vote"
+    },
+    {
+      "day": 5,
+      "seq": 612,
+      "type": "strategy_update",
+      "player": "player_9",
+      "strategy": "Both wolves are dead, so the remaining threat is the necromancer, who acts through the reanimated illusionist body and killed the healer on night 4. The living candidates are player_2, player_3 and player_10, and the speculator picked Town, so a killer among them is likely. My last watch should go on whichever player's visitors would best expose the necromancer's movements. Track the day votes for consistency and avoid lynching a town player."
+    },
+    {
+      "day": 5,
+      "seq": 613,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "unchanged: quiet, voted with the town majority on day 3, and player_9's night 4 watch found no visitor on them",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "claimed sentinel with watch results that only they report, and their night 3 roleblock account leaves their sentinel claim unverified",
+          "player": "player_9",
+          "confidence": "low",
+          "suspected_role": "necromancer"
+        },
+        {
+          "why": "voted with the majority on days 3 and 4 and has made no claims, so no evidence either way",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_vote"
+    },
+    {
+      "day": 5,
+      "seq": 614,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Both wolves are dead, so the living killer is the necromancer among player_3, player_9 and player_10, and the town must not lynch a town player. Player_9's sentinel claim is unverified and their watch reports are self-reported, so I treat them as the leading suspect. Hold my 2 bullets until a verified contradiction or a clear necromancer pattern appears, since a wrong shot gives the necromancer the win."
+    },
+    {
+      "day": 5,
+      "seq": 615,
+      "type": "vote_cast",
+      "votee": "player_9",
+      "voter": "player_10"
+    },
+    {
+      "day": 5,
+      "seq": 616,
+      "type": "vote_cast",
+      "votee": "player_3",
+      "voter": "player_9"
+    },
+    {
+      "day": 5,
+      "seq": 617,
+      "type": "vote_cast",
+      "votee": "player_9",
+      "voter": "player_2"
+    },
+    {
+      "day": 5,
+      "seq": 618,
+      "type": "vote_cast",
+      "votee": "abstain",
+      "voter": "player_3"
+    },
+    {
+      "day": 5,
+      "seq": 619,
+      "text": "\nHere's the vote result for day 5:\n  player_2 voted to eliminate player_9\n  player_3 voted to abstain\n  player_9 voted to eliminate player_3\n  player_10 voted to eliminate player_9\nPlayer player_9 has been voted out and was a sentinel.\nThe record of player_9, the sentinel: night 2, watched player_6; saw player_4 and player_8 visit them; night 3, was roleblocked; night 4, watched player_3; saw no one.\n",
+      "type": "gm_message",
+      "channel_seq": 7
+    },
+    {
+      "day": 5,
+      "seq": 620,
+      "role": "sentinel",
+      "type": "lynch_result",
+      "player": "player_9",
+      "outcome": "lynched",
+      "vote_counts": {
+        "abstain": 1,
+        "player_3": 1,
+        "player_9": 2
+      },
+      "no_lynch_streak": 0
+    },
+    {
+      "day": 5,
+      "seq": 621,
+      "type": "roster_update",
+      "surviving_players": [
+        "player_10",
+        "player_2",
+        "player_3"
+      ]
+    },
+    {
+      "day": 5,
+      "seq": 622,
+      "type": "pack_roster_update",
+      "surviving_wolves": []
+    },
+    {
+      "day": 5,
+      "seq": 623,
+      "type": "input_request",
+      "round": null,
+      "bodies": [
+        "player_1",
+        "player_4",
+        "player_6",
+        "player_7",
+        "player_9"
+      ],
+      "player": "player_3",
+      "deadline": null,
+      "candidates": [
+        "player_2",
+        "player_10",
+        "stay_put"
+      ],
+      "action_kind": "necromancer_target"
+    },
+    {
+      "day": 5,
+      "seq": 624,
+      "type": "phase_change",
+      "phase": "night"
+    },
+    {
+      "day": 5,
+      "seq": 625,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "abstained on days 4 and 5 and was accused by the sentinel; the night 4 watch saw no visitors, which fits either side",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "joined the day 5 lynch of the sentinel; no other evidence",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "night_action"
+    },
+    {
+      "day": 5,
+      "seq": 626,
+      "role": "vigilante",
+      "type": "night_action",
+      "actor": "player_2",
+      "target": "player_3"
+    },
+    {
+      "day": 5,
+      "seq": 627,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Two of three players are left, so the necromancer can win by killing one more player; holding fire loses to any necromancer kill. Shooting the necromancer wins, but shooting the other town player also hands the win to the necromancer. I am taking the shot at player_3, a coin flip, because it is the only line that can win before the necromancer acts."
+    },
+    {
+      "day": 5,
+      "seq": 628,
+      "role": "necromancer",
+      "type": "night_action",
+      "actor": "player_3",
+      "target": "player_2"
+    },
+    {
+      "day": 5,
+      "seq": 629,
+      "text": "Night of day 5: No one died last night.",
+      "type": "gm_message",
+      "channel_seq": 8
+    },
+    {
+      "day": 5,
+      "seq": 630,
+      "pick": null,
+      "save": null,
+      "type": "night_result",
+      "saves": [],
+      "deaths": []
+    },
+    {
+      "day": 5,
+      "seq": 631,
+      "seen": [
+        "player_1"
+      ],
+      "type": "night_record",
+      "actor": "player_3",
+      "action": "block",
+      "player": "player_3",
+      "result": "blocked",
+      "target": "player_2",
+      "outcome": "Through player_1's body: player_2 was roleblocked tonight."
+    },
+    {
+      "day": 5,
+      "seq": 632,
+      "seen": [],
+      "type": "night_record",
+      "actor": "player_2",
+      "action": "shoot",
+      "player": "player_2",
+      "result": "roleblocked",
+      "target": "player_3",
+      "outcome": "You were roleblocked: your action was not carried out and you learned nothing tonight."
+    },
+    {
+      "day": 5,
+      "seq": 633,
+      "role": "vigilante",
+      "type": "uses_remaining",
+      "count": 2,
+      "player": "player_2"
+    },
+    {
+      "day": 5,
+      "seq": 634,
+      "role": "speculator",
+      "type": "uses_remaining",
+      "count": 0,
+      "player": "player_10"
+    },
+    {
+      "day": 6,
+      "seq": 640,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "Abstained on days 4 and 5, and the sentinel accused them on day 5 before dying; one of player_3 or player_10 is the necromancer.",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        },
+        {
+          "why": "Voted to eliminate player_1 and player_9, both town-aligned; no direct evidence either way.",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "unclear"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_discussion"
+    },
+    {
+      "day": 6,
+      "seq": 641,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Three alive: me, player_3, player_10. The necromancer is one of the two others, and any further kill by either side ends the game at two alive for the necromancer, so the only winning line is shooting the necromancer. Shoot the player who looks more like the necromancer, and avoid giving away my role before then."
+    },
+    {
+      "day": 6,
+      "seq": 646,
+      "type": "speech",
+      "claim": "none",
+      "player": "player_2",
+      "message": "Record check: player_9 watched player_3 on night 4 and saw no one. The night 4 kill on player_7 came from a reanimated wolf, so someone visited player_7 that night. That makes player_3 unlikely, and player_10 the one to watch.",
+      "channel_seq": 3
+    },
+    {
+      "day": 6,
+      "seq": 649,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Two players left plus me. The necromancer is alive and blocked me on night 5 through the chanteuse body, so it is hunting me. Player_10 looks like the necromancer, since player_3 visited nobody on night 4. Keep both bullets for the necromancer, and shoot at night 6 if the read holds. Do not reveal my role unless it helps."
+    },
+    {
+      "day": 6,
+      "seq": 660,
+      "type": "speech",
+      "claim": "none",
+      "player": "player_2",
+      "message": "Fair catch, player_10: a watch on player_3 shows who visited player_3, not where player_3 went, so my clear on player_3 was wrong. That leaves both of you open. Answer straight: who did you visit on night 4, and who on night 5?",
+      "channel_seq": 6
+    },
+    {
+      "day": 6,
+      "seq": 663,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Two living rivals plus me; the necromancer is one of them and it blocked me on night 5 through the chanteuse body. Keep both bullets until the read is clearer, and do not reveal my role unless it protects me. Track who makes visits and who is claimed on each night, and test player_10's and player_3's accounts against each other."
+    },
+    {
+      "day": 6,
+      "seq": 670,
+      "type": "speech",
+      "claim": "none",
+      "player": "player_2",
+      "message": "I pushed player_3 because the watch showed no visitors and player_7 still died, so the attacker wasn't at player_3's door. That was a bad reason to call them clear. On night 4 I did nothing. You only said you have no action, which doesn't say who you went to. Since wolves are gone, the necromancer is one of you two. Who do you think it is?",
+      "channel_seq": 8
+    },
+    {
+      "day": 6,
+      "seq": 673,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Two living rivals plus me, and the necromancer is one of them since wolves are gone. It blocked me on night 5 through the chanteuse body. Keep both bullets until the read is clearer. Test player_10's and player_3's accounts against each other on who visited whom, and do not reveal my role unless it protects me."
+    },
+    {
+      "day": 6,
+      "seq": 687,
+      "role": "vigilante",
+      "type": "player_reads",
+      "reads": [
+        {
+          "why": "claims sigilist and a sigil on me night 2, but is unverified; the watch on them showed no visitors on night 4",
+          "player": "player_3",
+          "confidence": "low",
+          "suspected_role": "sigilist"
+        },
+        {
+          "why": "says they have no night action, dodges who they visited, and pressed me as the one to watch; fits the necromancer",
+          "player": "player_10",
+          "confidence": "low",
+          "suspected_role": "necromancer"
+        }
+      ],
+      "round": 0,
+      "player": "player_2",
+      "action_phase": "day_vote"
+    },
+    {
+      "day": 6,
+      "seq": 688,
+      "type": "strategy_update",
+      "player": "player_2",
+      "strategy": "Two rivals remain: player_3 (claims sigilist) and player_10 (no action, evasive). The necromancer is one of them and blocked me on night 5 through the chanteuse body. Keep both bullets until the read sharpens, and test whether player_3's sigil claim and player_10's no-action claim hold up against the record. Do not reveal my role unless it protects me."
+    }
+  ]
+}

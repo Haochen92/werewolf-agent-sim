@@ -1,0 +1,110 @@
+{
+  "label": "haiku_game_403f_read_compare",
+  "run_at": "2026-10-16T03:48:49.088483+00:00",
+  "config": {
+    "label": "haiku_game_403f_read_compare",
+    "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "haiku_current",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-read-baseline"
+      },
+      {
+        "label": "haiku_read_compare",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-read-compare"
+      }
+    ],
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "note": "Regression check for the comparative read sentence (see hallucination_bench_haiku_vote_compare.json): the 18 discussion turns of 403f4dbc (\u00a78.6) on the current code and with the sentence, both from worktrees at 1757a49c."
+  },
+  "n_cases": 18,
+  "arms": {
+    "haiku_current": {
+      "bad": {
+        "all": "48/90 (53%)",
+        "phase:day_discussion": "48/90 (53%)",
+        "role:healer": "6/10 (60%)",
+        "role:illusionist": "7/10 (70%)",
+        "role:investigator": "6/15 (40%)",
+        "role:sentinel": "21/25 (84%)",
+        "role:sigilist": "4/5 (80%)",
+        "role:speculator": "4/10 (40%)",
+        "role:vigilante": "0/15 (0%)",
+        "slice:repeat": "22/30 (73%)",
+        "slice:visit": "16/35 (46%)",
+        "slice:vote_reason": "10/25 (40%)",
+        "source:live_checkpoint": "48/90 (53%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10313.0,
+        "cached": 7695.0,
+        "output": 1154.8,
+        "reasoning": 591.4,
+        "seconds": 6.2
+      },
+      "generation_samples_measured": 90
+    },
+    "haiku_read_compare": {
+      "bad": {
+        "all": "48/90 (53%)",
+        "phase:day_discussion": "48/90 (53%)",
+        "role:healer": "7/10 (70%)",
+        "role:illusionist": "7/10 (70%)",
+        "role:investigator": "7/15 (47%)",
+        "role:sentinel": "21/25 (84%)",
+        "role:sigilist": "4/5 (80%)",
+        "role:speculator": "2/10 (20%)",
+        "role:vigilante": "0/15 (0%)",
+        "slice:repeat": "22/30 (73%)",
+        "slice:visit": "15/35 (43%)",
+        "slice:vote_reason": "11/25 (44%)",
+        "source:live_checkpoint": "48/90 (53%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10430.0,
+        "cached": 7808.1,
+        "output": 1281.4,
+        "reasoning": 634.6,
+        "seconds": 6.9
+      },
+      "generation_samples_measured": 90
+    }
+  },
+  "paired_vs_first": {
+    "haiku_read_compare": {
+      "cases": 18,
+      "better": 6,
+      "worse": 5,
+      "two_sided_sign_p": 1.0
+    }
+  },
+  "judge_usage": {
+    "calls": 0,
+    "batched_calls": 490,
+    "unvalidated_replies": 0,
+    "input_tokens": 171038,
+    "output_tokens": 117434,
+    "cache_read_input_tokens": 295609,
+    "cache_creation_input_tokens": 1821,
+    "cache_creation_1h_input_tokens": 0,
+    "cost_usd": 0.7752644499999999
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "label": "haiku_vote_compare",
+  "run_at": "2026-10-16T04:03:35.158172+00:00",
+  "config": {
+    "label": "haiku_vote_compare",
+    "dataset": "evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl",
+    "n": 10,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "haiku_pre_fixes",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-pre-haiku-fixes"
+      },
+      {
+        "label": "haiku_layout_baseline",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-prompt-layout"
+      },
+      {
+        "label": "haiku_current",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-read-baseline"
+      },
+      {
+        "label": "haiku_read_compare",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-read-compare"
+      }
+    ],
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "note": "The comparative read (owner, 2026-10-16): one universal sentence in the shared reasoning block (REASONING_DISCIPLINE), 'Form your reads by comparing the living players...'. 11 day votes frozen from 403f4dbc (evaluation/experiments/haiku_vote_cases.py): day 5's two ballots on the real sentinel, day 6's two ballots after the Necromancer's uncontested sigilist bluff, and seven controls whose votes were right. Both arms run worktrees at 1757a49c (git worktree add --detach ../ww-read-baseline HEAD; ../ww-read-compare is the same plus the sentence; .env linked; remove after). Read the vote targets first; the goldens guard the facts and name the reasoning errors. haiku_pre_fixes (added after the first two arms ran) is the code before the October 12 fixes (746197c4, the before arm of haiku_game_403f: git worktree add --detach ../ww-pre-haiku-fixes 746197c4), to see whether the original ballots reproduce on it. haiku_layout_baseline is the tag prompt-layout-baseline (09af8272: the October 12 fixes and reads-first, the earlier layout), added after the day-4 votes dropped on the current code: git worktree add --detach ../ww-prompt-layout prompt-layout-baseline."
+  },
+  "n_cases": 11,
+  "arms": {
+    "haiku_pre_fixes": {
+      "bad": {
+        "all": "44/110 (40%)",
+        "phase:day_vote": "44/110 (40%)",
+        "role:healer": "10/20 (50%)",
+        "role:sentinel": "15/30 (50%)",
+        "role:speculator": "2/20 (10%)",
+        "role:vigilante": "17/40 (42%)",
+        "slice:vote_compare": "44/110 (40%)",
+        "source:live_checkpoint": "44/110 (40%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 8882.6,
+        "cached": 7724.7,
+        "output": 1325.1,
+        "reasoning": 827.4,
+        "seconds": 7.1
+      },
+      "generation_samples_measured": 110
+    },
+    "haiku_layout_baseline": {
+      "bad": {
+        "all": "40/110 (36%)",
+        "phase:day_vote": "40/110 (36%)",
+        "role:healer": "10/20 (50%)",
+        "role:sentinel": "11/30 (37%)",
+        "role:speculator": "4/20 (20%)",
+        "role:vigilante": "15/40 (38%)",
+        "slice:vote_compare": "40/110 (36%)",
+        "source:live_checkpoint": "40/110 (36%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 9024.6,
+        "cached": 7852.5,
+        "output": 1146.6,
+        "reasoning": 659.0,
+        "seconds": 6.0
+      },
+      "generation_samples_measured": 110
+    },
+    "haiku_current": {
+      "bad": {
+        "all": "39/110 (35%)",
+        "phase:day_vote": "39/110 (35%)",
+        "role:healer": "9/20 (45%)",
+        "role:sentinel": "16/30 (53%)",
+        "role:speculator": "0/20 (0%)",
+        "role:vigilante": "14/40 (35%)",
+        "slice:vote_compare": "39/110 (35%)",
+        "source:live_checkpoint": "39/110 (35%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 8930.6,
+        "cached": 7033.0,
+        "output": 959.9,
+        "reasoning": 489.9,
+        "seconds": 5.6
+      },
+      "generation_samples_measured": 110
+    },
+    "haiku_read_compare": {
+      "bad": {
+        "all": "40/110 (36%)",
+        "phase:day_vote": "40/110 (36%)",
+        "role:healer": "13/20 (65%)",
+        "role:sentinel": "14/30 (47%)",
+        "role:speculator": "0/20 (0%)",
+        "role:vigilante": "13/40 (32%)",
+        "slice:vote_compare": "40/110 (36%)",
+        "source:live_checkpoint": "40/110 (36%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 9047.6,
+        "cached": 7138.3,
+        "output": 1296.7,
+        "reasoning": 736.0,
+        "seconds": 6.9
+      },
+      "generation_samples_measured": 110
+    }
+  },
+  "paired_vs_first": {
+    "haiku_layout_baseline": {
+      "cases": 11,
+      "better": 5,
+      "worse": 2,
+      "two_sided_sign_p": 0.4531
+    },
+    "haiku_current": {
+      "cases": 11,
+      "better": 6,
+      "worse": 3,
+      "two_sided_sign_p": 0.5078
+    },
+    "haiku_read_compare": {
+      "cases": 11,
+      "better": 5,
+      "worse": 2,
+      "two_sided_sign_p": 0.4531
+    }
+  },
+  "judge_usage": {
+    "calls": 0,
+    "batched_calls": 440,
+    "unvalidated_replies": 0,
+    "input_tokens": 189821,
+    "output_tokens": 170409,
+    "cache_read_input_tokens": 265866,
+    "cache_creation_input_tokens": 1214,
+    "cache_creation_1h_input_tokens": 0,
+    "cost_usd": 1.0566773
+  }
+}

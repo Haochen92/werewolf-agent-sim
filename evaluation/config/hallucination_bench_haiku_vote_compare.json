@@ -1,0 +1,60 @@
+{
+  "label": "haiku_vote_compare",
+  "dataset": "evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl",
+  "n": 10,
+  "workers": 3,
+  "arms": [
+    {
+      "label": "haiku_pre_fixes",
+      "model": "anthropic/claude-haiku-5-5",
+      "env": {
+        "GOOGLE_GENAI_THINKING_LEVEL": "low",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
+      "memory": "none",
+      "checkout": "/home/ubuntu/projects/ww-pre-haiku-fixes"
+    },
+    {
+      "label": "haiku_layout_baseline",
+      "model": "anthropic/claude-haiku-5-5",
+      "env": {
+        "GOOGLE_GENAI_THINKING_LEVEL": "low",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
+      "memory": "none",
+      "checkout": "/home/ubuntu/projects/ww-prompt-layout"
+    },
+    {
+      "label": "haiku_current",
+      "model": "anthropic/claude-haiku-5-5",
+      "env": {
+        "GOOGLE_GENAI_THINKING_LEVEL": "low",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
+      "memory": "none",
+      "checkout": "/home/ubuntu/projects/ww-read-baseline"
+    },
+    {
+      "label": "haiku_read_compare",
+      "model": "anthropic/claude-haiku-5-5",
+      "env": {
+        "GOOGLE_GENAI_THINKING_LEVEL": "low",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
+      "memory": "none",
+      "checkout": "/home/ubuntu/projects/ww-read-compare"
+    },
+    {
+      "label": "haiku_ballot_tag",
+      "model": "anthropic/claude-haiku-5-5",
+      "env": {
+        "GOOGLE_GENAI_THINKING_LEVEL": "low",
+        "LLM_STRUCTURED_MODE": "json_schema"
+      },
+      "memory": "none",
+      "checkout": "/home/ubuntu/projects/ww-ballot-tag"
+    }
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "The comparative read (owner, 2026-10-16): one universal sentence in the shared reasoning block (REASONING_DISCIPLINE), 'Form your reads by comparing the living players...'. 11 day votes frozen from 403f4dbc (evaluation/experiments/haiku_vote_cases.py): day 5's two ballots on the real sentinel, day 6's two ballots after the Necromancer's uncontested sigilist bluff, and seven controls whose votes were right. Both arms run worktrees at 1757a49c (git worktree add --detach ../ww-read-baseline HEAD; ../ww-read-compare is the same plus the sentence; .env linked; remove after). Read the vote targets first; the goldens guard the facts and name the reasoning errors. haiku_pre_fixes (added after the first two arms ran) is the code before the October 12 fixes (746197c4, the before arm of haiku_game_403f: git worktree add --detach ../ww-pre-haiku-fixes 746197c4), to see whether the original ballots reproduce on it. haiku_layout_baseline is the tag prompt-layout-baseline (09af8272: the October 12 fixes and reads-first, the earlier layout), added after the day-4 votes dropped on the current code: git worktree add --detach ../ww-prompt-layout prompt-layout-baseline. haiku_ballot_tag is 1757a49c plus each ballot's target tagged with its revealed role (prompt_formatters.tag_ballot_targets): git worktree add --detach ../ww-ballot-tag 1757a49c, then apply that change. Scored by its votes only (evaluation/experiments/haiku_vote_score.py), not judged; not adopted, so the change is not in main (its wording is in §8.7)."
+}
