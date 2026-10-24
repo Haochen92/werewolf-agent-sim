@@ -1,327 +1,392 @@
-# Metrics / Scoring Instruments — Evaluation Apparatus Report
+# Play-quality metrics: scoring how well the agents played
 
-*Widened 2026-10-23 to play-quality scores generally. Added the ten-seat game's metrics and decision grades, the read Brier score, vote-target accuracy, the leverage anchor, the discussion structure counts, the balance counts, and two prompt-claim checks. The nine-seat de-lucked basket, the spoke's original subject, is kept below as written in June–July 2026, with dated corrections.*
+This page covers the scores that code works out from a saved game record to say how well the agents
+played: the share of votes that hit a real threat, a grade for each decision, how right a player's guesses
+about roles were, who won. No model is called, so a score costs nothing, gives the same answer every time,
+and is computed the same way for both sides of a comparison.
 
-**What this page covers.** Scores that code works out from a saved game record to say how well the
-agents played. Examples are the share of votes that hit a real threat, a grade for each decision, a
-score for how right a player's guesses were, and counts of who won. No AI model is needed to work
-them out, so they cost nothing and give the same answer every time.
+The page leads with the approach: why code scores play, how a decision is graded, and how a score is
+checked against winning. Two test runs, on the nine-seat game in June–July 2026 and on the ten-seat game in
+October 2026, follow as the evidence, then what they taught and the scores in use today.
 
-There are six groups:
+Not here: how a judge's or a person's labels are scored ([scoring](../scoring/report.md)); pass-or-fail
+checks with no score ([deterministic_audits](../deterministic_audits/report.md)); the controls on a
+comparison ([experimental_controls](../experimental_controls/report.md)). The full working text, with code
+paths, line numbers, every dated correction and the ten-seat run's detail, is the
+[experiment log](experiment_log.md). How the nine-seat scores were designed, with all 48 candidates and the
+July audit logs, is in [`../../metrics/`](../../metrics/README.md). How it all fits together is in
+[the hub](../report.md).
 
-1. **The nine-seat basket** (June–July 2026, nine-seat game). Do these per-role scores go up when
-   that side wins? They are "de-lucked": each counts chances taken out of chances given, not raw
-   totals, so luck matters less.
-2. **Ten-seat metrics and decision grades** (October 2026, ten-seat game). For the live game, did
-   each role's action do what the rules say it should, and was each decision good, neutral or bad
-   according to the owner's table?
-3. **Read and vote scores.** Did players' guesses about who holds which role turn out right (the
-   read Brier score, nine-seat July 2026 and ten-seat October 2026)? Did votes land on a real threat
-   (both games)? Does a measure of how much is at stake on a turn pick out the turns that decide the
-   game (the leverage anchor, June 2026, nine-seat)?
-4. **Counts used to judge prompt and rule changes** (October 2026). What does day discussion rest
-   on, how did each speaking-order design behave, and which side wins under each rule set? The first
-   two use nine-seat games and the balance games are ten-seat.
-5. **Checks of advice in the prompts** (June 2026, nine-seat). Does the wolves' "blend your vote"
-   tactic go with winning, and did the investigator's wolf find reach the village?
-6. **The batch summary.** Win rates and averages of each score for one batch of games.
+## In short
 
-For each score the page says how it is worked out, what it can and cannot claim, how far it was
-checked, and where its code and record are. This page rates **how far each score can be trusted**.
-It does not re-argue what any design found. Those results stay in the evidence folders named in each
-section. Checks that give only a pass or fail with no score, such as the speaking-order and
-failed-attack audits, are in [deterministic_audits](../deterministic_audits/report.md). How all the
-evaluation reports fit together: [the hub](../report.md). Where each claim comes from:
-[the source map](../source_map.md). The code and record for every score are listed in the Sources
-table at the end.
+- **Code scores play, because the win alone carries too much luck** and the early model judges could not
+  compare memory on with memory off.
+- **The rules say what a good move is.** A save keeps a townsperson alive, a vote on a wolf removes a threat;
+  each decision is graded against the true roles by that rule.
+- **The check against winning is support, and a way to catch surprises.** It started as the gate a score had
+  to pass (June 2026); on the ten-seat game the rules come first and the check confirms or questions them.
+- **Both runs agree on the core.** The town's lynch scores, power roles lost at night and wolves blending in
+  go with winning on both games. The healer's save rate did on nine seats and does not on ten, for a reason
+  the records show. Most new roles' scores need more games than the 78 there are.
 
-"Validated against win" below means a test showed that games with a higher score are games that
-side won more often.
+## Quick view
 
-| Check | Trust | Main limit |
+| Score | Trust | Main limit |
 |---|---|---|
-| Nine-seat basket: town scores (Part A) | ✅ | Validated against win on the nine-seat game only |
-| Nine-seat basket: investigator scores (Part A) | 🟡 | Only "finds turned into lynches" is validated |
-| Nine-seat basket: wolf and serial killer scores (Part A) | ⚠️ | Serial killer only partly covered; wolf day attacks not measured |
-| Nine-seat basket: town discussion (Part A) | 🟡 | One supporting score only; none for wolf discussion |
-| Ten-seat metrics and decision grades (§B1) | ⚠️ | Exact counts, hand-checked on one game, never validated against win |
-| Read Brier score (§B2) | 🟡 | Exact, but only two confidence levels, most reads "unclear", not validated against win or a person |
-| Vote-target accuracy (§B3) | ✅ as a count | Validated against win on the nine-seat game only |
-| Leverage anchor (§B4) | 🟡 | Nine-seat town day votes only |
-| Discussion census, Phase 2 step 8 counts, balance batches (§B5–B7) | ✅ as exact counts · 🟡 as readings | 4–31 games each, one model |
-| Blend-tactic check (§B8) | 🟡 | A trend only (p=0.07) |
-| Investigator transmission (§B9) | ⚠️ | Keyword matching, not meaning |
-| Batch summary (§B10) | none of its own | Each number is only as good as the score it averages |
+| Town lynch scores, power roles lost at night, lone killer lynched | ✅ both games | 78 ten-seat games, mixed models |
+| Wolves voting with the lynch; serial killer's kills of power roles | ✅ both games | 17 wolf wins, 7 serial-killer wins on ten seats |
+| Town vote accuracy | ✅ as a count; 🟡 on ten seats | Weak in two flash-lite batches |
+| Healer save rate | ✅ nine seats · ❌ ten seats | Does not go with winning on ten seats (§4) |
+| New roles' scores (Chanteuse, Sentinel, Trailseer, Sigilist, Illusionist) | 🟡 rule-graded | Too few games to test; Chanteuse real blocks pass |
+| Investigator finds, vigilante shots | 🟡 rule-graded | Rare: 20 and 19 games |
+| Ten-seat decision grades | ⚠️ | The owner's table, applied exactly; never tested against win as a whole |
+| Read Brier score | 🟡 | Two confidence levels, most reads "unclear" |
+| Counts used to judge prompt and rule changes | ✅ as counts · 🟡 as readings | 4–31 games each, one model |
 
-**Bottom line.** The most trustworthy scores are still the nine-seat town basket. The live game is
-ten-seat, and no play-quality score has been validated against win there. The code reflects this:
-it labels no score "validated" when it sends scores to Langfuse, the project's tracing dashboard.
-
-## Objective the apparatus targets
-
-A win/loss outcome is too lucky and too coarse to rank skill at N=30. The metrics layer replaces it with **de-lucked outcome proxies** (opportunity-conditioned rates) — but a proxy is only useful if it actually tracks winning. The validation harness exists to prove that.
-
-*(2026-10-23.)* Since October 2026 most play-quality work has not been a memory A/B. It has been prompt and rules changes judged on a few games: Phase 1–3 of the day discussion, the ten-seat cast, balance and persona voices. Those changes need scores that are cheap, exact and repeatable, even when the sample is too small to validate them against win. The added sections below catalogue those scores. They keep two questions apart. Is the count exact? Usually yes, because code reads it from the record. Does the count mean good play? Usually not shown.
+✅ sound · 🟡 usable with caveats · ⚠️ weak · ❌ does not hold.
 
 ---
 
-## Part A — the nine-seat de-lucked basket (written June–July 2026)
+## 1. Why code scores play, not a judge
 
-### L1 — the instrument
+**The question:** how do you tell whether one version of the agents plays better than another?
 
-- **Compute surface** `Agents/compute_metrics.py`: `_compute_base_metrics` (raw counts) → `_compute_derived_metrics` (de-lucked rates) → `compute_game_metrics` → `ComputedGameMetrics`, a **63-field flat artifact** (`schemas/metrics.py:214-256`). `push_scores_to_langfuse` (`:519-550`) pushes **every non-None field indiscriminately** — no curated-basket filter, so unvalidated/diagnostic/plumbing fields land in Langfuse co-equal with validated proxies.
-  - *Correction (2026-10-23):* `ComputedGameMetrics` now has 84 fields, at `Agents/schemas/metrics.py:254`. `push_scores_to_langfuse` is at `Agents/compute_metrics.py:741`. The "indiscriminate" push was replaced by the tiering described two bullets down.
-- **Validation harness** `evidence/metrics/proxy_win_monotonicity.py` + `core/stats.py::point_biserial`: per-proxy point-biserial r vs that proxy's **own faction's win**, expected sign from a design-intent table; reads existing `batch_results/*.jsonl` (zero new games); reported twice (pooled N=50 + memory-OFF-only N=30, because the memory treatment moves both proxy and win). The 3-faction refinement re-ran the same discipline at N=180. `point_biserial` returns NaN on degenerate inputs (<3 rows / constant proxy / single-class).
-  - *Correction (2026-10-23):* the harness was promoted on 2026-07-04 to `evaluation/src/instrument_validation/proxies/proxy_win_monotonicity.py` (`instrument_validation/README.md`). The `.py` file is no longer in `evidence/metrics/`; the dated record is `evidence/metrics/proxy_win_monotonicity.md`. Its siblings in the same package are `proxy_rescue.py`, `proxy_followup_rescue.py`, `accusation_metrics.py`, `claim_conversion.py`, `diagnose_wolf_sk_proxies.py` and the shared loader `metrics_common.py`.
-- **`score_tier_design` (the typed GameScore projection): still NOT BUILT** — markdown design only; no `class GameScore`. But a **minimal trust tiering shipped 2026-07-02** as a guardrail short of the full projection: `Agents/compute_metrics.py` now carries `VALIDATED_BASKET_METRICS` (11 point-biserial-checked proxies), `DIAGNOSTIC_METRICS` (3 audit-graduated, context-not-basket), and `DO_NOT_USE_METRICS` (5 wrong-sign/uninterpretable); `push_scores_to_langfuse` renames the DNU set with a `dnu_` prefix and tags every score with its tier. So a *validated wrong-sign* proxy can no longer be silently averaged into a verdict. The full GameScore projection (which would stop the `suspicion_drawn`↔`blending` double-count *by construction*) remains the deferred apparatus upgrade.
-  - *Correction (2026-10-23):* still no `class GameScore` in the repo. Since the ten-seat port (October 2026), no score is tagged "validated". `_metric_tier` (`compute_metrics.py:731`) returns "validated" only for names in `VALIDATED_ON_TEN_SEAT_METRICS`, which is empty. Every other score pushes as "diagnostic", and the `dnu_` set as "do_not_use". The code says why: live games are ten-seat, and the basket was validated on the nine-seat game (`compute_metrics.py:725-728`; plan `memory_system/v8/plan.md` §8.4). `VALIDATED_BASKET_METRICS` still lists the 11 nine-seat-validated proxies. It now records what was validated, and the push no longer reads it.
+**The win is too lucky to do it alone.** A game ends in one bit, which side won, and that bit carries the
+luck of the role deal, of whom the wolves happened to target, and of every coin-flip vote. Seeing a
+moderate effect through it takes hundreds of games. A game holds many decisions, though (every vote, every
+night target, every protection), and each can be graded against the true roles. Many graded decisions per
+game vary far less than one win bit, so an effect shows at a game count the project can afford.
 
-### L2 — trust, per basket
+**The early judges could not referee an A/B.** The first model judges described memory quality, but their
+scores were subjective and they ran only in the memory-on games, so they could never compare memory on with
+memory off.
 
-**Town — ✅ VALIDATED (the trustworthy core).** `correct_elimination_rate` +0.65, `town_mislynch_rate` −0.65, `serial_killer_lynched` +0.64 (n=50) / +0.85 (n=30), `town_vote_accuracy` +0.62, `mislynches` −0.57 — all |r|≈0.55-0.65, p<0.01, **in both pooled and OFF-only views**; reconfirmed at N=180. The only unambiguously validated basket.
+**Two other designs were tried and turned down** (June 2026):
+- **A code-graded "vote decision quality", weighted by how sure the voter could be.** Almost no player
+  knows a role for certain: only the investigator (its own checks), the vigilante (a shot that bounced off
+  the serial killer) and the wolves (each other). The one signal of how uncertain a seat was, the situation
+  summary, existed only in memory-on games, and a weight that exists on one side biases the comparison.
+- **Making every agent write out a belief about each player.** Changing what agents must output changes how
+  they play, which spoils the very comparison it was meant to measure. It is also circular: a model's vote
+  already follows what it says it believes, and whether the belief was right still needs the true roles.
 
-**Investigator — 🟡 PARTIAL.** The find-*rate* proxies are **NOT validated** — `threat_find_rate` −0.09, `wolf_find_rate` −0.14, and `investigator_found_wolf_day` **+0.38, p=0.039 — significantly WRONG-SIGN** (later find ↔ more wins, plausibly game-length-confounded; not length-normalised). N=180 confirms the dead floor (find rates ~0). What rescues the channel is **conversion**: `investigator_find_to_lynch_rate` +0.396, p<0.001 — VALIDATED. (So old v5-pilot investigator claims rest on unvalidated proxies — hypothesis only.)
+So the project scores outcomes of decisions, computed from the record.
 
-**Deceiver (wolf/SK) — ⚠️ SPLIT.** *Validated:* `sk_power_roles_killed` +0.323, `sk_kill_rate` +0.258 (raw +0.61 is survival-confounded → de-lucked), `sk_wolf_kills` +0.303 partial|survival (has a mechanism), `wolf_unconditioned_blending_rate` +0.270. *Tautology shipped-with-caveat:* `suspicion_drawn` (SK −0.714) is **outcome-proximate** (votes-at-SK is its only removal path) AND **opponent-coupled** (it's `town_vote_accuracy` from the other seat — one event, never two pieces of evidence); the in-code comment carries the caveat. *Unmeasured:* wolf **night-offense null** (+0.104, n.s.), **day-offense unmeasured** (`wolf_steering_rate` can't tell leading a bandwagon from joining it). The wolf's biggest win-correlate is `sk_lynched` +0.455 — the town removing the SK, an environmental event, not a wolf action.
+## 2. The approach
 
-**Discussion (metrics-proxy) — 🔴 NULL / DEFERRED.** Phase-1 `wolf_lead_score` r=−0.093 (p=0.51, n=53) — NULL but *cleanly*: lead-vs-blend is a genuinely distinct signal (decorrelated from vote metrics), the infra works, but active wolf offense carries no win signal and barely happens (127/180 games had no wolf accusing the eventual mislynch target). Phase-2 LLM tagger deferred. **NOT the v7 loop tagger** (which is built).
-- *Correction (2026-10-23):* the v7 loop's discussion tagger has fed no credit since 2026-07-13, and it is out of the write-up (`../llm_judge/discussion_tagger.md`). The town side gained a diagnostic proxy on 2026-07-02 (the dated section below). The wolf side still has no validated proxy.
+### Grade each decision by the rules, against the true roles
 
-**Cross-cutting L2:**
-- **Multiple-comparison exposure:** ~30 proxies tested vs win, **no built-in Bonferroni**; the docs apply it by hand where it bites (e.g. `sk_unconditioned_blending` +0.196 p=.019 flagged SUGGESTIVE, fails a ~12-test Bonferroni). The monotonicity doc explicitly says "ranks proxies by trustworthiness; not a causal claim."
-- **Small-N degeneracy on the wolf basket at N=50** (`wolf_blending_rate`/`dissent_rate` NaN — wolves won 2/30 OFF); the N=180 refinement is what gives the wolf/SK figures power.
-- **Tautology discipline applied** (survival↔win for `sk_nights_survived` +0.555; the de-lucked `sk_kill_rate` is the skill-bearing replacement). Good apparatus hygiene.
-- *(2026-10-23)* **Every number in this part is nine-seat.** The figures come from June–July 2026 batch records (`v6ab`, `ab_*`), played on the Gemini models of that time. On a ten-seat game, 21 of these metrics (`NINE_SEAT_ONLY_METRICS`, `compute_metrics.py:580`) are set to None and recomputed from the night record. The serial killer's three counts are None when the game dealt a necromancer instead (Part B1).
+**A good move is defined by the game's rules.** A save is one more townsperson alive the next day; a town
+vote on a wolf removes a threat; a vigilante shot on an evil player is a hit; a Sentinel watch that names an
+evil visitor is a find. On the ten-seat game every kind of turn has a row in a table the owner ruled (good,
+neutral or bad), and code grades each decision by it.
 
-### Verdict + cheapest upgrade
+**Grading the decision, not the game, takes out most of the luck.** A town vote on a wolf counts as right
+even if the town later loses on an unrelated coin flip, so the luck of the deal, of everyone else's play and
+of how the game snowballed falls away.
 
-Per the table at top. **Cheapest *trustworthy* upgrade:** not re-running the starved wolf day-offense channel (Phase-1 already ran it null at n=53), but **graduating the two NEW validated proxies that already exist in code but sit outside any tiered basket** — `investigator_find_to_lynch_rate` (+0.40) and `power_roles_killed_by_evil` (−0.40) are computed and validated but the indiscriminate push gives them no priority. The cheapest *apparatus* upgrade is **building the `GameScore` projection** (currently design-only), which stops the Langfuse/judge double-counting of `suspicion_drawn`↔`blending` and survival↔kill-rate twins **by construction**.
+**A rate divides by the chances a player had.** This is fairness, not luck removal. A healer who lived nine
+nights would outscore one killed on night 2 on "saves per game" for no reason but survival, so its rate
+divides saves by the nights it actually protected someone. A role that never had a chance gets no score,
+not a zero.
 
-- *Correction (2026-10-23):* both proxies are in `VALIDATED_BASKET_METRICS` (`compute_metrics.py:698-710`), so that upgrade is done. The cheapest upgrade now is to re-run the same point-biserial discipline on ten-seat records. Plan §8.3 names the memory-off seeding games as the data for it. That run is $0, but at dozens of games it could only show large correlations. It has not been run.
+**What is left is the luck inside one decision.** A villager who votes blindly and hits a wolf scores like
+one who reasoned it out, and a healer's save depends on whom evil chose to attack. Over many games that
+averages out; it is never removed from a single decision. The project's name for these scores,
+"de-lucked", means *less lucky than the win*, not luck-free.
 
-### Evidence (code + L2 artifacts)
+**What goes in.** The trusted nine-seat scores read only facts the game engine recorded: votes, revealed
+roles, deaths, night targets. One supporting score also reads the agents' own accusation tags, which the
+playing model writes, so it sits a step lower. None reads a judge's output.
 
-- **Code:** `Agents/compute_metrics.py`, `Agents/schemas/metrics.py`, `evaluation/src/core/stats.py`, `../../metrics/proxy_win_monotonicity.py`, `../../metrics/design/discussion_lead_vs_blend.py` (both **point at** the canonical `core/stats.py`, not copied).
-  - *Correction (2026-10-23):* the first `.py` now lives at `evaluation/src/instrument_validation/proxies/proxy_win_monotonicity.py`. `../../metrics/design/discussion_lead_vs_blend.py` is still in place.
-- **L2 artifacts (pointed-at):** `../../metrics/{proxy_win_monotonicity,experiment_log}.md` + `../../metrics/design/{town_metric_refinement,deceiver_metric_refinement,score_tier_design,discussion_scoring_plan}.md` — the validation docs are a **shared hub** referenced from 6 other evidence folders (point-at, per the "store the pointer" rule).
+### Check the score against winning
 
-### Colocation call (JIT, 2026-06-28)
+**The question:** a rule says a move is good. Does making more of those moves win games?
 
-**Stays put — pointed-at.** The validation docs are a shared cross-folder hub; moving them breaks 6 inbound refs. (Note: `variance_reduction_levers.md` was **mis-filed** in metrics/ — it's A/B *methodology*, not a metric; the deferred relocation was executed 2026-07-07 and it now lives at [`../methodology/variance_reduction_levers.md`](../methodology/variance_reduction_levers.md).)
+Each score is correlated with its own side's win across a batch of games (a number from −1 to +1; the
+town's best scores come out near +0.5 to +0.65). This catches a score whose meaning looked obvious and was
+wrong, and it is the evidence an A/B headline needs: "memory made them win more" rests on scores that go
+with winning, not only on moves the rules call good.
 
-*(Inspected 2026-06-28. source_map metrics claims verified accurate; sharpenings folded into the ledger.)*
+**Each check guards against one way of being fooled:**
+- **Memory raising both the score and the win.** Every score is also read on the memory-off games alone.
+- **Batches that differ.** A batch that both played differently and won more can make any score look linked
+  to winning, so the ten-seat check also reads each score within batch.
+- **A score diluted by games where it cannot matter.** On nine seats the wolves' night-kill score looked
+  null over 180 games; in 77 of them the wolves could not win at all (when the town never lynched the
+  serial killer, the serial killer won). Within the 103 games where it was lynched, the score went clearly
+  with wolf wins.
+- **Testing many scores and keeping the lucky ones.** With 30 or more scores, one or two pass by chance.
+  The correction was applied by hand where it mattered, and scores that measure one thing count as one
+  witness: four town vote scores moving together are one measure, not four.
+- **A score that is close to the win itself.** A lone killer that survives longer wins more almost by
+  definition, so a survival count says little about skill.
 
-### 2026-07-02 metrics-audit update (proxy rescue/discovery + structural-bias falsification)
+**A null on few games means "not yet tested", not "fails".** The check reports a range as well as a value.
+A score at +0.12 over 78 games has a range of about −0.10 to +0.33, so a real link of +0.3 is still
+possible. Seeing a link of 0.2 reliably takes about 190 games, and the evil sides, with fewer wins, need
+more. A score is read as failing only when the range rules out the size it should have, as with the healer
+(§4).
 
-A $0, zero-LLM audit re-ran the incumbent validation discipline on N=180 v6ab (with split-half confirmation and pre-registered signs) to probe the basket's *holes* rather than its errors. Full logs + per-candidate verdicts stay in `evidence/metrics/metrics_audit/` (pointed-at, not copied): [`proxy_discovery_log.md`](../../metrics/metrics_audit/proxy_discovery_log.md) (workstream 1) and [`scheduler_bias_log.md`](../../metrics/metrics_audit/scheduler_bias_log.md) (workstream 2). What moved:
+### How the approach changed
 
-**Deceiver (⚠️→ one diagnostic added).** `wolf_power_kill_rate` is the **first wolf-night proxy to clear the bar** — but only once conditioned on the environment. Pooled it is null (+0.13, n.s.); the mechanism is that wolves *cannot win when `sk_lynched=0`* (the SK wins by default), so 77/180 games carry zero wolf-skill information yet dilute the flat correlation. Within `sk_lynched=1` (n=103, 39 wolf wins) it is **+0.31 (p=.002)**, split-half stable (+0.26 / +0.38) and robust to partialling out both `sk_lynched` and `game_length` (+0.190, p=.011). This reframes the earlier "wolf night-offense doesn't convert (−0.10)" as a **not-conditioned-on-the-SK-axis artifact**, not an absence. Adopted **diagnostic**, not basket-promoted (pending a larger wolf-win N). Corollary: *the flat point-biserial is structurally miscalibrated for wolf proxies* — any wolf null in the older refinement docs should be re-read as "diluted," not "absent."
+| When | Where trust in a score came from |
+|---|---|
+| **June 2026**, nine-seat | **The check was the gate.** Scores were candidates and the check against winning chose among them: 48 tried, 11 kept, 3 supporting, 5 marked do-not-use |
+| **July 2026** | **First exceptions.** A score whose direction the rules fix (a vigilante shot on an evil player) may report on its own kind of decision even when the action is too rare to test, but may not decide a comparison's result. Memory's credit rules were written from game logic, not mined |
+| **October 2026**, ten-seat | **The rules come first.** The owner's table defines a good move for every kind of turn before any data exists. The check confirms a score, or questions it when a result is surprising |
 
-**Discussion (🔴→🟡, town side).** `town_accusation_precision` (town accusations on true threats / all) is the **first town-discussion proxy**: **+0.34 (p<.001)**, both halves p≤.002, Bonferroni-passing. **Accepted as diagnostic, not independent evidence** — it couples with the already-validated `town_vote_accuracy` at r=+0.558 (~31% shared variance), so it re-expresses the "town IDs threats" construct on the discussion surface rather than confirming a good town twice. The metrics-side wolf lead-vs-blend proxy *stays 🔴 null* — and the audit sharpened *why*: `wolf_accusation_on_town_rate` was pre-registered **+** (framing offense should help wolves) and came back **−0.33 (p<.001, both halves)** — a **pre-registered sign FALSIFICATION**. Wolves that attack town lose more; wolves that accuse real threats win more, the blending mirror of the validated `wolf_unconditioned_blending_rate` (+0.27). Only the pre-registration makes that a legible finding rather than a silent flip.
+It changed because the ten-seat game deals ten seats from twelve roles, which leaves too few games per role
+to choose scores the June way, and because memory's credit needed a grade for every decision from the first
+game. The check still decides one thing: whether a kind of move the rules call good actually wins games.
 
-**Investigator (🟡, unchanged verdict, softened rationale).** The v5 scare — `investigator_found_wolf_day` **significantly wrong-sign** (+0.38, p=.039, n=30) — **dissolves at N=180 to +0.15 n.s.**; neither length-normalizing nor partialling `game_length` pushes it to the expected negative. So the sign confusion was **small-N noise plus mild length coupling, not a robust backwards relationship**. The find-rate cluster stays quarantined (`dnu_`), but the rationale downgrades from "significantly wrong-sign" to "null; the earliness sign is N-fragile." Only the conversion proxy (`investigator_find_to_lynch_rate`) is validated, now joined by the confirmed timing refinement `investigator_find_next_round_convergence` **+0.31 (both halves)** — adopted diagnostic, transmission-cluster. A related program is **BLOCKED**: claim-conditioned joins need `DaySummary.structured.role_claims`, present in **0/180** v6ab and 0/50 v5 (an A4 addition postdating both epochs) — unbuildable until a post-A4 batch is itself win-validated.
+## 3. Evidence, run 1: the nine-seat check (June–July 2026)
 
-**The nulls are NOT scheduler artifacts (structural-bias falsification).** A sibling workstream tested whether the role-blind discussion scheduler *starves* the behaviors these proxies measure. It found **no floor-starvation**: investigator and wolf are the floor-*richest* roles (turns/alive-day 2.45 and 2.04; investigator spoke-zero rate 0.10), pending-find investigators speak before the vote **58/58 (100%)**, wolves hold pre-bandwagon proactive floor on **76.5%** of pile-on days (and decline 35% of proactive offers), and the 12 unconverted investigator finds decompose to **0 no-floor / 0 late-floor** vs 7 withheld / 5 revealed-but-ignored. So the wolf-steering null and investigator non-conversion are **agent/town behavior, not scheduler-shaped**. One question stays open: the novelty gate's role-selectivity is **unmeasurable from existing records** (a gated pass and a voluntary pass write the identical marker) — the 2-field instrumentation to fix it shipped, so a future gate-selectivity audit is unblocked on new records only.
+**The question:** which of the nine-seat scores went with winning?
 
-**The whiff-visibility finding (prices a held game-design change).** When a wolf's night-kill hits the night-immune SK, the kill *silently whiffs* — and the wolf **never notices 68% of the time** (vs 31% on an *announced* heal; the wolf's noticing rate tracks visibility). The vigilante, handed an explicit immune note, converts the whiff to day-action **0.75–0.89 from a ~0 base**. So the binding layer is **visibility, not wolf skill or scheduler floor** — evidence that supports (does not decide) the held change to disclose failed kills to the wolf, priced honestly at an epoch reset. Relevant to metrics because `sk_lynched` (+0.455) is the wolf's biggest win-correlate and is currently an *environmental* event, not a wolf skill.
+**The answer: the town's, clearly; the others only in part.** The June check ran on 50 games (30 memory
+off, 20 on), the July audit on 180.
 
-**Adoption + tiering (shipped).** The three survivors (`wolf_power_kill_rate`, `town_accusation_precision`, `investigator_find_next_round_convergence`) were adopted into a **`DIAGNOSTIC_METRICS`** tier beside — not inside — `VALIDATED_BASKET_METRICS`, pushed with `tier="diagnostic"` and carrying their caveats as attribute docstrings (A2's `sk_lynched` conditioning, B1's r=+0.558 coupling, C1's refinement status). The `dnu_`-prefixed `DO_NOT_USE_METRICS` (the investigator find-rate cluster + `wolf_steering_rate`) keep them out of any silent average. Basket promotion of the diagnostics remains pending a larger wolf-win N. All $0/zero-LLM, ran at `4b1449e`. Label caveat carried forward: the accusation graph rides `addressed_targets` self-labels (tuned for scheduling, not measurement), whose error rate as measurement input is still uncharacterized.
+| Side | Verdict | What went with winning | What did not, or is not measured |
+|---|---|---|---|
+| **Town** | ✅ | Share of lynches that hit a threat (+0.65 in both readings); share of town votes on a threat (+0.62 over 50 games, +0.57 over the 30 memory-off); lynching the serial killer (+0.64, +0.85); the healer's saves per protection night (+0.36, +0.33). All held again on the 180 July games | — |
+| **Investigator** | 🟡 | A confirmed wolf reaching a later lynch (+0.40, 180 games); how fast the town followed a find (+0.31, a supporting score) | How often it found wolves (−0.09, −0.14: do-not-use). An early alarm that later finds went with *more* town wins (+0.38 over 30 games) shrank to +0.15, not significant, at 180 games: small-sample noise |
+| **Wolves and serial killer** | ⚠️ | Serial killer's kills per night survived (+0.26); its kills of town power roles (+0.32); wolves voting with the day's lynch, i.e. blending in (+0.27); wolf night kills on power roles, only in games where the serial killer was lynched (+0.31 over 103 games); for the town, power roles lost to night kills (−0.40) | Wolves leading a vote: a count cannot tell a wolf who drove a lynch from one who joined it. Wolves accusing townspeople was expected to help them and came out the opposite way (−0.33): wolves who attacked town lost more. The wolves' strongest single link with winning, the serial killer being lynched (+0.46), is something the town does, not the wolves |
+| **Town discussion** | 🟡 | The share of town accusations aimed at real threats (+0.34) | It adds nothing beyond vote accuracy (+0.02 once vote accuracy is held fixed, 175 games): town discussion changes the result only by turning into votes. No wolf discussion score worked: "the wolf leads the accusation" was null (−0.09, 53 games), and in 127 of 180 games no wolf accused the player later wrongly lynched |
 
-- *Correction (2026-10-23):* this paragraph first cited test counts. They are dropped here because the tests in `tests/` are largely AI-written and unaudited. The logic is pinned in `tests/engine/test_diagnostic_metrics.py` and `tests/evaluation/test_metrics_audit_proxies.py`, which shows where it is checked, not that it is right. On the label caveat: in October 2026 the speakers' accusation tags agreed with an independent LLM judge on 145 of 183 agent messages (79%), and missed an accusation on 24 of 183 (13%) (`game_play_enhancement/discussion_evidence.md` §7.1). That compares the tags with an uncalibrated judge, not with a human. The scheduler access audit and the whiff conversion audit (`evaluation/src/audits/{scheduler_access_audit,whiff_conversion_audit}.py`) are now catalogued in `../deterministic_audits/`.
+**One cheap explanation was ruled out:** that the speaking-order scheduler starved the investigator or the
+wolves of chances to speak. Investigators with a find to share spoke before the vote 58 times out of 58,
+and wolves held the floor before the pile-on on 76.5% of such days.
 
-*(Update inspected 2026-07-02 from the metrics-audit logs; findings verified against `proxy_discovery_log.md` §3 and `scheduler_bias_log.md` §3 + the tiering constants in `Agents/compute_metrics.py`. Diagnostic-tier, not basket-promoted — the trustworthy core is unchanged.)*
+**How sure we are:**
+- Each figure is from one batch, all nine-seat, on the Gemini models of the time. The vigilante's
+  correct-shot score went from +0.43 to +0.18 between the two batches, partly because vigilantes fired in
+  72% of the earlier games and 29% of the later; the town's vote scores (+0.65 on both) and the healer's
+  (+0.36, then +0.40) held.
+- The correlations show which scores track winning, not that a score causes a win.
+- Three smaller nine-seat checks are kept in the log: whether a measure of how much a turn is at stake picks
+  out decisive turns (B4), whether the wolves' "blend your vote" tactic goes with winning (B8, a trend at
+  p = 0.07), and whether the investigator's find reached the village (B9, a keyword match).
 
----
+## 4. Evidence, run 2: the ten-seat check (2026-10-24)
 
-## Part B — play-quality scores added 2026-10-23
+**The question:** on the ten-seat game, do the rule-graded scores go with winning?
 
-Each section gives what the score is, how it is computed, what it can and cannot claim, how far it was checked, and where the code and the record are. They are ordered by how much current work leans on them.
+**The data.** 78 ten-seat games from 2026-10-11 on, whose every night carries its full record: mostly
+Claude Haiku 5.5, with flash-lite seeding games and a few GPT-6 Luna games. Memory was off in 49. Town won
+46, the wolves 17, the lone killer 15 (serial killer 7, necromancer 8). The 41 phase-3 games of October 9
+and 10 record each night's choices but not their outcome, so they cannot be rescored and are left out.
 
-### B1. Ten-seat game metrics and decision grades (October 2026, ten-seat) — ⚠️
+**The answer: the core carries over; the healer does not; most new roles' scores need more games.**
 
-**What they are.** There are two scorers for the ten-seat game, both deterministic.
-- **Per-game metrics.** `Agents/ten_seat_metrics.py` recomputes the 21 nine-seat-only metrics from each night's full record. That record holds every choice, what the rules made of it, and each actor's result. Sides come from the role registry, not from role names. The module also adds proxies for the new roles:
-  - Chanteuse blocks: real, critical and wasted.
-  - Illusionist conceals: landed, and landed while hiding a town role's record.
-  - Necromancer: nights survived.
-  - Speculator: pick night, picked side, and whether it won.
-  - Fortune Teller: points.
-  - Sentinel and Trailseer: results that named an evil visitor.
-  - Sigilist: hits.
-- **Per-decision grades.** `Agents/memory/consolidation/grading.py` grades one decision as positive, neutral or negative, or leaves it unscored (None). It follows the owner's table (`memory_system/v8/plan.md` §9.6 item 10; the reasons are in `decisions.md` §12). Credit uses the grades. So does `scripts/grade_observations.py`, which grades the decision each extracted observation names.
+| Group | Score | All games | Within batch | Memory off |
+|---|---|---|---|---|
+| **Carries over** | Share of lynches that hit a threat | +0.49 | +0.55 | +0.48 |
+| | Share of lynches on townspeople | −0.45 | −0.49 | −0.48 |
+| | Town power roles lost to night kills | −0.55 | −0.55 | −0.43 |
+| | Town lynches the lone killer | +0.38 | +0.40 | +0.43 |
+| | Serial killer's kills of power roles (45 games) | +0.48 | +0.58 | +0.47 |
+| | Wolves voting with the lynch (70 games) | +0.29 | +0.36 | +0.22 |
+| | New: Chanteuse blocks of a real town action | +0.31 | +0.28 | +0.45 |
+| **Rule-graded, too few games** | Sentinel watches naming evil | +0.12 (−0.11 to +0.33) | | |
+| | Sigilist hits | +0.20 (−0.03 to +0.40) | | |
+| | Trailseer follows naming evil | +0.03 (−0.20 to +0.25) | | |
+| | Investigator finds turned into lynches (20 games) | +0.29 (−0.18 to +0.65) | | |
+| | Vigilante correct shots (19 games) | +0.29 (−0.19 to +0.66) | | |
+| **Does not carry over** | Healer saves per protection night (75 games) | −0.03 (−0.26 to +0.20) | | |
 
-**How they work.** `compute_game_metrics` (`Agents/compute_metrics.py:612`) treats a game with no `wolf` role as ten-seat and sets the 21 nine-seat-only fields to None. If every night carries its full record, it then fills them from that record. Games recorded from 2026-10-11 on do (`has_night_records`). The port was needed because the nine-seat code read per-role night fields that a ten-seat game never fills. Those metrics read 0 even when the event happened, "every one of 28 ten-seat balance games, 2026-10-11" (code comment, `compute_metrics.py:575-579`). Metrics landed in `e5763cd1` (2026-10-11), grades in `d9141ce2` (2026-10-13).
+Ranges in brackets are 95%. The full table of 32 scores is in
+[`data/ten_seat_win_check/`](data/ten_seat_win_check/README.md).
 
-**What they can claim.** What the engine recorded, exactly and reproducibly: a block cancelled a town action, a bet scored, a decision matched the table's "good" row.
+**The healer: a good move that decides fewer games.** A save is a night the healer protected a player who
+was attacked and lived; by the rules it is one more townsperson for the next day. On ten seats the healer
+made about one save a game whether the town won (1.07) or lost (1.03); what differed was how long the
+healer lived (3.25 protection nights in games the town won, 2.48 in games it lost). Of 220 protections,
+79 were saves and 141 guarded someone nobody attacked; 36 of the saved died later, and in 23 saves someone
+else died that night to the other killer. With more information roles to guard and two killers a night,
+whom to save is a harder guess and one save changes the result less often. The range rules out the
+nine-seat size (+0.36), so this is a real difference between the games, not a small sample.
 
-**What they cannot claim.** That any of these numbers tracks winning or skill.
-- None is validated against win on the ten-seat game. `VALIDATED_ON_TEN_SEAT_METRICS` is empty, so every one pushes as "diagnostic". The nine-seat validations "do not carry over" (plan §8.3).
-- The grade table is a ruling. It encodes what the owner judged ideal, neutral or undesirable for each turn kind. The code can match the table exactly; whether the table rewards good play is a separate question no one has tested.
+**The information roles: finding is not what wins, again.** Sentinel watches named an evil player 40 times,
+Trailseer follows 58 times, investigator finds 22 times. Of the 134 evil players the three named, 81 (60%)
+were later lynched. How many evil players they named per game shows no link with the town winning (+0.09);
+the share later lynched leans the right way (+0.19, p = 0.12, 66 games). That is the nine-seat pattern
+(turning a find into a lynch mattered, the find rate did not), too weak to confirm at this size.
+
+**Vote accuracy: a batch difference, not a memory one.** +0.37 over all games, but +0.24 (p = 0.10) with
+memory off. By batch it is +0.54 in the 29 memory-on games, +0.37 in the memory-off Haiku persona games, and
++0.08 and +0.16 in the flash-lite seeding and evil-cover batches (12 games each). Average vote accuracy was
+the same with memory on and off (0.57, 0.59). The memory-on games are nearly all Haiku, so memory and model
+cannot be told apart here.
+
+**How sure we are:**
+- 78 games from one pool of versions and models, with 17 wolf wins and 15 lone-killer wins; 32 scores
+  tested, so one or two may pass by chance. The "carries over" rows are well past that, and each matches its
+  nine-seat direction.
+- The new roles' directions were not written down before the run; those rows are exploratory.
+- Rare events stay rare: the vigilante fired in 19 games (16 of 22 shots on evil players), and critical
+  Chanteuse blocks happened 35 times in 26 games (+0.10).
+- The necromancer's nights survived (+0.51) goes with its win almost by definition, as the serial killer's
+  nights survived did on nine seats (+0.555).
+- No score has been named "validated" in the code yet (`VALIDATED_ON_TEN_SEAT_METRICS`); that changes the
+  labels the live game sends and is the owner's decision.
+
+## 5. What the two runs taught
+
+1. **Finding is not what wins; turning a find into a lynch is.** On nine seats the investigator's find rate
+   failed and its find-to-lynch rate passed. On ten seats the number of evil players the three information
+   roles named shows nothing, and the share later lynched leans positive.
+2. **A move can be good by the rules and still not decide games.** The healer's save is always good for the
+   town; on ten seats it no longer separates won games from lost ones. The rule grade and the check answer
+   different questions, and both are needed.
+3. **Read a score within the games where it can matter.** The wolves' night kills showed only in games where
+   the serial killer was lynched; the ten-seat scores are read within batch so batch differences cannot fake
+   a link.
+4. **Survival counts sit close to the win.** Both runs had a lone killer whose nights survived went with its
+   win almost by definition; a rate per night survived is the skill-bearing form.
+5. **Scorers written against role names break when the cast changes.** Three scorers scored the new evil
+   roles as town until they were switched to the role registry on 2026-10-24; three places still name the
+   nine-seat roles (§7). Writing against sides from the registry, as the ten-seat metrics do, carries over.
+
+## 6. The scores in use on the ten-seat game
+
+### Per-game metrics and per-decision grades ⚠️
+
+**What they are.** Two scorers, both code.
+- **Per-game metrics** (`Agents/ten_seat_metrics.py`). They recompute the 21 nine-seat metrics that a
+  ten-seat game cannot fill, from each night's full record, and add scores for the new roles: the
+  Chanteuse's blocks (real, critical, wasted), the Illusionist's conceals, the Necromancer's nights
+  survived, the Speculator's pick and whether its side won, the Fortune Teller's points, Sentinel and
+  Trailseer results that named an evil visitor, and the Sigilist's hits. Before this port (2026-10-11),
+  the nine-seat code read fields a ten-seat game never fills, and those metrics read 0 in every one of the
+  28 ten-seat balance games even when the event happened.
+- **Per-decision grades** (`Agents/memory/consolidation/grading.py`, 2026-10-13). Each decision is graded
+  good, neutral or bad, or left unscored, by the owner's table. Memory's credit uses the grades.
+
+**What they can claim.** What the engine recorded, exactly: a block cancelled a town action, a bet scored, a
+decision matched the table's "good" row.
+
+**What they cannot claim.** That the table as a whole rewards winning play: the check in §4 tested the
+per-game scores, not the grades.
 
 **How far checked.**
-- The metrics were checked by hand against one pilot game (`decisions.md` §8).
-- The table's rows are pinned in `tests/memory/test_ten_seat_grading.py`. Those tests are AI-written and unaudited. They show the code follows the table, not that the table is right.
-- One sanity read: on the 12 memory-off seeding games the mean grades "look as the rules predict". The Fortune Teller is at −0.60 because most bets miss, the Sigilist at −0.35, and the pack's kill at +0.42 (`memory_system/v8/experiment_log.md`, 2026-10-13).
-- Coverage: grades reached 1,711 of the 2,277 observations from 40 games. An observation goes ungraded when it names no single decision, when its decision is unscored, or when a served game's wire cannot rebuild the result (same log).
-- The grades serve as the reference in the verdict-halo study (`../deterministic_audits/experiment_log.md` §5d), which treats them as truth. That study measures the extraction verdict against the grades, not the grades themselves.
+- The metrics were checked by hand against one pilot game, and against winning in §4.
+- The grade table's rows are pinned by tests, which are AI-written and unaudited: they show the code
+  follows the table, not that the table is right.
+- On the 12 memory-off seeding games the average grades looked as the rules predict: the Fortune Teller at
+  −0.60 because most bets miss, the Sigilist at −0.35, the pack's kill at +0.42.
+- Grades reached 1,711 of the 2,277 observations extracted from 40 games. The rest name no single decision,
+  name an unscored one, or come from a served game whose result could not be rebuilt.
 
-**Code · record.** `Agents/ten_seat_metrics.py`, `Agents/memory/consolidation/grading.py`, `scripts/grade_observations.py` · `memory_system/v8/{plan.md §8.1–8.4 and §9.6, decisions.md §8 and §12–13, experiment_log.md 2026-10-13}`.
+### Read Brier score 🟡
 
-### B2. Read Brier score (nine-seat July 2026; ten-seat October 2026) — 🟡
+**What it is.** Before each decision a seat writes a *read* of every other player: a suspected role with
+"high" or "low" confidence, or "unclear". The Brier score measures how well the committed reads matched the
+roles revealed at the end; lower is better. "Unclear" reads claim nothing and are counted apart. A read the
+seat already *knows* (a wolf's read on its packmate) is left out, so the score measures inference, not
+private knowledge.
 
-**What it is.** Before each decision a seat writes a *read* of each other player. A read is a suspected role and a confidence ("high" or "low"), or "unclear". The Brier score measures how well committed reads match the roles revealed at game end. Each read scores (p − hit)², where p is 0.85 for high and 0.65 for low, and hit is 1 if the suspected role is the true role. Lower is better. "Unclear" reads make no claim. They are left out of the Brier and reported as an unclear rate. A read the seat already *knows* is masked out (the *knowledge mask*), so the score measures inference, not private information.
-
-**How it works.** There are two implementations.
-- `evaluation/src/loop/read_ledger.py` (nine-seat, from 2026-07-09 records on). Its mask drops a wolf's reads on packmates and the investigator's reads on players it has checked. Its side accuracy uses the nine-seat threat set `{"wolf", "serial_killer"}`. Plan §8.4 lists it among the frozen nine-seat harness.
-- A ten-seat re-implementation inside `evaluation/experiments/persona_voice_games_score.py` (October 2026), with sides from the role sheet. Its mask drops only a pack seat's read on a packmate. A seat's read on a player its own night result already named, such as an investigator's checked player, is scored as an inference.
-
-Credit keeps read accuracy apart from lesson scores on purpose (`credit/report.md` §1 and §4).
-
-**What it can claim.** Whether committed reads matched revealed roles, by role, phase and arm, on the same deals.
-
-**What it cannot claim.**
-- A calibration curve. Two confidence levels give a two-point check only (`read_ledger.py:28-30`).
-- Much about most reads. In the 16 persona-voice games, 86.8% (voices off) and 87.3% (voices on) of reads were "unclear". The Brier rests on 1,105 and 973 committed reads.
-- That a lower Brier means better play. It has not been tested against win or against a human's reading.
-- Run on a ten-seat record, the nine-seat ledger would score sides with the nine-seat threat set without warning, so ten-seat work must use the re-implementation.
-
-**How far checked.** Exact by construction. No validation against an outcome is recorded. Its one use as a headline: the persona-voice games, Brier 0.155 (off) and 0.129 (on), voices on better in 7 of 8 pairs, sign test p≈0.07, 8 pairs (`game_play_enhancement/data/persona_voice_games/README.md`).
-
-**Code · record.** `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` · `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/`.
-
-### B3. Vote-target accuracy (nine-seat and ten-seat) — ✅ as a count
-
-**What it is.** A vote is right when it names a real threat. Three forms are in use:
-- `town_vote_accuracy` in the per-game metrics (`compute_metrics.py:536`): the share of town votes that landed on a threat. Threats come from the registry's sides, so it computes on ten-seat games too. It is in the nine-seat validated basket (+0.62, Part A) and unvalidated on ten seats.
-- `score_vote` / `hit_threat` in `Agents/memory/consolidation/decision_scoring.py` (eval callers import it through `evaluation/src/loop/decision_scoring.py`): one vote scored against the true roles. It is the measure in the frozen-turn replay screens. Its threat set is the literal `{"wolf", "serial_killer"}` (line 23), so it is nine-seat only. On a ten-seat record a vote on the Chanteuse would score as a miss.
-- An exact target per day in `evaluation/experiments/haiku_vote_score.py`. For game 403f4dbc's replayed votes, the right answer for each day is written in the script (for example, player_6 the Illusionist on day 3). The vote field is limited to legal targets, so no judge is needed. Beside it the scorer counts evidence mentions with a regex. That is a mention count, not a judgment of soundness (its docstring). The replay itself is catalogued in `../replay_screens/`.
-
-**What it can claim.** Whether the vote hit the threat. That is the outcome itself, so the count is exact.
-
-**What it cannot claim.** Whether the vote was well reasoned on the information the seat had. A lucky vote counts as right, and a sound vote on a well-hidden threat counts as wrong. The nine-seat validation against win is the only evidence that the count tracks skill.
-
-**Code · record.** As above · Part A; `game_play_enhancement/discussion_evidence.md` §8.7; `../replay_screens/`.
-
-### B4. Leverage anchor (June 2026, nine-seat) — 🟡
-
-**What it is.** A test of whether a deterministic measure of how much a board is at stake can pick out the decisive turns. The measure is `is_swing` and `distance_to_parity`, computed from the alive list and the true roles. Extraction selection and the case sampler lean on it.
-
-**How it works.** `evaluation/src/instrument_validation/proxies/leverage_anchor_separation.py` uses town day-votes in 180 `v6ab` games. It computes P(town wins | vote hit a threat) − P(town wins | vote missed) within leverage strata. No model is called.
-
-**Result and what it can claim** (`v7_final/plan.md`, LEVERAGE-ANCHOR entry):
-- The gap was flat across strata: +0.35 / +0.37 for `is_swing` true/false, and +0.35 / +0.41 for distance ≤1 and ≥3. So leverage does not rank votes by marginal impact.
-- P(win | miss) fell from 0.23 to 0.00 at high leverage: a miss there was fatal. So the anchor separates do-or-die turns.
-
-**What it cannot claim.** Anything about night actions or discussion, which the record says are untested. It is a stratified correlation with the outcome as the measure, on one nine-seat epoch.
-
-**Code · record.** `instrument_validation/proxies/leverage_anchor_separation.py` (promoted 2026-07-04) · `v7_final/plan.md`; `v7_final/experiment_log.md` (the 2026-06-19 ruling on how extraction uses it).
-
-### B5. Discussion census (October 2026, over nine-seat games of 2026-09-17) — ✅ counts · 🟡 labels
-
-**What it is.** A free first look at what day discussion rests on, run before the discussion redesign.
-
-**How it works.** `evaluation/experiments/discussion_evidence.py census` does two things.
-- It counts the evidence label that the in-game day summary attaches to each accusation. The labels are voting record, behaviour pattern, communication style and concrete claim.
-- It counts what needs no model: passes chosen by the player against turns skipped by the novelty gate, messages per day, and words per message.
-
-Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` on `gemini-3.5-flash-lite`, memory off (`discussion_evidence.md` §2).
-
-**What it can claim.**
-- The structural counts are exact: 1,166 messages and 517 passes, of which 367 were the novelty gate.
-- The label shares give a direction. Of 194 accusations, 47% rested on behaviour and 20% on a concrete claim.
-
-**What it cannot claim.** Independent labels. The labels come from the same model that plays, and they are coarse. The record says so and sends the real measurement to the independent judge (`../llm_judge/experiment_log.md` §8).
-
-**How far checked.** The record shows why counts of meaning need a read. A first keyword count said 32 summaries named a quiet player. Reading the matches found 4 of 124, because most hits were day-1 lines such as "no players are staying quiet yet" (§2.4). A random 25 of the "behaviour pattern" accusations were read by hand to see what the bucket held.
-
-**Code · record.** `evaluation/experiments/discussion_evidence.py` · `game_play_enhancement/discussion_evidence.md` §2.
-
-### B6. Phase 2 step 8 per-day counts (2026-10-07, nine-seat) — ✅ counts · 🟡 reading
-
-**What it is.** Structural counts per voting day, used to compare day-discussion scheduler designs. The counts cover openings spoken, lines per day, reactive and sweep lines, lines held by the echo gate, closings run and whether the defended player was lynched, seconds per day, and model calls per day.
-
-**How it works.** `evaluation/experiments/phase2_step8_capture.py` plays a game the production way and logs chunk arrival times and every model call. `phase2_step8_counts.py` counts from the record, the chunks and the call log. A count a baseline has no field for prints "n/a" and is never approximated. Calls per day are cross-checked against gate calls re-derived from the transcript. The two agree on every voting day of the four games but one, which was a retry (`data/phase2_step8_games/README.md`).
-
-**What it can claim.** The mechanics: for example, 5 of 106 opening turns spoken across four games, and closings run on 7 of 12 voting days with the defended player voted out all 7 times (`data/phase2_step8_games/report.md`).
-
-**What it cannot claim.** Rates. There are four games on `gemini-3.5-flash-lite`. In game 3, 36 of 115 successful calls went to the rescue model, and game 4 was played as its replacement. The evidence-judge labels in the same table come from the uncalibrated judge in `../llm_judge/experiment_log.md` §8.
-
-**Code · record.** `evaluation/experiments/phase2_step8_{capture,counts}.py` · `game_play_enhancement/data/phase2_step8_games/{README,report,counts}.md`; `discussion_evidence.md` §7.3–7.4.
-
-### B7. Balance batches (2026-10-09 and 10, ten-seat) — ✅ counts · 🟡 reading
-
-**What it is.** Winners per batch of AI-only ten-seat games, used to set the role rules.
-
-**How it works.** `evaluation/experiments/phase3_capture.py` plays and records each game. Each batch's folder holds a per-game table: drawn seats, winner, days, calls, cost and rescued turns. 31 games ran on `gemini-3.5-flash-lite`, memory off, two at a time (`discussion_evidence.md` §8.3).
-
-**What it can claim.**
-- Winners by rule set: 13–0 town in the first 13 games, then 3–3, 6–0 and 5–1.
-- Exact counts the record states, such as "the pack aimed 34 of its 56 kills at the information roles".
+**What it can claim.** Whether committed reads matched the true roles, by role, phase and side, on the same
+deals. Its one use as a headline: in 16 persona-voice games, reads were better with voices on (0.129)
+than off (0.155), in 7 of 8 pairs (sign test p ≈ 0.07).
 
 **What it cannot claim.**
-- That a rule caused a lynch. The record says "a preceding result does not prove the cause". The lynch-provenance counts are a hand reading of each game.
-- Anything stable. Each batch is six games.
-- Balance on today's model. The record states every reading is of flash-lite play, and that "balance has to be re-read on the model the live game uses" (§8.5 item 5). Live seats now default to Claude Haiku 5.5 (`Agents/llm_factory/accessors.py:24`). No balance batch on Haiku is in the record.
+- A calibration curve: two confidence levels give only a two-point check.
+- Much about most reads: 86.8% (voices off) and 87.3% (voices on) were "unclear", so the score rests on the
+  1,105 and 973 committed reads.
+- That a lower score means better play: it has not been tested against win or against a person's reading.
 
-**Code · record.** `evaluation/experiments/phase3_capture.py` · `game_play_enhancement/data/phase3_{games,balance,balance_2,balance_3,balance_4}/`; `discussion_evidence.md` §8.3.
+There are two versions: the ledger (`read_ledger.py`) and a ten-seat re-implementation in
+`persona_voice_games_score.py`, which takes sides from the role sheet. Until 2026-10-24 the ledger counted only
+wolves and the serial killer as threats, so on a ten-seat record it mis-scored sides without warning; it now
+reads the role registry (`f13c43ea`), and nine-seat records score as before.
 
-### B8. Prompt-claims audit: the wolf "blend your vote" tactic (2026-06-17, nine-seat) — 🟡
+### Vote-target accuracy ✅ as a count
 
-**What it is.** A check on whether a tactic written into the wolf prompt is true. It correlates the validated camouflage proxy `wolf_unconditioned_blending_rate` with wolf win.
+**What it is.** A vote is right when it names a real threat. Three forms are in use: the share of town votes
+on a threat in the per-game metrics (ten-seat-ready, since it takes sides from the role registry); one vote
+scored against the true roles, used by the replayed-vote screens; and, for one replayed game, the exact
+right target per day written into the scorer.
 
-**Result** (`generation_prompt/prompt_claims_audit/experiment_log.md`): pooled r=+0.164, p=0.070, n=122. Wolves won 38% at high blend against 25% at low blend. This is consistent with an earlier r=+0.20, p=0.003, n=220. The baseline-only slice (n=22) flips sign and is underpowered.
+**What it can claim.** Whether the vote hit a threat. That is the outcome itself, so the count is exact.
 
-**What it can claim.** A trend in the tactic's favour, leaning on the earlier larger sample for significance.
+**What it cannot claim.** Whether the vote was well reasoned on what the seat knew: a lucky vote counts as
+right, a sound vote on a well-hidden threat as wrong. Until 2026-10-24 the single-vote scorer named only
+wolves and the serial killer as threats, so a vote on the Chanteuse scored as a miss; it now reads the role
+registry (`f13c43ea`).
 
-**What it cannot claim.** Cause. The record says both tested claims are correlational, since blending could co-move with game state.
+### Counts used to judge prompt and rule changes ✅ as counts · 🟡 as readings
 
-**Code · record.** `evidence/generation_prompt/prompt_claims_audit/blend_claim_test.py`. This is study code kept inside the evidence folder as a dated artifact; it reuses `evaluation/src/core/stats.py::point_biserial` · the same folder's `experiment_log.md`.
+Since October most play work has been prompt and rule changes judged on a few games, which need scores that
+are cheap and exact even when there are too few games to test them against win.
 
-### B9. Investigator transmission (June 2026, nine-seat) — ⚠️
+| Counts | What they showed | Data | What they cannot show |
+|---|---|---|---|
+| **Discussion census**, before the redesign | 1,166 messages, 517 passes (367 forced by the novelty gate); of 194 accusations, 47% rested on behaviour and 20% on a concrete claim | 28 nine-seat games, 2026-09-17, flash-lite, memory off | Independent labels: the evidence labels come from the model that plays. The real measure went to a separate judge |
+| **Phase 2 per-day counts**, comparing scheduler designs | 5 of 106 opening turns spoken; closings on 7 of 12 voting days, the defended player voted out all 7 times | 4 nine-seat games, 2026-10-07, flash-lite | Rates: four games, and in one, 36 of 115 calls went to the rescue model |
+| **Balance batches**, to set the role rules | Town won the first 13 games, then 3–3, 6–0 and 5–1 under later rules; the pack aimed 34 of its 56 kills at information roles | 31 ten-seat games, 2026-10-09 and 10, flash-lite | That a rule caused a lynch; anything stable from batches of six; balance on Haiku, which the live game now uses (no Haiku balance batch exists) |
 
-**What it is.** A per-game measure of whether the investigator's confirmed wolf read reached the village. The flags are `has_wolf_read`, `claimed` (named the wolf with a claim word), `vague_mention` (named it without one), `voted`, `transmitted` (claimed or voted) and `removed` (that wolf lynched later).
+**A lesson from the census:** a first keyword count said 32 day summaries named a quiet player. Reading the
+matches found 4 of 124; most hits were day-1 lines such as "no players are staying quiet yet". Counts of
+structure never needed that check; both counts of meaning on record (this one and the investigator's
+"claimed" find) did.
 
-**How it works.** `evaluation/src/studies/investigator_transmission.py` reads batch records only. "Claimed" is a keyword match: the wolf's name plus one of "wolf", "confirmed", "investigated" or "scanned".
+### Batch summary
 
-**What it can claim.** A bracket on transmission. In the v6 strategy-point A/B, the investigator voted the confirmed wolf about 100% of the time, asserted it about 33–67% of the time, and the wolf was removed after a confirmed read about 60–67% of the time in every arm (`memory_system/effectiveness/v6_sp_ab/experiment_log.md` finding 5).
+`scripts/analyze_batch.py` gives win rates and the mean, spread and range of each metric per batch. It reads
+the metrics stored in each record at game time and does not recompute, so a ten-seat record from before the
+2026-10-11 port still carries the old zeros. It does no paired comparison and gives no interval. No record
+cites a run of it.
 
-**What it cannot claim.** Whether a message actually asserted the read. A keyword match cannot judge meaning, and the record calls the analysis "lexical/qualitative (judge-confirmation pending)". The script's docstring also warns that `transmitted` is post-treatment, so its cross-tab with win is descriptive only.
+## 7. Cautions that apply to every score
 
-**Code · record.** `evaluation/src/studies/investigator_transmission.py`. Both records cite it at the old path `evaluation/src/experiments/` · `memory_system/effectiveness/v6_sp_ab/experiment_log.md`; `generation_prompt/prompt_claims_audit/experiment_log.md`.
+- **Ten-seat evidence is one run of 78 games**, mostly on Haiku and flash-lite. It confirms the core and
+  leaves most new roles' scores untested.
+- **Exact counts, small samples, one model.** The October prompt and rule counts come from 4 to 31 games,
+  mostly on flash-lite, so they show direction and mechanism, not size.
+- **Three places still use nine-seat role names.** Two return nothing on ten seats: how fast the town
+  followed an investigator's find, and the lynch-day wolf blending rate. One research helper,
+  `query_criticality` (how much a board is at stake, used by the nine-seat case sampler), counts the literal
+  wolf and serial-killer roles. Three others (the single-vote scorer, the read ledger, the discussion-evidence
+  judge's role join) scored the new evil roles as town until they were switched to the role registry on
+  2026-10-24 (`f13c43ea`).
+- **Counts of meaning need a read.** Wherever a count stood for something semantic (a quiet player named, a
+  find "claimed"), keyword counts were wrong until someone read the matches.
 
-### B10. Batch summary (`scripts/analyze_batch.py`) — no trust of its own
+## What we would do differently next time
 
-**What it is.** Win rates by winner, plus mean, median, standard deviation and range of each metric, per batch config. The output is markdown or JSON. It was ported to the ten-seat roles (plan §8.4; the role list at `analyze_batch.py:75`).
+| Stage | Change | What was done | What it would buy |
+|---|---|---|---|
+| Design | **1. Write every scorer against sides, never role names** | Six places hard-coded the nine-seat roles; three fixed on 2026-10-24 | A new role set scores correctly the day it ships |
+| Data | **2. Record each night's full outcome from the first game of a new version** | Added on 2026-10-11, after the 41 phase-3 games | Every game of a version can be rescored, not only the later ones |
+| Validation | **3. Run the check against winning on the first batch of each new version, and report ranges** | Nine-seat twice; ten-seat once, on 2026-10-24 | A version's scores are confirmed, or questioned like the healer's, before a comparison leans on them |
+| Validation | **4. Write down each new score's expected direction before the run** | Ten-seat new-role scores were read after the run | A new score's result counts as a test, not exploration |
+| Data | **5. Read a sample of matches before reporting any keyword count** | The census's first keyword count was read afterwards and was 8 times too high | Counts of meaning that can be quoted |
 
-**What to know.** It reads the `computed_metrics` stored in each record at game time and does not recompute (`extract_metrics`, line 124). A ten-seat record written before the 2026-10-11 port therefore carries the old nine-seat values, including the zeros. It does no paired comparison and gives no interval. Each number is as good as the metric it averages. No record in `evidence/` cites a run of it.
-
-**Code · record.** `scripts/analyze_batch.py` · none.
-
----
-
-## Cross-cutting (2026-10-23)
-
-- **Every validation against win is nine-seat.** The basket, the 2026-07-02 diagnostics, the leverage anchor and the blend check all rest on June–July 2026 records. The live game is ten-seat, and no score has been validated against win there. The code makes this explicit: nothing pushes as "validated".
-- **Exact counts, small samples, one model.** The October scores are counts code reads from records. The counts are exact. The samples are 4 to 31 games, mostly on `gemini-3.5-flash-lite`, so they show direction and mechanism, not size.
-- **Three scorers still carry nine-seat role names.** `score_vote` (threats `{"wolf", "serial_killer"}`), `read_ledger.py` (the same set and a `wolf` mask) and the discussion-evidence judge's role join (`EVIL = {"wolf", "serial_killer"}`, `../llm_judge/experiment_log.md` §8). On a ten-seat record they run without error and score the new evil roles as town. Ten-seat work uses `grading.py`, `ten_seat_metrics.py` and the persona scorer's side-based reads instead.
-- **Counts of meaning need a read.** Where a score counts something semantic (quiet players named, a read "claimed", evidence cited), the record shows keyword counts being wrong until the matches were read (B5, B9). The structural counts never needed that.
+**Bottom line.** The rules define what a good move is, code grades every decision by them, and a check
+against winning confirms that those moves win games. On both games the town's lynch scores and power roles
+lost at night pass that check, and wolves blending in does too. The healer's save stays a good move but no
+longer decides ten-seat games the way it did on nine seats. Most new roles' scores are graded and waiting on
+more games.
 
 ## Sources
 
-| Instrument | Code | Record |
+| What | Code | Record |
 |---|---|---|
-| Nine-seat basket + validation | `Agents/compute_metrics.py`, `Agents/schemas/metrics.py`, `evaluation/src/instrument_validation/proxies/`, `evaluation/src/core/stats.py` | `metrics/{proxy_win_monotonicity,experiment_log}.md`, `metrics/design/`, `metrics/metrics_audit/` |
-| Tiering and the push | `Agents/compute_metrics.py:688-776` | `memory_system/v8/plan.md` §8.4 |
-| Ten-seat metrics | `Agents/ten_seat_metrics.py`; `compute_game_metrics` | `memory_system/v8/{plan.md §8.1–8.4, decisions.md §8}` |
-| Ten-seat decision grades | `Agents/memory/consolidation/grading.py`, `scripts/grade_observations.py` | `memory_system/v8/{plan.md §9.6, decisions.md §12–13, experiment_log.md}`; `credit/report.md` §2 |
-| Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/` |
-| Vote-target accuracy | `compute_metrics.py:536`, `Agents/memory/consolidation/decision_scoring.py`, `evaluation/experiments/haiku_vote_score.py` | Part A; `discussion_evidence.md` §8.7 |
-| Leverage anchor | `instrument_validation/proxies/leverage_anchor_separation.py` | `v7_final/plan.md`, `v7_final/experiment_log.md` |
-| Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `game_play_enhancement/discussion_evidence.md` §2 |
-| Phase 2 step 8 counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `game_play_enhancement/data/phase2_step8_games/` |
-| Balance batches | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5 |
-| Blend-tactic check | `evidence/generation_prompt/prompt_claims_audit/blend_claim_test.py` | same folder, `experiment_log.md` |
-| Investigator transmission | `evaluation/src/studies/investigator_transmission.py` | `memory_system/effectiveness/v6_sp_ab/experiment_log.md` |
-| Batch summary | `scripts/analyze_batch.py` | none |
+| Nine-seat scores and their check against win | `Agents/compute_metrics.py`, `Agents/schemas/metrics.py`, `evaluation/src/instrument_validation/proxies/`, `evaluation/src/core/stats.py` | [`../../metrics/`](../../metrics/README.md) (`proxy_win_monotonicity.md`, `candidate_ledger.md`, `experiment_log.md`, `design/`, `metrics_audit/`); [log](experiment_log.md), Part A |
+| Ten-seat check against win | `evaluation/experiments/ten_seat_win_check.py` | [`data/ten_seat_win_check/`](data/ten_seat_win_check/README.md); [log](experiment_log.md), 2026-10-24 |
+| Trust labels sent with each score | `Agents/compute_metrics.py` (`_metric_tier`, `VALIDATED_ON_TEN_SEAT_METRICS`) | `memory_system/v8/plan.md` §8.4 |
+| Ten-seat metrics | `Agents/ten_seat_metrics.py`; `compute_game_metrics` | `memory_system/v8/{plan.md §8.1–8.4, decisions.md §8}`; log B1 |
+| Ten-seat decision grades | `Agents/memory/consolidation/grading.py`, `scripts/grade_observations.py` | `memory_system/v8/{plan.md §9.6, decisions.md §12–13, experiment_log.md 2026-10-13}`; log B1 |
+| The save verdict | `Agents/rules/night.py` (the verdict step) | log, 2026-10-24 |
+| Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/`; log B2 |
+| Vote-target accuracy | `Agents/compute_metrics.py`, `Agents/memory/consolidation/decision_scoring.py`, `evaluation/experiments/haiku_vote_score.py` | log B3; [turn replays](../evaluation_scopes/turn/report.md) |
+| Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `game_play_enhancement/discussion_evidence.md` §2; log B5 |
+| Phase 2 per-day counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `game_play_enhancement/data/phase2_step8_games/`; log B6 |
+| Balance batches | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5; log B7 |
+| Batch summary | `scripts/analyze_batch.py` | log B10 |
 
-*Written 2026-06-28 and 2026-07-02 (Part A); widened 2026-10-23 (Part B, corrections, verdict, sources), checked against the code at the working tree of that date. Whether the agents play well, as opposed to how well we can score it, lives in the design folders named above.*
+*Rewritten 2026-10-24 as a plain summary of the 2026-10-23 trust write-up, which is kept whole as the
+[experiment log](experiment_log.md) (Part A and B1–B10 there), and reorganised the same day around the
+approach, with the ten-seat check added as the second run. The tests named here are cited for what they
+pin; the test suite is largely AI-written and unaudited, so no test count is offered as evidence.*
