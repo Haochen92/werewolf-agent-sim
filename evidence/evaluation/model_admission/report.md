@@ -11,6 +11,12 @@ experimental, it is mostly finding which candidates are usable at all, but the s
 4. **Reliability:** does it keep answering under load, and stay the same model over time?
 5. **Rollout and records:** can it be switched in and out safely, and is each decision written down?
 
+**What decides admission today.** While the project is experimental, a model is dropped only when it costs
+too much, is too slow for live play, or is too hard to integrate. Quality is measured and recorded, but a
+model that does worse stays on the menu: GLM-5.3 Flash (32% of replayed replies with a factual error,
+against the default's 9%) and DeepSeek V4.1 Flash (43%) are both listed. MiniMax M3 and Qwen3.8 Flash were
+not taken, for latency. Quality would become a reason to drop a model if the game were commercialised.
+
 Each section gives what was done, what it found and how far it can be trusted. The full record of every
 run, with error codes, cache floors and the check of the catalogue's notes against the records, is the
 [experiment log](experiment_log.md); raw outputs are in [`data/`](data/README.md). The factual-error test set
@@ -22,8 +28,9 @@ used for quality is described in [factual_errors](../factual_errors/report.md); 
 - **A candidate passes three checks in order**: short test prompts (integration, cost, speed), a replay of
   saved game turns against the current model (quality), then real games (quality, cost, failures only a
   game shows). Each catches what the one before cannot.
-- **Quality is checked as a gate, not a ranking.** Two runs of the same model on the same 70 turns differed
-  by about 6 points, so the replay can reject a clearly worse model and cannot order close ones. The
+- **Quality is measured, and is not yet a reason to drop a model** (that is cost, latency and integration
+  today). Even as a gate it could only reject a clearly worse model, not rank close ones: two runs of the
+  same model on the same 70 turns differed by about 6 points. The
   thinking level was searched for votes and discussion turns; the summariser, extraction and the judges
   were checked only lightly, and no judge was recalibrated, because no labelled set exists for them.
 - **Integration needed adapters.** A forced tool call silently turned thinking off; a model passed every
@@ -41,9 +48,9 @@ used for quality is described in [factual_errors](../factual_errors/report.md); 
 
 | Question | What was done | Trust | Main limit |
 |---|---|---|---|
-| 1. Quality | Replays on the factual-error test set; vote replays scored by code; real games; thinking-level search | 🟡 | A gate, not a ranking; Gemini judges; no vote or night turns in the replay; summariser, extraction and judges barely covered |
+| 1. Quality | Replays on the factual-error test set; vote replays scored by code; real games; thinking-level search | 🟡 | Recorded, not yet a reason to drop; rejects only a clearly worse model, cannot rank; Gemini judges; no vote or night turns in the replay; summariser, extraction and judges barely covered |
 | 2. Integration | Test prompts per calling mode, on short prompts and real turns; adapters | 🟡 | 27–170 calls per mode; the live check saves no output |
-| 3. Cost and speed | Prices with cache and batch rates; cache floors; cost per game; seconds per turn | 🟡 | Latency as ranges, not tail; cost as right as the price rows |
+| 3. Cost and speed | Prices with cache and batch rates; cache floors; cost per game; seconds per call; the stage's waits, from served games' traces | 🟡 | Stage fit from 13 served games, 7 on Haiku; limits provisional; cost as right as the price rows |
 | 4. Reliability | Request budget, rescue model, backup key; fingerprint and drift guards | ✅ built and deployed | Learned from stalls in live play, not tested before a switch |
 | 5. Rollout and records | The model catalogue as a switch; dated notes per row | 🟡 | Several rulings never written down |
 
@@ -65,7 +72,7 @@ at which thinking level is it cheapest while still good enough?
 
 | Task | How it was checked | What it found | Coverage |
 |---|---|---|---|
-| **Playing a seat** (discussion turns) | Replay of saved turns against the current model, read by AI judges for factual errors | Rejected two cheap candidates; Haiku and Luna clearly better than flash-lite at low | Good for factual errors on day turns |
+| **Playing a seat** (discussion turns) | Replay of saved turns against the current model, read by AI judges for factual errors | Found two cheap candidates clearly worse (both kept on the menu); Haiku and Luna clearly better than flash-lite at low | Good for factual errors on day turns |
 | **Voting** | Replay of saved vote turns, scored by code against the true roles | Haiku at medium right on 61% of votes, at low 41% | 16 vote turns |
 | **Whole games** | AI-only games, read against a rubric | A stronger model's replay gain barely showed in games | 4–6 games per model |
 | **Day summary** | Haiku against Sonnet, read by one AI judge | A tie, 18 of 30 flawed each | Six days from two games |
@@ -242,6 +249,25 @@ taken, and GLM was taken without thinking. On the replay, Haiku at low took 9.5 
 The live game gives a request 30 seconds (§4); when that budget was set in September 2026, the slowest
 honest turn took 11.
 
+**What "fast enough" means is set by the display.** The server never waits for the stage: it runs ahead,
+and the browser plays each beat at its full length, a speech line at 2.4 words a second for 5 to 15 seconds.
+So a turn is fast enough when it is finished before the stage reaches it; if not, the stage shows the
+speaker thinking and everyone waits. It is now measured from the traces of served games, by replaying each game's beats (cut by the
+stage's own code) against the time each event left the server (`frontend/docs/stage_fit/`, 2026-10-24):
+
+| Model | Games | A discussion turn: median, slowest 5% | Stage time spent waiting for the model |
+|---|---|---|---|
+| Claude Haiku 5.5 | 7 | 5.4 s, 10.8 s | 2.7–5.1% |
+| DeepSeek V4.1 Flash | 3 | 3.5 s, 4.5 s | 0.1–0.3% |
+| GPT-6 Luna | 2 | 6.4 s, 9.3 s | 2.1–5.3% |
+| Gemini 3.5 Flash-Lite | 1 | 5.2 s, 8.0 s | 3.6–4.1% |
+
+On Haiku most of the waiting comes in runs of passes (a pass shows for 4 s, while the next seat's call takes
+5.4 s median even when it passes) and at the morning after the pack's night chain (its chat lines, kill and
+skills run one after another, about 24 s on night 1). After a speech, which shows for 5–15 s, most turns
+fit. Votes, written in parallel, rarely make the stage wait. Seven games is a small sample, all played by
+the owner while building, so these limits are provisional.
+
 **How far to trust it.** The arithmetic is exact but only as right as the price rows and the names usage is
 recorded under, and both have been wrong: before the October fixes, traces counted OpenAI's cache writes as
 free and Claude's cache reads and writes under unpriced names, so some earlier game costs were understated.
@@ -290,9 +316,9 @@ why it was chosen?
 - **Each row's note is the summary of its admission.** Checked against the records on 2026-10-23, seven of
   the ten notes hold, one cannot be re-checked (it rests on a docstring) and two have no record behind them
   (log §10).
-- **Rulings not written down.** The three latency rejections have no written ruling, DeepSeek V4.1 Flash
-  failed the replay and is still a row in the seed, and the seed still lists `json_schema` for Luna and Haiku
-  although production has used `json_mode` since 2026-10-14.
+- **Rulings not written down.** The latency rejections of MiniMax and Qwen have no written ruling, and the
+  seed still lists `json_schema` for Luna and Haiku although production has used `json_mode` since
+  2026-10-14. Models that did worse on the replay stay listed by policy (above), not by oversight.
 - **The records were on one machine until 2026-10-23,** when the 20 admission records and the replay runs
   were moved into [`data/`](data/README.md), each with its config and where it came from.
 
@@ -322,10 +348,12 @@ outputs already on disk at no cost. Real games stay a manual step after it.
 | Question | Criterion | Value | Where it comes from |
 |---|---|---|---|
 | Integration | The chosen mode passes every test call, fails no real turn, and reasons when thinking is asked for | — | DeepSeek's prose replies; the forced tool call that turned thinking off (§2) |
-| Quality | Bad-sample rate no more than this many points above the current model's, and not significantly worse by the sign test (p 0.05) | 6 points | Two runs of Haiku at low scored 10% and 16% (§1) |
-| Quality | Votes right no more than this many points below the current model's, and not significantly worse | 10 points | Derived from sampling spread (about 4 points an arm at 160 votes); no vote rerun spread measured. **Owner's call** |
-| Speed | Median seconds per sample | 12 s | Seat models ran 8.1–9.5 s a turn; the slowest honest turn was 11 s. **Owner's call** |
-| Speed | Slowest 5% of samples | 30 s | The live request budget before the rescue takes over (§4) |
+| Quality (advisory today) | Bad-sample rate no more than this many points above the current model's, and not significantly worse by the sign test (p 0.05) | 6 points | Two runs of Haiku at low scored 10% and 16% (§1) |
+| Quality (advisory today) | Votes right no more than this many points below the current model's, and not significantly worse | 10 points (provisional) | Derived from sampling spread (about 4 points an arm at 160 votes); no vote rerun spread measured. **Owner's call** |
+| Speed, discussion set | Median and slowest 5% seconds per sample | 5.5 s and 11 s (provisional) | No slower than Haiku, whose stage waits 2.7–5.1% of the time; a median at or under 4 s would keep up through passes (`frontend/docs/stage_fit/`) |
+| Speed, vote set | Slowest 5% seconds per sample | 11 s (provisional) | Ballots are written in parallel and rarely make the stage wait; any other set keeps the 30 s request budget (§4) as its ceiling |
+
+**Today's policy is in the command.** A config switch, `quality_rejects`, is off by default: the quality and vote rows are then marked advisory, reported beside the verdict but never a rejection, so only integration, speed and cost can reject. Turned on, for a commercial release, they reject too. The cheapest passing level is still chosen among the levels that failed no check, quality included.
 
 **The vote scorer was checked against the earlier result.** On the saved thinking-level outputs it gives
 medium 98 of 160 right exactly, and low 66 of 160 against the earlier 65. The one difference is a day-4 vote
@@ -354,7 +382,7 @@ game day, so its reference numbers will differ from 65 of 160. The code is pinne
 | **Shadow or canary rollout:** the new model on a share of live games, watched before everyone gets it | Games show failures the replay cannot | Switches went straight to the catalogue |
 | **A check that the model will play a lying role** | A wolf that refuses or softens a lie breaks the game | Not seen in the records |
 | **Pinned model snapshots, deprecation dates, tokenizer and context changes** | A new tokenizer changes prompt length and cache floors; an alias can move | Models named by alias; drift guarded by the fingerprint after the fact |
-| **Tail latency** (the slowest 5% of calls) | It is the wait a live player feels | Past runs give ranges; the §6 gate computes it from per-sample timings |
+| **Tail latency** (the slowest 5% of calls) | It is the wait a live player feels | Measured per graph node from served games' traces (§3); the §6 gate computes it per case set |
 | **Recalibrating the judges after any model change** | A judge is a model too | No labelled set for the judges |
 
 ## What we would do differently next time
@@ -365,15 +393,15 @@ game day, so its reference numbers will differ from 65 of 160. The code is pinne
 | Quality | **2. Cover every task in the replay, with vote and night turns, and compare on the random slice** | Day discussion turns and 16 vote turns; summary and extraction on a few games | Each job's model checked on the decisions that matter |
 | Quality | **3. Judge with a model from neither side, checked against an owner-labelled sample, and run each candidate twice** | Gemini judges for a Gemini default; one run per arm | A comparison no family preference can tilt, with its own spread |
 | Integration | **4. Save every run's output, the live check's too, under the run's id** | Records sat on one machine until 2026-10-23; the live check saves nothing | Every catalogue note traceable to a record |
-| Cost and speed | **5. Record tail latency and cost per game for each candidate before admission** | Ranges over a few turns; cost per game from 4–6 games | The live-play decision made on the wait players feel |
+| Cost and speed | **5. Derive each phase's latency limit from its display time, and time one game per candidate against it** | Derived on 2026-10-24 from 13 served games' traces, after the models on this page were chosen | The live-play decision made on the wait players would feel |
 | Reliability | **6. Put each candidate through a stall drill before it goes live** | The rescue path was built after live stalls | A provider's failure mode known before players meet it |
 | Rollout | **7. Roll out to a share of games first, and write each ruling into the catalogue note with its record id** | Straight switches; several rulings unwritten | A switch that can be watched, and a menu that explains itself |
 
 **Bottom line.** The project's admission covers the five questions of a model migration unevenly. Quality and
 integration are checked before a model goes live, and caught failures a short check would have missed. Cost
 and speed are measured and decided three candidates. Reliability was built after live play showed what a
-stalling provider does, and it is now the strongest part. The weak points are the quality gate's judges and
-coverage, and the rollout's missing written rulings.
+stalling provider does, and it is now the strongest part. The weak points are the quality check's judges and
+coverage, latency limits derived from seven games only, and the rollout's missing written rulings.
 
 ## Sources
 
@@ -391,6 +419,7 @@ coverage, and the rollout's missing written rulings.
 | Request budget, rescue, backup key | `Agents/llm_factory/health.py`, `Agents/turn/agent_player.py` (`_STALLED`), `server/game/model_catalog.py` (`BACKUP_MODELS`) | commits `c67d47cb`, `c74284cb` (2026-09-30), `957d0b2e`, `cc4977ea`, `9f350ea5` (2026-10-21); `frontend/docs/server_design_notes.md` ("Stalls") |
 | Drift guards | `Agents/run_fingerprint.py`, `evaluation/src/audits/embedding_canary.py` | [experimental controls](../experimental_controls/report.md); `model_drift/drift_surfaces_and_guards.md` |
 | Catalogue notes against the records | `Agents/llm_factory/catalog.py` (`SEED_MODELS`) | log §10 |
+| Stage fit (does the model keep ahead of the stage) | `evaluation/experiments/stage_fit.py`; `frontend/scripts/beats-for-log.ts` | `frontend/docs/stage_fit/README.md`, `results.json` (2026-10-24) |
 | One command per candidate | `evaluation/src/cli_runner/admit.py`; `evaluation/src/model_admission/{gate,vote_scoring,schemas}.py`; example `evaluation/config/template/admission_example.json`; tests `tests/evaluation/test_model_admission_pipeline.py` | §6 (built 2026-10-24) |
 
 *Rewritten 2026-10-24 as a plain summary of the 2026-10-23 write-up, which is kept whole as the
