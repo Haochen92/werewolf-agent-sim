@@ -1,0 +1,53 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/admission_bench_glm_2026_10_04/eval_results/summary.json",
+  "config": {
+    "arms": [
+      {
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "label": "flashlite35_medium",
+        "memory": "none",
+        "model": "gemini-3.5-flash-lite"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "minimal",
+          "LLM_STRUCTURED_MODE": "json_mode",
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "label": "glm53_flash_nothink",
+        "memory": "none",
+        "model": "openrouter/z-ai/glm-5.3-flash"
+      }
+    ],
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "label": "admission_bench_glm_2026_10_04",
+    "n": 2,
+    "notes": "GLM-5.3 Flash (OpenRouter, pinned to Z.AI) as a no-thinking baseline: its endpoint refuses reasoning off, so 'minimal' maps to effort low (~8 reasoning tokens, ~3 s a call); with full thinking it took 34-55 s a call, too slow for live seats. json_mode (its admission's recommended mode). The 3.5 flash-lite medium reference's generations and verdicts are copied from admission_bench_2026_10_04, so it is neither regenerated nor rejudged.",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "workers": 3
+  },
+  "config_sha256": "94aa33bf96170e007c2f2babcb49f5c3b6f2a6566ee544f6fbcb0fed9325f512",
+  "config_source": "evaluation/config/model_admission/bench_glm_2026_10_04.json",
+  "created_at": "2026-10-23T01:56:38.200678",
+  "created_from": "eval-hallucination-bench run 'admission_bench_glm_2026_10_04' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/admission_bench_glm_2026_10_04/summary.json",
+  "inputs": [
+    {
+      "count": 129,
+      "path": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "sha256": "a486da3b76062b2bc4f766e4d319af4414df5021b9cab4ffa465ba5146b2b376"
+    }
+  ],
+  "models": [
+    "gemini-3.5-flash-lite",
+    "openrouter/z-ai/glm-5.3-flash"
+  ]
+}

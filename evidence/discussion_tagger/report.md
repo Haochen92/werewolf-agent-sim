@@ -23,7 +23,7 @@ loop generation
 This is the write-up of the **current shipped mechanism and its design lineage**; the path that got here is
 [experiment_log.md](experiment_log.md). How far the instrument is *trusted* — the validation apparatus and its
 bounds — is owned by the companion apparatus report
-[../evaluation/discussion_tagger/report.md](../evaluation/discussion_tagger/report.md); this doc points
+[../evaluation/llm_judge/discussion_tagger.md](../evaluation/llm_judge/discussion_tagger.md); this doc points
 at it rather than repeating it.
 
 ## What it produces (current schema)
@@ -52,7 +52,7 @@ to avoid; one holistic verdict per turn keeps the reward legible.
 Every LLM-tagged signal the tagger produces, its consumer, and how far it is trusted. Only the two coarse
 **verdicts** are credited; the four sub-tags below them are the detection lens the offline validation runner
 reads. Trust markers are lifted from the Verification section below and the apparatus report
-[`../evaluation/discussion_tagger/report.md`](../evaluation/discussion_tagger/report.md); nothing is
+[`../evaluation/llm_judge/discussion_tagger.md`](../evaluation/llm_judge/discussion_tagger.md); nothing is
 re-derived.
 
 | Tagged signal | Schema field | Consumer (credit channel) | Trust |
@@ -164,7 +164,7 @@ live loop never blinds; only the validation runner's `skill`/`deleak` modes exer
 claims — a de-lucked discussion merit signal the vote proxy is blind to — and survived an adversarial review
 that shrank its claim three times. But it is correlational, single-epoch (N=24), and uncalibrated at the
 per-field level. The full L1/L2 write-up is
-[../evaluation/discussion_tagger/report.md](../evaluation/discussion_tagger/report.md); the load-bearing
+[../evaluation/llm_judge/discussion_tagger.md](../evaluation/llm_judge/discussion_tagger.md); the load-bearing
 results:
 
 - **The holistic verdict predicts the win *beyond* the vote proxy, and it is real skill — not leak, not
@@ -213,7 +213,7 @@ measure, which belongs to the loop spoke and chapter 3.
 ---
 
 *Companion journey: [experiment_log.md](experiment_log.md) · Trust/reliability apparatus:
-[../evaluation/discussion_tagger/report.md](../evaluation/discussion_tagger/report.md) · Design record +
+[../evaluation/llm_judge/discussion_tagger.md](../evaluation/llm_judge/discussion_tagger.md) · Design record +
 run artifacts: [../v7_final/discussion_credit_design.md](../v7_final/discussion_credit_design.md),
 [../v7_final/experiment_log.md](../v7_final/experiment_log.md) §12g. Live code:
 [../../evaluation/src/loop/discussion_tagger.py](../../evaluation/src/loop/discussion_tagger.py),

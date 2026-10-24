@@ -89,7 +89,7 @@ How the pipeline is measured — and how far each measurement can be trusted.
 
 ### [evaluation/](evaluation/) — The Eval Hub
 
-The measurement layer: how we judge whether the memory pipeline works, and (the harder question) how trustworthy each instrument is. [report.md](evaluation/report.md) is the hub; [source_map.md](evaluation/source_map.md) is the reliability ledger (tags, code pointers, dated code-vs-report verification). Per-instrument spokes live inside: `llm_judge/`, `labeling/`, `sampled_human_review/`, `dimension_extraction/`, `discussion_tagger/`, `replay_screens/`, `metrics/`, `loop/`, `end_to_end_ab/`, `hardening_pass/`, `methodology/`, `hallucination_bench/` (the standing benchmark for factual errors, 2026-10-03). This chapter documents the *apparatus*; the design verdicts it produced live in the subsystem folders above.
+The measurement layer: how we judge whether the memory pipeline works, and (the harder question) how trustworthy each instrument is. [report.md](evaluation/report.md) is the hub; [source_map.md](evaluation/source_map.md) is the reliability ledger (tags, code pointers, dated code-vs-report verification). Per-approach reports live inside (regrouped 2026-10-23): judging one output, `deterministic_audits/`, `llm_judge/`, `sampled_human_review/`, `labeling/`; testing a change, `replay_screens/`, `whole_game_evaluation/`; measures and fair comparison, `metrics/`, `methodology/`; pipelines, `factual_errors/` (factual errors), `model_admission/`. Dated records: `loop/`, `hardening_pass/`, and the retired discussion tagger as a note in `llm_judge/`. `dimension_extraction/` was dissolved into `deterministic_audits/` and `sampled_human_review/`. This chapter documents the *apparatus*; the design verdicts it produced live in the subsystem folders above.
 
 ### [metrics/](metrics/) — Evaluation Metrics
 
@@ -100,7 +100,7 @@ Distinct from the judges in other folders, which score the memory pipeline itsel
 |---|---|---|---|
 | [experiment_log](metrics/experiment_log.md) | — | Jun 6 | Design discussion: audit + proxy-basket decision (per-role decision-quality is not deterministically feasible; use de-lucked, monotonicity-verified outcome proxies) |
 
-This folder is the metric **design** journey; its instrument-**trust** twin is [evaluation/metrics/](evaluation/metrics/). Likewise [discussion_tagger/](discussion_tagger/) (the tagger design) twins [evaluation/discussion_tagger/](evaluation/discussion_tagger/) (the tagger-as-instrument trust report).
+This folder is the metric **design** journey; its instrument-**trust** twin is [evaluation/metrics/](evaluation/metrics/). Likewise [discussion_tagger/](discussion_tagger/) (the tagger design) twins [evaluation/llm_judge/discussion_tagger.md](evaluation/llm_judge/discussion_tagger.md) (the tagger-as-instrument trust report).
 
 ### Apparatus Support
 
@@ -124,7 +124,7 @@ standalone folder: the dimension build and screens live in
 | [v6 dimension build](extraction/situation_dimensions/dimension_schema_build_spec.md) | Jun 13 – Jul 2 | Per-cell schema and store-build journey; criticality screen and deterministic accuracy audit are colocated with the situation-dimensions record |
 | [forced applicability](memory_system/strategy_adoption/forced_schema_screen/experiment_log.md) | Jun 16 | Store × schema screen and the prompt-body delivery result that raised per-memory verdict coverage from 0.27 to 0.97 |
 | [v7_final](v7_final/experiment_log.md) | Jun 20 – Jul | Build log of the v7 credit / consolidation / discussion-credit work; the compounding loop itself is the one still-un-run paid test (design docs `consolidation_design.md`, `discussion_credit_design.md` hold current state) |
-| [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/discussion_tagger/](evaluation/discussion_tagger/)) |
+| [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/llm_judge/discussion_tagger.md](evaluation/llm_judge/discussion_tagger.md)) |
 | [store_curation](store_curation/report.md) | Jul | The mechanism record for how the three memory stores (observations, strategy points, tells) grow, stay bounded, and improve across games; review basis for the pre-run ownership walkthrough |
 | [credit](credit/report.md) | Jul | The credit layer: how a decision becomes a learning signal (SP ledger, tell ledger, read/tactic redesign) |
 | [credit/blindspot_fix](credit/blindspot_fix/experiment_log.md) | Jul 21 | Post-endpoint fix pair for the credit blind spot (contextual abstain rule + find→lynch conversion channel), validated on owned data ($0 re-score + replay screen); step-3 rerun NOT authorized |

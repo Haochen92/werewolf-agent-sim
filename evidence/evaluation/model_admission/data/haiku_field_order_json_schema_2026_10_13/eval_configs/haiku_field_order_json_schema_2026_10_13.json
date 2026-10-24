@@ -1,0 +1,15 @@
+{
+  "label": "haiku_field_order_json_schema_2026_10_13",
+  "models": ["anthropic/claude-haiku-5-5"],
+  "modes": ["json_schema"],
+  "samples_per_schema": 1,
+  "workers": 4,
+  "caching": {
+    "floor_sizes": [1024],
+    "wait_s": 5,
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "cases": 8,
+    "real_prompt_mode": "json_schema"
+  },
+  "notes": "Which fields Haiku moves when an unenforced reply leaves the schema's order (9 of 24 real turns in unenforced_field_order_2026_10_13), and whether the enforced mode keeps the order: the same 8 real Phase 3 discussion turns (3 variants each) in json_schema, with the written key order recorded on a mismatch. One sample per schema on the short probes."
+}

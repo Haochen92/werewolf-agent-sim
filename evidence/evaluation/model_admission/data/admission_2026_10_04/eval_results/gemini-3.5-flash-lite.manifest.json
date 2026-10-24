@@ -1,0 +1,39 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/admission_2026_10_04/eval_results/gemini-3.5-flash-lite.json",
+  "config": {
+    "caching": {
+      "cases": 2,
+      "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "floor_sizes": [
+        256,
+        512,
+        1024,
+        2048,
+        4096
+      ],
+      "wait_s": 8
+    },
+    "label": "admission_2026_10_04",
+    "models": [
+      "gemini-3.5-flash-lite"
+    ],
+    "notes": "Gemini 3.5 flash-lite at its own game thinking level (medium, GAME_THINKING_BY_MODEL); native structured output only.",
+    "samples_per_schema": 3,
+    "workers": 4
+  },
+  "config_sha256": "008b76e9f1d12c0a5c64c2ac4a02cf0e154901b5752cd1b05c8d857a324f5d6b",
+  "config_source": "evaluation/config/model_admission/admission_2026_10_04_flashlite.json",
+  "created_at": "2026-10-23T01:56:37.862475",
+  "created_from": "eval-model-admission run 'admission_2026_10_04' (record carries its own run_at + runtime_fingerprint)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/model_admission/admission_2026_10_04/gemini-3.5-flash-lite.json",
+  "inputs": [
+    {
+      "count": 129,
+      "path": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "sha256": "a486da3b76062b2bc4f766e4d319af4414df5021b9cab4ffa465ba5146b2b376"
+    }
+  ],
+  "models": []
+}

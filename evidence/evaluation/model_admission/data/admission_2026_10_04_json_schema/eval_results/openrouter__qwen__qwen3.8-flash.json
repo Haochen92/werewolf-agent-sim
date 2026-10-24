@@ -1,0 +1,169 @@
+{
+ "model": "openrouter/qwen/qwen3.8-flash",
+ "run_at": "2026-10-04T10:25:03.295073+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "1ba2bfa1d0ee11920131b7124428e5c7da466fc8",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "json_schema",
+   "passed": "21/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayVoteOutput",
+     "problem": "LengthFinishReasonError: Could not parse response content as the length limit was reached - CompletionUsage(completion_tokens=131070, prompt_tokens=136, total_tokens=131206, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=None, audio_to"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "no player reads"
+    }
+   ],
+   "mean_per_call": {
+    "input": 124.0,
+    "cached": 0.0,
+    "output": 2903.1,
+    "reasoning": 2338.8,
+    "seconds": 108.1
+   }
+  }
+ ],
+ "recommended_mode": null,
+ "recommended_mode_why": "no mode passed every call (best: json_schema at 21/27)",
+ "cache_floor": {
+  "floor_tokens": 256,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 283,
+    "cached_tokens": 256,
+    "sends": 2
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 508,
+    "cached_tokens": 256,
+    "sends": 2
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 971,
+    "cached_tokens": 768,
+    "sends": 2
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1864,
+    "cached_tokens": 1792,
+    "sends": 2
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3653,
+    "cached_tokens": 3584,
+    "sends": 2
+   },
+   {
+    "target_tokens": 8192,
+    "input_tokens": 7360,
+    "cached_tokens": 7168,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 4074,
+    "cached": 0,
+    "output": 4750,
+    "reasoning": 3993,
+    "seconds": 88.29,
+    "error": null
+   },
+   "next_turn": {
+    "input": 4095,
+    "cached": 3328,
+    "output": 8047,
+    "reasoning": 7489,
+    "seconds": 134.57,
+    "error": null,
+    "shared_prefix_est": 3418
+   },
+   "other_seat": {
+    "input": 3982,
+    "cached": 1024,
+    "output": 4864,
+    "reasoning": 4275,
+    "seconds": 81.8,
+    "error": null,
+    "shared_prefix_est": 1111
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 2995,
+    "cached": 768,
+    "output": 3716,
+    "reasoning": 3082,
+    "seconds": 65.0,
+    "error": null
+   },
+   "next_turn": {
+    "input": 3016,
+    "cached": 2304,
+    "output": 1886,
+    "reasoning": 1295,
+    "seconds": 37.04,
+    "error": null,
+    "shared_prefix_est": 2361
+   },
+   "other_seat": {
+    "input": 3085,
+    "cached": 1536,
+    "output": 3790,
+    "reasoning": 3002,
+    "seconds": 67.43,
+    "error": null,
+    "shared_prefix_est": 769
+   }
+  }
+ ],
+ "real_prompt_failures": "0/6",
+ "cached_share": {
+  "next_turn": 0.792,
+  "other_seat": 0.362
+ }
+}

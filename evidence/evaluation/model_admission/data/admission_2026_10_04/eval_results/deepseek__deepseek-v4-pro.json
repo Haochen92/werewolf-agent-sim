@@ -1,0 +1,163 @@
+{
+ "model": "deepseek/deepseek-v4-pro",
+ "run_at": "2026-10-04T08:32:05.223460+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "bbf7168e93d7965471330be8ba5f6714dffe0d1f",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "forced_tool",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 890.9,
+    "cached": 279.7,
+    "output": 321.6,
+    "reasoning": 0.0,
+    "seconds": 3.8
+   }
+  },
+  {
+   "mode": "auto_tool",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 961.9,
+    "cached": 559.4,
+    "output": 1691.9,
+    "reasoning": 1373.7,
+    "seconds": 19.9
+   }
+  },
+  {
+   "mode": "json_mode",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 850.7,
+    "cached": 412.4,
+    "output": 1891.3,
+    "reasoning": 1659.8,
+    "seconds": 20.9
+   }
+  }
+ ],
+ "recommended_mode": "auto_tool",
+ "recommended_mode_why": "passed every call and reasons (1373.7 tokens a call); forced_tool also passed but did not reason",
+ "cache_floor": {
+  "floor_tokens": 256,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 260,
+    "cached_tokens": 256,
+    "sends": 2
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 485,
+    "cached_tokens": 384,
+    "sends": 2
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 929,
+    "cached_tokens": 896,
+    "sends": 2
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1796,
+    "cached_tokens": 1792,
+    "sends": 2
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3526,
+    "cached_tokens": 3456,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 5119,
+    "cached": 0,
+    "output": 4937,
+    "reasoning": 4349,
+    "seconds": 51.42,
+    "error": null
+   },
+   "next_turn": {
+    "input": 5139,
+    "cached": 0,
+    "output": 8012,
+    "reasoning": 7242,
+    "seconds": 91.7,
+    "error": "OutputParserException: the model answered without calling DayDiscussOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE ",
+    "shared_prefix_est": 4294
+   },
+   "other_seat": {
+    "input": 5030,
+    "cached": 0,
+    "output": 3965,
+    "reasoning": 3399,
+    "seconds": 42.25,
+    "error": "OutputParserException: the model answered without calling DayDiscussOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE ",
+    "shared_prefix_est": 1396
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 4054,
+    "cached": 0,
+    "output": 2507,
+    "reasoning": 1878,
+    "seconds": 25.86,
+    "error": null
+   },
+   "next_turn": {
+    "input": 4074,
+    "cached": 768,
+    "output": 1686,
+    "reasoning": 1165,
+    "seconds": 19.32,
+    "error": "OutputParserException: the model answered without calling DayDiscussOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE ",
+    "shared_prefix_est": 3196
+   },
+   "other_seat": {
+    "input": 4141,
+    "cached": 1024,
+    "output": 3325,
+    "reasoning": 2683,
+    "seconds": 37.58,
+    "error": null,
+    "shared_prefix_est": 1041
+   }
+  }
+ ],
+ "cached_share": {
+  "next_turn": 0.083,
+  "other_seat": 0.112
+ }
+}

@@ -1,0 +1,15 @@
+{
+  "label": "haiku_field_order_reads_first_2026_10_13",
+  "models": ["anthropic/claude-haiku-5-5"],
+  "modes": ["json_mode"],
+  "samples_per_schema": 1,
+  "workers": 4,
+  "caching": {
+    "floor_sizes": [1024],
+    "wait_s": 5,
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "cases": 8,
+    "real_prompt_mode": "json_mode"
+  },
+  "notes": "The json_mode field-order check after moving reads ahead of the verdict fields in every seat schema (TurnOutput, Agents/schemas/lineup_output.py), so the schema agrees with the prompt opening line. Same 8 real Phase 3 discussion turns, 3 variants each."
+}

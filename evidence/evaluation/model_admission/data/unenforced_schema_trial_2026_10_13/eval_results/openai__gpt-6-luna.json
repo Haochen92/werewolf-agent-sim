@@ -1,0 +1,315 @@
+{
+ "model": "openai/gpt-6-luna",
+ "run_at": "2026-10-13T12:00:47.099523+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "91d5b339a00f82a1fe9edb0c767bdc07333384cb",
+  "git_dirty": true,
+  "prompt_bundle_hash": "374305bd038c3090",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-3.8-flash",
+  "pro_backup_model": "gemini-2.5-pro",
+  "embedding_model": "qwen/qwen3-embedding-8b",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "low",
+ "structured": [
+  {
+   "mode": "json_schema",
+   "passed": "167/170",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "SentinelOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "ChanteuseOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "no player reads"
+    }
+   ],
+   "mean_per_call": {
+    "input": 724.4,
+    "cached": 0.0,
+    "output": 300.6,
+    "reasoning": 94.2,
+    "seconds": 4.4
+   }
+  },
+  {
+   "mode": "json_mode",
+   "passed": "170/170",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 784.1,
+    "cached": 37.8,
+    "output": 337.2,
+    "reasoning": 141.5,
+    "seconds": 4.9
+   }
+  }
+ ],
+ "recommended_mode": "json_mode",
+ "recommended_mode_why": "passed every call and reasons (141.5 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": null,
+  "sizes": [
+   {
+    "target_tokens": 1024,
+    "input_tokens": 935,
+    "cached_tokens": 0,
+    "sends": 3
+   }
+  ]
+ },
+ "real_prompt_mode": "json_mode",
+ "real_prompts": [
+  {
+   "case_id": "183500fda11b66d6",
+   "first": {
+    "input": 6551,
+    "cached": 0,
+    "output": 1055,
+    "reasoning": 627,
+    "seconds": 12.05,
+    "error": null
+   },
+   "next_turn": {
+    "input": 6571,
+    "cached": 3707,
+    "output": 987,
+    "reasoning": 450,
+    "seconds": 12.83,
+    "error": null,
+    "shared_prefix_est": 5615
+   },
+   "other_seat": {
+    "input": 7128,
+    "cached": 0,
+    "output": 694,
+    "reasoning": 281,
+    "seconds": 9.9,
+    "error": null,
+    "shared_prefix_est": 3689
+   }
+  },
+  {
+   "case_id": "cc56ed2046f3f402",
+   "first": {
+    "input": 6256,
+    "cached": 3707,
+    "output": 945,
+    "reasoning": 380,
+    "seconds": 10.64,
+    "error": null
+   },
+   "next_turn": {
+    "input": 6276,
+    "cached": 3707,
+    "output": 1079,
+    "reasoning": 347,
+    "seconds": 11.32,
+    "error": null,
+    "shared_prefix_est": 5386
+   },
+   "other_seat": {
+    "input": 6718,
+    "cached": 0,
+    "output": 713,
+    "reasoning": 254,
+    "seconds": 7.17,
+    "error": null,
+    "shared_prefix_est": 3682
+   }
+  },
+  {
+   "case_id": "1802f1e99ed17696",
+   "first": {
+    "input": 6579,
+    "cached": 0,
+    "output": 769,
+    "reasoning": 409,
+    "seconds": 11.23,
+    "error": null
+   },
+   "next_turn": {
+    "input": 6599,
+    "cached": 3419,
+    "output": 719,
+    "reasoning": 375,
+    "seconds": 10.24,
+    "error": null,
+    "shared_prefix_est": 5824
+   },
+   "other_seat": {
+    "input": 7477,
+    "cached": 0,
+    "output": 866,
+    "reasoning": 512,
+    "seconds": 11.92,
+    "error": null,
+    "shared_prefix_est": 3360
+   }
+  },
+  {
+   "case_id": "282e2bd964a73304",
+   "first": {
+    "input": 6368,
+    "cached": 0,
+    "output": 604,
+    "reasoning": 286,
+    "seconds": 8.2,
+    "error": null
+   },
+   "next_turn": {
+    "input": 6388,
+    "cached": 3742,
+    "output": 712,
+    "reasoning": 332,
+    "seconds": 9.2,
+    "error": null,
+    "shared_prefix_est": 5561
+   },
+   "other_seat": {
+    "input": 7083,
+    "cached": 3936,
+    "output": 893,
+    "reasoning": 320,
+    "seconds": 11.23,
+    "error": null,
+    "shared_prefix_est": 3707
+   }
+  },
+  {
+   "case_id": "2ae4571be87b642d",
+   "first": {
+    "input": 6123,
+    "cached": 0,
+    "output": 611,
+    "reasoning": 168,
+    "seconds": 7.3,
+    "error": null
+   },
+   "next_turn": {
+    "input": 6143,
+    "cached": 3803,
+    "output": 673,
+    "reasoning": 212,
+    "seconds": 8.31,
+    "error": null,
+    "shared_prefix_est": 5349
+   },
+   "other_seat": {
+    "input": 6716,
+    "cached": 0,
+    "output": 706,
+    "reasoning": 249,
+    "seconds": 9.41,
+    "error": null,
+    "shared_prefix_est": 3759
+   }
+  },
+  {
+   "case_id": "65f6e315065d38ba",
+   "first": {
+    "input": 6018,
+    "cached": 0,
+    "output": 821,
+    "reasoning": 451,
+    "seconds": 11.8,
+    "error": null
+   },
+   "next_turn": {
+    "input": 6038,
+    "cached": 3704,
+    "output": 814,
+    "reasoning": 305,
+    "seconds": 10.95,
+    "error": null,
+    "shared_prefix_est": 5095
+   },
+   "other_seat": {
+    "input": 6557,
+    "cached": 0,
+    "output": 747,
+    "reasoning": 270,
+    "seconds": 9.31,
+    "error": null,
+    "shared_prefix_est": 3723
+   }
+  },
+  {
+   "case_id": "7548abc483c94539",
+   "first": {
+    "input": 7554,
+    "cached": 0,
+    "output": 740,
+    "reasoning": 330,
+    "seconds": 10.38,
+    "error": null
+   },
+   "next_turn": {
+    "input": 7574,
+    "cached": 3724,
+    "output": 784,
+    "reasoning": 256,
+    "seconds": 10.57,
+    "error": null,
+    "shared_prefix_est": 6780
+   },
+   "other_seat": {
+    "input": 7672,
+    "cached": 0,
+    "output": 797,
+    "reasoning": 380,
+    "seconds": 10.48,
+    "error": null,
+    "shared_prefix_est": 3647
+   }
+  },
+  {
+   "case_id": "7b22e2b9cc9be59a",
+   "first": {
+    "input": 5644,
+    "cached": 0,
+    "output": 527,
+    "reasoning": 107,
+    "seconds": 7.68,
+    "error": null
+   },
+   "next_turn": {
+    "input": 5664,
+    "cached": 3394,
+    "output": 583,
+    "reasoning": 139,
+    "seconds": 9.51,
+    "error": null,
+    "shared_prefix_est": 4831
+   },
+   "other_seat": {
+    "input": 6378,
+    "cached": 0,
+    "output": 753,
+    "reasoning": 262,
+    "seconds": 9.32,
+    "error": null,
+    "shared_prefix_est": 3396
+   }
+  }
+ ],
+ "real_prompt_failures": "0/24",
+ "cached_share": {
+  "next_turn": 0.57,
+  "other_seat": 0.071
+ }
+}

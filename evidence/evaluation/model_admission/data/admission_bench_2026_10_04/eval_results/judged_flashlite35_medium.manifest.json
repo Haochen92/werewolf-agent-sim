@@ -1,0 +1,73 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/admission_bench_2026_10_04/eval_results/judged_flashlite35_medium.jsonl",
+  "config": {
+    "arms": [
+      {
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "label": "flashlite35_medium",
+        "memory": "none",
+        "model": "gemini-3.5-flash-lite"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "minimal",
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "label": "deepseek_v41_flash_nothink",
+        "memory": "none",
+        "model": "deepseek/deepseek-flash"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema",
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "label": "luna_medium",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "high",
+          "LLM_STRUCTURED_MODE": "json_schema",
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "label": "luna_high",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      }
+    ],
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "label": "admission_bench_2026_10_04",
+    "n": 2,
+    "notes": "Model admission bench (two samples per case). Reference: 3.5 flash-lite at its game level (medium, GAME_THINKING_BY_MODEL), regenerated on today's code. DeepSeek V4.1 Flash with thinking off (forced tool call; its thinking mode rejects forced tool use). Sunday 2026-10-04: DeepSeek off-peak all day. Candidate arms (Qwen3.8 Flash, GLM-5.3 Flash, MiniMax M3, GPT-6 Luna) are added once they pass eval-model-admission. GPT-6 Luna added after passing admission (json_schema, 27/27 and 6/6 real turns): reasoning_effort medium and high.",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "workers": 3
+  },
+  "config_sha256": "8da045a4a34d17020e9ec27ed4b01aa09efd6d53bcf4b65414b4905bc48d8a8d",
+  "config_source": "evaluation/config/model_admission/bench_2026_10_04.json",
+  "created_at": "2026-10-23T01:56:38.121794",
+  "created_from": "eval-hallucination-bench run 'admission_bench_2026_10_04' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/admission_bench_2026_10_04/judged_flashlite35_medium.jsonl",
+  "inputs": [
+    {
+      "count": 129,
+      "path": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "sha256": "a486da3b76062b2bc4f766e4d319af4414df5021b9cab4ffa465ba5146b2b376"
+    }
+  ],
+  "models": [
+    "deepseek/deepseek-flash",
+    "gemini-3.5-flash-lite",
+    "openai/gpt-6-luna"
+  ]
+}

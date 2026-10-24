@@ -26,7 +26,7 @@ signal is partial r(disc_verdict, won | deluck, verbosity) ≈ +0.56 (wolf) / +0
 single-epoch flash-lite, and the measured discussion-verdict outcome-leak is negligible (day-local
 coupling moved +0.07 town / ~0 wolf-SK when the outcome was withheld). These are the numbers the tagger
 keeps ``show_outcome=True`` on. A LARGER-N revalidation is a queued paid item — this runner is what
-runs it. Full write-up + the frozen originals: ``evidence/evaluation/discussion_tagger/`` (hub) and
+runs it. Full write-up + the frozen originals: ``evidence/evaluation/llm_judge/discussion_tagger.md`` (hub) and
 ``evidence/v7_final/`` (originals, kept as the frozen record of the numbers above).
 
   poetry run eval-tagger --config evaluation/config/template/tagger_eval_example.json

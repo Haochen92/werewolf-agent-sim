@@ -1,0 +1,190 @@
+{
+  "label": "admission_bench_2026_10_04",
+  "run_at": "2026-10-04T11:05:22.396218+00:00",
+  "config": {
+    "label": "admission_bench_2026_10_04",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 2,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "flashlite35_medium",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "deepseek_v41_flash_nothink",
+        "model": "deepseek/deepseek-flash",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "minimal"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "luna_medium",
+        "model": "openai/gpt-6-luna",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "luna_high",
+        "model": "openai/gpt-6-luna",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "high",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "Model admission bench (two samples per case). Reference: 3.5 flash-lite at its game level (medium, GAME_THINKING_BY_MODEL), regenerated on today's code. DeepSeek V4.1 Flash with thinking off (forced tool call; its thinking mode rejects forced tool use). Sunday 2026-10-04: DeepSeek off-peak all day. Candidate arms (Qwen3.8 Flash, GLM-5.3 Flash, MiniMax M3, GPT-6 Luna) are added once they pass eval-model-admission. GPT-6 Luna added after passing admission (json_schema, 27/27 and 6/6 real turns): reasoning_effort medium and high."
+  },
+  "n_cases": 89,
+  "arms": {
+    "flashlite35_medium": {
+      "bad": {
+        "all": "16/178 (9%)",
+        "phase:day_discussion": "14/136 (10%)",
+        "phase:day_vote": "2/42 (5%)",
+        "role:healer": "3/24 (12%)",
+        "role:investigator": "0/16 (0%)",
+        "role:serial_killer": "2/26 (8%)",
+        "role:vigilante": "6/52 (12%)",
+        "role:villager": "2/42 (5%)",
+        "role:wolf": "3/18 (17%)",
+        "slice:control": "1/80 (1%)",
+        "slice:curated": "11/88 (12%)",
+        "slice:pinned": "4/10 (40%)",
+        "source:census": "12/168 (7%)",
+        "source:checkpoint": "4/10 (40%)"
+      },
+      "deception": 1,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4922.5,
+        "cached": 1386.4,
+        "output": 1760.5,
+        "reasoning": 1375.8,
+        "seconds": 6.9
+      },
+      "generation_samples_measured": 178
+    },
+    "deepseek_v41_flash_nothink": {
+      "bad": {
+        "all": "77/178 (43%)",
+        "phase:day_discussion": "71/136 (52%)",
+        "phase:day_vote": "6/42 (14%)",
+        "role:healer": "10/24 (42%)",
+        "role:investigator": "2/16 (12%)",
+        "role:serial_killer": "10/26 (38%)",
+        "role:vigilante": "26/52 (50%)",
+        "role:villager": "20/42 (48%)",
+        "role:wolf": "9/18 (50%)",
+        "slice:control": "16/80 (20%)",
+        "slice:curated": "55/88 (62%)",
+        "slice:pinned": "6/10 (60%)",
+        "source:census": "71/168 (42%)",
+        "source:checkpoint": "6/10 (60%)"
+      },
+      "deception": 2,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4757.5,
+        "cached": 3376.8,
+        "output": 604.3,
+        "reasoning": 0.0,
+        "seconds": 3.3
+      },
+      "generation_samples_measured": 178
+    },
+    "luna_medium": {
+      "bad": {
+        "all": "10/178 (6%)",
+        "phase:day_discussion": "10/136 (7%)",
+        "phase:day_vote": "0/42 (0%)",
+        "role:healer": "3/24 (12%)",
+        "role:investigator": "0/16 (0%)",
+        "role:serial_killer": "2/26 (8%)",
+        "role:vigilante": "3/52 (6%)",
+        "role:villager": "1/42 (2%)",
+        "role:wolf": "1/18 (6%)",
+        "slice:control": "0/80 (0%)",
+        "slice:curated": "7/88 (8%)",
+        "slice:pinned": "3/10 (30%)",
+        "source:census": "7/168 (4%)",
+        "source:checkpoint": "3/10 (30%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4446.2,
+        "cached": 2670.9,
+        "output": 1487.3,
+        "reasoning": 1120.1,
+        "seconds": 15.1
+      },
+      "generation_samples_measured": 178
+    },
+    "luna_high": {
+      "bad": {
+        "all": "19/178 (11%)",
+        "phase:day_discussion": "17/136 (12%)",
+        "phase:day_vote": "2/42 (5%)",
+        "role:healer": "5/24 (21%)",
+        "role:investigator": "0/16 (0%)",
+        "role:serial_killer": "2/26 (8%)",
+        "role:vigilante": "5/52 (10%)",
+        "role:villager": "5/42 (12%)",
+        "role:wolf": "2/18 (11%)",
+        "slice:control": "7/80 (9%)",
+        "slice:curated": "8/88 (9%)",
+        "slice:pinned": "4/10 (40%)",
+        "source:census": "15/168 (9%)",
+        "source:checkpoint": "4/10 (40%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4446.2,
+        "cached": 2670.9,
+        "output": 2415.1,
+        "reasoning": 2026.2,
+        "seconds": 23.9
+      },
+      "generation_samples_measured": 178
+    }
+  },
+  "paired_vs_first": {
+    "deepseek_v41_flash_nothink": {
+      "cases": 89,
+      "better": 1,
+      "worse": 48,
+      "two_sided_sign_p": 0.0
+    },
+    "luna_medium": {
+      "cases": 89,
+      "better": 10,
+      "worse": 4,
+      "two_sided_sign_p": 0.1796
+    },
+    "luna_high": {
+      "cases": 89,
+      "better": 10,
+      "worse": 12,
+      "two_sided_sign_p": 0.8318
+    }
+  }
+}

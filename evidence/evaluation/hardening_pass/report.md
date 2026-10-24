@@ -1,10 +1,54 @@
 # Hardening Pass — what changed and what it means
 
-> **Status: INTERIM (2026-07-02).** The pass's built half is complete; the paid half (two screens,
-> one rerun) and the human-labeling half (judge calibration, enum spot-check) are **held by the
-> user** and listed under *Open items*. This is the verdict-first skim layer; the full reasoning
-> journey, per-fix detail, and provenance live in [`experiment_log.md`](experiment_log.md). Nothing
-> from this pass is committed yet — the review surface is that log beside `git diff` at `4b1449e`.
+*Added 2026-10-23: of the held items, only the compounding rerun went ahead (redesigned as v7 in July
+2026; it closed negative). The gating re-screen, the label spot-check, the judge calibration and the wolf
+screen never ran.*
+
+**What this page covers.** This is a dated record: the interim report of 2026-07-02, kept as
+history. It covers a review of the four methods behind the memory-design conclusions. The free
+half of the work was built and tested, and the test suite went from 405 to 445 passing. The owner
+held the rest. That is the paid half (two replay screens and one rerun) and the half that needs
+human labelling (a judge calibration and a spot-check of LLM-filled labels). Both are listed under
+*Open items*.
+
+The review found the checking tools mostly sound, with three kinds of fault:
+
+1. **Silent failures.** Could the discussion tagger (an LLM that labels discussion lines) or the
+   retrieval judge (an LLM that scores fetched memories) fail without anyone noticing? Yes. Both
+   now count their failures, and the tagger can be set to stop the run.
+2. **Replay gaps.** Could the per-turn replay test the deceivers' decisions? (The replay re-runs one
+   saved turn with and without memory.) It could not, and that is exactly where the open questions
+   were. Wolf, vigilante and serial-killer day votes can now be replayed, each seen from its own
+   faction's side.
+3. **Unchecked situation labels: the largest finding.** Were the v6 "dimensions" filled in
+   correctly? These are labels describing each game moment, used to choose which memories to
+   fetch. An LLM filled them in, and no one had checked them against the game. A $0 audit of 6,267
+   cases says no. `is_swing` scored 0.606, which is worse than always answering "no" (0.827).
+   `bullets_left` was right 16% of the time.
+
+Because of that audit, a rule written down before it ran (a pre-registered rule) fired **RE-OPEN**.
+The old result "dimension gating doesn't help" is partly uninformative, not a clean negative.
+(Dimension gating means fetching memories by those labels.) The fields that can be read off the game
+state are now computed instead of filled by the LLM. The rule allows a re-screen that would settle
+the question, but it is waiting on spend sign-off.
+
+This page records what the pass changed. Each fix is rated for trust in the report that now owns
+it, not here. For the full reasoning, the detail of each fix and the provenance, see
+[the journey log](experiment_log.md). When this was written, nothing from the pass had been
+committed, and the review was done against `git diff` at commit `4b1449e`. How all the evaluation
+reports fit together: [the hub](../report.md).
+
+| What was built (all $0, all tested) | State on 2026-07-02 | Main limit |
+|---|---|---|
+| Ten fixes to checking tools (item 1; log §4) | Built | The embedding check is live in `run_batch.py` |
+| Situation-label audit (item 2; log §5) | Done, RE-OPEN fired | Its labels part waits on a human spot-check |
+| Computed labels (item 3; log §6) | Built | Also fixed two bugs in what players are told |
+| Sampler that picks moments for a human to read (item 4; log §7) | Smoke-tested | Blind to who won by design; not yet used |
+| Per-day replay (item 5; log §3) | Design only | Estimated at ~20–30% of a full game's cost |
+
+**Bottom line.** The cheap fixes are in, and most of the earlier beliefs stand (see the next
+table). The one big change is that "dimension gating doesn't help" is now unknown, not false, until
+a ~$10–15 re-screen runs.
 
 ## The one-paragraph verdict
 

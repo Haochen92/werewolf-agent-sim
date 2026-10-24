@@ -1,0 +1,544 @@
+{
+ "model": "anthropic/claude-haiku-5-5",
+ "run_at": "2026-10-13T13:13:50.607822+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "91d5b339a00f82a1fe9edb0c767bdc07333384cb",
+  "git_dirty": true,
+  "prompt_bundle_hash": "374305bd038c3090",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-3.8-flash",
+  "pro_backup_model": "gemini-2.5-pro",
+  "embedding_model": "qwen/qwen3-embedding-8b",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "low",
+ "structured": [
+  {
+   "mode": "json_mode",
+   "passed": "17/17",
+   "all_passed": true,
+   "failures": [],
+   "in_schema_order": "17/17",
+   "out_of_order": [],
+   "mean_per_call": {
+    "input": 1297.6,
+    "cached": 0.0,
+    "output": 504.6,
+    "reasoning": 92.7,
+    "seconds": 2.9
+   }
+  }
+ ],
+ "recommended_mode": "json_mode",
+ "recommended_mode_why": "passed every call and reasons (92.7 tokens a call); but it failed 1 of 24 real game turns",
+ "cache_floor": {
+  "floor_tokens": 1024,
+  "sizes": [
+   {
+    "target_tokens": 1024,
+    "input_tokens": 1418,
+    "cached_tokens": 1402,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompt_mode": "json_mode",
+ "real_prompts": [
+  {
+   "case_id": "183500fda11b66d6",
+   "first": {
+    "input": 9396,
+    "cached": 0,
+    "output": 2564,
+    "reasoning": 1844,
+    "seconds": 12.44,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 9424,
+    "cached": 6693,
+    "output": 2562,
+    "reasoning": 1777,
+    "seconds": 11.9,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets",
+     "strategy_verdicts",
+     "memory_applicability"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 8053
+   },
+   "other_seat": {
+    "input": 10238,
+    "cached": 0,
+    "output": 1665,
+    "reasoning": 999,
+    "seconds": 7.98,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 5291
+   }
+  },
+  {
+   "case_id": "cc56ed2046f3f402",
+   "first": {
+    "input": 8976,
+    "cached": 5176,
+    "output": 1519,
+    "reasoning": 868,
+    "seconds": 7.41,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 9004,
+    "cached": 6351,
+    "output": 2071,
+    "reasoning": 1255,
+    "seconds": 10.49,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "strategy_verdicts",
+     "memory_applicability",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 7728
+   },
+   "other_seat": {
+    "input": 9671,
+    "cached": 0,
+    "output": 1455,
+    "reasoning": 754,
+    "seconds": 7.31,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 5282
+   }
+  },
+  {
+   "case_id": "1802f1e99ed17696",
+   "first": {
+    "input": 9526,
+    "cached": 0,
+    "output": 2648,
+    "reasoning": 2189,
+    "seconds": 12.66,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 9554,
+    "cached": 7024,
+    "output": 2217,
+    "reasoning": 1830,
+    "seconds": 10.86,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 8433
+   },
+   "other_seat": {
+    "input": 10796,
+    "cached": 0,
+    "output": 1143,
+    "reasoning": 752,
+    "seconds": 6.77,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 4865
+   }
+  },
+  {
+   "case_id": "282e2bd964a73304",
+   "first": {
+    "input": 9145,
+    "cached": 0,
+    "output": 1537,
+    "reasoning": 975,
+    "seconds": 8.41,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 9173,
+    "cached": 6596,
+    "output": 1573,
+    "reasoning": 962,
+    "seconds": 8.23,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 7986
+   },
+   "other_seat": {
+    "input": 10176,
+    "cached": 5515,
+    "output": 1464,
+    "reasoning": 887,
+    "seconds": 7.34,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 5323
+   }
+  },
+  {
+   "case_id": "2ae4571be87b642d",
+   "first": {
+    "input": 8821,
+    "cached": 0,
+    "output": 1209,
+    "reasoning": 568,
+    "seconds": 5.99,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets",
+     "strategy_verdicts",
+     "memory_applicability"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ]
+   },
+   "next_turn": {
+    "input": 8849,
+    "cached": 6321,
+    "output": 1288,
+    "reasoning": 634,
+    "seconds": 6.3,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "strategy_verdicts",
+     "memory_applicability",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 7706
+   },
+   "other_seat": {
+    "input": 9677,
+    "cached": 0,
+    "output": 1950,
+    "reasoning": 1085,
+    "seconds": 9.75,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 5415
+   }
+  },
+  {
+   "case_id": "65f6e315065d38ba",
+   "first": {
+    "input": 8643,
+    "cached": 0,
+    "output": 1192,
+    "reasoning": 562,
+    "seconds": 6.14,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ]
+   },
+   "next_turn": {
+    "input": 8671,
+    "cached": 5975,
+    "output": 1661,
+    "reasoning": 1022,
+    "seconds": 8.43,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 7317
+   },
+   "other_seat": {
+    "input": 9435,
+    "cached": 0,
+    "output": 1476,
+    "reasoning": 680,
+    "seconds": 7.21,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 5347
+   }
+  },
+  {
+   "case_id": "7548abc483c94539",
+   "first": {
+    "input": 10868,
+    "cached": 0,
+    "output": 1960,
+    "reasoning": 1360,
+    "seconds": 9.78,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets",
+     "strategy_verdicts",
+     "memory_applicability"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ]
+   },
+   "next_turn": {
+    "input": 10896,
+    "cached": 8330,
+    "output": 3276,
+    "reasoning": 2630,
+    "seconds": 15.81,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 9755
+   },
+   "other_seat": {
+    "input": 11040,
+    "cached": 0,
+    "output": 2057,
+    "reasoning": 1406,
+    "seconds": 10.62,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 5246
+   }
+  },
+  {
+   "case_id": "7b22e2b9cc9be59a",
+   "first": {
+    "input": 8140,
+    "cached": 0,
+    "output": 2850,
+    "reasoning": 603,
+    "seconds": 10.8,
+    "error": "OutputParserException: reply is not a valid DayDiscussOutput: 1 validation error for DayDiscussOutput\n  Invalid JSON: trailing characters at line 3 column 1 [type=json_invalid, input_value='{\"$defs\":{\"AddressedTarg...\",\"sta",
+    "in_order": null,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 8168,
+    "cached": 5613,
+    "output": 1294,
+    "reasoning": 647,
+    "seconds": 6.84,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 6967
+   },
+   "other_seat": {
+    "input": 9235,
+    "cached": 0,
+    "output": 1816,
+    "reasoning": 1138,
+    "seconds": 8.85,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 4898
+   }
+  }
+ ],
+ "real_prompt_failures": "1/24",
+ "real_prompts_in_schema_order": "13/23",
+ "cached_share": {
+  "next_turn": 0.717,
+  "other_seat": 0.069
+ }
+}

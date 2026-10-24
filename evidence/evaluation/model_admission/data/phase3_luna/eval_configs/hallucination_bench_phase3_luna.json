@@ -1,0 +1,15 @@
+{
+  "label": "phase3_luna",
+  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "slices": ["pinned", "control", "f02_rule"],
+  "arms": [
+    {"label": "flashlite_current", "model": "gemini-3.5-flash-lite", "env": {}, "memory": "none"},
+    {"label": "luna_current", "model": "openai/gpt-6-luna", "env": {}, "memory": "none"}
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.5-flash",
+  "note": "The fourteen Phase 3 frozen turns (ten reasoning failures and controls, four f02 rule turns) on today's prompts (the illusionist sentence, the rules-are-exact line, the cover-note rewrite, claim retention): GPT-6 Luna at medium reasoning against gemini-3.5-flash-lite, the live default. gemini-3.5-flash on these turns is in phase3_turns and phase3_f02_hierarchy, on slightly earlier prompts."
+}

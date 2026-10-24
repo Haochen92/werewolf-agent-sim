@@ -1,0 +1,21 @@
+{
+  "label": "phase3_haiku_summary",
+  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "slices": ["pinned", "control", "f02_rule"],
+  "arms": [
+    {"label": "haiku55_low_played_summaries", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low"}, "memory": "none"},
+    {"label": "haiku55_low_summary_low", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL": "low"},
+     "memory": "none", "resummarize": true},
+    {"label": "haiku55_low_summary_medium", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL": "medium"},
+     "memory": "none", "resummarize": true}
+  ],
+  "recall_model": "gemini-3.1-flash-lite",
+  "precision_model": "gemini-3.5-flash",
+  "golden_model": "gemini-3.5-flash",
+  "note": "The day summary on Claude Haiku 5.5 (owner 2026-10-12: how good is Haiku low for the day summary?). Haiku 5.5 turns at effort low throughout; the earlier days' discussion summaries are the ones the games were played with (flash-lite's), or rewritten by today's summariser on Haiku at effort low or medium (medium = the summary's default level). The rewritten summaries are saved beside the generations."
+}

@@ -313,7 +313,7 @@ scores never referee the A/B; they only feed the learning loop's credit signal (
 the v2 decision that created this system (the DECISION section of [experiment_log.md](experiment_log.md)
 demoted every LLM-scored instrument out of the comparison basket). The family's apparatus record is
 [`../discussion_tagger/`](../discussion_tagger/); its instrument-trust verdict lives in the eval
-hub at [`../evaluation/discussion_tagger/`](../evaluation/discussion_tagger/).
+hub at [`../evaluation/llm_judge/discussion_tagger.md`](../evaluation/llm_judge/discussion_tagger.md).
 
 **Where the blind spot is.** Discussion quality has no engine-resolvable ground truth, and the one
 deterministic attempt at it — `town_accusation_precision` — turned out to re-express an existing basket proxy
@@ -493,6 +493,6 @@ behavior, not measurement starvation. *(2026-07-02, lifted from the apparatus re
 | Validation harness | [`evaluation/src/instrument_validation/proxies/`](../../evaluation/src/instrument_validation/proxies/) | The standing runners (`proxy_win_monotonicity`, `proxy_rescue`, `accusation_metrics`, `claim_conversion`, `diagnose_wolf_sk_proxies`, `leverage_anchor_separation`, `proxy_followup_rescue`); the monotonicity code graduated here from this folder on 2026-07-04, run via `poetry run python -m evaluation.src.instrument_validation.proxies.proxy_win_monotonicity` |
 | N=180 audit logs | [`metrics_audit/`](metrics_audit/) | `proxy_discovery_log.md` + `scheduler_bias_log.md` — the 2026-07-02 proxy rescue/discovery and scheduler-bias falsification |
 | Loop credit (decision grain) | [`evaluation/src/loop/decision_scoring.py`](../../evaluation/src/loop/decision_scoring.py) · [`credit_backfill.py`](../../evaluation/src/loop/credit_backfill.py) · [`credit.py`](../../evaluation/src/loop/credit.py) | Per-decision credit (baseline-differenced lift); v7 SP learning signal |
-| LLM-tagged family | [`../discussion_tagger/`](../discussion_tagger/) (apparatus record) · [`../evaluation/discussion_tagger/`](../evaluation/discussion_tagger/) (trust verdict) | The second instrument tier (§5): discussion + unresolvable night cells, credit-side only |
+| LLM-tagged family | [`../discussion_tagger/`](../discussion_tagger/) (apparatus record) · [`../evaluation/llm_judge/discussion_tagger.md`](../evaluation/llm_judge/discussion_tagger.md) (trust verdict) | The second instrument tier (§5): discussion + unresolvable night cells, credit-side only |
 | Regression tests | `tests/test_metrics_audit_proxies.py` · `test_diagnostic_metrics.py` · `test_wolf_blending_metrics.py` · `test_loop_credit_scale.py` · `test_credit_blend.py` | Lock the tiering, the audit-graduated proxies, and the credit scaling |
 | Apparatus trust | [`../evaluation/metrics/report.md`](../evaluation/metrics/report.md) | The per-basket ✅/🟡/⚠️/🔴 instrument-trust verdicts this doc lifts from |

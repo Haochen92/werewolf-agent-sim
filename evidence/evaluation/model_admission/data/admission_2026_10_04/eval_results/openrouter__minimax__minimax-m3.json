@@ -1,0 +1,458 @@
+{
+ "model": "openrouter/minimax/minimax-m3",
+ "run_at": "2026-10-04T10:18:43.657244+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "2d8bab5edce3c76fa20dc39efeb421596c42bd1c",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "forced_tool",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, novita/fp8, minimax/f"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.0
+   }
+  },
+  {
+   "mode": "json_schema",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for minimax/minimax-m3. Every candidate endpoint was removed during routing: Filter by Parameters removed gmicloud/fp8, deepinfra/fp8, streamlake/fp8, venice/fp8, parasail/fp8, atl"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.0
+   }
+  },
+  {
+   "mode": "auto_tool",
+   "passed": "13/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayVoteOutput",
+     "problem": "ValidationError: 4 validation errors for DayVoteOutput\nstrategy_verdicts\n  Input should be a valid list [type=list_type, input_value={'verdict': ['follow', 'f...: 'Omar', '$text': '11'}, input_type=dict]\n    For further information visit https://errors.pyda"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "OutputParserException: the model answered without calling WolfNightDiscussOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "ValidationError: 3 validation errors for WolfNightDiscussOutput\nstrategy_verdicts\n  Input should be a valid list [type=list_type, input_value={'verdict': ['follow', 'f...'3', '4'], '$text': '1'}, input_type=dict]\n    For further information visit https://er"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "OutputParserException: the model answered without calling WolfNightVoteOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "OutputParserException: the model answered without calling WolfNightVoteOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "OutputParserException: the model answered without calling HealerOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "ValidationError: 4 validation errors for HealerOutput\nmemory_applicability\n  Input should be a valid list [type=list_type, input_value={'memory_applicability': ...'healer_target': 'Mia'}}, input_type=dict]\n    For further information visit https://errors.py"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "OutputParserException: the model answered without calling InvestigatorOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "OutputParserException: the model answered without calling InvestigatorOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "OutputParserException: the model answered without calling InvestigatorOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "ValidationError: 1 validation error for SerialKillerOutput\nmemory_applicability\n  Input should be a valid list [type=list_type, input_value={'memory_index': 1, 'verd...llager or wolf pattern\"}, input_type=dict]\n    For further information visit https://erro"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "OutputParserException: the model answered without calling VigilanteOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "OutputParserException: the model answered without calling DaySummaryOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "OutputParserException: the model answered without calling DaySummaryOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    }
+   ],
+   "mean_per_call": {
+    "input": 1001.4,
+    "cached": 292.8,
+    "output": 2178.9,
+    "reasoning": 1651.0,
+    "seconds": 31.2
+   }
+  },
+  {
+   "mode": "json_mode",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 859.9,
+    "cached": 221.1,
+    "output": 1722.6,
+    "reasoning": 1419.9,
+    "seconds": 25.9
+   }
+  }
+ ],
+ "recommended_mode": "json_mode",
+ "recommended_mode_why": "passed every call and reasons (1419.9 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": 256,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 423,
+    "cached_tokens": 128,
+    "sends": 2
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 648,
+    "cached_tokens": 146,
+    "sends": 2
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 1096,
+    "cached_tokens": 1095,
+    "sends": 2
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1962,
+    "cached_tokens": 1947,
+    "sends": 2
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3686,
+    "cached_tokens": 3671,
+    "sends": 2
+   },
+   {
+    "target_tokens": 8192,
+    "input_tokens": 7177,
+    "cached_tokens": 7176,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 4867,
+    "cached": 128,
+    "output": 3334,
+    "reasoning": 2823,
+    "seconds": 33.85,
+    "error": null
+   },
+   "next_turn": {
+    "input": 4887,
+    "cached": 128,
+    "output": 2448,
+    "reasoning": 1956,
+    "seconds": 43.32,
+    "error": null,
+    "shared_prefix_est": 4083
+   },
+   "other_seat": {
+    "input": 4778,
+    "cached": 128,
+    "output": 5722,
+    "reasoning": 5161,
+    "seconds": 63.52,
+    "error": null,
+    "shared_prefix_est": 1328
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 3845,
+    "cached": 128,
+    "output": 1409,
+    "reasoning": 809,
+    "seconds": 22.95,
+    "error": null
+   },
+   "next_turn": {
+    "input": 3865,
+    "cached": 147,
+    "output": 1639,
+    "reasoning": 1047,
+    "seconds": 23.39,
+    "error": null,
+    "shared_prefix_est": 3031
+   },
+   "other_seat": {
+    "input": 3928,
+    "cached": 128,
+    "output": 2618,
+    "reasoning": 2036,
+    "seconds": 35.22,
+    "error": null,
+    "shared_prefix_est": 987
+   }
+  }
+ ],
+ "real_prompt_failures": "0/6",
+ "cached_share": {
+  "next_turn": 0.031,
+  "other_seat": 0.029
+ }
+}

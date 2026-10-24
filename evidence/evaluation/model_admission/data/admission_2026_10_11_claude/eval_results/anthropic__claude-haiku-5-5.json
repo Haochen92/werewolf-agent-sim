@@ -1,0 +1,196 @@
+{
+ "model": "anthropic/claude-haiku-5-5",
+ "run_at": "2026-10-11T13:49:31.288197+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "660ca84bc21c665867d4ce2e18173b786b1a840a",
+  "git_dirty": true,
+  "prompt_bundle_hash": "428fafecf29c8dec",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-3.8-flash",
+  "pro_backup_model": "gemini-2.5-pro",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "forced_tool",
+   "passed": "45/51",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "ValidationError: 1 validation error for SerialKillerOutput\nreads\n  Field required [type=missing, input_value={'serial_killer_target': ...sation during the day.\"}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "ValidationError: 1 validation error for SerialKillerOutput\nreads\n  Field required [type=missing, input_value={'serial_killer_target': ...direct suspicion onto.\"}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "ValidationError: 1 validation error for SerialKillerOutput\nreads\n  Field required [type=missing, input_value={'serial_killer_target': ...a potential scapegoat.\"}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing"
+    }
+   ],
+   "mean_per_call": {
+    "input": 1472.3,
+    "cached": 0.0,
+    "output": 453.5,
+    "reasoning": 0.0,
+    "seconds": 2.5
+   }
+  },
+  {
+   "mode": "json_schema",
+   "passed": "51/51",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 1816.8,
+    "cached": 0.0,
+    "output": 712.8,
+    "reasoning": 311.8,
+    "seconds": 5.2
+   }
+  },
+  {
+   "mode": "auto_tool",
+   "passed": "48/51",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "WolfChatOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "WolfChatOutput",
+     "problem": "no player reads"
+    },
+    {
+     "schema": "ChanteuseOutput",
+     "problem": "no player reads"
+    }
+   ],
+   "mean_per_call": {
+    "input": 1343.1,
+    "cached": 0.0,
+    "output": 981.8,
+    "reasoning": 471.0,
+    "seconds": 5.1
+   }
+  }
+ ],
+ "recommended_mode": "json_schema",
+ "recommended_mode_why": "passed every call and reasons (311.8 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": 512,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 393,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 733,
+    "cached_tokens": 717,
+    "sends": 2
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 1417,
+    "cached_tokens": 1401,
+    "sends": 2
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 2739,
+    "cached_tokens": 2723,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "183500fda11b66d6",
+   "first": {
+    "input": 9849,
+    "cached": 0,
+    "output": 2797,
+    "reasoning": 2135,
+    "seconds": 15.15,
+    "error": null
+   },
+   "next_turn": {
+    "input": 9877,
+    "cached": 8871,
+    "output": 3754,
+    "reasoning": 2869,
+    "seconds": 17.43,
+    "error": null,
+    "shared_prefix_est": 8519
+   },
+   "other_seat": {
+    "input": 10782,
+    "cached": 0,
+    "output": 2698,
+    "reasoning": 2010,
+    "seconds": 13.93,
+    "error": null,
+    "shared_prefix_est": 5523
+   }
+  },
+  {
+   "case_id": "cc56ed2046f3f402",
+   "first": {
+    "input": 9429,
+    "cached": 7354,
+    "output": 2472,
+    "reasoning": 1723,
+    "seconds": 12.51,
+    "error": null
+   },
+   "next_turn": {
+    "input": 9457,
+    "cached": 8529,
+    "output": 2424,
+    "reasoning": 1687,
+    "seconds": 12.63,
+    "error": null,
+    "shared_prefix_est": 8197
+   },
+   "other_seat": {
+    "input": 10215,
+    "cached": 0,
+    "output": 1405,
+    "reasoning": 729,
+    "seconds": 9.32,
+    "error": null,
+    "shared_prefix_est": 5535
+   }
+  }
+ ],
+ "real_prompt_failures": "0/6",
+ "cached_share": {
+  "next_turn": 0.9,
+  "other_seat": 0.0
+ }
+}

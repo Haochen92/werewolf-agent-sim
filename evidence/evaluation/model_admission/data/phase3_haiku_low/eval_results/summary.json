@@ -1,0 +1,101 @@
+{
+  "label": "phase3_haiku_low",
+  "run_at": "2026-10-11T14:33:41.683527+00:00",
+  "config": {
+    "label": "phase3_haiku_low",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "flashlite_current",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "haiku55_low",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "Claude Haiku 5.5 at effort low (adaptive thinking, JSON-schema output): phase3_haiku's medium arm reasoned ~2,100 tokens and took 13.7 s a turn. Same turns and judges; flash-lite regenerated as the reference."
+  },
+  "n_cases": 14,
+  "arms": {
+    "flashlite_current": {
+      "bad": {
+        "all": "26/70 (37%)",
+        "phase:day_discussion": "26/70 (37%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "9/15 (60%)",
+        "role:sigilist": "5/10 (50%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "6/20 (30%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:control": "8/10 (80%)",
+        "slice:f02_rule": "10/20 (50%)",
+        "slice:pinned": "8/40 (20%)",
+        "source:phase3_capture": "26/70 (37%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7087.8,
+        "cached": 4673.8,
+        "output": 1830.3,
+        "reasoning": 1361.7,
+        "seconds": 6.2
+      },
+      "generation_samples_measured": 70
+    },
+    "haiku55_low": {
+      "bad": {
+        "all": "7/70 (10%)",
+        "phase:day_discussion": "7/70 (10%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "2/15 (13%)",
+        "role:sigilist": "1/10 (10%)",
+        "role:speculator": "0/5 (0%)",
+        "role:trailseer": "3/20 (15%)",
+        "role:vigilante": "1/5 (20%)",
+        "slice:control": "2/10 (20%)",
+        "slice:f02_rule": "2/20 (10%)",
+        "slice:pinned": "3/40 (8%)",
+        "source:phase3_capture": "7/70 (10%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10135.5,
+        "cached": 7614.3,
+        "output": 1815.0,
+        "reasoning": 1217.4,
+        "seconds": 9.4
+      },
+      "generation_samples_measured": 70
+    }
+  },
+  "paired_vs_first": {
+    "haiku55_low": {
+      "cases": 14,
+      "better": 8,
+      "worse": 0,
+      "two_sided_sign_p": 0.0078
+    }
+  }
+}

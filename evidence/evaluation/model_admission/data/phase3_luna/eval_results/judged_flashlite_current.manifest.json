@@ -1,0 +1,52 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/phase3_luna/eval_results/judged_flashlite_current.jsonl",
+  "config": {
+    "arms": [
+      {
+        "env": {},
+        "label": "flashlite_current",
+        "memory": "none",
+        "model": "gemini-3.5-flash-lite"
+      },
+      {
+        "env": {},
+        "label": "luna_current",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      }
+    ],
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "golden_model": "gemini-3.5-flash",
+    "label": "phase3_luna",
+    "n": 5,
+    "note": "The fourteen Phase 3 frozen turns (ten reasoning failures and controls, four f02 rule turns) on today's prompts (the illusionist sentence, the rules-are-exact line, the cover-note rewrite, claim retention): GPT-6 Luna at medium reasoning against gemini-3.5-flash-lite, the live default. gemini-3.5-flash on these turns is in phase3_turns and phase3_f02_hierarchy, on slightly earlier prompts.",
+    "precision_model": "gemini-3.5-flash",
+    "recall_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule"
+    ],
+    "workers": 3
+  },
+  "config_sha256": "3e915abe2a59fb1eca8b617b43528d7f67ac2f6b8c40f528d2740546e5acf085",
+  "config_source": "evaluation/config/hallucination_bench_phase3_luna.json",
+  "created_at": "2026-10-23T01:56:38.270911",
+  "created_from": "eval-hallucination-bench run 'phase3_luna' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/phase3_luna/judged_flashlite_current.jsonl",
+  "inputs": [
+    {
+      "count": 18,
+      "path": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "sha256": "4d9688fb54a34a7c5676d59ccee6d2261c09aa2a4afe114374a613e262a7c107"
+    }
+  ],
+  "models": [
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "openai/gpt-6-luna"
+  ]
+}

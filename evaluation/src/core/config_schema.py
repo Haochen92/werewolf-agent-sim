@@ -307,7 +307,7 @@ class TaggerEvalConfig(_DescribedConfig):
     skews), ``skill`` (game-level wolf/SK partial ``r(disc_verdict, won | deluck[, verbosity])``
     leak/confound guard), ``deleak`` (2x2 outcome-withholding ablation isolating the outcome-leak
     from the mechanical silent-player effect). See the docstrings there and in
-    ``evidence/evaluation/discussion_tagger/`` for the methodology.
+    ``evidence/evaluation/llm_judge/discussion_tagger.md`` for the methodology.
     """
 
     mode: Literal["accuracy", "skill", "deleak"]

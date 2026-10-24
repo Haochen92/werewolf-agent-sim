@@ -1,0 +1,18 @@
+{
+  "label": "unenforced_schema_trial_2026_10_13",
+  "models": [
+    "openai/gpt-6-luna",
+    "anthropic/claude-haiku-5-5"
+  ],
+  "modes": ["json_schema", "json_mode"],
+  "samples_per_schema": 10,
+  "workers": 4,
+  "caching": {
+    "floor_sizes": [1024],
+    "wait_s": 5,
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "cases": 8,
+    "real_prompt_mode": "json_mode"
+  },
+  "notes": "How often an unenforced schema fails, against the enforced one, on each model's game thinking level: json_schema (the provider enforces the schema; today's live mode) against json_mode (the schema as text after the prompt, the reply validated in code against the same schema, per-seat targets included). An enforced schema is part of the cache key on both providers, so json_mode is what would let different call types and seats share a prefix (evidence/caching/experiment_log.md §11 onward). 17 ten-seat schemas x 10 samples per mode, then 8 real Phase 3 discussion turns (3 variants each) in json_mode. The cache floor is a single size: not under test here."
+}

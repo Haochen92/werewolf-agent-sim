@@ -14,7 +14,7 @@
 >
 > **Companion docs.** The current shipped mechanism, stated destination-first, is
 > [report.md](report.md); how far the instrument is *trusted* is owned by the apparatus report
-> [../evaluation/discussion_tagger/report.md](../evaluation/discussion_tagger/report.md). The raw run
+> [../evaluation/llm_judge/discussion_tagger.md](../evaluation/llm_judge/discussion_tagger.md). The raw run
 > records this log distils are frozen in [../v7_final/experiment_log.md](../v7_final/experiment_log.md)
 > §11–12 and the metrics design files
 > ([../metrics/design/discussion_scoring_plan.md](../metrics/design/discussion_scoring_plan.md),
@@ -477,7 +477,7 @@ survive the same knives.
 ---
 
 *Companion reference (current mechanism): [report.md](report.md) · Trust/reliability apparatus:
-[../evaluation/discussion_tagger/report.md](../evaluation/discussion_tagger/report.md) · Frozen design +
+[../evaluation/llm_judge/discussion_tagger.md](../evaluation/llm_judge/discussion_tagger.md) · Frozen design +
 run records: [../v7_final/discussion_credit_design.md](../v7_final/discussion_credit_design.md),
 [../v7_final/experiment_log.md](../v7_final/experiment_log.md) §12, and the v2_full/ tagger scripts ·
 Deterministic prehistory: [../metrics/design/discussion_scoring_plan.md](../metrics/design/discussion_scoring_plan.md),

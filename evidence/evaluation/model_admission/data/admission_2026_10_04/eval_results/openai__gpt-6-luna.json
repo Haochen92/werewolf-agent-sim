@@ -1,0 +1,401 @@
+{
+ "model": "openai/gpt-6-luna",
+ "run_at": "2026-10-04T09:59:27.481348+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "6d603f54b4d64c866fb5f9dfbbd6fb88fb2b5ccf",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "forced_tool",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.3
+   }
+  },
+  {
+   "mode": "json_schema",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 652.0,
+    "cached": 0.0,
+    "output": 352.4,
+    "reasoning": 173.0,
+    "seconds": 3.8
+   }
+  },
+  {
+   "mode": "auto_tool",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': \"Function tools with reasoning_effort are not supported for gpt-6-luna in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort to 'none'.\", 'type': 'invalid_request_e"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.3
+   }
+  },
+  {
+   "mode": "json_mode",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 708.9,
+    "cached": 0.0,
+    "output": 368.0,
+    "reasoning": 199.4,
+    "seconds": 4.5
+   }
+  }
+ ],
+ "recommended_mode": "json_schema",
+ "recommended_mode_why": "passed every call and reasons (173.0 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": 2048,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 264,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 486,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 934,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1797,
+    "cached_tokens": 1794,
+    "sends": 2
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3528,
+    "cached_tokens": 3525,
+    "sends": 2
+   },
+   {
+    "target_tokens": 8192,
+    "input_tokens": 7017,
+    "cached_tokens": 7014,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 4695,
+    "cached": 0,
+    "output": 1661,
+    "reasoning": 1212,
+    "seconds": 14.04,
+    "error": null
+   },
+   "next_turn": {
+    "input": 4715,
+    "cached": 2401,
+    "output": 1448,
+    "reasoning": 994,
+    "seconds": 12.34,
+    "error": null,
+    "shared_prefix_est": 3939
+   },
+   "other_seat": {
+    "input": 4605,
+    "cached": 0,
+    "output": 1231,
+    "reasoning": 822,
+    "seconds": 15.45,
+    "error": null,
+    "shared_prefix_est": 1281
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 3652,
+    "cached": 0,
+    "output": 934,
+    "reasoning": 398,
+    "seconds": 7.64,
+    "error": null
+   },
+   "next_turn": {
+    "input": 3672,
+    "cached": 2362,
+    "output": 601,
+    "reasoning": 224,
+    "seconds": 5.68,
+    "error": null,
+    "shared_prefix_est": 2879
+   },
+   "other_seat": {
+    "input": 3737,
+    "cached": 2401,
+    "output": 1259,
+    "reasoning": 865,
+    "seconds": 15.83,
+    "error": null,
+    "shared_prefix_est": 938
+   }
+  }
+ ],
+ "real_prompt_failures": "0/6",
+ "cached_share": {
+  "next_turn": 0.568,
+  "other_seat": 0.288
+ }
+}

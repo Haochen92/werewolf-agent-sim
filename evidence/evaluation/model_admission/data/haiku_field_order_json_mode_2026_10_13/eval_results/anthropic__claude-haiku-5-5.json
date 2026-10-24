@@ -1,0 +1,526 @@
+{
+ "model": "anthropic/claude-haiku-5-5",
+ "run_at": "2026-10-13T12:51:19.084508+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "91d5b339a00f82a1fe9edb0c767bdc07333384cb",
+  "git_dirty": true,
+  "prompt_bundle_hash": "374305bd038c3090",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-3.8-flash",
+  "pro_backup_model": "gemini-2.5-pro",
+  "embedding_model": "qwen/qwen3-embedding-8b",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "low",
+ "structured": [
+  {
+   "mode": "json_mode",
+   "passed": "17/17",
+   "all_passed": true,
+   "failures": [],
+   "in_schema_order": "17/17",
+   "out_of_order": [],
+   "mean_per_call": {
+    "input": 1279.6,
+    "cached": 0.0,
+    "output": 518.5,
+    "reasoning": 109.1,
+    "seconds": 3.1
+   }
+  }
+ ],
+ "recommended_mode": "json_mode",
+ "recommended_mode_why": "passed every call and reasons (109.1 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": 1024,
+  "sizes": [
+   {
+    "target_tokens": 1024,
+    "input_tokens": 1417,
+    "cached_tokens": 1401,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompt_mode": "json_mode",
+ "real_prompts": [
+  {
+   "case_id": "183500fda11b66d6",
+   "first": {
+    "input": 9378,
+    "cached": 0,
+    "output": 2480,
+    "reasoning": 1646,
+    "seconds": 11.45,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 9406,
+    "cached": 6693,
+    "output": 2408,
+    "reasoning": 1718,
+    "seconds": 11.26,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 8038
+   },
+   "other_seat": {
+    "input": 10220,
+    "cached": 0,
+    "output": 1567,
+    "reasoning": 891,
+    "seconds": 8.57,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 5281
+   }
+  },
+  {
+   "case_id": "cc56ed2046f3f402",
+   "first": {
+    "input": 8958,
+    "cached": 5176,
+    "output": 1815,
+    "reasoning": 953,
+    "seconds": 8.92,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 8986,
+    "cached": 6351,
+    "output": 1914,
+    "reasoning": 1197,
+    "seconds": 9.39,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 7712
+   },
+   "other_seat": {
+    "input": 9653,
+    "cached": 0,
+    "output": 1476,
+    "reasoning": 682,
+    "seconds": 7.66,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 5272
+   }
+  },
+  {
+   "case_id": "1802f1e99ed17696",
+   "first": {
+    "input": 9508,
+    "cached": 0,
+    "output": 1926,
+    "reasoning": 1331,
+    "seconds": 9.77,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 9536,
+    "cached": 7024,
+    "output": 2714,
+    "reasoning": 2240,
+    "seconds": 13.66,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 8417
+   },
+   "other_seat": {
+    "input": 10778,
+    "cached": 0,
+    "output": 1566,
+    "reasoning": 1005,
+    "seconds": 8.31,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 4856
+   }
+  },
+  {
+   "case_id": "282e2bd964a73304",
+   "first": {
+    "input": 9127,
+    "cached": 0,
+    "output": 1452,
+    "reasoning": 927,
+    "seconds": 7.47,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "strategy_verdicts",
+     "memory_applicability",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ]
+   },
+   "next_turn": {
+    "input": 9155,
+    "cached": 6596,
+    "output": 1725,
+    "reasoning": 1117,
+    "seconds": 8.58,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 7970
+   },
+   "other_seat": {
+    "input": 10158,
+    "cached": 7577,
+    "output": 1588,
+    "reasoning": 926,
+    "seconds": 8.52,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 5313
+   }
+  },
+  {
+   "case_id": "2ae4571be87b642d",
+   "first": {
+    "input": 8803,
+    "cached": 0,
+    "output": 1375,
+    "reasoning": 606,
+    "seconds": 6.47,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 8831,
+    "cached": 6321,
+    "output": 1600,
+    "reasoning": 914,
+    "seconds": 7.45,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 7690
+   },
+   "other_seat": {
+    "input": 9659,
+    "cached": 0,
+    "output": 1482,
+    "reasoning": 769,
+    "seconds": 7.57,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "strategy_verdicts",
+     "memory_applicability",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 5404
+   }
+  },
+  {
+   "case_id": "65f6e315065d38ba",
+   "first": {
+    "input": 8625,
+    "cached": 0,
+    "output": 1362,
+    "reasoning": 677,
+    "seconds": 6.62,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 8653,
+    "cached": 5975,
+    "output": 1437,
+    "reasoning": 618,
+    "seconds": 7.62,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets",
+     "strategy_verdicts",
+     "memory_applicability"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 7301
+   },
+   "other_seat": {
+    "input": 9417,
+    "cached": 0,
+    "output": 1177,
+    "reasoning": 617,
+    "seconds": 5.81,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 5336
+   }
+  },
+  {
+   "case_id": "7548abc483c94539",
+   "first": {
+    "input": 10850,
+    "cached": 0,
+    "output": 2160,
+    "reasoning": 1493,
+    "seconds": 10.47,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null
+   },
+   "next_turn": {
+    "input": 10878,
+    "cached": 8330,
+    "output": 1478,
+    "reasoning": 857,
+    "seconds": 7.11,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 9739
+   },
+   "other_seat": {
+    "input": 11022,
+    "cached": 0,
+    "output": 2641,
+    "reasoning": 1884,
+    "seconds": 13.16,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 5238
+   }
+  },
+  {
+   "case_id": "7b22e2b9cc9be59a",
+   "first": {
+    "input": 8122,
+    "cached": 0,
+    "output": 1478,
+    "reasoning": 763,
+    "seconds": 7.41,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets",
+     "strategy_verdicts",
+     "memory_applicability"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ]
+   },
+   "next_turn": {
+    "input": 8150,
+    "cached": 5613,
+    "output": 1264,
+    "reasoning": 594,
+    "seconds": 55.01,
+    "error": null,
+    "in_order": true,
+    "keys": null,
+    "schema_keys": null,
+    "shared_prefix_est": 6952
+   },
+   "other_seat": {
+    "input": 9217,
+    "cached": 0,
+    "output": 1887,
+    "reasoning": 1213,
+    "seconds": 9.72,
+    "error": null,
+    "in_order": false,
+    "keys": [
+     "reads",
+     "strategy_verdicts",
+     "memory_applicability",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "schema_keys": [
+     "strategy_verdicts",
+     "memory_applicability",
+     "reads",
+     "updated_strategy",
+     "pass_turn",
+     "message",
+     "claim",
+     "addressed_targets"
+    ],
+    "shared_prefix_est": 4888
+   }
+  }
+ ],
+ "real_prompt_failures": "0/24",
+ "real_prompts_in_schema_order": "15/24",
+ "cached_share": {
+  "next_turn": 0.719,
+  "other_seat": 0.095
+ }
+}
