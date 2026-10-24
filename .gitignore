@@ -68,3 +68,6 @@ interview_prep/
 
 # Database dumps (pg_dump backups) — never track
 *.dump
+
+# Playwright output at the repo root
+/test-results/
