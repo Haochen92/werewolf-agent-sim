@@ -65,3 +65,6 @@ evidence/v7_final/runs/loop_gate/
 
 # Personal material — never track (repo may go public)
 interview_prep/
+
+# Database dumps (pg_dump backups) — never track
+*.dump
