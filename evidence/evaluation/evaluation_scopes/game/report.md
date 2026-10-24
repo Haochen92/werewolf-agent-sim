@@ -3,7 +3,7 @@
 This page covers the project's whole-game tests: play the same deals twice, once with a change and once
 without, and compare how the games went. It covers why the project uses them, how they are set up,
 where they were used, and how far each result can be trusted. How this fits with the other ways the
-project evaluates is in [the hub](../report.md). The full detail of each test (every command,
+project evaluates is in [the hub](../../report.md). The full detail of each test (every command,
 correction and count) is in [the detailed record](experiment_log.md). What each test found about the
 design itself is in the design folders linked from each case.
 
@@ -34,7 +34,7 @@ The two arms are set up the same in every way except the one thing under test.
 - **Changed (the independent variable):** the one design under test, such as memory on against off.
   The arm without the change is the *control arm*; the arm with it is the *treatment arm*.
   The changed variable can also be the model itself, as in the seat-model games of
-  [model_admission](../model_admission/report.md). Two cautions apply there: a new model often brings
+  [model_admission](../../model_admission/report.md). Two cautions apply there: a new model often brings
   its own call mode or prompt tweaks, so the arms differ by a model *and its setup*; and model choice
   is mostly a gate (can it play, is it clearly worse than the default), so it is compared first on
   saved turns with every input fixed, and in whole games last. A model change nobody chose (a
@@ -45,7 +45,7 @@ The two arms are set up the same in every way except the one thing under test.
   at the first line that differs. Only the start is identical; everything after it is played fresh.
 
 That last point is what separates this from a frozen-turn replay
-([replay_screens](../replay_screens/report.md)), where the whole history up to one turn is fixed and
+([turn replays](../turn/report.md)), where the whole history up to one turn is fixed and
 only that turn is rerun.
 
 Three practices follow:
@@ -57,7 +57,7 @@ Three practices follow:
 - **Score decisions, not only wins.** With 30 games a side, only a win gap of about 35 points would
   reliably show. So the verdict rests on decision scores computed from the game record (did the town
   vote out an evil player, did the healer save the real target), which were checked against winning
-  before use ([metrics](../metrics/report.md)).
+  before use ([metrics](../../metrics/report.md)).
 - **Use paired tests.** Each deal's two games are compared with each other: exact McNemar for wins,
   Wilcoxon for decision scores.
 
@@ -114,7 +114,7 @@ gap grows (one game cost $0.72 on flash-lite and $2.72 on flash).
 whole day: rebuild a recorded game up to day *k*, then let that day play out live under the change,
 with every turn, the real speaking order and the votes. It would show effects that build within a day
 without the noise of whole games, at about $0.10–0.15 per day. It was designed in July 2026 and never
-built ([replay_screens](../replay_screens/report.md), the per-day replay section). Looking back, the
+built ([turn replays](../turn/report.md), the per-day replay section). Looking back, the
 October voices question fit it better than either a turn replay or whole games.
 
 ## Where the project used it
@@ -128,7 +128,7 @@ October voices question fit it better than either a turn replay or whole games.
 | Evil covers (ten-seat, 2026-10-18) | After the changes to the evil seats' cards and prompts, do evil seats fake a role claim, and what does it do to balance? | 8 deals | Evil seats claimed a role 11 of 24 times against 3 of 24; wolves won 3 of 8 against none | ⚠️ | Case 3; log §5 |
 
 The silence calibration (four games before and after a silence-rule change) uses the same pattern; its
-reads are rated in [sampled_human_review](../sampled_human_review/report.md).
+reads are rated in [sampled reads](../../labeling/sampled_reads/report.md).
 
 ✅ sound · 🟡 usable with caveats · ⚠️ smoke test only.
 
@@ -162,8 +162,8 @@ about players that do not reason first.
 
 **Code and data.** `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`,
 `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`;
-[paired_ab](../../memory_system/effectiveness/paired_ab/report.md),
-[store_progression](../../memory_system/store_progression.md) (correction of 2026-10-22).
+[paired_ab](../../../memory_system/effectiveness/paired_ab/report.md),
+[store_progression](../../../memory_system/store_progression.md) (correction of 2026-10-22).
 
 ## Case 2. Decided in advance: the v7 endpoint test
 
@@ -194,7 +194,7 @@ deals. As promised, it was reported as "no compounding detected", leaning toward
 were fixed first, the negative result is believable: nobody can say the measure was picked to make it
 fail. The cause was traced to the scoring rules that drove the loop, which graded every town abstain
 as neutral and so could not remove lessons that made the town abstain
-([credit blind-spot log](../../credit/blindspot_fix/experiment_log.md)).
+([credit blind-spot log](../../../credit/blindspot_fix/experiment_log.md)).
 
 **How far to trust it.** 🟡. The strongest design on this page, with three gaps. The script that
 computed the final number was not found, so the result is recorded in the reports but cannot be
@@ -202,8 +202,8 @@ re-run from committed code. The per-game data sits in a folder git ignores. And 
 enough to detect a real effect was not checked for the final design.
 
 **Code and data.** `evaluation/src/loop/measure.py`; the pre-registration, amendment, config and run
-log in [execution_plan/data](../../execution_plan/data/README.md);
-[execution_plan](../../execution_plan/report.md) §4–5.
+log in [execution_plan/data](../../../execution_plan/data/README.md);
+[execution_plan](../../../execution_plan/report.md) §4–5.
 
 ## Case 3. Small whole-game runs: smoke tests with a direction (persona voices, evil covers)
 
@@ -242,8 +242,8 @@ code.
 
 **Code and data.** `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py`,
 `evil_cover_screen.py`;
-[persona_voice_games](../../game_play_enhancement/data/persona_voice_games/README.md),
-[evil_cover_games](../../game_play_enhancement/data/evil_cover_games/README.md).
+[persona_voice_games](../../../game_play_enhancement/data/persona_voice_games/README.md),
+[evil_cover_games](../../../game_play_enhancement/data/evil_cover_games/README.md).
 
 ---
 
@@ -257,13 +257,16 @@ not been tested at scale. For future same-deal tests the upgrades are procedural
 - **Commit the script that computes a reported statistic**, which the v7 endpoint lacks.
 - **Build the per-day replay** before the next question about effects within a day; it would sit
   between the turn replay and whole games.
-- **Buy more deals, not more pairing.** Pairing adds little power here, and no measure taken before a
-  game predicts its result, so variance-reduction tricks such as CUPED do not apply.
+- **Buy more deals, not more pairing.** Pairing adds little power here. On the nine-seat game no measure
+  taken before a game predicted its result, so variance-reduction tricks such as CUPED did not apply; on the
+  ten-seat game the dealt lineup is known before play and can be stratified or adjusted for
+  ([the levers audit](../../experimental_controls/variance_reduction_levers.md), corrected 2026-10-23).
 
 **Bottom line.** The harness is sound, and it found and stated its own limits: wins need far more games
 than were played, and pairing by deal buys almost no noise reduction. Every memory verdict therefore
 rests on decision scores. The October ten-seat runs give a direction only, and looking back, part of
 what they asked was better answered by a replay.
 
-*Written 2026-10-23 and checked against the records named above. Which commit and tree each run used,
-and which files are not in git, is in [the source map](../source_map.md).*
+*Written 2026-10-23 and checked against the records named above. Which commit and tree each run used
+is in the full evaluation ledger ([experiment log](../../experiment_log.md), Part 2); which files are not in git, in
+[the source map](../../source_map.md).*

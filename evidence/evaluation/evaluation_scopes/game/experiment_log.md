@@ -31,11 +31,11 @@ Every comparison in this file pairs games by game id. Two facts limit what that 
 
 - The chain is `game_id → crc32 → role draw`.
 - When the June A/B was set up (nine-seat, 2026-06-11), it reproduced 20 of 20 draws
-  ([`paired_ab/experiment_log.md`](../../memory_system/effectiveness/paired_ab/experiment_log.md)).
+  ([`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md)).
 - The ten-seat deal is pinned by `tests/engine/test_seedability.py`. That includes the two drawn
   seats, the lone killer and the neutral. This test was written on purpose, and its premise is this
   pairing.
-- Seedability is catalogued in [`../methodology/report.md`](../methodology/report.md).
+- Seedability is catalogued in [`../../experimental_controls/report.md`](../../experimental_controls/report.md).
 
 **Only the deal is shared.**
 
@@ -43,7 +43,7 @@ Every comparison in this file pairs games by game id. Two facts limit what that 
 - In the nine-seat game, a same-seed check (a *canary*: a small fixed run whose only job is to show
   whether something has shifted) measured how much the deal adds to the noise. It added almost none.
   The spread of results within one seed was 0.249 (standard deviation). Across seeds it was
-  0.211–0.262 ([`model_drift/drift_surfaces_and_guards.md`](../../model_drift/drift_surfaces_and_guards.md)).
+  0.211–0.262 ([`model_drift/drift_surfaces_and_guards.md`](../../../model_drift/drift_surfaces_and_guards.md)).
 - So pairing cancels little noise.
 - Its value is elsewhere. Both arms face the same starting position. And both run in the same sitting,
   the same *epoch*. An epoch is one snapshot of a hosted model, which can change overnight with no
@@ -145,10 +145,10 @@ The fitted slope (by ordinary least squares) is computed later, downstream.
 > - `regenerate_stats.py` is not in `paired_ab/`. It sits one level up, at
 >   `evidence/memory_system/effectiveness/regenerate_stats.py`.
 > - The decision-replay screen now lives at `evaluation/src/studies/decision_replay.py`. It is
->   catalogued in [`../replay_screens/report.md`](../replay_screens/report.md). It is listed here only
+>   catalogued in [`../turn/report.md`](../turn/report.md). It is listed here only
 >   as the A/B's cross-check.
 > - The de-luck basket was validated on the nine-seat game only. `Agents/compute_metrics.py` marks it
->   as not re-validated for the ten-seat game ([`../metrics/report.md`](../metrics/report.md)).
+>   as not re-validated for the ten-seat game ([`../../metrics/report.md`](../../metrics/report.md)).
 
 ### What it can claim
 
@@ -229,14 +229,14 @@ ceiling."
 >   - healer saves of the real target, 0.37 → 0.60 (Wilcoxon p=0.005);
 >   - correct eliminations, 0.47 → 0.64 (p=0.028).
 >
->   Sources: [`paired_ab/report.md`](../../memory_system/effectiveness/paired_ab/report.md) and
->   [`store_progression.md`](../../memory_system/store_progression.md) (correction of 2026-10-22). So
+>   Sources: [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md) and
+>   [`store_progression.md`](../../../memory_system/store_progression.md) (correction of 2026-10-22). So
 >   the screen agrees with the A/B on decisions, not on wins.
 > - **The wolf-direct arm will not run.** The memory research closed on 2026-07-21 (§3).
 > - **Every memory game ran without reasoning.** The game model ran at thinking level "minimal". That
 >   produced zero reasoning tokens (found 2026-10-04). The arms matched, so the comparisons stand. But
 >   every memory A/B here is about players that do not reason first
->   ([`execution_plan/report.md`](../../execution_plan/report.md) §5).
+>   ([`execution_plan/report.md`](../../../execution_plan/report.md) §5).
 
 ### Trust: 🟡
 
@@ -250,9 +250,9 @@ by deal buys almost no noise reduction.
 `evidence/memory_system/effectiveness/regenerate_stats.py`, `evaluation/src/core/stats.py`,
 `Agents/compute_metrics.py`, `evaluation/src/studies/decision_replay.py`,
 `evaluation/src/loop/measure.py`. Record:
-[`paired_ab/report.md`](../../memory_system/effectiveness/paired_ab/report.md),
-[`paired_ab/experiment_log.md`](../../memory_system/effectiveness/paired_ab/experiment_log.md),
-[`store_progression.md`](../../memory_system/store_progression.md).
+[`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md),
+[`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md),
+[`store_progression.md`](../../../memory_system/store_progression.md).
 
 ---
 
@@ -274,7 +274,7 @@ The same harness, widened to six arms on 30 shared deals.
 | 5 | Serial killer, strategy points |
 | 6 | Serial killer, both |
 
-Source: [`v6_sp_ab/experiment_log.md`](../../memory_system/effectiveness/v6_sp_ab/experiment_log.md).
+Source: [`v6_sp_ab/experiment_log.md`](../../../memory_system/effectiveness/v6_sp_ab/experiment_log.md).
 
 ### How it works
 
@@ -315,7 +315,7 @@ For the same reasons and limits as §1, plus the two above.
 ### Code and record
 
 `evidence/memory_system/effectiveness/v6_sp_ab/launch_arms.sh`, `scripts/run_batch.py`. Record:
-[`v6_sp_ab/experiment_log.md`](../../memory_system/effectiveness/v6_sp_ab/experiment_log.md).
+[`v6_sp_ab/experiment_log.md`](../../../memory_system/effectiveness/v6_sp_ab/experiment_log.md).
 
 ---
 
@@ -327,8 +327,8 @@ The pre-registered test of the v7 learning loop. A memory store built over four 
 (168 strategy points) played against no memory, on 30 shared deals, 60 games. To *pre-register* is to
 fix and sign the test's design before any data exists.
 
-Sources: [`execution_plan/report.md`](../../execution_plan/report.md) §4–5 and its
-[`experiment_log.md`](../../execution_plan/experiment_log.md).
+Sources: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5 and its
+[`experiment_log.md`](../../../execution_plan/experiment_log.md).
 
 ### How it works
 
@@ -347,7 +347,7 @@ Sources: [`execution_plan/report.md`](../../execution_plan/report.md) §4–5 an
   two conditions on 30 boards.
 - The reasons were written into `batch_results/v7_endpoint_ab/PREREG_AMENDMENT.md`, beside the data.
 - That file was copied on 2026-10-23 to
-  [`execution_plan/data/v7_endpoint_ab/`](../../execution_plan/data/README.md).
+  [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md).
 
 **Run hardening.** This is recorded in the run's `config.json`, in the same folder.
 
@@ -374,8 +374,8 @@ Sources: [`execution_plan/report.md`](../../execution_plan/report.md) §4–5 an
 
 - The earlier design was a trend test. It was dropped on 2026-07-05.
 - A simulation had shown it would miss a realistic effect about 9 times in 10
-  ([`execution_plan/report.md`](../../execution_plan/report.md) §2–3, catalogued in
-  [`../methodology/report.md`](../methodology/report.md)).
+  ([`execution_plan/report.md`](../../../execution_plan/report.md) §2–3, catalogued in
+  [`../../experimental_controls/report.md`](../../experimental_controls/report.md)).
 - The power of the paired design that replaced it was not simulated.
 
 **The script that computed the per-board paired statistic was not found.**
@@ -388,14 +388,14 @@ Sources: [`execution_plan/report.md`](../../execution_plan/report.md) §4–5 an
   | Without memory | 0.247 | 438 |
 
 - The −0.147 and p≈0.06 are recorded in the execution-plan report and the
-  [blind-spot log](../../credit/blindspot_fix/experiment_log.md). They are not reproduced from code
+  [blind-spot log](../../../credit/blindspot_fix/experiment_log.md). They are not reproduced from code
   here.
 
 **The per-game data is not under version control.**
 
 - It is in `batch_results/v7_endpoint_ab/`, 123 MB, in the data plane that git ignores.
 - Five files were copied on 2026-10-23 to
-  [`execution_plan/data/v7_endpoint_ab/`](../../execution_plan/data/README.md): the config, the
+  [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md): the config, the
   amendment, the pooled result, the run log and the final tell book.
 
 ### Trust: 🟡
@@ -407,10 +407,10 @@ statistic has no committed code, and its data is not versioned.
 ### Code and record
 
 `evaluation/src/loop/measure.py`. The run's driver and the paired-statistic script were not found.
-Record: [`execution_plan/report.md`](../../execution_plan/report.md) §4–5,
-[`execution_plan/experiment_log.md`](../../execution_plan/experiment_log.md),
-[`credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md). Run files:
-[`execution_plan/data/v7_endpoint_ab/`](../../execution_plan/data/README.md).
+Record: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5,
+[`execution_plan/experiment_log.md`](../../../execution_plan/experiment_log.md),
+[`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md). Run files:
+[`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md).
 
 ---
 
@@ -424,7 +424,7 @@ Record: [`execution_plan/report.md`](../../execution_plan/report.md) §4–5,
 - Memory is off.
 - The owner's question: do the AI seats still read each other as well when the table talks in voices?
 
-Record: [`persona_voice_games/README.md`](../../game_play_enhancement/data/persona_voice_games/README.md).
+Record: [`persona_voice_games/README.md`](../../../game_play_enhancement/data/persona_voice_games/README.md).
 
 ### How it works
 
@@ -451,7 +451,7 @@ Record: [`persona_voice_games/README.md`](../../game_play_enhancement/data/perso
   - a wolf's read on its packmate is dropped.
 - It splits town votes into three kinds: votes on a non-town player, votes on town, and abstains.
 
-The read ledger is catalogued in [`../metrics/report.md`](../metrics/report.md).
+The read ledger is catalogued in [`../../metrics/report.md`](../../metrics/report.md).
 
 ### What it can claim
 
@@ -484,7 +484,7 @@ Clean provenance and a one-flag difference. But only 8 pairs, and no measure fix
 
 `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py`,
 `evaluation/src/loop/read_ledger.py`, `tests/leak_test.py`. Record:
-[`persona_voice_games/README.md`](../../game_play_enhancement/data/persona_voice_games/README.md),
+[`persona_voice_games/README.md`](../../../game_play_enhancement/data/persona_voice_games/README.md),
 `scores.json`, and the manifest of each game.
 
 ---
@@ -501,7 +501,7 @@ Eight deals, played before and after a set of three changes to the evil seats:
 
 The question: do evil seats now fake a role claim in whole games, and what does that do to balance?
 
-Record: [`evil_cover_games/README.md`](../../game_play_enhancement/data/evil_cover_games/README.md).
+Record: [`evil_cover_games/README.md`](../../../game_play_enhancement/data/evil_cover_games/README.md).
 
 ### How it works
 
@@ -526,7 +526,7 @@ Record: [`evil_cover_games/README.md`](../../game_play_enhancement/data/evil_cov
 - Winners (from the run's README): town 7 and the lone killer 1 before; town 5 and the wolves 3 after.
 - A direction for balance. The README itself says eight games give a direction, not an estimate.
 - The arms differ by three changes made together. So the games cannot say which change did the work.
-  The replay screen in [`../replay_screens/report.md`](../replay_screens/report.md) isolates the card
+  The replay screen in [`../turn/report.md`](../turn/report.md) isolates the card
   text.
 
 ### How far it was checked
@@ -556,14 +556,14 @@ Eight deals, a bundle of changes, and runs from uncommitted trees.
 ### Code and record
 
 `evaluation/experiments/evil_cover_screen.py` (`games`). Record:
-[`evil_cover_games/README.md`](../../game_play_enhancement/data/evil_cover_games/README.md),
+[`evil_cover_games/README.md`](../../../game_play_enhancement/data/evil_cover_games/README.md),
 `games_scores.json`, and the manifest of each game.
 
 ### The same pattern elsewhere: silence calibration, step 5
 
 Step 5 of the silence calibration uses the same same-deal pattern. It played four games before and
 after a change to the silence rule, on the deals of voices-01..04. Its record and its blind reads are
-catalogued in [`../sampled_human_review/report.md`](../sampled_human_review/report.md).
+catalogued in [`../../labeling/sampled_reads/report.md`](../../labeling/sampled_reads/report.md).
 
 ---
 
@@ -636,11 +636,11 @@ paths are corrected above.)*
 - The live A/B data is in `batch_results/ab_*.jsonl`. It is in the data plane, so this file points at
   it. `analyze_ab.py` reads it.
 - The older does-memory-help batch is stored beside its record, in
-  [`../../memory_system/effectiveness/batch_results/`](../../memory_system/effectiveness/batch_results/).
+  [`../../../memory_system/effectiveness/batch_results/`](../../../memory_system/effectiveness/batch_results/).
 - The screen's outputs are stored beside their record, in
-  `../../memory_system/effectiveness/decision_replay/*.json`.
+  `../../../memory_system/effectiveness/decision_replay/*.json`.
 - The seed sets and analysers are in
-  [`../../memory_system/effectiveness/paired_ab/`](../../memory_system/effectiveness/paired_ab/).
+  [`../../../memory_system/effectiveness/paired_ab/`](../../../memory_system/effectiveness/paired_ab/).
 
 ### Where the files stay (decided 2026-06-28)
 
@@ -655,17 +655,17 @@ paths are corrected above.)*
 
 | What | Code | Record |
 |---|---|---|
-| Deal seeding (the premise of pairing) | `tests/engine/test_seedability.py` | [`paired_ab/experiment_log.md`](../../memory_system/effectiveness/paired_ab/experiment_log.md) (20/20, 2026-06-11); [`../methodology/report.md`](../methodology/report.md) |
-| Same-seed canary (pairing ≈ no noise reduction) | — | [`model_drift/drift_surfaces_and_guards.md`](../../model_drift/drift_surfaces_and_guards.md) |
-| June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`, `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`, `Agents/compute_metrics.py` | [`paired_ab/report.md`](../../memory_system/effectiveness/paired_ab/report.md), [`paired_ab/experiment_log.md`](../../memory_system/effectiveness/paired_ab/experiment_log.md), [`store_progression.md`](../../memory_system/store_progression.md) (2026-10-22 correction); data `batch_results/ab_*.jsonl` (ignored by git) |
-| v6 strategy-point A/B | `evidence/memory_system/effectiveness/v6_sp_ab/launch_arms.sh`, `scripts/run_batch.py` | [`v6_sp_ab/experiment_log.md`](../../memory_system/effectiveness/v6_sp_ab/experiment_log.md) |
-| v7 endpoint A/B | `evaluation/src/loop/measure.py`; the run's driver and the paired-statistic script: not found | [`execution_plan/report.md`](../../execution_plan/report.md) §4–5, [`execution_plan/experiment_log.md`](../../execution_plan/experiment_log.md), [`credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md); run files [`execution_plan/data/v7_endpoint_ab/`](../../execution_plan/data/README.md); per-game data `batch_results/v7_endpoint_ab/` (ignored by git) |
-| Persona-voice games | `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py`, `evaluation/src/loop/read_ledger.py`, `tests/leak_test.py` | [`persona_voice_games/README.md`](../../game_play_enhancement/data/persona_voice_games/README.md), `scores.json`, the manifest of each game |
-| Evil-cover games | `evaluation/experiments/evil_cover_screen.py` (`games`) | [`evil_cover_games/README.md`](../../game_play_enhancement/data/evil_cover_games/README.md), `games_scores.json`, the manifest of each game |
-| Fingerprint coverage (prompt-bundle hash) | `Agents/run_fingerprint.py` | [`tracing/fingerprinting/report.md`](../../tracing/fingerprinting/report.md) |
+| Deal seeding (the premise of pairing) | `tests/engine/test_seedability.py` | [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md) (20/20, 2026-06-11); [`../../experimental_controls/report.md`](../../experimental_controls/report.md) |
+| Same-seed canary (pairing ≈ no noise reduction) | — | [`model_drift/drift_surfaces_and_guards.md`](../../../model_drift/drift_surfaces_and_guards.md) |
+| June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`, `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`, `Agents/compute_metrics.py` | [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md), [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md), [`store_progression.md`](../../../memory_system/store_progression.md) (2026-10-22 correction); data `batch_results/ab_*.jsonl` (ignored by git) |
+| v6 strategy-point A/B | `evidence/memory_system/effectiveness/v6_sp_ab/launch_arms.sh`, `scripts/run_batch.py` | [`v6_sp_ab/experiment_log.md`](../../../memory_system/effectiveness/v6_sp_ab/experiment_log.md) |
+| v7 endpoint A/B | `evaluation/src/loop/measure.py`; the run's driver and the paired-statistic script: not found | [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5, [`execution_plan/experiment_log.md`](../../../execution_plan/experiment_log.md), [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md); run files [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md); per-game data `batch_results/v7_endpoint_ab/` (ignored by git) |
+| Persona-voice games | `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py`, `evaluation/src/loop/read_ledger.py`, `tests/leak_test.py` | [`persona_voice_games/README.md`](../../../game_play_enhancement/data/persona_voice_games/README.md), `scores.json`, the manifest of each game |
+| Evil-cover games | `evaluation/experiments/evil_cover_screen.py` (`games`) | [`evil_cover_games/README.md`](../../../game_play_enhancement/data/evil_cover_games/README.md), `games_scores.json`, the manifest of each game |
+| Fingerprint coverage (prompt-bundle hash) | `Agents/run_fingerprint.py` | [`tracing/fingerprinting/report.md`](../../../tracing/fingerprinting/report.md) |
 
-Where each figure comes from across the evaluation reports: [the source map](../source_map.md). How
-the evaluation reports fit together: [the hub](../report.md).
+Where each figure comes from across the evaluation reports: [the source map](../../source_map.md). How
+the evaluation reports fit together: [the hub](../../report.md).
 
 *Written 2026-10-23 from the long first version of report.md. This file says how far each test can be
 trusted. Whether memory, voices or evil covers helped is answered in the design folders linked from

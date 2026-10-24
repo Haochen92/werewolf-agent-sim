@@ -19,7 +19,7 @@ Layers (import from this package, not the submodules):
   store snapshot (empty/gen1/genN arms), leakage-guarded, case-major anti-drift
 
 Records: evidence/memory_system/effectiveness/decision_replay/ (the study journey)
-and evidence/evaluation/replay_screens/ (the apparatus write-up)."""
+and evidence/evaluation/evaluation_scopes/turn/ (the apparatus write-up)."""
 
 from evaluation.src.replay.decision_screen.cases import (
     _abstained_on_day,
