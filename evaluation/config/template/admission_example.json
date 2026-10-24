@@ -1,0 +1,76 @@
+{
+  "label": "admission_example_luna",
+  "candidate": {
+    "model": "openai/gpt-6-luna",
+    "thinking_levels": ["low", "medium"],
+    "structured_mode": "json_mode"
+  },
+  "reference": {
+    "model": "anthropic/claude-haiku-5-5",
+    "thinking_level": "low",
+    "structured_mode": "json_mode"
+  },
+  "case_sets": [
+    {
+      "name": "discussion",
+      "kind": "discussion",
+      "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "slices": ["pinned", "control", "f02_rule"],
+      "n": 5
+    },
+    {
+      "name": "votes",
+      "kind": "vote",
+      "dataset": "evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl",
+      "slices": ["vote_compare", "vote"],
+      "n": 10,
+      "right_target_overrides": {
+        "9b827b695a61ece9": ["player_6", "player_10", "abstain"],
+        "8ef436c168c0f751": ["player_6", "player_10", "abstain"],
+        "c5e12a38f7f8f9da": ["player_6", "player_10", "abstain"],
+        "f475e6ad184f725f": ["player_6", "player_10", "abstain"],
+        "3f4892352b18fe39": ["player_6", "player_10", "abstain"]
+      }
+    }
+  ],
+  "n": 5,
+  "workers": 3,
+  "probe": {
+    "samples_per_schema": 3,
+    "workers": 4,
+    "modes": null,
+    "floor_sizes": [256, 512, 1024, 2048, 4096],
+    "wait_s": 5,
+    "real_turn_dataset": null,
+    "real_turn_cases": 2
+  },
+  "judges": {
+    "recall_model": null,
+    "precision_model": null,
+    "golden_model": "anthropic/claude-sonnet-5-5"
+  },
+  "criteria": {
+    "integration": {
+      "require_recommended_mode": true,
+      "max_real_turn_failures": 0,
+      "require_reasoning_when_thinking": true
+    },
+    "quality": {
+      "max_bad_rate_gap": 6.0,
+      "worse_p_threshold": 0.05
+    },
+    "votes": {
+      "max_vote_gap": 10.0,
+      "worse_p_threshold": 0.05
+    },
+    "speed": {
+      "max_p50_seconds": 12.0,
+      "max_p95_seconds": 30.0
+    },
+    "cost": {
+      "max_output_tokens_per_sample": null,
+      "max_reasoning_tokens_per_sample": null
+    }
+  },
+  "note": "Worked example: GPT-6 Luna at low and medium against Claude Haiku 5.5 at low (the house seat model), both on json_mode (production's mode for both since 2026-10-14). Sources are evidence/evaluation/model_admission/report.md (report) and its experiment_log.md (log). Cases: the fourteen ten-seat test turns (the slices every ten-seat admission run used, n 5 = 70 samples an arm, log §3) and the 16 vote cases 'as played' of the Haiku effort replay (n 10, as in reasoning_failures/experiment_log.md §2; the vote_closing_now slice repeats 2f19d908 day 3 with a later closing line and is left out). Votes are right by the true roles, except 2f19d908 day 3, where the log defines right from the evidence: the two unclaimed players or an abstain (reasoning_failures log §2). Integration: a mode must pass every probe call; no real turn may fail (DeepSeek V4 Pro passed 27 of 27 probes and failed 3 of 6 real turns, report §2 finding 2); a mode must reason when thinking is asked for (a forced tool call turned thinking off silently, finding 1). max_bad_rate_gap 6: two runs of Haiku low on the same 14 turns (70 samples each) scored 10% and 16% (report §1, 'two runs of one model differ by about 6 points'), so a smaller gap cannot be told from a rerun. worse_p_threshold 0.05: the conventional level; the clear results in the report sit below it (Haiku low 8/0, p 0.008; Luna low 8/1, p 0.039). max_vote_gap 10: no rerun spread was measured for votes; at 160 votes near a 50% rate one arm's rate has a binomial spread of about 4 points, so the gap between two arms about 5.6, and 10 points is about two of those; Haiku low against medium differed by 20 points (65 against 98 of 160). max_p50_seconds 12: the seat models ran 8.1-9.5 s a turn on the replay and the slowest honest turn was 11 s when the request budget was set (report §3). max_p95_seconds 30: the live game gives a request 30 seconds before it goes to the rescue model (report §3-4). No token ceiling: cost is read from the report's table, not gated. Judge: Claude Sonnet 5.5 for the hand-written expectations, as in the vote replay; it is from neither model under test but from the reference's family (report §1 caveat)."
+}
