@@ -2,7 +2,7 @@
 
 Picks WHICH decision cases a reviewer reads, so the review is representative and recorded instead of
 convenient and ephemeral. Four steps, each reusing a part that already exists
-(``evidence/evaluation/sampled_human_review/plan.md`` is the spec):
+(``evidence/evaluation/labeling/sampled_reads/plan.md`` is the spec):
 
   1. SELECT — two combinable, OUTCOME-BLIND signals:
        a. score-outliers — the DEFAULT source is a deterministic per-case decision score

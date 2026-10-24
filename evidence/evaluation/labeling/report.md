@@ -1,7 +1,12 @@
-# Golden sets: how the project labels its ground truth
+# Labelling: golden sets and sampled reads
 
-This page covers every golden set in the project: what each is for, who labelled it, and how far it can
-be trusted. A *golden set* is a set of items with ground-truth labels that a cheaper check (a classifier,
+This page covers how the project labels items by reading them, and the two things those labels are for:
+**golden sets**, kept as a reference that a cheaper check is scored against, and **sampled reads**, made
+once to decide between two versions of a prompt or feature. Both use the same techniques; the first part
+below explains them once. The rest of this page covers the golden sets; the sampled reads have their own
+page, [sampled_reads/](sampled_reads/report.md).
+
+A *golden set* is a set of items with ground-truth labels that a cheaper check (a classifier,
 a threshold, an LLM judge, a model reader) is scored against. *Labelling* is how those labels are made.
 The usual split, used below: **gold** labels are made or checked by a person; **silver** labels are made
 by models and not checked by a person, so they are a reference, not ground truth. How this fits with the other
@@ -10,6 +15,34 @@ calibration chain. The detail behind the labelling pipeline (its modules, the ro
 its seven open gaps) is in [the detailed record](experiment_log.md); the build plan for its missing half
 is [plan.md](plan.md); the dedup scorers are in [dedup.md](dedup.md). The scales labels are written on,
 and the scores used to measure a judge against a golden set, are in [scoring](../scoring/report.md).
+
+## Two uses, one set of techniques
+
+| | Golden and silver sets (this page) | Sampled reads ([sampled_reads/](sampled_reads/report.md)) |
+|---|---|---|
+| **What the labels are for** | A reusable reference: a cheaper check is scored against it, now and later | A one-off measurement: which version's lines deny less, fit better, change a fact |
+| **Kept for** | Every later calibration | That decision |
+| **Examples** | The 65-pair dedup set; the census reader's 23 cases; the ten-seat duplicate groups | The evil-cover read; the voice-rewrite read; the decision-tag read |
+
+**The techniques both use:**
+1. **Draw the items without bias.** A seeded, stratified draw (flagged and unflagged, by role and phase), and
+   never a selection that can see who won, since a sample chosen by the outcome measures the outcome. Code:
+   `evaluation/src/labeling/anchor.py` (seeded stratified draw, and the sample size an interval needs:
+   about 62 items for ±10%, 96 for ±8%, 246 for ±5%); the outcome-blind case sampler
+   (`evaluation/src/diagnosis/sampler.py`).
+2. **Hide the source.** The reader sees the item and what it needs to judge it, never which model or version
+   produced it; a key file maps each opaque id back. Code: the labelling exporter (blind packets and an
+   answers template) and the October packet-read runners.
+3. **Fix the rubric, and the bar, before reading.** One rubric, word for word, for people and models; a pass
+   bar set before the read (the decision-tag read's 90%).
+4. **Measure agreement.** Two readers on the same items. Done by accident twice so far: labels tied to an act
+   (did the seat claim a role) held exactly, labels needing judgment moved by several items
+   ([sampled_reads/](sampled_reads/report.md), §4).
+5. **Anchor to a person.** A small blind sample labelled by the owner, against which a model's or a panel's
+   labels are scored. Code: `pipeline calibrate` (built 2026-10-23), which reports agreement with its
+   interval, Cohen's kappa, per-label precision and recall, and a pass or fail against set thresholds.
+   Owner-check packets for three model sources (the accusation tags, the echo gate, the factual-error judge)
+   are waiting in [owner_checks/](owner_checks/).
 
 ## Why golden sets
 
@@ -56,10 +89,10 @@ and whether anyone checked the labelling itself.
 | | Discussion-evidence judge's reads | The speakers' own accusation tags (79% agree; 13% missed an accusation) | 183 messages | nine-seat · Oct 2026 | No: the judge itself has no human check | Current: the tags pick who gets a closing defence and open reply obligations | [llm_judge](../llm_judge/report.md) |
 | | Credit attribution spot check | The agent's "I followed this lesson" claims | 15 | nine-seat · July 2026 | — | Stale | [credit](../../credit/report.md) |
 | | Ten-seat duplicate groups | The point dedup judge | 65 groups | ten-seat · Oct 2026 | No | Applied in the published store | case 3 |
-| | Lesson-fit read | The stage filter on retrieved lessons | 268 lessons | ten-seat · Oct 2026 | No | Current | [sampled_human_review](../sampled_human_review/report.md) |
-| | Decision-tag read | The decision tagger | 102 | ten-seat · Oct 2026 | No | Current (feeds the halo measure) | [sampled_human_review](../sampled_human_review/report.md) |
+| | Lesson-fit read | The stage filter on retrieved lessons | 268 lessons | ten-seat · Oct 2026 | No | Current | case 3 |
+| | Decision-tag read | The decision tagger | 102 | ten-seat · Oct 2026 | No | Current (feeds the halo measure) | [sampled reads](sampled_reads/report.md) |
 | | Silence labels | The echo gate as shipped | 156 lines | ten-seat · Oct 2026 | No | Current (the shipped gate rests on it) | [llm_judge](../llm_judge/report.md) |
-| | Voice-rewrite reads | The rewrite fidelity check | 90 | ten-seat · Oct 2026 | No | — | [sampled_human_review](../sampled_human_review/report.md) |
+| | Voice-rewrite reads | The rewrite fidelity check | 90 | ten-seat · Oct 2026 | No | — | [sampled reads](sampled_reads/report.md) |
 | | De-halo reference | Chose the de-halo judge | 7 in 40 | ten-seat · Oct 2026 | No (one game, one reader) | Live | [v8 log](../../memory_system/v8/experiment_log.md) |
 | **A written expectation** | Pinned cases in the nine-seat test set | Known factual failures stay fixed | 5 | nine-seat · Oct 2026 | Hand check: 10 of 12 verdicts upheld | Current | case 4 |
 | | Ten-seat pinned cases | Known ten-seat failures | 47 | ten-seat · Oct 2026 | Every verdict read by hand | Current | case 4 |
@@ -121,9 +154,10 @@ merged labels over-credit relevance on 514 of 1,848 items, measured against the 
 was still caught only by a different kind of judge.
 
 **How far to trust it.** The labels are as good as the review, and the review itself was never checked.
-The step that would measure the panel against people, and say when its agreement is safe to keep, is
-designed but not built ([plan.md](plan.md)); every round computed it by hand. The second reranker round
-is model labels only. The pipeline has not been used since June 2026.
+The step that measures the panel against people, and says when its agreement is safe to keep, was designed
+in [plan.md](plan.md) and every round computed it by hand; it was built on 2026-10-23 (`pipeline
+calibrate`) and has not yet been run on a panel. The second reranker round is model labels only. The
+pipeline's labelling stage has not been used since June 2026.
 
 ## Case 3. Models only: the ten-seat readers
 
@@ -136,9 +170,17 @@ time went to building and playing instead.
 **How it works.** Example: four Claude Sonnet readers each read a quarter of the ten-seat memory store
 (605 strategy points) against the game's rules. They grouped points that give the same move in the same
 situation, 65 groups and 78 points to drop. Those groups then became the reference for a dry run of the
-point dedup (`evaluation/experiments/v8_sp_dedup_dry_run.py`). Five more sets were made the same way
-(the table above). The July tell-detector cases are an earlier version: five Claude Opus readers labelled
-40 cases without seeing the detector's answers.
+point dedup (`evaluation/experiments/v8_sp_dedup_dry_run.py`). The same readers re-read the fit of the 96
+lookups below against the larger store. Five more sets were made the same way (the table above). The July
+tell-detector cases are an earlier version: five Claude Opus readers labelled 40 cases without seeing the
+detector's answers.
+
+The **lesson-fit read** behind the stage filter (2026-10-12) is the other main ten-seat memory set: 96 of
+352 lookups, drawn stratified by model, role and phase (`evaluation/experiments/v8_gate_lookups.py`), read
+by four Sonnet subagents against the rules and the games' true roles for each lesson's fit, the situation's
+errors and any leak. The runner names a second reader, the owner, after the subagents; no record of that
+pass was found. Because the fit re-read used different readers, the before-and-after comparison is
+approximate (`memory_system/v8/experiment_log.md`; data in `memory_system/v8/data/{gate,reextract}/`).
 
 **Result.** The dedup caught only 9 of the 65 groups (16 with a looser split), which located the problem
 in its judge. The groups were applied when the published store was built.
@@ -194,8 +236,9 @@ No person has read them. That path is dormant in the live game, so no harm follo
 
 ## What is missing
 
-- **The labelling pipeline's check against people.** It can make labels but cannot say whether they are
-  right ([plan.md](plan.md)). Not built as of 2026-10-23.
+- **The labelling pipeline's check against people has not been used yet.** Built on 2026-10-23
+  (`pipeline calibrate`); its first use is the owner checks in [owner_checks/](owner_checks/), which wait on
+  the owner's labels.
 - **A person's check on any ten-seat set.** Every one is model-read or a written expectation.
 - **Judges with no golden set at all:** the memory-component judges, the extraction judge and the
   discussion-evidence judge ([llm_judge](../llm_judge/report.md)).
@@ -237,9 +280,12 @@ Each could have been chosen at the start; lessons that needed results first are 
 
 **Bottom line.** The project's gold sets are nine-seat and from May to July 2026; the dedup set is the
 strongest of them. Since the move to the ten-seat game, every set has been silver: made by model readers
-with no person's check. The cheapest upgrade is the same everywhere: a person reads a small
-blind sample of each silver set, which would turn its labels into checked ones.
+with no person's check, and the same holds for the sampled reads. The cheapest upgrade is the same
+everywhere: a person reads a small blind sample of each silver set and each read's rubric, which would turn
+its labels into checked ones, and the tooling for it now exists.
 
-*Rewritten 2026-10-23 from an inventory of every golden set, checked against the records named above. The
-2026-06-29 account of the pipeline (modules, verification, the seven gaps) is kept in
+*Rewritten 2026-10-23 from an inventory of every golden set, checked against the records named above. On
+2026-10-24 the former `sampled_human_review/` folder was dissolved into this one as
+[sampled_reads/](sampled_reads/report.md), and this page gained the shared techniques. The 2026-06-29
+account of the pipeline (modules, verification, the seven gaps) is kept in
 [the detailed record](experiment_log.md).*

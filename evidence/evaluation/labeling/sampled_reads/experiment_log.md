@@ -1,4 +1,8 @@
-# Sampled Human Review: every blind or sampled read
+# Sampled review: the working record
+
+*This is the full trust write-up as it stood on 2026-10-23, kept whole: every screen's or read's
+mechanism, numbers, corrections and code paths. The plain summary is [report.md](report.md), written
+2026-10-24 from this text.*
 
 *Widened 2026-10-23 to every blind or sampled read: the July case sampler, the October blind packet
 reads, hand-read games, rubric reads, and sampled reads of memory stores and credit. Written 2026-06-30
@@ -26,8 +30,8 @@ There are four groups:
    followed a lesson, did it?
 
 This page rates **how far each check can be trusted**. What each read found is in the design folder
-named in its section. How all the evaluation reports fit together: [the hub](../report.md). Where each
-claim in these reports comes from: [the source map](../source_map.md).
+named in its section. How all the evaluation reports fit together: [the hub](../../report.md). Where each
+claim in these reports comes from: [the source map](../../source_map.md).
 
 | Check | Trust | Main limit |
 |---|---|---|
@@ -49,8 +53,8 @@ the owner's own labels.
 ## Where this sits
 
 The eval system judges quality on a three-rung ladder, cheapest first: ① an LLM judge scoring against
-a rubric ([`../llm_judge/report.md`](../llm_judge/report.md)), ② sampled review by a person or a
-stronger model (this folder), ③ golden labels ([`../labeling/report.md`](../labeling/report.md)). In
+a rubric ([`../../llm_judge/report.md`](../../llm_judge/report.md)), ② sampled review by a person or a
+stronger model (this folder), ③ golden labels ([`../report.md`](../report.md)). In
 July, rung ② had no system behind it, and that gap was this report's headline. In October it became
 the rung most play-quality decisions rest on.
 
@@ -58,7 +62,7 @@ the rung most play-quality decisions rest on.
 or Opus) launched from the working session, not people. The owner sets the question and often the
 rubric, and rules from the summaries. No record was found of the owner reading a packet item by item.
 The human-labelled keys in the project (the dedup keys, the census read, one game of the tell-detector
-cases) are all nine-seat, May to July 2026, and are catalogued in [`../labeling/report.md`](../labeling/report.md)
+cases) are all nine-seat, May to July 2026, and are catalogued in [`../report.md`](../report.md)
 (*corrected 2026-10-23*: this sentence said the tell-detector golden was the only owner-labelled read). Reading this rung as "sampled review by a stronger
 model, spot-checked by the session" is accurate; reading it as human review is not.
 
@@ -77,7 +81,7 @@ right to a person."**
 Most of the *qualitative* design calls in the memory pipeline were made this way, not by a judge or a golden
 set: extraction-selection phrasing, situation-summary wording, the dedup "tricky cases", the day-summary
 saturation diagnosis. When you change a prompt or add a dimension you rarely have a golden set for the new
-question, and the LLM-judge is itself uncalibrated (→ `../llm_judge/`), so the honest fallback is to **read
+question, and the LLM-judge is itself uncalibrated (→ `../../llm_judge/`), so the honest fallback is to **read
 the cases**. That is rung ② doing the real work.
 
 ### The gap — why it's the weakest rung despite carrying the most weight
@@ -117,7 +121,7 @@ loop — is specified in [`plan.md`](plan.md).
 **BUILD — 2026-07-02: the sampler exists (status flip: "not built" → "built, smoke-tested").** The two
 gaps this report named — **no principled sampler** and **no durable record** — both close:
 
-- **Code (the reusable logic):** [`../../../evaluation/src/diagnosis/sampler.py`](../../../evaluation/src/diagnosis/sampler.py)
+- **Code (the reusable logic):** [`../../../../evaluation/src/diagnosis/sampler.py`](../../../../evaluation/src/diagnosis/sampler.py)
   — the four steps as importable functions. **SELECT** on two combinable, outcome-blind signals:
   a deterministic per-case decision score (`decision_scoring.score_vote`/`score_night_target`, the
   DEFAULT) plus a **computed** leverage anchor (`is_swing`/`distance_to_parity` via
@@ -142,7 +146,7 @@ gaps this report named — **no principled sampler** and **no durable record** �
 >   `eval-case-sample` (`pyproject.toml`); the July link to `evaluation/src/experiments/case_sampler.py`
 >   is dead. The tests are at `tests/evaluation/test_diagnosis_sampler.py`. The July regenerate command
 >   names the old path; run it as
->   `poetry run eval-case-sample --batch batch_results/ab_nh_town.jsonl --out evidence/evaluation/sampled_human_review/sampler_smoke --n-outliers 3 --n-leverage 3 --cohort-max 4 --seed 0 --emit-demo-verdict`
+>   `poetry run eval-case-sample --batch batch_results/ab_nh_town.jsonl --out evidence/evaluation/labeling/sampled_reads/sampler_smoke --n-outliers 3 --n-leverage 3 --cohort-max 4 --seed 0 --emit-demo-verdict`
 >   (the flags are the July ones; not re-run for this widening).
 > - **The reason counts add to 10 for 9 cases**, so at least one case carries two reasons.
 > - **Never used for a real review.** The smoke run, with one placeholder verdict, is the only record of
@@ -180,15 +184,15 @@ A *blind read* in this file means steps 3–5: the reader does not know which ar
 
 | Read (2026-10) | Readers | Items | Record |
 |---|---|---|---|
-| Deduction-block placement (10-17) | 1 subagent, measures fixed in the README before the run | 24 samples | [`reasoning_failures/data/deduction_placement/`](../../reasoning_failures/data/deduction_placement/results.md) |
-| Private-note rewrite (10-16/17) | 2 Claude subagents, the owner's rubric | 56 samples per arm | `reasoning_failures/data/note_prompt/judging/`; [`reasoning_failures/experiment_log.md`](../../reasoning_failures/experiment_log.md) §6 |
-| Silence calibration, step 1 (10-18) | 4 Sonnet subagents, kinds A–D plus "worth hearing" | 156 lines | [`silence_calibration/README.md`](../../game_play_enhancement/data/silence_calibration/README.md) |
-| Evil-cover screen, steps 1–5 (10-18) | 4, 8, 4 and 4 Sonnet subagents | 41 turns × 2 samples per arm | [`evil_cover_screen/README.md`](../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Voice rewrite (10-18) | 4 Sonnet subagents (2 naturalness, 2 fidelity) | 90 rewrites | [`voice_rewrite/README.md`](../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Persona line (10-18) | 4 Sonnet subagents | 30 voiced pairs + 10 plain pairs | [`persona_line/README.md`](../../game_play_enhancement/data/persona_line/README.md) |
-| Visit wording, arms A/B and A/C (10-21) | 8 subagents, then 4 fresh ones | 95 lines per arm per model | [`visit_wording_ab/README.md`](../../game_play_enhancement/data/visit_wording_ab/README.md) |
+| Deduction-block placement (10-17) | 1 subagent, measures fixed in the README before the run | 24 samples | [`reasoning_failures/data/deduction_placement/`](../../../reasoning_failures/data/deduction_placement/results.md) |
+| Private-note rewrite (10-16/17) | 2 Claude subagents, the owner's rubric | 56 samples per arm | `reasoning_failures/data/note_prompt/judging/`; [`reasoning_failures/experiment_log.md`](../../../reasoning_failures/experiment_log.md) §6 |
+| Silence calibration, step 1 (10-18) | 4 Sonnet subagents, kinds A–D plus "worth hearing" | 156 lines | [`silence_calibration/README.md`](../../../game_play_enhancement/data/silence_calibration/README.md) |
+| Evil-cover screen, steps 1–5 (10-18) | 4, 8, 4 and 4 Sonnet subagents | 41 turns × 2 samples per arm | [`evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
+| Voice rewrite (10-18) | 4 Sonnet subagents (2 naturalness, 2 fidelity) | 90 rewrites | [`voice_rewrite/README.md`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
+| Persona line (10-18) | 4 Sonnet subagents | 30 voiced pairs + 10 plain pairs | [`persona_line/README.md`](../../../game_play_enhancement/data/persona_line/README.md) |
+| Visit wording, arms A/B and A/C (10-21) | 8 subagents, then 4 fresh ones | 95 lines per arm per model | [`visit_wording_ab/README.md`](../../../game_play_enhancement/data/visit_wording_ab/README.md) |
 
-These screens are catalogued as replays in [`../replay_screens/report.md`](../replay_screens/report.md);
+These screens are catalogued as replays in [`../../evaluation_scopes/turn/report.md`](../../evaluation_scopes/turn/report.md);
 this section rates only their read. The decision-tag check (one Sonnet reader per game naming each
 decision without seeing the tag, against a 90% bar set beforehand) uses the same pattern; it is
 under Instrument 4 below.
@@ -224,7 +228,7 @@ Five games were read for what decided them (Claude read one; four Opus agents re
 audited by five Opus agents, two games each, on a five-way rubric: invented fact, summary error, invalid
 deduction, evil deception (deliberate or self-misunderstood), night error. Six Flash and four Luna games
 followed on the same rubric, and eleven odd votes were read against each voter's own reasoning.
-Record: [`phase3_reads/README.md`](../../game_play_enhancement/data/phase3_reads/README.md).
+Record: [`phase3_reads/README.md`](../../../game_play_enhancement/data/phase3_reads/README.md).
 - **Checked:** the main session checked the readers' decisive and spot quotes against the transcripts
   before use. The README's review note (2026-10-10) names three ways the counts mislead: invalid
   deductions made on top of a corrupted summary are not separated from reasoning errors; defeasible
@@ -236,10 +240,10 @@ Record: [`phase3_reads/README.md`](../../game_play_enhancement/data/phase3_reads
   that a failure happens. The per-game counts come from different readers with no agreement check.
 
 **Discussion-quality gate (eight-seat, 2026-06-05).** A hand-judged comparison of four concurrent and
-four sequential discussion games against [`rubric.md`](../../sequential_discussion/quality_gate/rubric.md)
+four sequential discussion games against [`rubric.md`](../../../sequential_discussion/quality_gate/rubric.md)
 (redundancy, responsiveness, dogpiling, turn fairness), with deterministic counts from
 `quality_gate/scripts/metrics.py` (lexical echo rate, top speaker's share, longest same-speaker run).
-Record: [`quality_gate/experiment_log.md`](../../sequential_discussion/quality_gate/experiment_log.md).
+Record: [`quality_gate/experiment_log.md`](../../../sequential_discussion/quality_gate/experiment_log.md).
 - **Limits it states:** the reader was the implementer, who had a stake in the outcome, and knew the
   arm; N=4 per arm, unpaired; the concurrent games' backend and temperature were not recorded.
 - **Checks it states:** the scored claims are deterministic counts; every qualitative call quotes a
@@ -256,7 +260,7 @@ needed, the true roles. They are sampled reads, not blind comparisons.
   96 of 352 lookups, stratified by model, role and phase. Four Sonnet subagents read them against the
   rules with the games' true roles, labelling each lesson's fit, the situation's errors and any leak.
   The runner names a second reader, the owner, after the subagents; no record of that owner pass was
-  found. Record: [`memory_system/v8/experiment_log.md`](../../memory_system/v8/experiment_log.md) (the
+  found. Record: [`memory_system/v8/experiment_log.md`](../../../memory_system/v8/experiment_log.md) (the
   gate), `memory_system/v8/data/gate/read/`.
 - **v8 store reads (ten-seat, 2026-10-13).** `evaluation/experiments/v8_reextract_reads.py`: four Sonnet
   subagents, each a quarter of the store's cells, read the 40-game store's 605 points for wrong rules and
@@ -264,11 +268,11 @@ needed, the true roles. They are sampled reads, not blind comparisons.
   the fit re-read used different readers, so the before-and-after comparison is approximate; and the
   quarters flagged 4 and 13 rule errors, a spread that mixes reader and cell differences. The readers'
   65 duplicate groups were later used as a reference set for the point dedup (catalogued in
-  [`../labeling/report.md`](../labeling/report.md)). Record: same log; `memory_system/v8/data/reextract/`.
+  [`../report.md`](../report.md)). Record: same log; `memory_system/v8/data/reextract/`.
 - **Credit attribution spot-check (nine-seat, 2026-07-13).** Fifteen "I followed this lesson" claims
   drawn with a fixed seed (20260713) from 2,387 eligible ones; a model compared each lesson with the
-  decision taken. Record: [`credit/attribution_spot_check.json`](../../credit/attribution_spot_check.json),
-  [`credit/report.md`](../../credit/report.md) §5, which states the bound: at 13 of 15 the true mismatch
+  decision taken. Record: [`credit/attribution_spot_check.json`](../../../credit/attribution_spot_check.json),
+  [`credit/report.md`](../../../credit/report.md) §5, which states the bound: at 13 of 15 the true mismatch
   rate could be as high as about 36%.
 
 **Trust: 🟡 for the v8 reads** (stratified, recorded per part, limits stated in the log); **⚠️ for
@@ -283,7 +287,7 @@ the spot-check** (n=15, as its own report says).
 extraction picks it from the seat's own recorded decisions. The 2,277 observations of the 40 games
 already extracted were tagged after the fact by Claude Haiku 5.5, one batched request per game with its
 saved input (`scripts/tag_observation_decisions.py`; $0.08). The tags feed the verdict-halo measure and the
-planned computed `uses_left` count ([`../deterministic_audits/experiment_log.md`](../deterministic_audits/experiment_log.md) §5c–d).
+planned computed `uses_left` count ([`../../deterministic_audits/experiment_log.md`](../../deterministic_audits/experiment_log.md) §5c–d).
 
 **How it works.** Two checks.
 - **Free checks against the record**, by code: 2,100 tags match a decision the saved input records, 151
@@ -354,13 +358,13 @@ one model reader's label per item, with no measured agreement and no human ancho
 |---|---|---|
 | Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/triage.md` (row 68) |
 | Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `reasoning_failures/data/deduction_placement{,_n10}/` |
-| Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `reasoning_failures/data/note_prompt/judging/`; [`reasoning_failures/experiment_log.md`](../../reasoning_failures/experiment_log.md) §6 |
-| Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../game_play_enhancement/data/silence_calibration/README.md), `packet_*.md`, `blind_key.json`, `verdicts_*.jsonl` |
-| Evil-cover screen read | `evaluation/experiments/evil_cover_screen.py` (`packets`, `score`) | [`evil_cover_screen/README.md`](../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Voice rewrite read | `evaluation/experiments/voice_rewrite_screen.py` | [`voice_rewrite/README.md`](../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Persona line read | `evaluation/experiments/persona_line_screen.py` | [`persona_line/README.md`](../../game_play_enhancement/data/persona_line/README.md) |
-| Visit-wording read | `evaluation/experiments/visit_wording_cases.py` (`blind`, `score`) | [`visit_wording_ab/README.md`](../../game_play_enhancement/data/visit_wording_ab/README.md), `judge_rubric.md`, `key.jsonl` |
-| Phase 3 game reads | `evaluation/experiments/phase3_render_transcript.py` | [`phase3_reads/README.md`](../../game_play_enhancement/data/phase3_reads/README.md), `transcripts/`, `votes/dossiers.md` |
-| Discussion-quality gate | `evidence/sequential_discussion/quality_gate/scripts/metrics.py` (study code in the record) | [`quality_gate/experiment_log.md`](../../sequential_discussion/quality_gate/experiment_log.md), [`rubric.md`](../../sequential_discussion/quality_gate/rubric.md) |
-| v8 relevance and store reads | `evaluation/experiments/v8_gate_lookups.py`, `v8_reextract_reads.py` | [`memory_system/v8/experiment_log.md`](../../memory_system/v8/experiment_log.md), `memory_system/v8/data/{gate,reextract}/` |
-| Credit attribution spot-check | — (sampling recorded in the file) | [`credit/attribution_spot_check.json`](../../credit/attribution_spot_check.json), [`credit/report.md`](../../credit/report.md) §5 |
+| Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `reasoning_failures/data/note_prompt/judging/`; [`reasoning_failures/experiment_log.md`](../../../reasoning_failures/experiment_log.md) §6 |
+| Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../game_play_enhancement/data/silence_calibration/README.md), `packet_*.md`, `blind_key.json`, `verdicts_*.jsonl` |
+| Evil-cover screen read | `evaluation/experiments/evil_cover_screen.py` (`packets`, `score`) | [`evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
+| Voice rewrite read | `evaluation/experiments/voice_rewrite_screen.py` | [`voice_rewrite/README.md`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
+| Persona line read | `evaluation/experiments/persona_line_screen.py` | [`persona_line/README.md`](../../../game_play_enhancement/data/persona_line/README.md) |
+| Visit-wording read | `evaluation/experiments/visit_wording_cases.py` (`blind`, `score`) | [`visit_wording_ab/README.md`](../../../game_play_enhancement/data/visit_wording_ab/README.md), `judge_rubric.md`, `key.jsonl` |
+| Phase 3 game reads | `evaluation/experiments/phase3_render_transcript.py` | [`phase3_reads/README.md`](../../../game_play_enhancement/data/phase3_reads/README.md), `transcripts/`, `votes/dossiers.md` |
+| Discussion-quality gate | `evidence/sequential_discussion/quality_gate/scripts/metrics.py` (study code in the record) | [`quality_gate/experiment_log.md`](../../../sequential_discussion/quality_gate/experiment_log.md), [`rubric.md`](../../../sequential_discussion/quality_gate/rubric.md) |
+| v8 relevance and store reads | `evaluation/experiments/v8_gate_lookups.py`, `v8_reextract_reads.py` | [`memory_system/v8/experiment_log.md`](../../../memory_system/v8/experiment_log.md), `memory_system/v8/data/{gate,reextract}/` |
+| Credit attribution spot-check | — (sampling recorded in the file) | [`credit/attribution_spot_check.json`](../../../credit/attribution_spot_check.json), [`credit/report.md`](../../../credit/report.md) §5 |
