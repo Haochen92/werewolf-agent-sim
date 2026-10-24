@@ -17,10 +17,15 @@ from dataclasses import dataclass
 
 from Agents.rules.board_clocks import criticality_from_counts
 from Agents.game_config import GameConfig
+from Agents.schemas.roles import ROLE_SPECS
+from Agents.ten_seat_metrics import EVIL_SIDES
 
-# Town wins by removing BOTH threat factions (the wolves and the serial killer),
-# so a town vote that lands on either role is the correct decision.
-THREAT_ROLES = frozenset({"wolf", "serial_killer"})
+# Town wins by removing BOTH threat factions (the wolves and the lone killer),
+# so a town vote that lands on any of their roles is the correct decision. Read
+# from the role registry, retired roles included, so a nine-seat record still
+# scores wolf + serial_killer and a ten-seat one its pack and lone killer. The
+# neutral is not a threat: town wins with it alive.
+THREAT_ROLES = frozenset(name for name, spec in ROLE_SPECS.items() if spec.side in EVIL_SIDES)
 
 # Town's high-value roles — what a deceiver night-kill most wants to remove and
 # what the A/B's wolf "power_targeting" proxy measures.
@@ -57,9 +62,9 @@ class VoteOutcome:
     """Ground-truth role of the target; None when abstaining or target unknown."""
     is_abstain: bool
     hit_threat: bool
-    """Correct town vote: the target was a wolf or the serial killer."""
+    """Correct town vote: the target was on the wolves' or the lone killer's side."""
     is_town_mislynch: bool
-    """The target was an actual town player (a wrong, town-costing elimination)."""
+    """The target was not a threat (a wrong, town-costing elimination); a neutral counts here."""
 
 
 def score_vote(votee: str | None, roles: Mapping[str, str]) -> VoteOutcome:

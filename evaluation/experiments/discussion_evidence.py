@@ -38,6 +38,7 @@ from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from Agents.schemas.roles import roles as ROLE_POOL  # noqa: E402
 from evaluation.src.core.settings import REPO_ROOT  # noqa: E402
 from evaluation.src.data.sources.batch_records import load_batch_records  # noqa: E402
 from evaluation.src.data.sources.replay_api import LIVE_SERVER  # noqa: E402
@@ -45,17 +46,20 @@ from evaluation.src.data.sources.replay_api import load_replays as _load_replays
 from evaluation.src.data.sources.replay_api import record_from_replay  # noqa: E402,F401
 from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm  # noqa: E402
 from evaluation.src.judges.role_fact_read import build_fact_sheet  # noqa: E402
+from evaluation.src.loop.decision_scoring import THREAT_ROLES  # noqa: E402
 
-EVIL = {"wolf", "serial_killer"}
+# The wolves' and the lone killer's roles, nine-seat and ten-seat alike.
+EVIL = THREAT_ROLES
 DEFAULT_OUT = "evidence/game_play_enhancement/data"
 
 Basis = Literal[
     "own_night_result", "role_claim", "night_events", "voting_record",
     "speech_content", "manner", "turn_taking", "reveal_timing", "none",
 ]
-ClaimedRole = Literal[
-    "none", "villager", "healer", "investigator", "vigilante", "wolf", "serial_killer",
-]
+# The nine-seat labels keep their old place at the head of the list (models lean to the first
+# options), and the ten-seat pool follows.
+_NINE_SEAT_CLAIMS = ("villager", "healer", "investigator", "vigilante", "wolf", "serial_killer")
+ClaimedRole = Literal[("none", *_NINE_SEAT_CLAIMS, *(r for r in ROLE_POOL if r not in _NINE_SEAT_CLAIMS))]
 
 
 class EvidenceRead(BaseModel):

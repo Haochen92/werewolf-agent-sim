@@ -44,6 +44,42 @@ def test_replay_becomes_a_batch_record():
     assert r["day_summaries"][0]["day"] == 2
 
 
+def _scored(roles, accusations):
+    """The judge's offline scoring over hand-written reads: (speaker, accused, self_claim) rows."""
+    record = {"game_id": "g", "roles": roles}
+    rows = [{"game_id": "g", "day": 1, "seq": i, "speaker": s, "message": "…",
+             "speaker_role": roles[s],
+             "read": {"bases": ["speech_content"], "accuses": acc, "self_claim": claim}}
+            for i, (s, acc, claim) in enumerate(accusations)]
+    return de.score(rows, [record])
+
+
+def test_nine_seat_evil_scoring_unchanged():
+    roles = {"w1": "wolf", "k1": "serial_killer", "v1": "villager", "h1": "healer"}
+    out = _scored(roles, [("v1", ["w1", "h1"], "none"), ("h1", ["k1"], "none"),
+                          ("w1", ["v1"], "healer"), ("k1", [], "villager")])
+    assert out["town_accusations_on_evil_by_basis"] == {"speech_content": "2/3"}
+    assert out["fake_claims_by_evil"] == 2
+
+
+def test_ten_seat_evil_roles_score_as_evil():
+    roles = {"c1": "chanteuse", "i1": "illusionist", "n1": "necromancer", "f1": "fortune_teller",
+             "t1": "sentinel", "h1": "healer"}
+    # town accuses the pack, the lone killer and the neutral: three of four land on evil; the
+    # chanteuse's accusation is evil's, so it is not counted; two evil roles fake a claim
+    out = _scored(roles, [("t1", ["c1", "n1", "f1"], "sentinel"), ("h1", ["i1"], "none"),
+                          ("c1", ["t1"], "investigator"), ("n1", [], "trailseer")])
+    assert out["town_accusations_on_evil_by_basis"] == {"speech_content": "3/4"}
+    assert out["fake_claims_by_evil"] == 2
+
+
+def test_judge_claim_labels_keep_nine_seat_order_and_add_the_pool():
+    labels = de.ClaimedRole.__args__
+    assert labels[:7] == ("none", "villager", "healer", "investigator", "vigilante", "wolf", "serial_killer")
+    assert {"chanteuse", "illusionist", "necromancer", "speculator", "fortune_teller"} <= set(labels)
+    assert len(labels) == len(set(labels))
+
+
 def test_human_seats_are_context_not_measured():
     r = de.record_from_replay(REPLAY)
     s = de.structural([r])

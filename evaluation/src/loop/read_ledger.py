@@ -23,20 +23,27 @@ import os
 from collections import defaultdict
 
 from evaluation.src.loop.credit_backfill import _expand_dumps
+from Agents.schemas.roles import ROLE_SPECS
 from evaluation.src.loop.decision_scoring import THREAT_ROLES
 
 # Confidence -> claimed probability. Coarse on purpose: the read schema exposes two confidence levels,
 # so the Brier is a two-point calibration check, not a full probability elicitation.
 CONF_P = {"high": 0.85, "low": 0.65}
 
+# Every role that is told its packmates' roles: the nine-seat wolf and the ten-seat chanteuse and
+# illusionist.
+PACK_ROLES = frozenset(name for name, spec in ROLE_SPECS.items() if spec.pack)
+
 
 def _known_targets(ec: dict, roles: dict) -> set[str]:
     """Players whose role the actor already KNOWS at this decision (the knowledge mask): a wolf knows
-    its packmates; the investigator knows everyone it has investigated (results ride private_context)."""
+    its packmates; the nine-seat investigator knows everyone it has investigated (results ride
+    private_context). The ten-seat investigator learns only Suspicious / Not suspicious, so its reads
+    stay unmasked."""
     known: set[str] = set()
     actor_role = ec.get("player_role")
-    if actor_role == "wolf":
-        known |= {p for p, r in roles.items() if r == "wolf"}
+    if actor_role in PACK_ROLES:
+        known |= {p for p, r in roles.items() if r in PACK_ROLES}
     if actor_role == "investigator":
         pc = ec.get("private_context") or {}
         known |= {r.get("player_investigated") for r in pc.get("investigator_results") or []}

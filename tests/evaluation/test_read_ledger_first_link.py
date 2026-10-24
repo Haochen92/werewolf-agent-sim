@@ -68,6 +68,29 @@ def test_knowledge_mask_and_unclear(tmp_path):
     assert inv["n"] == 1 and inv["n_claims"] == 0 and inv["unclear_rate"] == 1.0
 
 
+def test_ten_seat_pack_mask_and_evil_faction(tmp_path):
+    roles = {"c1": "chanteuse", "i1": "illusionist", "n1": "necromancer", "s1": "speculator",
+             "t1": "sentinel"}
+    cases = [
+        # the chanteuse knows the illusionist is its packmate -> masked; its other reads count
+        {"action_phase": "day_vote", "player_role": "chanteuse", "player_id": "c1", "day": 1,
+         "memory_enabled": False,
+         "reads": [_read("i1", "illusionist"), _read("n1", "serial_killer"), _read("s1", "sentinel")]},
+        # town reading the necromancer as the serial killer: wrong role, right (evil) faction;
+        # reading the speculator as a wolf: the neutral is not evil, so the faction is wrong
+        {"action_phase": "day_vote", "player_role": "sentinel", "player_id": "t1", "day": 1,
+         "memory_enabled": False,
+         "reads": [_read("n1", "serial_killer"), _read("s1", "illusionist"), _read("c1", "chanteuse")]},
+    ]
+    led = compute_read_ledger(_game(tmp_path, "ten", cases, roles=roles))
+    pack = led["channels"]["chanteuse/day_vote/off"]
+    assert pack["n"] == 2
+    town = {r["target"]: r for r in led["rows"] if r["actor"] == "t1"}
+    assert town["n1"]["faction_correct"] and not town["n1"]["role_correct"]
+    assert not town["s1"]["faction_correct"]
+    assert town["c1"]["faction_correct"] and town["c1"]["role_correct"]
+
+
 def test_empty_on_reads_free_dumps(tmp_path):
     roles = {"v1": "villager"}
     cases = [{"action_phase": "day_vote", "player_role": "villager", "player_id": "v1", "day": 1,
