@@ -1,0 +1,91 @@
+{
+  "label": "summary_v4_cite_flashlite35",
+  "run_at": "2026-10-04T05:37:03.462601+00:00",
+  "config": {
+    "label": "summary_v4_cite_flashlite35",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 3,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "v4_votes",
+        "model": "gemini-3.5-flash-lite",
+        "checkout": "../ww-v4-votes",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      },
+      {
+        "label": "v4_votes_cite",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "The record-citation rule (discussion_evidence.md \u00a76.6). v4_votes = commit 0bab7fe (v4 + per-player vote history); its generations are the summary_v4_vote_history run's v4_votes arm, copied in (git worktree add ../ww-v4-votes 0bab7fe to regenerate). v4_votes_cite = main with the rule. Both use the same 104 cached v4 summaries (summaries_v4_votes.json copied as summaries_v4_votes_cite.json), and are judged together."
+  },
+  "n_cases": 89,
+  "arms": {
+    "v4_votes": {
+      "bad": {
+        "all": "80/267 (30%)",
+        "phase:day_discussion": "75/204 (37%)",
+        "phase:day_vote": "5/63 (8%)",
+        "role:healer": "9/36 (25%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "4/39 (10%)",
+        "role:vigilante": "30/78 (38%)",
+        "role:villager": "32/63 (51%)",
+        "role:wolf": "5/27 (19%)",
+        "slice:control": "5/120 (4%)",
+        "slice:curated": "68/132 (52%)",
+        "slice:pinned": "7/15 (47%)",
+        "source:census": "73/252 (29%)",
+        "source:checkpoint": "7/15 (47%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    },
+    "v4_votes_cite": {
+      "bad": {
+        "all": "81/267 (30%)",
+        "phase:day_discussion": "75/204 (37%)",
+        "phase:day_vote": "6/63 (10%)",
+        "role:healer": "6/36 (17%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "8/39 (21%)",
+        "role:vigilante": "34/78 (44%)",
+        "role:villager": "27/63 (43%)",
+        "role:wolf": "6/27 (22%)",
+        "slice:control": "1/120 (1%)",
+        "slice:curated": "73/132 (55%)",
+        "slice:pinned": "7/15 (47%)",
+        "source:census": "74/252 (29%)",
+        "source:checkpoint": "7/15 (47%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    }
+  },
+  "paired_vs_first": {
+    "v4_votes_cite": {
+      "cases": 89,
+      "better": 16,
+      "worse": 18,
+      "two_sided_sign_p": 0.8642
+    }
+  }
+}

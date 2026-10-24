@@ -1,0 +1,14 @@
+{
+  "label": "deduction_injection",
+  "dataset": "evidence/reasoning_failures/data/deduction_injection/cases.jsonl",
+  "n": 10,
+  "workers": 3,
+  "arms": [
+    {"label": "haiku_low", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"},
+    {"label": "haiku_medium", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "medium", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"}
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "Case R1 (evidence/reasoning_failures/experiment_log.md): the healer's three passed day-2 turns of 2f19d908, each as played and with the roleblock's certain consequence in its night record (evaluation/experiments/deduction_injection_cases.py). Thinking low (live) and medium, current tree, memory off. Measures fixed before the run: spoke, claimed healer, read of player_7 = chanteuse, and the public message naming player_7 as the likely blocker (read by hand). The golden only guards the facts."
+}

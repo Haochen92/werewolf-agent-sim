@@ -1,0 +1,398 @@
+[
+  {
+    "generation": 1,
+    "score": {
+      "on/overall": 0.321,
+      "on/town": 0.321,
+      "off/overall": 0.369,
+      "off/town": 0.117,
+      "off/wolf": 0.548,
+      "off/serial_killer": 0.69,
+      "n_on/overall": 156,
+      "n_on/town": 156,
+      "n_off/overall": 344,
+      "n_off/town": 162,
+      "n_off/wolf": 124,
+      "n_off/serial_killer": 58
+    },
+    "credit": {
+      "total_sps": 0,
+      "credited": 0,
+      "ledger_keys": 0,
+      "matched": 0,
+      "disc_credited": 0,
+      "credited_channels": {},
+      "read_excluded": 0,
+      "skipped": {}
+    },
+    "tells": {
+      "fold": 1,
+      "new_wordings": 255,
+      "new_canonicals": 195,
+      "archived_singletons": 0,
+      "archived_null_lift": 2,
+      "checklist": {
+        "discussion": 41,
+        "vote": 41
+      },
+      "mined": 279,
+      "detected": 689,
+      "book": 20,
+      "cast_prior": 0.3333333333333333
+    },
+    "credit_dist": {
+      "n_sps": 0,
+      "n_followed": 0,
+      "follow_p50": 0,
+      "follow_max": 0,
+      "n_prune_eligible": 0,
+      "n_eligible_neg_lift": 0
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 0,
+        "evicted": 0,
+        "kept": 0,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 187
+      },
+      "synth": {},
+      "sp_dedup": {},
+      "obs_counts": {}
+    },
+    "arm_factions": [
+      "healer",
+      "investigator",
+      "vigilante",
+      "villager"
+    ]
+  },
+  {
+    "generation": 2,
+    "score": {
+      "on/overall": 0.279,
+      "on/town": 0.279,
+      "off/overall": 0.402,
+      "off/town": 0.264,
+      "off/serial_killer": 0.622,
+      "off/wolf": 0.573,
+      "n_on/overall": 208,
+      "n_on/town": 208,
+      "n_off/overall": 311,
+      "n_off/town": 178,
+      "n_off/serial_killer": 37,
+      "n_off/wolf": 96
+    },
+    "credit": {
+      "total_sps": 0,
+      "credited": 0,
+      "ledger_keys": 0,
+      "matched": 0,
+      "disc_credited": 0,
+      "credited_channels": {},
+      "read_excluded": 0,
+      "skipped": {}
+    },
+    "tells": {
+      "fold": 2,
+      "new_wordings": 284,
+      "new_canonicals": 202,
+      "archived_singletons": 0,
+      "archived_null_lift": 4,
+      "checklist": {
+        "discussion": 43,
+        "vote": 43
+      },
+      "mined": 316,
+      "detected": 894,
+      "book": 31,
+      "cast_prior": 0.3333333333333333
+    },
+    "credit_dist": {
+      "n_sps": 0,
+      "n_followed": 0,
+      "follow_p50": 0,
+      "follow_max": 0,
+      "n_prune_eligible": 0,
+      "n_eligible_neg_lift": 0
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 0,
+        "evicted": 0,
+        "kept": 82,
+        "spared": 0
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 380
+      },
+      "synth": {
+        "added": 105,
+        "cells_synthed": 11,
+        "with_track_record": 0,
+        "cells_capped": 0
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 31,
+        "villager/day_vote": 51,
+        "wolf/day_discussion": 0,
+        "wolf/day_vote": 0,
+        "wolf/night_action": 0,
+        "investigator/day_discussion": 26,
+        "investigator/day_vote": 25,
+        "investigator/night_action": 41,
+        "healer/day_discussion": 34,
+        "healer/day_vote": 34,
+        "healer/night_action": 44,
+        "serial_killer/day_discussion": 0,
+        "serial_killer/day_vote": 0,
+        "serial_killer/night_action": 0,
+        "vigilante/day_discussion": 23,
+        "vigilante/day_vote": 29,
+        "vigilante/night_action": 42
+      }
+    },
+    "arm_factions": [
+      "healer",
+      "investigator",
+      "vigilante",
+      "villager"
+    ]
+  },
+  {
+    "generation": 3,
+    "score": {
+      "on/overall": 0.143,
+      "on/town": 0.143,
+      "off/overall": 0.307,
+      "off/town": 0.115,
+      "off/wolf": 0.438,
+      "off/serial_killer": 0.595,
+      "n_on/overall": 168,
+      "n_on/town": 168,
+      "n_off/overall": 293,
+      "n_off/town": 139,
+      "n_off/wolf": 112,
+      "n_off/serial_killer": 42
+    },
+    "credit": {
+      "total_sps": 82,
+      "credited": 65,
+      "ledger_keys": 65,
+      "matched": 65,
+      "disc_credited": 16,
+      "credited_channels": {
+        "vigilante/day_vote": "deterministic",
+        "healer/day_vote": "deterministic",
+        "investigator/day_vote": "deterministic",
+        "healer/night_action": "deterministic",
+        "vigilante/night_action": "deterministic",
+        "villager/day_vote": "deterministic",
+        "investigator/night_action": "deterministic",
+        "investigator/day_discussion": "floor",
+        "villager/day_discussion": "floor",
+        "healer/day_discussion": "floor",
+        "vigilante/day_discussion": "floor"
+      },
+      "read_excluded": 25,
+      "skipped": {
+        "passed_turn/vigilante/day_discussion": 10,
+        "passed_turn/investigator/day_discussion": 4,
+        "passed_turn/villager/day_discussion": 27,
+        "passed_turn/healer/day_discussion": 8,
+        "read_excluded/villager/day_discussion": 18,
+        "read_excluded/healer/day_discussion": 5,
+        "read_excluded/vigilante/day_discussion": 2
+      }
+    },
+    "tells": {
+      "fold": 3,
+      "new_wordings": 236,
+      "new_canonicals": 173,
+      "archived_singletons": 0,
+      "archived_null_lift": 3,
+      "checklist": {
+        "discussion": 45,
+        "vote": 44
+      },
+      "mined": 250,
+      "detected": 661,
+      "book": 32,
+      "cast_prior": 0.3333333333333333
+    },
+    "credit_dist": {
+      "n_sps": 82,
+      "n_followed": 65,
+      "follow_p50": 3,
+      "follow_max": 62,
+      "n_prune_eligible": 23,
+      "n_eligible_neg_lift": 10
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 5,
+        "evicted": 0,
+        "kept": 77,
+        "spared": 6
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 547
+      },
+      "synth": {},
+      "sp_dedup": {},
+      "obs_counts": {
+        "villager/day_discussion": 31,
+        "villager/day_vote": 51,
+        "wolf/day_discussion": 0,
+        "wolf/day_vote": 0,
+        "wolf/night_action": 0,
+        "investigator/day_discussion": 26,
+        "investigator/day_vote": 25,
+        "investigator/night_action": 41,
+        "healer/day_discussion": 34,
+        "healer/day_vote": 34,
+        "healer/night_action": 44,
+        "serial_killer/day_discussion": 0,
+        "serial_killer/day_vote": 0,
+        "serial_killer/night_action": 0,
+        "vigilante/day_discussion": 23,
+        "vigilante/day_vote": 29,
+        "vigilante/night_action": 42
+      }
+    },
+    "arm_factions": [
+      "healer",
+      "investigator",
+      "vigilante",
+      "villager"
+    ],
+    "surgical_tick_completion": "2026-07-18: tick re-run out-of-process after the 11:41Z mid-fold clamp crash; same frozen code (a010dc6), same inputs; games/merge/credit had completed in-process \u2014 see QUARANTINE_gen3_tick_death/"
+  },
+  {
+    "generation": 4,
+    "score": {
+      "on/overall": 0.299,
+      "on/town": 0.299,
+      "off/overall": 0.415,
+      "off/town": 0.278,
+      "off/wolf": 0.51,
+      "off/serial_killer": 0.732,
+      "n_on/overall": 187,
+      "n_on/town": 187,
+      "n_off/overall": 299,
+      "n_off/town": 162,
+      "n_off/wolf": 96,
+      "n_off/serial_killer": 41
+    },
+    "credit": {
+      "total_sps": 77,
+      "credited": 67,
+      "ledger_keys": 72,
+      "matched": 67,
+      "disc_credited": 18,
+      "credited_channels": {
+        "vigilante/day_vote": "deterministic",
+        "healer/day_vote": "deterministic",
+        "investigator/day_vote": "deterministic",
+        "healer/night_action": "deterministic",
+        "vigilante/night_action": "deterministic",
+        "villager/day_vote": "deterministic",
+        "investigator/night_action": "deterministic",
+        "investigator/day_discussion": "floor",
+        "villager/day_discussion": "floor",
+        "healer/day_discussion": "floor",
+        "vigilante/day_discussion": "floor"
+      },
+      "read_excluded": 40,
+      "skipped": {
+        "read_excluded/vigilante/night_action": 1,
+        "passed_turn/vigilante/day_discussion": 19,
+        "passed_turn/investigator/day_discussion": 12,
+        "passed_turn/villager/day_discussion": 57,
+        "passed_turn/healer/day_discussion": 27,
+        "read_excluded/villager/day_discussion": 32,
+        "read_excluded/healer/day_discussion": 5,
+        "read_excluded/vigilante/day_discussion": 2
+      }
+    },
+    "tells": {
+      "fold": 4,
+      "new_wordings": 245,
+      "new_canonicals": 170,
+      "archived_singletons": 0,
+      "archived_null_lift": 0,
+      "checklist": {
+        "discussion": 45,
+        "vote": 44
+      },
+      "mined": 262,
+      "detected": 650,
+      "book": 33,
+      "cast_prior": 0.3333333333333333
+    },
+    "credit_dist": {
+      "n_sps": 77,
+      "n_followed": 67,
+      "follow_p50": 8,
+      "follow_max": 81,
+      "n_prune_eligible": 40,
+      "n_eligible_neg_lift": 9
+    },
+    "consolidate": {
+      "prune_evict": {
+        "pruned": 5,
+        "evicted": 0,
+        "kept": 168,
+        "spared": 7
+      },
+      "obs_evict": {
+        "obs_dropped": 0,
+        "obs_kept": 718
+      },
+      "synth": {
+        "added": 282,
+        "cells_synthed": 11,
+        "with_track_record": 10,
+        "cells_capped": 0
+      },
+      "sp_dedup": {
+        "ran": true,
+        "namespaces": 17
+      },
+      "obs_counts": {
+        "villager/day_discussion": 59,
+        "villager/day_vote": 95,
+        "wolf/day_discussion": 0,
+        "wolf/day_vote": 0,
+        "wolf/night_action": 0,
+        "investigator/day_discussion": 56,
+        "investigator/day_vote": 50,
+        "investigator/night_action": 82,
+        "healer/day_discussion": 64,
+        "healer/day_vote": 56,
+        "healer/night_action": 84,
+        "serial_killer/day_discussion": 0,
+        "serial_killer/day_vote": 0,
+        "serial_killer/night_action": 0,
+        "vigilante/day_discussion": 44,
+        "vigilante/day_vote": 53,
+        "vigilante/night_action": 75
+      }
+    },
+    "arm_factions": [
+      "healer",
+      "investigator",
+      "vigilante",
+      "villager"
+    ]
+  }
+]

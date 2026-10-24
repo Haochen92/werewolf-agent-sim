@@ -1,0 +1,50 @@
+{
+  "artifact": "evidence/reasoning_failures/data/deduction_injection/runs/healer_silence/eval_results/summary.json",
+  "config": {
+    "arms": [
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "card_as_is",
+        "memory": "none",
+        "model": "anthropic/claude-haiku-5-5"
+      },
+      {
+        "checkout": "/home/ubuntu/projects/ww-healer-card",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "card_no_survival",
+        "memory": "none",
+        "model": "anthropic/claude-haiku-5-5"
+      }
+    ],
+    "dataset": "evidence/reasoning_failures/data/deduction_injection/silence_cases.jsonl",
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "label": "healer_silence",
+    "n": 10,
+    "note": "Case R1 follow-up (evidence/reasoning_failures/experiment_log.md): why the healer stays silent once it knows the Chanteuse visited it. The injected turn after player_7's admission (2f19d908 day 2, entry 16), 2x2: the healer's own note as played ('Stay quiet on day 2 unless addressed ... do not reveal my role without need') or neutral (same facts, no stance), by the healer card as is or without its survival sentence ('Staying alive matters a great deal ...'; worktree ../ww-healer-card at fea44f57 with healer.py edited, remove after). Thinking low (live), memory off. Measures as R1: spoke, claimed healer, read of player_7, message names player_7 as the blocker.",
+    "workers": 3
+  },
+  "config_sha256": "e74ba6648074225ba5407265a42423b99548cf0e486e3e0765e4aa82c19d1f04",
+  "config_source": "evaluation/config/hallucination_bench_healer_silence.json",
+  "created_at": "2026-10-23T01:56:38.570918",
+  "created_from": "eval-hallucination-bench run 'healer_silence' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/healer_silence/summary.json",
+  "inputs": [
+    {
+      "count": 2,
+      "path": "evidence/reasoning_failures/data/deduction_injection/silence_cases.jsonl",
+      "sha256": "76bc08c0ac90366899743b5368f73d9f77089961b440f72375c0322a3ead4c9d"
+    }
+  ],
+  "models": [
+    "anthropic/claude-haiku-5-5",
+    "anthropic/claude-sonnet-5-5"
+  ]
+}

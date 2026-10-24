@@ -1,0 +1,50 @@
+{
+  "artifact": "evidence/game_play_enhancement/data/haiku_turn_replay/runs/haiku_game_403f/eval_results/judged_haiku_committed.jsonl",
+  "config": {
+    "arms": [
+      {
+        "checkout": "/home/ubuntu/projects/ww-pre-haiku-fixes",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "haiku_committed",
+        "memory": "none",
+        "model": "anthropic/claude-haiku-5-5"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "haiku_fixed",
+        "memory": "none",
+        "model": "anthropic/claude-haiku-5-5"
+      }
+    ],
+    "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "label": "haiku_game_403f",
+    "n": 5,
+    "note": "The owner's first Haiku 5.5 game (403f4dbc, 2026-10-12): 18 turns frozen from its checkpoints (evaluation/experiments/haiku_game_turn_cases.py), slices visit / repeat / vote_reason. haiku_committed runs the code before the three fixes (a worktree at 746197c4: git worktree add ../ww-pre-haiku-fixes 746197c4, .env linked; remove after); haiku_fixed the working tree with the visit-direction rule, the reactive answer-what-is-new line and the town vote-reason line. The golden judge is Sonnet 5.5, batched. The vote_reason slice is read for pass rate and spoken reasons; its golden only guards the facts.",
+    "workers": 3
+  },
+  "config_sha256": "c92a8f53f6f5ddf8b1eb90b94243e38b335806a87ae1e6e74cc4300faea5d9fc",
+  "config_source": "evaluation/config/hallucination_bench_haiku_game.json",
+  "created_at": "2026-10-23T01:56:38.550185",
+  "created_from": "eval-hallucination-bench run 'haiku_game_403f' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/haiku_game_403f/judged_haiku_committed.jsonl",
+  "inputs": [
+    {
+      "count": 18,
+      "path": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+      "sha256": "40e8fe7e8626591cbbd198bfe608323afa42c31dc3171198402bbdedb18d9f6b"
+    }
+  ],
+  "models": [
+    "anthropic/claude-haiku-5-5",
+    "anthropic/claude-sonnet-5-5"
+  ]
+}

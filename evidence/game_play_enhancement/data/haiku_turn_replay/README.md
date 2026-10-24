@@ -8,7 +8,7 @@ every sample against it: the public message, the private strategy note and the r
 case and arm, Claude Haiku 5.5 at effort low, memory off. An opening-round turn is replayed as a sweep
 turn. Run by `poetry run eval-hallucination-bench --config evaluation/config/hallucination_bench_haiku_game.json`
 (and `..._vote_v2.json`); summaries here, full output in
-`evaluation/eval_results/hallucination_bench/haiku_game_403f*/`. Record: `../../discussion_evidence.md` §8.6.
+`runs/haiku_game_403f{,_vote_v2}/` (graduated from the git-ignored `eval_results/` on 2026-10-23). Record: `../../discussion_evidence.md` §8.6.
 
 Arms: **before** (the code at 746197c4, from a worktree), **after v1** (the three fixes, the vote line's
 first wording), **after v2** (the vote line reworded; vote_reason turns only).

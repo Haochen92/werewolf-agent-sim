@@ -1,0 +1,124 @@
+{
+  "label": "fidelity_pass_flashlite35",
+  "run_at": "2026-10-03T17:18:11.235006+00:00",
+  "config": {
+    "label": "fidelity_pass_flashlite35",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 3,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "before",
+        "model": "gemini-3.5-flash-lite",
+        "checkout": "../ww-fidelity-baseline",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "after",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "after_resum",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "The information-fidelity pass (audit 2026-10-03; discussion_evidence.md \u00a76.4). before = a worktree at the fidelity-baseline tag (git worktree add ../ww-fidelity-baseline fidelity-baseline; symlink .env; its replay patched to judge reads on golden cases, as main does). after = main with the games' own summaries; after_resum = main with earlier days re-summarised by summary v3."
+  },
+  "n_cases": 89,
+  "arms": {
+    "before": {
+      "bad": {
+        "all": "97/267 (36%)",
+        "phase:day_discussion": "93/204 (46%)",
+        "phase:day_vote": "4/63 (6%)",
+        "role:healer": "8/36 (22%)",
+        "role:investigator": "1/24 (4%)",
+        "role:serial_killer": "9/39 (23%)",
+        "role:vigilante": "40/78 (51%)",
+        "role:villager": "31/63 (49%)",
+        "role:wolf": "8/27 (30%)",
+        "slice:control": "1/120 (1%)",
+        "slice:curated": "85/132 (64%)",
+        "slice:pinned": "11/15 (73%)",
+        "source:census": "86/252 (34%)",
+        "source:checkpoint": "11/15 (73%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    },
+    "after": {
+      "bad": {
+        "all": "86/267 (32%)",
+        "phase:day_discussion": "77/204 (38%)",
+        "phase:day_vote": "9/63 (14%)",
+        "role:healer": "8/36 (22%)",
+        "role:investigator": "1/24 (4%)",
+        "role:serial_killer": "7/39 (18%)",
+        "role:vigilante": "31/78 (40%)",
+        "role:villager": "33/63 (52%)",
+        "role:wolf": "6/27 (22%)",
+        "slice:control": "2/120 (2%)",
+        "slice:curated": "75/132 (57%)",
+        "slice:pinned": "9/15 (60%)",
+        "source:census": "77/252 (31%)",
+        "source:checkpoint": "9/15 (60%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    },
+    "after_resum": {
+      "bad": {
+        "all": "82/267 (31%)",
+        "phase:day_discussion": "79/204 (39%)",
+        "phase:day_vote": "3/63 (5%)",
+        "role:healer": "6/36 (17%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "6/39 (15%)",
+        "role:vigilante": "35/78 (45%)",
+        "role:villager": "28/63 (44%)",
+        "role:wolf": "7/27 (26%)",
+        "slice:control": "3/120 (2%)",
+        "slice:curated": "71/132 (54%)",
+        "slice:pinned": "8/15 (53%)",
+        "source:census": "74/252 (29%)",
+        "source:checkpoint": "8/15 (53%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    }
+  },
+  "paired_vs_first": {
+    "after": {
+      "cases": 89,
+      "better": 18,
+      "worse": 11,
+      "two_sided_sign_p": 0.2649
+    },
+    "after_resum": {
+      "cases": 89,
+      "better": 24,
+      "worse": 14,
+      "two_sided_sign_p": 0.1433
+    }
+  }
+}

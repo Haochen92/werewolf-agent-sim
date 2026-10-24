@@ -1,0 +1,126 @@
+{
+  "label": "summary_v4_vote_history_flashlite35",
+  "run_at": "2026-10-04T04:52:52.015413+00:00",
+  "config": {
+    "label": "summary_v4_vote_history_flashlite35",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 3,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "v3",
+        "model": "gemini-3.5-flash-lite",
+        "checkout": "../ww-summary-v3",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      },
+      {
+        "label": "v4",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      },
+      {
+        "label": "v4_votes",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "Isolate the per-player published vote index added after 0831d9b. Reuse v3 and v4 generations from summary_v4_flashlite35; copy summaries_v4.json to summaries_v4_votes.json to hold all 104 summaries fixed. Generate only v4_votes, then judge all three arms together. v3 baseline checkout: summary-v3-baseline; v4 baseline checkout: 0831d9b. Cached baseline generations are required when running from the changed working tree."
+  },
+  "n_cases": 89,
+  "arms": {
+    "v3": {
+      "bad": {
+        "all": "83/267 (31%)",
+        "phase:day_discussion": "79/204 (39%)",
+        "phase:day_vote": "4/63 (6%)",
+        "role:healer": "7/36 (19%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "7/39 (18%)",
+        "role:vigilante": "35/78 (45%)",
+        "role:villager": "27/63 (43%)",
+        "role:wolf": "7/27 (26%)",
+        "slice:control": "3/120 (2%)",
+        "slice:curated": "71/132 (54%)",
+        "slice:pinned": "9/15 (60%)",
+        "source:census": "74/252 (29%)",
+        "source:checkpoint": "9/15 (60%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    },
+    "v4": {
+      "bad": {
+        "all": "87/267 (33%)",
+        "phase:day_discussion": "81/204 (40%)",
+        "phase:day_vote": "6/63 (10%)",
+        "role:healer": "7/36 (19%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "8/39 (21%)",
+        "role:vigilante": "32/78 (41%)",
+        "role:villager": "33/63 (52%)",
+        "role:wolf": "7/27 (26%)",
+        "slice:control": "6/120 (5%)",
+        "slice:curated": "72/132 (55%)",
+        "slice:pinned": "9/15 (60%)",
+        "source:census": "78/252 (31%)",
+        "source:checkpoint": "9/15 (60%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    },
+    "v4_votes": {
+      "bad": {
+        "all": "80/267 (30%)",
+        "phase:day_discussion": "76/204 (37%)",
+        "phase:day_vote": "4/63 (6%)",
+        "role:healer": "8/36 (22%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "6/39 (15%)",
+        "role:vigilante": "30/78 (38%)",
+        "role:villager": "31/63 (49%)",
+        "role:wolf": "5/27 (19%)",
+        "slice:control": "4/120 (3%)",
+        "slice:curated": "69/132 (52%)",
+        "slice:pinned": "7/15 (47%)",
+        "source:census": "73/252 (29%)",
+        "source:checkpoint": "7/15 (47%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    }
+  },
+  "paired_vs_first": {
+    "v4": {
+      "cases": 89,
+      "better": 11,
+      "worse": 12,
+      "two_sided_sign_p": 1.0
+    },
+    "v4_votes": {
+      "cases": 89,
+      "better": 17,
+      "worse": 16,
+      "two_sided_sign_p": 1.0
+    }
+  }
+}

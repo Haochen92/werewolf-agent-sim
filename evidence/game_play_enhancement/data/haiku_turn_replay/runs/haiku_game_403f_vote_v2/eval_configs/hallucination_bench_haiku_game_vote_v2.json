@@ -1,0 +1,13 @@
+{
+  "label": "haiku_game_403f_vote_v2",
+  "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "slices": ["vote_reason"],
+  "arms": [
+    {"label": "haiku_vote_v2", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"}
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "The vote-reason line, second wording: v1 ('If you already lean toward voting a player out today and have not said why, say it now') moved the open-floor passes only from 24/25 to 23/25 on the vote_reason turns of haiku_game_403f; the notes showed no lean formed before the vote call. v2 asks the player to decide now whom it would vote for. Compare with haiku_game_403f's two arms."
+}

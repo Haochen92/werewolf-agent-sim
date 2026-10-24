@@ -1,0 +1,19 @@
+{
+  "run_started_at": "2026-07-17T08:52:47.731978+00:00",
+  "runtime_fingerprint": {
+    "embedding_dims": 1536,
+    "embedding_model": "gemini-embedding-2",
+    "game_model": "gemini-3.1-flash-lite",
+    "game_thinking_level": "minimal",
+    "git_commit": "a010dc688cb6242c61520e1959ecdd336bb8b635",
+    "git_dirty": false,
+    "judge_thinking_level": "minimal",
+    "llm_backend": "vertex",
+    "pro_backup_model": "gemini-3.1-flash-lite",
+    "pro_model": "gemini-3.1-flash-lite",
+    "prompt_bundle_hash": "fcb194406952618f",
+    "summary_thinking_level": "medium",
+    "temperature": 1.0,
+    "vertex_location": "global"
+  }
+}

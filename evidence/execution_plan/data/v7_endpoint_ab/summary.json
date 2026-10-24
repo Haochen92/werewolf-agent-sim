@@ -1,0 +1,604 @@
+{
+  "runs": {
+    "ep_off_g0": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g1": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g10": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g11": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g12": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g13": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g14": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g15": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g16": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g17": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g18": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g19": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g2": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g20": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g21": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g22": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g23": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g24": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g25": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g26": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g27": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g28": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g29": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g3": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g4": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g5": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g6": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g7": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g8": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_off_g9": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g0": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g1": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g10": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g11": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g12": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g13": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g14": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g15": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g16": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g17": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g18": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g19": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g2": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g20": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g21": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g22": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g23": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g24": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g25": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g26": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g27": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g28": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g29": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g3": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g4": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g5": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g6": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g7": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g8": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "ep_on_g9": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    }
+  }
+}

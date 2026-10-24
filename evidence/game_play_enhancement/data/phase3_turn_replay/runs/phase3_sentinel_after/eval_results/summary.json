@@ -1,0 +1,84 @@
+{
+  "label": "phase3_sentinel_after",
+  "run_at": "2026-10-10T06:53:30.531141+00:00",
+  "config": {
+    "label": "phase3_sentinel_after",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "sentinel_rule"
+    ],
+    "arms": [
+      {
+        "label": "luna",
+        "model": "openai/gpt-6-luna",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "flashlite",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "The sentinel self-visit turns from the Luna games, on the card after it states that the sentinel is not among its own visitors."
+  },
+  "n_cases": 4,
+  "arms": {
+    "luna": {
+      "bad": {
+        "all": "1/20 (5%)",
+        "phase:day_discussion": "1/20 (5%)",
+        "role:investigator": "0/5 (0%)",
+        "role:sentinel": "1/10 (10%)",
+        "role:sigilist": "0/5 (0%)",
+        "slice:sentinel_rule": "1/20 (5%)",
+        "source:phase3_capture": "1/20 (5%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 5553.2,
+        "cached": 4440.2,
+        "output": 1109.4,
+        "reasoning": 646.6,
+        "seconds": 10.5
+      },
+      "generation_samples_measured": 20
+    },
+    "flashlite": {
+      "bad": {
+        "all": "0/20 (0%)",
+        "phase:day_discussion": "0/20 (0%)",
+        "role:investigator": "0/5 (0%)",
+        "role:sentinel": "0/10 (0%)",
+        "role:sigilist": "0/5 (0%)",
+        "slice:sentinel_rule": "0/20 (0%)",
+        "source:phase3_capture": "0/20 (0%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6153.5,
+        "cached": 2602.3,
+        "output": 1776.0,
+        "reasoning": 1181.4,
+        "seconds": 7.3
+      },
+      "generation_samples_measured": 20
+    }
+  },
+  "paired_vs_first": {
+    "flashlite": {
+      "cases": 4,
+      "better": 1,
+      "worse": 0,
+      "two_sided_sign_p": 1.0
+    }
+  }
+}

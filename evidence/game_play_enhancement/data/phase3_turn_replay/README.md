@@ -7,7 +7,7 @@ turns that went wrong in the hand-read games (`../phase3_reads/`), two are contr
 reasoned correctly on the same evidence. Each case carries a hand-written expectation, and the
 bench's golden judge (gemini-3.5-flash) reads every sample against it. Run by
 `poetry run eval-hallucination-bench --config evaluation/config/hallucination_bench_phase3_turns.json`;
-the full output is in `evaluation/eval_results/hallucination_bench/phase3_turns/`, the summary here
+the full output is in `runs/phase3_turns/` (moved from the git-ignored `eval_results/` on 2026-10-23), the summary here
 (`bench_summary.json`). Five samples per case and arm, memory off. A round turn is replayed as a
 sweep turn (the bench rebuilds discussion turns only).
 

@@ -1,0 +1,149 @@
+{
+  "label": "thinking_flashlite35",
+  "run_at": "2026-10-04T06:47:40.338315+00:00",
+  "config": {
+    "label": "thinking_flashlite35",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 3,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "minimal",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "minimal"
+        },
+        "memory": "none",
+        "resummarize": true
+      },
+      {
+        "label": "medium",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium"
+        },
+        "memory": "none",
+        "resummarize": true
+      },
+      {
+        "label": "flashlite31_low",
+        "model": "gemini-3.1-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "low"
+        },
+        "memory": "none",
+        "resummarize": true
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "Does reasoning reduce agent hallucination? Same code (main after ed7fb76c, day summary v4), thinking budget the only difference: minimal = 128 tokens (the game default; a probe found structured-output turns then reason 0 tokens, as at low = 1024), medium = 4096. Both arms freshly generated with token recording; both use the same 104 cached v4 summaries (summary_v4_flashlite35's summaries_v4.json copied per arm). flashlite31_low (added later): gemini-3.1-flash-lite at thinking low (1,024), which does reason with structured output; same summaries; the first two arms' verdicts reused."
+  },
+  "n_cases": 89,
+  "arms": {
+    "minimal": {
+      "bad": {
+        "all": "82/267 (31%)",
+        "phase:day_discussion": "76/204 (37%)",
+        "phase:day_vote": "6/63 (10%)",
+        "role:healer": "8/36 (22%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "9/39 (23%)",
+        "role:vigilante": "30/78 (38%)",
+        "role:villager": "30/63 (48%)",
+        "role:wolf": "5/27 (19%)",
+        "slice:control": "3/120 (2%)",
+        "slice:curated": "70/132 (53%)",
+        "slice:pinned": "9/15 (60%)",
+        "source:census": "73/252 (29%)",
+        "source:checkpoint": "9/15 (60%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4950.2,
+        "output": 399.3,
+        "reasoning": 0.0,
+        "seconds": 2.3
+      },
+      "generation_samples_measured": 267
+    },
+    "medium": {
+      "bad": {
+        "all": "27/267 (10%)",
+        "phase:day_discussion": "26/204 (13%)",
+        "phase:day_vote": "1/63 (2%)",
+        "role:healer": "3/36 (8%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "2/39 (5%)",
+        "role:vigilante": "9/78 (12%)",
+        "role:villager": "10/63 (16%)",
+        "role:wolf": "3/27 (11%)",
+        "slice:control": "2/120 (2%)",
+        "slice:curated": "17/132 (13%)",
+        "slice:pinned": "8/15 (53%)",
+        "source:census": "19/252 (8%)",
+        "source:checkpoint": "8/15 (53%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4950.2,
+        "output": 1747.5,
+        "reasoning": 1364.9,
+        "seconds": 7.5
+      },
+      "generation_samples_measured": 267
+    },
+    "flashlite31_low": {
+      "bad": {
+        "all": "39/267 (15%)",
+        "phase:day_discussion": "37/204 (18%)",
+        "phase:day_vote": "2/63 (3%)",
+        "role:healer": "2/36 (6%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "2/39 (5%)",
+        "role:vigilante": "15/78 (19%)",
+        "role:villager": "15/63 (24%)",
+        "role:wolf": "5/27 (19%)",
+        "slice:control": "1/120 (1%)",
+        "slice:curated": "34/132 (26%)",
+        "slice:pinned": "4/15 (27%)",
+        "source:census": "35/252 (14%)",
+        "source:checkpoint": "4/15 (27%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4950.2,
+        "output": 1299.0,
+        "reasoning": 820.3,
+        "seconds": 6.2
+      },
+      "generation_samples_measured": 267
+    }
+  },
+  "paired_vs_first": {
+    "medium": {
+      "cases": 89,
+      "better": 36,
+      "worse": 4,
+      "two_sided_sign_p": 0.0
+    },
+    "flashlite31_low": {
+      "cases": 89,
+      "better": 32,
+      "worse": 6,
+      "two_sided_sign_p": 0.0
+    }
+  }
+}

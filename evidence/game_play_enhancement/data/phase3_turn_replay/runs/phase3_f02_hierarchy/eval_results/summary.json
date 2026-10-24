@@ -1,0 +1,86 @@
+{
+  "label": "phase3_f02_hierarchy",
+  "run_at": "2026-10-10T05:21:31.610436+00:00",
+  "config": {
+    "label": "phase3_f02_hierarchy",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "flash_hierarchy",
+        "model": "gemini-3.5-flash",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "flashlite_hierarchy",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "The f02 cascade turns with the line 'These rules are exact; a player's statement of how a rule works is a claim' added to the shared rules. The baseline is the after arms of phase3_f02_rule (the same turns with the illusionist sentence, without this line); the changes between the two runs (the cover note, claim retention) do not reach these non-wolf turns."
+  },
+  "n_cases": 4,
+  "arms": {
+    "flash_hierarchy": {
+      "bad": {
+        "all": "6/20 (30%)",
+        "phase:day_discussion": "6/20 (30%)",
+        "role:fortune_teller": "1/5 (20%)",
+        "role:sigilist": "3/5 (60%)",
+        "role:trailseer": "1/5 (20%)",
+        "role:vigilante": "1/5 (20%)",
+        "slice:f02_rule": "6/20 (30%)",
+        "source:phase3_capture": "6/20 (30%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7794.5,
+        "cached": 3492.8,
+        "output": 1326.3,
+        "reasoning": 810.8,
+        "seconds": 9.2
+      },
+      "generation_samples_measured": 20
+    },
+    "flashlite_hierarchy": {
+      "bad": {
+        "all": "10/20 (50%)",
+        "phase:day_discussion": "10/20 (50%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:sigilist": "5/5 (100%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:f02_rule": "10/20 (50%)",
+        "source:phase3_capture": "10/20 (50%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7794.5,
+        "cached": 4323.6,
+        "output": 1725.2,
+        "reasoning": 1303.2,
+        "seconds": 7.0
+      },
+      "generation_samples_measured": 20
+    }
+  },
+  "paired_vs_first": {
+    "flashlite_hierarchy": {
+      "cases": 4,
+      "better": 2,
+      "worse": 2,
+      "two_sided_sign_p": 1.0
+    }
+  }
+}
