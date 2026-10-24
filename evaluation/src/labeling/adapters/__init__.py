@@ -19,6 +19,9 @@ _REGISTRY: dict[str, tuple[str, str]] = {
         "evaluation.src.labeling.adapters.context_relevance",
         "ContextRerankerAdapter",
     ),
+    "accusation_tags": ("evaluation.src.labeling.adapters.accusation_tags", "AccusationTagsAdapter"),
+    "echo_gate": ("evaluation.src.labeling.adapters.echo_gate", "EchoGateAdapter"),
+    "factual_errors": ("evaluation.src.labeling.adapters.factual_errors", "FactualErrorAdapter"),
 }
 
 

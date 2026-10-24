@@ -1,0 +1,330 @@
+{
+  "labeler": "readers",
+  "labels": [
+    {
+      "case_index": 8,
+      "key": "voices-01.on:2:player_1:1",
+      "label": "D"
+    },
+    {
+      "case_index": 10,
+      "key": "voices-03.on:5:player_2:1",
+      "label": "B"
+    },
+    {
+      "case_index": 12,
+      "key": "voices-05.on:4:player_1:1",
+      "label": "C"
+    },
+    {
+      "case_index": 13,
+      "key": "voices-03.off:4:player_8:1",
+      "label": "D"
+    },
+    {
+      "case_index": 14,
+      "key": "voices-06.off:4:player_8:1",
+      "label": "B"
+    },
+    {
+      "case_index": 15,
+      "key": "voices-07.on:3:player_8:2",
+      "label": "C"
+    },
+    {
+      "case_index": 16,
+      "key": "voices-07.on:3:player_6:2",
+      "label": "C"
+    },
+    {
+      "case_index": 17,
+      "key": "voices-03.off:2:player_9:1",
+      "label": "C"
+    },
+    {
+      "case_index": 18,
+      "key": "voices-04.on:4:player_6:1",
+      "label": "D"
+    },
+    {
+      "case_index": 22,
+      "key": "voices-02.on:3:player_7:1",
+      "label": "B"
+    },
+    {
+      "case_index": 23,
+      "key": "voices-07.off:3:player_9:1",
+      "label": "C"
+    },
+    {
+      "case_index": 24,
+      "key": "voices-07.on:2:player_7:1",
+      "label": "D"
+    },
+    {
+      "case_index": 25,
+      "key": "voices-03.off:5:player_8:1",
+      "label": "B"
+    },
+    {
+      "case_index": 29,
+      "key": "voices-07.on:2:player_5:1",
+      "label": "D"
+    },
+    {
+      "case_index": 30,
+      "key": "voices-03.on:5:player_4:1",
+      "label": "D"
+    },
+    {
+      "case_index": 31,
+      "key": "voices-04.off:5:player_3:2",
+      "label": "C"
+    },
+    {
+      "case_index": 33,
+      "key": "voices-07.off:2:player_3:1",
+      "label": "D"
+    },
+    {
+      "case_index": 37,
+      "key": "voices-05.on:2:player_8:1",
+      "label": "C"
+    },
+    {
+      "case_index": 38,
+      "key": "voices-05.off:6:player_2:1",
+      "label": "B"
+    },
+    {
+      "case_index": 41,
+      "key": "voices-02.on:4:player_1:2",
+      "label": "B"
+    },
+    {
+      "case_index": 47,
+      "key": "voices-08.off:4:player_5:1",
+      "label": "C"
+    },
+    {
+      "case_index": 52,
+      "key": "voices-06.on:2:player_5:2",
+      "label": "D"
+    },
+    {
+      "case_index": 53,
+      "key": "voices-07.on:2:player_4:2",
+      "label": "D"
+    },
+    {
+      "case_index": 56,
+      "key": "voices-03.on:3:player_8:1",
+      "label": "D"
+    },
+    {
+      "case_index": 57,
+      "key": "voices-02.on:3:player_6:1",
+      "label": "A"
+    },
+    {
+      "case_index": 62,
+      "key": "voices-08.off:3:player_5:1",
+      "label": "C"
+    },
+    {
+      "case_index": 65,
+      "key": "voices-06.on:2:player_1:2",
+      "label": "A"
+    },
+    {
+      "case_index": 67,
+      "key": "voices-08.off:2:player_5:1",
+      "label": "C"
+    },
+    {
+      "case_index": 69,
+      "key": "voices-04.off:5:player_2:1",
+      "label": "B"
+    },
+    {
+      "case_index": 70,
+      "key": "voices-03.on:4:player_4:1",
+      "label": "C"
+    },
+    {
+      "case_index": 72,
+      "key": "voices-02.off:4:player_10:2",
+      "label": "D"
+    },
+    {
+      "case_index": 75,
+      "key": "voices-04.off:4:player_2:2",
+      "label": "D"
+    },
+    {
+      "case_index": 77,
+      "key": "voices-04.off:2:player_3:1",
+      "label": "B"
+    },
+    {
+      "case_index": 78,
+      "key": "voices-06.off:2:player_7:1",
+      "label": "D"
+    },
+    {
+      "case_index": 81,
+      "key": "voices-04.on:3:player_2:2",
+      "label": "B"
+    },
+    {
+      "case_index": 86,
+      "key": "voices-02.off:3:player_3:2",
+      "label": "B"
+    },
+    {
+      "case_index": 89,
+      "key": "voices-06.off:5:player_5:1",
+      "label": "C"
+    },
+    {
+      "case_index": 92,
+      "key": "voices-06.off:4:player_5:2",
+      "label": "B"
+    },
+    {
+      "case_index": 93,
+      "key": "voices-03.off:3:player_10:1",
+      "label": "D"
+    },
+    {
+      "case_index": 94,
+      "key": "voices-03.off:5:player_3:2",
+      "label": "D"
+    },
+    {
+      "case_index": 98,
+      "key": "voices-05.on:5:player_5:2",
+      "label": "C"
+    },
+    {
+      "case_index": 99,
+      "key": "voices-06.off:2:player_2:1",
+      "label": "C"
+    },
+    {
+      "case_index": 101,
+      "key": "voices-04.off:3:player_7:2",
+      "label": "D"
+    },
+    {
+      "case_index": 102,
+      "key": "voices-02.off:3:player_3:1",
+      "label": "D"
+    },
+    {
+      "case_index": 105,
+      "key": "voices-08.on:2:player_6:1",
+      "label": "D"
+    },
+    {
+      "case_index": 106,
+      "key": "voices-02.on:4:player_1:1",
+      "label": "B"
+    },
+    {
+      "case_index": 111,
+      "key": "voices-07.on:5:player_9:1",
+      "label": "D"
+    },
+    {
+      "case_index": 116,
+      "key": "voices-04.off:3:player_3:1",
+      "label": "D"
+    },
+    {
+      "case_index": 117,
+      "key": "voices-05.on:4:player_5:1",
+      "label": "D"
+    },
+    {
+      "case_index": 120,
+      "key": "voices-07.on:2:player_1:1",
+      "label": "D"
+    },
+    {
+      "case_index": 122,
+      "key": "voices-02.off:4:player_5:1",
+      "label": "D"
+    },
+    {
+      "case_index": 123,
+      "key": "voices-03.on:3:player_5:1",
+      "label": "D"
+    },
+    {
+      "case_index": 124,
+      "key": "voices-07.off:2:player_6:2",
+      "label": "D"
+    },
+    {
+      "case_index": 127,
+      "key": "voices-01.off:4:player_4:1",
+      "label": "B"
+    },
+    {
+      "case_index": 131,
+      "key": "voices-04.on:4:player_9:1",
+      "label": "B"
+    },
+    {
+      "case_index": 135,
+      "key": "voices-01.off:2:player_6:1",
+      "label": "B"
+    },
+    {
+      "case_index": 140,
+      "key": "voices-08.on:3:player_2:1",
+      "label": "B"
+    },
+    {
+      "case_index": 142,
+      "key": "voices-03.on:4:player_5:2",
+      "label": "D"
+    },
+    {
+      "case_index": 144,
+      "key": "voices-01.off:3:player_7:1",
+      "label": "B"
+    },
+    {
+      "case_index": 145,
+      "key": "voices-07.off:5:player_2:1",
+      "label": "C"
+    },
+    {
+      "case_index": 146,
+      "key": "voices-08.off:2:player_1:2",
+      "label": "D"
+    },
+    {
+      "case_index": 148,
+      "key": "voices-06.on:3:player_10:2",
+      "label": "B"
+    },
+    {
+      "case_index": 151,
+      "key": "voices-07.on:5:player_7:1",
+      "label": "C"
+    },
+    {
+      "case_index": 152,
+      "key": "voices-02.off:2:player_10:1",
+      "label": "D"
+    },
+    {
+      "case_index": 155,
+      "key": "voices-05.off:3:player_3:2",
+      "label": "D"
+    }
+  ]
+}
