@@ -1,20 +1,29 @@
-"""The candidate roles of every player, living or a hidden body, by propagation (catalogue Table F,
-"How the engine derives them"; Table C, C18).
+"""Works out which roles each player could still hold, living players and hidden bodies alike.
 
-Each player starts with the census: the dealt roles not known to be held by someone else (C1). The
-constraints remove candidates, then these rules run until nothing changes:
-- one copy of each role (C18): a role whose every copy has a certain holder is removed from
-  everyone else; a role with as many possible holders as copies is theirs;
-- k players who can only hold k roles between them: no one else holds those roles (C18);
-- one of the players a watch saw made the attack (C6): if only one of them can, it did; and no one
-  outside them holds a role dealt once;
-- the game continued past every check so far (C18, continuation.py).
-A role whose holder must have been alive on a night leaves the bodies that died before it.
+This is constraint propagation, the way a sudoku is solved by hand. Every player starts with every
+dealt role that no known player already holds. The facts the engine gathered (constraints.py)
+remove some of those candidates. Then four rules run in a loop until a full pass removes nothing:
+- One holder per copy. When every copy of a role has a certain holder, no one else holds it. When a
+  role has exactly as many possible holders as copies, each of them holds it.
+- k players, k roles. When k players can only hold roles that have k copies left between them, no
+  one outside the group holds those roles. (If player_2 and player_4 can each only be the Healer or
+  the Sentinel, and one of each was dealt, those two hold both roles, so no one else is either.)
+- One of these players did it. When a watch saw several visitors and one of them made the
+  announced attack (or save), and only one of them can hold a role that does that, it holds it.
+- The game went on. The game checks for a winner after every day and night, and it did not end, so
+  a hidden body keeps only the roles that let it go on at every check (continuation.py).
+Before the loop, a role whose holder must have been alive on some night is taken off every hidden
+body that died before that night.
 
-Sound, not complete: a candidate is removed only when no legal game that agrees with the view gives
-it to that player, but a full search may remove more (the brute-force oracle in the tests checks the
-first; the second only means the seat is told less). A view that leaves some player no candidate is
-an input or rule error: no candidates at all, so nothing is said.
+Sound, not complete. A role is removed only when no legal game consistent with what the seat knows
+gives it to that player, so every "can only be" line is true. A search over every possible game can
+sometimes remove more; missing that only means the seat is told less, never something false. The
+oracle tests (tests/engine/deduction/test_candidates.py) check soundness that way, by brute force on
+random games. When the facts leave some player no role at all, an input or a rule is wrong: the
+solver returns None, and nothing is said.
+
+Each removal records the catalogue row that made it (such as "C18", the counting rules) and the
+events it rested on, so any line can be traced back to them.
 """
 
 from __future__ import annotations
@@ -37,11 +46,11 @@ from Agents.schemas.game_events import DeathRecord
 
 
 class Contradiction(Exception):
-    """Some player is left no candidate role: the view and the rules disagree."""
+    """Raised when some player is left no candidate role: the facts and the rules disagree."""
 
 
 class _Board:
-    """The candidates as they narrow, with why each role went."""
+    """Each player's candidate roles as they narrow, with the reason each removed role went."""
 
     def __init__(self, players: list[str], census: frozenset[str], known: dict[str, str]):
         self.roles = {player: {known[player]} if player in known else set(census) for player in players}
@@ -50,20 +59,31 @@ class _Board:
 
     def restrict(self, player: str, allowed, rule: str, sources: tuple[Source, ...] = (),
                  derivation: tuple[SourceEvent, ...] = ()) -> bool:
-        """Keep only `allowed` for `player`; True when a role went."""
-        gone = self.roles[player] - set(allowed)
-        if not gone:
+        """Keeps only `allowed` for `player`, recording each removal with its reason.
+
+        Args:
+            player: whose candidates to narrow.
+            allowed: the roles the player may keep; roles it has but `allowed` lacks are removed.
+            rule: the catalogue row behind the removal (e.g. "A13", "C18"), for the log.
+            sources: short citations of the evidence (kind, night, player).
+            derivation: the evidence itself, the event objects the citations point at.
+
+        Returns:
+            True when at least one role was removed, False when the player kept every role.
+            Raises Contradiction when no role is left."""
+        ruled_out = self.roles[player] - set(allowed)  # the player's remaining roles this fact excludes
+        if not ruled_out:
             return False
-        for role in sorted(gone):
+        for role in sorted(ruled_out):
             self.removals[player].append(Removal(role, rule, sources, derivation))
-        self.roles[player] -= gone
+        self.roles[player] -= ruled_out
         if not self.roles[player]:
             raise Contradiction(player)
         self.changed = True
         return True
 
     def sources_of(self, players) -> tuple[tuple[Source, ...], tuple[SourceEvent, ...]]:
-        """What the removals on `players` rested on: the provenance of a count rule's step."""
+        """Returns what the removals on `players` rested on, so a counting rule's step can cite it."""
         sources, derivation = {}, {}
         for player in players:
             for removal in self.removals[player]:
@@ -74,8 +94,26 @@ class _Board:
 
 def solve(living: list[str], dead_roster: list[DeathRecord], copies: dict[str, int], known: dict[str, str],
           constraints: list[RoleConstraint], receiver: str | None = None) -> Candidates | None:
-    """Every player's candidate roles; None when the players do not match the cast or the view
-    leaves some player no role."""
+    """Works out which roles every player, living or a hidden body, could still hold.
+
+    Args:
+        living: the living players' ids, in seat order.
+        dead_roster: every death so far, in order; a concealed one is a hidden body.
+        copies: the dealt cast, role -> how many copies were dealt (public: every seat is told it).
+        known: player -> role for every player whose role the viewer knows for sure: the revealed
+            dead, and for a seat its own role and (a wolf) its pack. The public's run knows only the
+            revealed dead.
+        constraints: the facts to apply, from constraints.py: OnlyRoles ("this player is one of
+            these roles"), AliveAtNight ("this role's holder was alive on night n") and HolderAmong
+            ("one of these players holds one of these roles").
+        receiver: whose view this is, a seat's id, or None for the public's. It does not change the
+            solving; it is passed through to the result for the lines built from it.
+
+    Returns:
+        A Candidates: each player's remaining roles (one role for a known player), the starting
+        census, the reason for every removal, and the receiver. None when the players do not match
+        the dealt cast, or when the facts leave some player no role at all (an input or rule error,
+        or, with a claim added as a premise, a claim that cannot be true)."""
     players = list(living) + [death.player for death in dead_roster]
     if len(set(players)) != len(players) or len(players) != sum(copies.values()):
         return None
@@ -88,7 +126,8 @@ def solve(living: list[str], dead_roster: list[DeathRecord], copies: dict[str, i
             if isinstance(constraint, OnlyRoles) and constraint.player in board.roles:
                 board.restrict(constraint.player, constraint.roles, constraint.rule, constraint.sources,
                                constraint.derivation)
-        alive_reasons = _alive_at_night(board, [c for c in constraints if isinstance(c, AliveAtNight)], dead_roster)
+        alive = [c for c in constraints if isinstance(c, AliveAtNight)]
+        alive_reasons = _rule_out_later_actors_from_bodies(board, alive, dead_roster)
         among = [c for c in constraints if isinstance(c, HolderAmong)]
         _propagate(board, among, dead_roster, copies)
     except Contradiction:
@@ -106,16 +145,24 @@ def solve(living: list[str], dead_roster: list[DeathRecord], copies: dict[str, i
 
 
 def _census(copies: dict[str, int], known: dict[str, str]) -> frozenset[str]:
-    """C1: the dealt roles with a copy no known player holds."""
+    """Returns the dealt roles that still have a copy no known player holds: every unknown player's
+    starting candidates."""
     held = {}
     for role in known.values():
         held[role] = held.get(role, 0) + 1
     return frozenset(role for role, count in copies.items() if count > held.get(role, 0))
 
 
-def _alive_at_night(board: _Board, alive: list[AliveAtNight], dead_roster: list[DeathRecord]) -> dict[str, AliveAtNight]:
-    """A role whose holder was alive at the start of night n is not a body that died before it.
-    Returns, per role this took off a body, its latest such night: the census line's reason."""
+def _rule_out_later_actors_from_bodies(board: _Board, alive: list[AliveAtNight],
+                                       dead_roster: list[DeathRecord]) -> dict[str, AliveAtNight]:
+    """A role still acting on a night cannot be a hidden body that died before that night.
+
+    Example: a sigil struck on night 2, so the Sigilist was alive then; player_1's hidden body died
+    on night 1, so player_1 is not the Sigilist. Only hidden bodies are narrowed (a revealed body's
+    role is already known).
+
+    Returns, for each role this took off a body, the fact with the latest night: the census line
+    gives it as the reason the role is alive."""
     latest: dict[str, AliveAtNight] = {}
     took_off_a_body: set[str] = set()
     for constraint in alive:
@@ -133,6 +180,10 @@ def _alive_at_night(board: _Board, alive: list[AliveAtNight], dead_roster: list[
 
 def _propagate(board: _Board, among: list[HolderAmong], dead_roster: list[DeathRecord],
                copies: dict[str, int]) -> None:
+    """Runs the four rules below again and again until a full pass removes nothing.
+
+    Each rule can unlock another (one pins a player, the next removes that role from everyone
+    else), so one pass is not enough. It always stops: roles are only ever removed."""
     board.changed = True
     while board.changed:
         board.changed = False
@@ -144,9 +195,14 @@ def _propagate(board: _Board, among: list[HolderAmong], dead_roster: list[DeathR
 
 
 def _holder_among(board: _Board, constraint: HolderAmong, copies: dict[str, int]) -> None:
-    """C6: one of `players` holds one of `roles`. If only one of them can, it does; if only one of
-    the roles is left to them (a wolf among them, with the other wolf ruled out), and it is dealt
-    once, no one else holds it."""
+    """Rule: "one of these players did it."
+
+    The fact: one of `constraint.players` holds one of `constraint.roles` (e.g. a watch saw
+    player_2 and player_4 visit, and one of them made the attack).
+    - If only one of the players could still hold such a role, it does.
+      (player_4 is known to be the Healer, so player_2 made the attack.)
+    - If only one such role is left to the group and it was dealt once, no one outside the group
+      holds it. (The other wolf is dead, so the attacker is the last wolf: no one else is it.)"""
     members = [player for player in constraint.players if player in board.roles]
     able = [player for player in members if board.roles[player] & constraint.roles]
     if not able:
@@ -164,8 +220,18 @@ def _holder_among(board: _Board, constraint: HolderAmong, copies: dict[str, int]
 
 
 def _one_copy_each(board: _Board, copies: dict[str, int]) -> None:
-    """C18: each copy of a role has one holder. All copies certain: no one else holds it. As many
-    possible holders as copies: each of them holds it."""
+    """Uses how many copies of each role were dealt to narrow players' candidate sets.
+
+        For each role:
+        - If every copy already has a certain holder (a player whose set is only that role),
+        the role is removed from every other player's set.
+        (One Healer dealt, player_3's set is {Healer} -> Healer is removed from everyone else.)
+        - If exactly as many players have the role in their set as there are copies,
+        each of those players' sets shrinks to just that role.
+        (Two Wolves dealt, only player_2 and player_5 have Wolf in their sets -> both become {Wolf}.)
+        Raises Contradiction if the counts can't work: more certain holders than copies,
+        or fewer players who could hold it than copies.
+    """
     for role, count in copies.items():
         certain = [player for player, roles in board.roles.items() if roles == {role}]
         if len(certain) > count:
@@ -186,8 +252,12 @@ def _one_copy_each(board: _Board, copies: dict[str, int]) -> None:
 
 
 def _k_players_k_roles(board: _Board, copies: dict[str, int]) -> None:
-    """C18: when k players can only hold roles with k copies left between them, no one else holds
-    those roles."""
+    """Rule: "a closed group."
+
+    When a group of k players can only hold roles that have k copies left between them, those roles
+    are used up inside the group, so no one outside it holds them.
+    (player_2 and player_4 can each only be the Healer or the Sentinel: two players, two roles, so
+    no one else is the Healer or the Sentinel.)"""
     open_players = [player for player, roles in board.roles.items() if len(roles) > 1]
     certain: dict[str, int] = {}
     for roles in board.roles.values():
@@ -212,7 +282,12 @@ def _k_players_k_roles(board: _Board, copies: dict[str, int]) -> None:
 
 
 def _game_continued(board: _Board, dead_roster: list[DeathRecord], copies: dict[str, int]) -> None:
-    """C18: the hidden bodies keep only roles with which the game went on at every check."""
+    """Rule: "the game did not end."
+
+    The game checks for a winner after every day and every night, and it is still going. So a hidden
+    body cannot hold a role that would have ended it at one of those checks.
+    (If player_1's hidden body being a wolf would have left no wolf alive, the town would already
+    have won: player_1 is not a wolf.) The checking itself is in continuation.py."""
     bodies = [death.player for death in dead_roster if death.concealed]
     if not bodies:
         return

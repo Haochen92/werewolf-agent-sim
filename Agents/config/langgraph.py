@@ -69,7 +69,6 @@ def build_runnable_config(
             "stage_filter": run.stage_filter,
             "deduction_mode": run.deduction_mode,
             "deduction_by_side": dict(run.deduction_by_side),
-            "deduction_placement": run.deduction_placement,
             "persona_voices": run.persona_voices,
             "game_config": game_config_dict(run.game),
             "memory_persistence_config": run.memory_persistence.model_dump(mode="json"),

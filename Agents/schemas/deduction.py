@@ -27,16 +27,28 @@ side RunConfig.deduction_by_side), by difficulty level (owner, 2026-10-18):
 - "full", level 3: those plus the claims against the record and each other, the conditionals, the
   explanations and an evil seat's covers."""
 
-DeductionPlacement = Literal["before_note", "after_note"]
-"""Where a seat's own deduction block sits in its prompt, relative to its carried-forward strategy
-note (catalogue OQ21), set once per game (RunConfig.deduction_placement) so a screen can compare
-the two. The public block never moves: it is in the shared public record, before the cache
-boundary."""
-
 Grade = Literal["certain", "follows_if_claims", "possible"]
 """The three grades of catalogue §0 (R9): holds in every legal game that agrees with what the seat
 knows; holds if the named claims are true (the item's premises); or a complete list of
 explanations ("either … or …")."""
+
+
+# --- catalogue rows the code branches on ------------------------------------------------------------
+# An item's `row` names the catalogue row that produced it (deduction_catalogue.md Tables E and F).
+# Code that treats one row differently names it here rather than comparing against a bare code.
+
+CENSUS_ROW = "F3"
+"""The census: for each wolf, lone-killer and neutral role, whether it is dead, or alive and who could
+still hold it. (The catalogue's F3 also covers the claim status; those lines come from the claim rows.)"""
+
+CONCLUSION_TABLES = ("E", "F")
+"""The catalogue tables whose rows are conclusions, shown whenever they apply: Table E compares claims
+with the record and with each other, Table F holds the conclusions (the census, what a player could
+still be, the joins with claims, the conditionals). Rows of the other tables are steps toward them."""
+
+AGREEMENT_ROWS = ("E1", "E19")
+"""Two claims that agree with each other: a sighting that matches a player's own account of where it
+went (E1), or a follow that matches a player's own account of whom it watched (E19)."""
 
 
 @dataclass(frozen=True)
@@ -70,24 +82,44 @@ class SeatView:
 
 @dataclass(frozen=True)
 class PublicRecord:
-    """What every seat knows alike: the part of a SeatView that is public. The public rows
-    (level 5, Agents/deduction/public/) read only this, so their items cannot depend on whose
-    payload they came from (they are cached in the prompt's shared prefix)."""
+    """What every seat knows alike: the facts the game master announced, with no conclusions drawn.
+    The public rows (Agents/deduction/public/) read only this, so what they work out is the same
+    whoever's payload it came from, and can sit in the prompt's shared, cached prefix.
+
+    The examples below are from a real day-3 game (acceptance case 2)."""
 
     cast_role_counts: dict[str, int]
-    """The public cast census: how many of each role were dealt."""
+    """How many of each role were dealt this game, by role name. Public: every seat is told the cast.
+    Example: {"investigator": 1, "chanteuse": 1, "serial_killer": 1, ...}."""
     dead_roster: list[DeathRecord]
-    """The public dead roster, in death order."""
+    """Every death so far, in the order they happened. Each entry: `player`; `role` (the revealed
+    role, "" when the body was concealed); `day`; `phase` ("night" = killed overnight, "day" = voted
+    out); `concealed`.
+    Example: DeathRecord(player="player_7", role="chanteuse", day=2, phase="night", concealed=False)."""
     announcements: list[NightAnnouncement]
-    """The morning announcements as data, one per night resolved so far."""
+    """Each morning's announcement, one per night so far. Each entry: `night`; `deaths` (each with
+    `player`, `attacker_types` such as ["wolves", "serial_killer"], the revealed `role`, and
+    `hidden_by` when it was hidden); `saves` (each with `player`, `attacker_types`, and the `saver`);
+    `pick` (the side the Speculator picked, or None); `no_one_died`.
+    Example: night=2, deaths=[player_3 (wolves, serial_killer; trailseer), player_7 (sigilist;
+    chanteuse)], saves=[]."""
     wills: list[ReadOutWill]
-    """The read-out town records as data, one per revealed town death so far."""
+    """The night records of dead town players, as read out when they died. Each entry: `holder` (the
+    dead player); `role`; `day` and `phase` of the reading; `clauses`, one per night on record, each
+    with `night`, `action` (None when roleblocked), `target`, `result`, and `seen` (the names a watch
+    or follow listed).
+    Example: player_3's will, one clause: night 1, follow on player_7, seen ["player_8"]."""
     living: list[str] = field(default_factory=list)
-    """Every living player, in seat order (public: the game names the survivors)."""
+    """Every living player's id, in seat order.
+    Example: ["player_2", "player_4", "player_5", "player_6", "player_8", "player_10"]."""
     claims: list[PlayerClaimView] = field(default_factory=list)
-    """Every player's public claims so far, today's included: anyone could hear them. Unlike the
-    rest of the record they change with each message of the day, so a row that reads them does not
-    belong in the cached public block (the joins, slice 9b, go in the seat block)."""
+    """What each player has publicly claimed so far, today included. Each entry: `player`; `roles`
+    (every role claim and withdrawal, in order); `current_role` (the role claimed now, or None);
+    `withdrawn_roles`; `actions` (each claimed night action: night, action, target, what it saw).
+    Example: player_5, current_role "investigator", claimed on day 2; actions: night 1 investigate
+    player_9, result "suspicious"; night 2 roleblocked.
+    Unlike the rest of the record, claims change with every message, so nothing that reads them
+    goes in the cached public block; those lines go in the seat block."""
 
 
 @dataclass(frozen=True)
@@ -561,20 +593,22 @@ class OwnResultLine:
 
 
 SourceKind = Literal["announcement", "will", "dead_roster", "own_record", "claim"]
-"""Where an item's premises come from (catalogue §0, "Where knowledge comes from"): the engine's
-certified sources (a morning, a read-out will, the dead roster, the seat's own record) and, for a
-conditional item, a player's claim."""
+"""Where a piece of evidence came from. Four are facts the game itself reported: a morning
+announcement, a read-out will, the dead roster, the seat's own night record. The fifth, "claim", is
+what a player said, which may be a lie: only a "follows_if_claims" item rests on one."""
 
 SourceEvent = (AnnouncedDeath | AnnouncedSave | NightAnnouncement | WillClause | ReadOutWill | DeathRecord
                | NightActionRecord | ActionClaim)
-"""A source event as the engine holds it: a death or a save the morning announced, a whole morning
-(an absence, a pick), a will's night or the whole will, an entry of the dead roster, a record, a
-player's claimed night action (a join with a claim, slice 9b)."""
+"""A piece of evidence itself, as the engine holds it: a death or a save a morning announced, a whole
+morning (for what it did not announce, or the Speculator's pick), one night of a will or the whole
+will, an entry of the dead roster, one of the seat's night records, or a player's claimed night
+action."""
 
 
 @dataclass(frozen=True)
 class Source:
-    """One source an item rests on."""
+    """A short citation for one piece of evidence an item rests on: what kind, which night, which
+    player. Example: Source(kind="dead_roster", night=2, player="player_7")."""
 
     kind: SourceKind
     night: int
@@ -586,36 +620,68 @@ class Source:
 
 @dataclass(frozen=True)
 class DeductionItem:
-    """One conclusion the engine draws (catalogue, "Rendering: Items, then text"): the shape every
-    level from 5 on emits. The renderer (slice 8) turns items into the block the seat reads; the
-    derivation is logged with it but never shown, so a live line can be traced to why it was made."""
+    """One conclusion the engine draws, before it is turned into text. Every part of the engine
+    produces these; render.py picks which ones to show and prints their `text`. The rest of the
+    fields are for checking, comparing and tracing the line, and never reach the model.
+
+    The examples below are two real items from one seat's block (player_5, the Investigator, at a
+    day-3 vote; acceptance case 2):
+    - A, certain: "Both wolves are dead: player_9 and player_7. The Serial Killer is alive and is
+      one of player_2, player_4, player_6, player_8 and player_10."
+    - B, resting on a claim: "player_8 can be the Serial Killer only if player_2's watch is false."
+    """
 
     row: str
-    """The catalogue row(s) it implements, joined with "+" (a will's clause: "B18+A21")."""
+    """Which rule in the catalogue (deduction_catalogue.md) produced the line, like an error code.
+    It is logged with the line, tests assert on it, and a few places branch on it (CENSUS_ROW). A
+    "+" joins rules used together: "F1+C7" is a join with a claim that also used counting rule C7.
+    Examples: A "F3" (the census), B "F6"."""
     subject: str | None
-    """The player the item is about, for one entry per player; None for a line about a night as a
-    whole ("No one died", an absent attack)."""
+    """The player the line is about: lines are grouped into one entry per player. None for a line
+    about no single player. Examples: A None, B "player_8"."""
     night: int
-    """The night the conclusion is about; every fact in `conclusion` is about that night (a role is
-    the same on every night)."""
+    """The night the line is about; every fact in `conclusion` is about this night (a fact about a
+    role holds on every night)."""
     conclusion: tuple[Fact, ...]
-    """The proposition as checkable facts: every one must hold in the real game (the soundness
-    oracle, tests/factories/random_nights.py)."""
+    """What the line says, as machine-checkable facts rather than words. Each Fact is a small
+    dataclass, such as RoleIn(player, roles) ("the player's role is one of these") or
+    HeldBy(role, players) ("this role is held by one of these players"). The oracle tests check every
+    fact against the true roles of random games, which is how "certain" is proven, and the renderer
+    compares lines by their facts to drop repeats.
+    Example A: (HeldBy("illusionist", ("player_9",)), HeldBy("chanteuse", ("player_7",)),
+    HeldBy("serial_killer", ("player_2", "player_4", "player_6", "player_8", "player_10"))).
+    Example B: (RoleIn("player_8", {"sentinel", "vigilante", "sigilist", "speculator", "healer"}),),
+    that is, not the Serial Killer, on B's premises."""
     text: str
-    """The exact sentence (Agents/deduction/wording.py, public/wording.py), naming players and nights."""
+    """The exact sentence the model reads, naming players and nights. It says what `conclusion` says:
+    `conclusion` is what is checked, `text` is what is shown."""
     grade: Grade = "certain"
+    """How strongly the line holds: "certain" (true in every legal game consistent with what the seat
+    knows), "follows_if_claims" (true if the claims in `premises` are true), or "possible" (a
+    complete list of explanations, "either … or …"). Examples: A "certain", B "follows_if_claims"."""
     premises: tuple[Fact, ...] = ()
-    """What a "follows_if_claims" item assumes, as facts (a claim taken as true is the facts it
-    states); empty for the other grades."""
+    """For a "follows_if_claims" line, the claims it takes as true, as the facts each claim states;
+    empty for the other grades.
+    Example B, player_2's claim: (RoleIn("player_2", {"sentinel"}),
+    VisitAsClaimed(claimant="player_2", visitor="player_8", target="player_5", shown=True), ...)."""
     sources: tuple[Source, ...] = ()
+    """Short citations for the evidence the line rests on: kind, night, player. The renderer reads
+    them to tell whether today's discussion named the line's player and night.
+    Example A: (Source("dead_roster", 2, "player_9"), Source("dead_roster", 2, "player_7"), ...).
+    Example B: (Source("claim", 2, "player_2"),)."""
     derivation: tuple[SourceEvent, ...] = ()
-    """The source events the conclusion was drawn from, as the engine holds them."""
+    """The evidence itself: the event objects the citations in `sources` point at (a DeathRecord, an
+    ActionClaim, ...). Written to the turn's log, never shown; blocks.py also compares two lines'
+    derivations to tell when they rest on the same evidence."""
     receiver: str | None = None
-    """The seat the item is for; None for a public item, the same for every seat (level 5)."""
+    """The seat this line was worked out for; None for a public line, the same for every seat.
+    Examples: A and B "player_5"."""
     vote_form: bool = False
-    """F6 only: the contrapositive worded about the evil roles the premise takes from the player
-    ("player_8 can be the Serial Killer only if player_2's watch is false"), the form a vote turn
-    shows (fold rule 3); False for the plain F6 and every other item."""
+    """Only for a "for X to be guilty, this claim must be false" line (row F6), which has two
+    wordings of one fact. The plain one: "For player_8 not to be the Healer, player_2's watch must be
+    false." The vote form, True here, worded about the evil role: "player_8 can be the Serial Killer
+    only if player_2's watch is false." A vote is a decision about who is evil, so a vote turn shows
+    the vote form (conditionals.for_turn). False for every other line. Example B: True."""
 
 
 # --- the candidate roles (level 3: catalogue Table C, F3, F7) ------------------------------------
@@ -726,8 +792,8 @@ class DeductionBlocks:
     """The same for every seat of a game at that moment: in the shared public record, before the
     cache boundary. It changes only at a morning, a reveal or a vote."""
     seat: RenderedBlock
-    """This seat's own lines and today's raised events: after the boundary, before or after its
-    strategy note (DeductionPlacement)."""
+    """This seat's own lines and today's raised events: after the boundary, before its strategy
+    note (catalogue OQ21: the per-turn note stays last, the cache-friendly order)."""
 
 
 # --- the joins with claims (slice 9b: catalogue Table F, F1 and F2) ---------------------------------

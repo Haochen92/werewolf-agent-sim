@@ -24,7 +24,6 @@ EXPECTED_TOP_KEYS = {"callbacks", "configurable", "metadata", "recursion_limit"}
 EXPECTED_CONFIGURABLE_KEYS = {
     "deduction_by_side",
     "deduction_mode",
-    "deduction_placement",
     "filtering_config",
     "game_config",
     "game_id",
@@ -86,7 +85,6 @@ def test_defaults_applied_when_omitted():
     assert conf["retrieval_types_config"] == DEFAULT_RETRIEVAL_TYPES_CONFIG
     assert conf["deduction_mode"] == "full"
     assert conf["deduction_by_side"] == {}
-    assert conf["deduction_placement"] == "before_note"
     assert conf["persona_voices"] is False
 
 
@@ -99,10 +97,6 @@ def test_deduction_by_side_rides_the_configurable_and_names_only_real_sides():
     assert _config(deduction_by_side=by_side)["configurable"]["deduction_by_side"] == by_side
     with pytest.raises(ValueError):
         RunConfig(deduction_by_side={"wolf": "record"})
-
-
-def test_deduction_placement_rides_the_configurable():
-    assert _config(deduction_placement="after_note")["configurable"]["deduction_placement"] == "after_note"
 
 
 def test_none_options_fall_back_to_defaults():

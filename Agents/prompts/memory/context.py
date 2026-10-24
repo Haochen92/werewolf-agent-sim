@@ -39,9 +39,9 @@ the degree its situation matches yours. If no observations are shown above, use 
 """
 
 
-# The seat's own deduction block (Agents/deduction/render.py) fills {deduction_seat_before_note} or
-# {deduction_seat_after_note}, by the game's placement setting (catalogue OQ21: whether the computed
-# lines should come after the note they may contradict); the other one, and both outside "full" mode, is "".
+# The seat's own deduction block (Agents/deduction/render.py) fills {deduction_seat_before_note}, or "" when
+# the seat has none. Before the note, not after it (catalogue OQ21, screened): the note changes every
+# turn, so it stays last.
 
 # The memory blocks appear only when they hold something: memory is off by default on the live site,
 # and a retrieval can come back empty. Instructions about an empty list were ~1k characters of every
@@ -70,7 +70,7 @@ Adaptive Strategic thinking:
     Update your strategy notes based on new information. If your current approach resembles a
     pattern that led to a bad outcome, adjust.
     Keep your strategy notes concise (3-5 sentences).
-    This is private and will not be shared with other players.{deduction_seat_after_note}
+    This is private and will not be shared with other players.
 """
 
 
@@ -84,7 +84,7 @@ Adaptive Strategic thinking:
 
     Your updated_strategy replaces this note, so carry forward what still matters (your reads, your
     plans for the night) and drop what the day has disproven. Keep it concise (3-5 sentences).
-    This is private and will not be shared with other players.{deduction_seat_after_note}
+    This is private and will not be shared with other players.
 """
 
 
@@ -96,5 +96,5 @@ Adaptive Strategic thinking:
 
     Update your strategy notes based on new information. If your current approach resembles a
     pattern that led to a bad outcome, adjust. Keep your strategy notes concise (3-5 sentences).
-    This is private and will not be shared with other players.{deduction_seat_after_note}
+    This is private and will not be shared with other players.
 """

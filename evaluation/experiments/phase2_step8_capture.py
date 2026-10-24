@@ -45,7 +45,7 @@ from Agents.state import fresh_game_state  # noqa: E402
 from Agents.tracing import Metrics  # noqa: E402
 from Agents.turn import prompt_log, reads_log  # noqa: E402
 from server.game.usage import UsageMeter, game_cost  # noqa: E402
-from tests.leak_test import run_leak_tests  # noqa: E402
+from tests.leak_test import leak_inputs, run_leak_tests  # noqa: E402
 
 OUT_DIR = REPO_ROOT / "evidence/game_play_enhancement/data/phase2_step8_games"
 
@@ -151,7 +151,7 @@ def main() -> None:
         + [s.summary for s in result.get("day_summaries") or []]
     )
     leaks = run_leak_tests(prompt_log, result.get("roles") or {}, reads_log=reads_log,
-                           public_text=public_text)
+                           public_text=public_text, **leak_inputs(result))
     raw_metrics = metrics.model_dump(mode="json")
     usage = meter.snapshot()
     game_record = {

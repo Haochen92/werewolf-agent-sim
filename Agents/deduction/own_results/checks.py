@@ -1,16 +1,19 @@
-"""Catalogue rows A21–A25: what a check implies, the Investigator's own or the Necromancer's through
-the dead Investigator's body.
+"""What an investigation result tells the seat about its target (catalogue rows A21 to A25, the
+`row` tags on the lines below). It covers the Investigator's own checks, and the Necromancer's
+checks made through a dead Investigator's body.
 
-Suspicious reads every wolf, and the Necromancer on a night it killed through a body (the
-Illusionist's or the Vigilante's). So:
-- In the serial-killer casts, and on night 1 in the necromancer casts, Suspicious means a wolf (A21).
-- From night 2 in the necromancer casts it means a wolf or the Necromancer (A22). It narrows to a
-  wolf when no killing body had been revealed before that night (condition a), or when the morning
-  shows the Necromancer made no kill: its one action was a save or a sigil through a body
-  (condition b), or no attack through a body was announced, since every one is from night 2
-  (condition c). It narrows to the Necromancer when both wolves are known dead.
-- Not suspicious means only "not a wolf" (A23, A24).
-- The Necromancer's own check made no kill that night, so its Suspicious is a wolf (A25).
+A check reads Suspicious on every wolf, and also on the Necromancer on a night it killed through a
+body (the Illusionist's or the Vigilante's). So:
+- In a game with no Necromancer, and on night 1 in any game, Suspicious means a wolf (A21).
+- From night 2 in a game with a Necromancer, Suspicious means a wolf or the Necromancer (A22). It
+  narrows to a wolf when the Necromancer cannot have killed through a body that night: no killing
+  body had been revealed dead before it, or the morning shows the Necromancer did something else
+  (a save or a sigil through a body), or no attack through a body was announced. It narrows to the
+  Necromancer when both wolves are known dead.
+- Not suspicious means only "not a wolf": the target can still be the Serial Killer, the
+  Necromancer or a neutral role (A23, or A24 in a game with a Necromancer).
+- A check the Necromancer made through the Investigator's body was its whole night, so it killed no
+  one, and its Suspicious means a wolf (A25).
 """
 
 from __future__ import annotations
@@ -30,7 +33,7 @@ KILLING_BODIES = frozenset(role for role, kind in BORROWED_ABILITY.items() if ki
 
 
 def check_line(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
-    """What a check's reading implies about its target."""
+    """Returns the line a check's result implies about its target; None when there is nothing to say."""
     if record.body is not None:
         return _through_investigator_body(record, view)
     if record.result == "suspicious":
@@ -40,6 +43,8 @@ def check_line(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
 
 
 def _a_wolf(record: ReadRecord, view: SeatView, text: str, row: str) -> OwnResultLine | None:
+    """Returns the line saying the target is a wolf, as the wolf roles it could still hold; None
+    when the seat's other knowledge already rules every wolf role out for it."""
     wolf_roles = possible_roles(record.target, view) & WOLF_ROLES
     if not wolf_roles:
         return None
@@ -47,6 +52,11 @@ def _a_wolf(record: ReadRecord, view: SeatView, text: str, row: str) -> OwnResul
 
 
 def _suspicious(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
+    """Returns what a Suspicious reading means: a wolf, the Necromancer, or either.
+
+    Each check asks whether the Necromancer could have read Suspicious that night (it does only on a
+    night it killed through a body). Rule it out and the target is a wolf; rule the wolves out and it
+    is the Necromancer; if neither, the line names both, graded "possible"."""
     target = record.target
     night = record.night
     if not view.cast_role_counts.get(NECROMANCER):
@@ -87,6 +97,8 @@ def _suspicious(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
 
 
 def _not_suspicious(record: ReadRecord, view: SeatView, row: str) -> OwnResultLine | None:
+    """Returns the "not a wolf" line, naming the killer and neutral roles the target could still
+    hold; None when the target can only be a wolf."""
     target = record.target
     possible = possible_roles(target, view)
     not_a_wolf = possible - WOLF_ROLES
@@ -101,8 +113,8 @@ def _not_suspicious(record: ReadRecord, view: SeatView, row: str) -> OwnResultLi
 
 
 def _through_investigator_body(record: ReadRecord, view: SeatView) -> OwnResultLine | None:
-    """A25: the check was the Necromancer's whole night, so it made no kill and did not read
-    Suspicious itself; its target is never itself."""
+    """Returns the line for the Necromancer's check through the dead Investigator's body (A25). The
+    check was its whole night, so it killed no one, and its target is never itself."""
     if record.result == "suspicious":
         return _a_wolf(record, view, wording.suspicious_through_investigator_body(record.target), "A25")
     return _not_suspicious(record, view, "A25")

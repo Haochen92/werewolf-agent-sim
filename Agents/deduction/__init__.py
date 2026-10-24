@@ -49,11 +49,10 @@ from Agents.deduction.public import public_items
 from Agents.deduction.render import deduction_log, fold_own_lines
 from Agents.deduction.seat_view import (
     deduction_mode_for,
-    deduction_placement_for,
     public_record,
     seat_view_from_payload,
 )
 
-__all__ = ["comparison_items", "conditional_items", "deduction_blocks", "deduction_log", "deduction_mode_for", "deduction_placement_for",
+__all__ = ["comparison_items", "conditional_items", "deduction_blocks", "deduction_log", "deduction_mode_for",
            "fold_own_lines", "join_items", "own_result_lines", "public_candidate_items", "public_items", "public_record", "seat_candidate_items",
            "seat_view_from_payload"]

@@ -25,7 +25,6 @@ from Agents.deduction import (
     deduction_blocks,
     deduction_log,
     deduction_mode_for,
-    deduction_placement_for,
     fold_own_lines,
     own_result_lines,
     seat_view_from_payload,
@@ -306,7 +305,7 @@ def build_agent_prompt_input(payload: dict[str, Any]) -> dict[str, Any]:
                                               own_lines, role=role, uses_left=uses_left,
                                               dead_roster=payload.get("dead_roster", [])),
         # The public block sits in the shared public record (layout.PUBLIC_RECORD), the seat's own
-        # block before or after its strategy note (memory/context.py); "" outside "full" mode.
+        # block before its strategy note (memory/context.py); both "" outside "public" and "full" mode.
         **_deduction_slots(payload, deductions),
         # Not a template variable: every shown line's derivation, carried with the prompt capture
         # (Agents/turn/eval.py log_prompt), never rendered.
@@ -370,19 +369,18 @@ def _deduction_blocks(payload: dict[str, Any], own_lines: list[OwnResultLine | N
         return None
     return deduction_blocks(seat_view_from_payload(payload), own_lines or [], payload.get("day_channel", []),
                             payload.get("current_day", 1), vote=bool(payload.get("vote_turn")),
-                            claims=mode == "full")
+                            mode=mode)
 
 
 def _deduction_slots(payload: dict[str, Any], blocks: DeductionBlocks | None) -> dict[str, str]:
     """The template variables the blocks fill. The public block ends its section with a blank line;
-    the seat block goes in one of its two slots, by the game's placement setting (catalogue OQ21)."""
+    the seat block goes before the strategy note (catalogue OQ21: the per-turn note stays last, the
+    cache-friendly order)."""
     public = blocks.public.text if blocks is not None else ""
     seat = blocks.seat.text if blocks is not None else ""
-    after_note = deduction_placement_for(payload) == "after_note"
     return {
         "deduction_public_block": f"{public}\n\n" if public else "",
-        "deduction_seat_before_note": f"\n{seat}\n" if seat and not after_note else "",
-        "deduction_seat_after_note": f"\n\n{seat}" if seat and after_note else "",
+        "deduction_seat_before_note": f"\n{seat}\n" if seat else "",
     }
 
 

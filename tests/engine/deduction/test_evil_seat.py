@@ -218,7 +218,7 @@ def test_never_for_a_human_seat():
         ai = build_agent_prompt_input(payload)
         human = build_agent_prompt_input({**payload, "human_player": True})
         assert "would be false" in ai["deduction_seat_before_note"] or "You can claim" in ai["deduction_seat_before_note"]
-        assert human["deduction_seat_before_note"] == human["deduction_seat_after_note"] == ""
+        assert human["deduction_seat_before_note"] == ""
 
 
 # --- the leak boundary ---------------------------------------------------------------------------------

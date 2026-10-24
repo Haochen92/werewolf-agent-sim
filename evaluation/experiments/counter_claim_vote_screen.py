@@ -29,7 +29,7 @@ OUT = Path("evidence/game_play_enhancement/data/counter_claim_votes")
 ARMS = ("without", "with")
 SAMPLES = 3
 MAX_CALLS = 160
-SLOTS = ("deduction_seat_before_note", "deduction_seat_after_note")
+SLOTS = ("deduction_seat_before_note",)
 ACCOUNT = re.compile(r" ?As the (\w[\w ]*?), (player_\d+) names .*?\.(?= |\n|$)")
 
 

@@ -270,13 +270,12 @@ def _templates(role: str) -> dict:
     return out
 
 
-@pytest.mark.parametrize("placement", ["before_note", "after_note"])
 @pytest.mark.parametrize("role", ["healer", "illusionist"])
-def test_the_public_block_is_before_the_boundary_and_the_seat_block_after_it_by_the_setting(role, placement):
+def test_the_public_block_is_before_the_boundary_and_the_seat_block_after_it_before_the_note(role):
     """On AC2's frozen turn (both blocks have lines), rendered through every turn kind's template."""
     from Agents.llm_factory.providers.common import TRANSCRIPT_RULE
 
-    inputs = build_agent_prompt_input({**_frozen("9b827b695a61ece9"), "deduction_placement": placement})
+    inputs = build_agent_prompt_input(_frozen("9b827b695a61ece9"))
     for kind, template in _templates(role).items():
         text = _rendered(template, inputs)
         boundary = TRANSCRIPT_RULE.search(text).start()
@@ -284,7 +283,7 @@ def test_the_public_block_is_before_the_boundary_and_the_seat_block_after_it_by_
         note = text.index("Adaptive Strategic thinking:")
         assert public < boundary < seat, kind
         assert text.count(PUBLIC_HEADING) == 1 and text.count(SEAT_HEADING) == 1, kind
-        assert (seat < note) == (placement == "before_note"), kind
+        assert seat < note, kind
 
 
 def test_level_two_keeps_the_record_and_leaves_out_every_claim_line():
@@ -314,7 +313,7 @@ def test_no_block_outside_full_mode_or_for_a_human_seat(change):
 
     inputs = build_agent_prompt_input({**speaker_payload("healer"), **change})
     assert inputs["deduction_public_block"] == inputs["deduction_seat_before_note"] == ""
-    assert inputs["deduction_seat_after_note"] == "" and inputs["deduction_log"] == []
+    assert inputs["deduction_log"] == []
     text = _rendered(day_discuss_template("healer"), inputs)
     assert PUBLIC_HEADING not in text and SEAT_HEADING not in text
 

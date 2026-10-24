@@ -1,10 +1,10 @@
-"""What the deduction engine has been verified for: the roles and the use limits its rows assume.
+"""The roles and use limits the deduction engine has been verified for.
 
-Every row in the catalogue (evidence/reasoning_failures/deduction_catalogue.md) was proved for these
-twelve roles and the standard limits ("Configuration scope"). A new role can break a line that says
-"only X can…" in every game that deals it, and a different limit breaks the count rows, so a game
-outside this scope gets no deduction at all rather than a possibly false line (owner, 2026-10-17).
-Adding a role means verifying the engine for it first, then adding it here.
+Every rule in the engine was proved only for these twelve roles and the standard use limits. A new
+role can make a line that says "only X can…" false in every game that deals it, and a different
+limit breaks the lines that count uses. So a game outside this scope gets no deduction at all, rather
+than a line that might be false. To add a role, verify the engine for it first (the steps are in
+Agents/deduction/__init__.py), then add it here.
 """
 
 from __future__ import annotations
@@ -29,15 +29,16 @@ VERIFIED_LIMITS = {
     "conceals": 2,
     "self_bets": 2,
 }
-"""The public limits the count rows use (C5, C17, C20, E11). The vigilante's bullets are not
-public (R7), so no row reads them and any number is fine."""
+"""The use limits the counting lines assume, such as "player_5's self-bet has saved it twice, so it
+has none left". The Vigilante's bullets are not here: how many it has left is never made public, so
+no line reads them and any number is fine."""
 
 
 def roles_verified(lineup: Iterable[str]) -> bool:
-    """Whether every dealt role is one the engine was verified for."""
+    """Returns True when every role dealt this game is one the engine was verified for."""
     return set(lineup) <= VERIFIED_ROLES
 
 
 def limits_verified(config: "GameConfig") -> bool:
-    """Whether the game's use limits are the ones the count rows assume."""
+    """Returns True when the game's use limits are the ones the counting lines assume."""
     return all(getattr(config, field) == value for field, value in VERIFIED_LIMITS.items())

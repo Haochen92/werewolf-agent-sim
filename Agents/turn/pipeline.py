@@ -78,16 +78,6 @@ def _with_deduction_mode(enriched_payload: dict[str, Any], config: RunnableConfi
     return enriched_payload
 
 
-def _with_deduction_placement(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
-    """Where the seat's deduction block sits (RunConfig.deduction_placement), carried like the mode;
-    a bare test with no config gets the default (Agents/deduction/seat_view.py)."""
-    configurable = config.get("configurable", {}) if config else {}
-    placement = configurable.get("deduction_placement")
-    if placement:
-        enriched_payload["deduction_placement"] = placement
-    return enriched_payload
-
-
 def _with_persona_voices(enriched_payload: dict[str, Any], config: RunnableConfig,
                          runtime: Runtime[GraphContext] | None) -> dict[str, Any]:
     """Whether the game gives its AI seats speaking voices (RunConfig.persona_voices), and the puppet
@@ -243,7 +233,6 @@ def run_memory_informed_action(
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
-        enriched_payload = _with_deduction_placement(enriched_payload, config)
         enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
         result = run_agent(
             enriched_payload,
@@ -373,7 +362,6 @@ def preview_agent_action(
     enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
     enriched_payload = _with_game_id(enriched_payload, config)
     enriched_payload = _with_deduction_mode(enriched_payload, config)
-    enriched_payload = _with_deduction_placement(enriched_payload, config)
     enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
@@ -446,7 +434,6 @@ def run_memory_informed_night_action(
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
-        enriched_payload = _with_deduction_placement(enriched_payload, config)
         enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
         result = run_agent(
             enriched_payload,

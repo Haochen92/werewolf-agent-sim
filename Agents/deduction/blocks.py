@@ -1,12 +1,16 @@
-"""One turn's deduction blocks (slice 8): which engine items go to which block, from one seat's view.
+"""Builds one turn's two deduction blocks for one seat: the public block and the seat block.
 
-The public block reads only the public record (PublicRecord), so it is the same for every seat: what
-each player could still be (F7), the standing facts and the used-up budgets (F9). The seat block adds the seat's own view (its
-candidate roles, which know its role, records and pack): the census (F3), its own F7 lines, its own
-results joined with the claims (F1, F2: claims change with every message, so never the public block),
-the conditionals on the claims (F4 to F6, one form of each fact a turn), the claims compared with the
-record and with each other (Table E, the role claims' status, an evil seat's claimable roles) with the
-possible explanations of a claim the morning leaves open (F8), and what today's discussion raised. The text itself is render.py's.
+The public block sits in the part of the prompt every seat shares, before the cache boundary, so it
+must come out the same for every seat. It is built from the public record alone: what each player
+could still be, the facts the public events prove, and the abilities the record shows are used up.
+
+The seat block sits after the boundary and belongs to this seat. It adds what only this seat can
+work out from its own role and night results, and, in "full" mode, what follows from the players'
+claims: the seat's own results read together with a claim, what would follow if a claim were true,
+and where claims contradict the record or each other. Claims change with every message, which is the
+second reason they never go in the public block.
+
+This module only decides which items go in which block; render.py turns them into text.
 """
 
 from __future__ import annotations
@@ -22,25 +26,43 @@ from Agents.deduction.public import public_items
 from Agents.deduction.raised import raised_today
 from Agents.deduction.render import render_public, render_seat
 from Agents.deduction.seat_view import public_record
-from Agents.schemas.deduction import DeductionBlocks, DeductionItem, OwnResultLine, SeatView
+from Agents.schemas.deduction import (
+    AGREEMENT_ROWS,
+    CENSUS_ROW,
+    DeductionBlocks,
+    DeductionItem,
+    DeductionMode,
+    OwnResultLine,
+    SeatView,
+)
 from Agents.schemas.game_events import DayChannel
 
 
 def deduction_blocks(view: SeatView, own_lines: Sequence[OwnResultLine | None],
                      day_channel: Iterable[DayChannel], current_day: int, vote: bool = False,
-                     claims: bool = True) -> DeductionBlocks:
-    """The public block and the seat block of a turn. `own_lines` are the level-1 lines shown beside
-    the seat's records (one entry per record), which the seat block does not repeat. `vote`: a vote
-    turn, which reads a conditional about a player as its contrapositive (fold rule 3). `claims`
-    False (difficulty level 2, mode "public"): the seat block keeps only the census and the seat's
-    candidate roles, what the record alone works out."""
+                     mode: DeductionMode = "full") -> DeductionBlocks:
+    """Returns the turn's public block and seat block, each as its text and the items it shows.
+
+    `own_lines` are the lines already printed beside the seat's own night results, one entry per
+    result (None where a result has no line); the seat block does not repeat them. `day_channel` is
+    the transcript: a public reasoning step is added to the seat block when a message today names
+    its player and night together.
+
+    `vote`: on a vote turn, a line like "if player_2's watch is true, player_8 is the Healer" is
+    shown the other way round, "for player_8 not to be the Healer, player_2's watch must be false",
+    since the vote is a decision about player_8.
+
+    `mode` "public" leaves out every line that rests on a claim, so the seat block keeps only what
+    the record alone proves; "full" includes them.
+    """
+    claims = mode == "full"
     record = public_record(view)
     events = public_items(record)
     dead = [death.player for death in view.dead_roster]
-    # The census (F3) is the seat's alone (coordinator, 2026-10-17): its version leaves out the seat and
-    # its pack, so the public block keeps only what each player could be (F7) and the standing facts.
-    roles_left = [item for item in public_candidate_items(record, informative=True) if item.row != "F3"]
+    
+    roles_left = [item for item in public_candidate_items(record, informative=True) if item.row != CENSUS_ROW]
     public = render_public([*roles_left, *events, *budget_items(record, events)], record.living, dead)
+
     own = [(night.day, line) for night, line in zip(view.night_records, own_lines) if line is not None]
     seat_items = seat_candidate_items(view, informative=True)
     if claims:
@@ -48,13 +70,17 @@ def deduction_blocks(view: SeatView, own_lines: Sequence[OwnResultLine | None],
         seat_items = [*seat_items, *joins, *for_turn(conditional_items(view), vote),
                       *_not_joined(comparison_items(view, current_day), joins)]
     seat = render_seat(seat_items, events, raised_today(day_channel, current_day), view.living, dead, public, own,
-                       claims=claims)
+                       mode=mode)
     return DeductionBlocks(public=public, seat=seat)
 
 
 def _not_joined(comparisons: list[DeductionItem], joins: list[DeductionItem]) -> list[DeductionItem]:
-    """An agreement of two claims (E1, E19) that a join already reads together (F2: "…, and player_7
-    agrees. If that is true, …") is that join's to say."""
+    """Returns the comparisons, less any line saying two claims agree that a join already says.
+
+    A join reads the seat's own result together with a claim, and may end "…, and player_7 agrees".
+    The separate agreement line about the same two claims would repeat it. The test: every event the
+    agreement line was derived from is also one the join was derived from.
+    """
     joined = [set(map(id, item.derivation)) for item in joins]
     return [item for item in comparisons
-            if item.row not in ("E1", "E19") or not any(set(map(id, item.derivation)) <= ids for ids in joined)]
+            if item.row not in AGREEMENT_ROWS or not any(set(map(id, item.derivation)) <= ids for ids in joined)]

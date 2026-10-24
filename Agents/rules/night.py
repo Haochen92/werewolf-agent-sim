@@ -232,7 +232,9 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
             concealed.append(choice.target)
     # A conceal that took also hides the attacking trace: the carrier's visit to that victim is
     # not among the visits the sentinel and trailseer see (balance ruling 2026-10-09). The
-    # carrier's other visit that night, and the illusionist's own, stay visible.
+    # carrier's other visit that night stays visible, and so does the illusionist's conceal visit,
+    # unless the illusionist carried the kill itself: then its kill and its conceal are the same
+    # visit, both hidden, and the attack leaves no trace at all.
     carriers = [c.actor for c in in_effect if is_pack_kill(c) and c.target in concealed_by_illusionist]
     visits = [(visitor, visited) for visitor, visited in visits
               if not (visitor in carriers and visited in concealed_by_illusionist)]

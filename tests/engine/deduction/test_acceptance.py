@@ -41,7 +41,7 @@ def _turn(case: dict, **change) -> tuple[str, dict]:
     """The whole prompt of the case's turn, and its inputs, as the live pipeline builds them."""
     from evaluation.src.replay.hallucination_bench import turn_template
 
-    payload = {**_payload(case), "deduction_mode": "full", "deduction_placement": "before_note", **change}
+    payload = {**_payload(case), "deduction_mode": "full", **change}
     template, _, _ = turn_template(case, payload)
     inputs = build_agent_prompt_input(payload)
     messages = template.invoke({name: inputs[name] for name in template.input_variables}).to_messages()
