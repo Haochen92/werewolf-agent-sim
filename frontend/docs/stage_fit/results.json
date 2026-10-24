@@ -1,0 +1,1384 @@
+{
+ "since": "2026-10-11",
+ "excluded": [
+  "51226f24"
+ ],
+ "pooled_human_games": {
+  "deepseek/deepseek-flash": {
+   "games": 3,
+   "stage_seconds": 3628.0,
+   "waits_continuous": 3.9000000000000004,
+   "waits_restart": 10.0,
+   "share_continuous": 0.001,
+   "share_restart": 0.003
+  },
+  "anthropic/claude-haiku-5-5": {
+   "games": 7,
+   "stage_seconds": 9260.0,
+   "waits_continuous": 252.20000000000002,
+   "waits_restart": 471.0,
+   "share_continuous": 0.027,
+   "share_restart": 0.051
+  },
+  "openai/gpt-6-luna": {
+   "games": 2,
+   "stage_seconds": 1742.0,
+   "waits_continuous": 35.9,
+   "waits_restart": 92.69999999999999,
+   "share_continuous": 0.021,
+   "share_restart": 0.053
+  },
+  "gemini-3.5-flash-lite": {
+   "games": 1,
+   "stage_seconds": 1139.0,
+   "waits_continuous": 40.7,
+   "waits_restart": 46.4,
+   "share_continuous": 0.036,
+   "share_restart": 0.041
+  }
+ },
+ "waits_by_beat": {
+  "deepseek/deepseek-flash | day.speech": {
+   "waits": 4,
+   "seconds": 6.2,
+   "max": 2.3
+  },
+  "deepseek/deepseek-flash | day.pass": {
+   "waits": 1,
+   "seconds": 3.8,
+   "max": 3.8
+  },
+  "anthropic/claude-haiku-5-5 | day.speech": {
+   "waits": 27,
+   "seconds": 74.4,
+   "max": 10.7
+  },
+  "anthropic/claude-haiku-5-5 | day.pass": {
+   "waits": 21,
+   "seconds": 270.1,
+   "max": 25.4
+  },
+  "anthropic/claude-haiku-5-5 | vote.ballots-drop": {
+   "waits": 1,
+   "seconds": 0.8,
+   "max": 0.8
+  },
+  "anthropic/claude-haiku-5-5 | morning.shutter-down": {
+   "waits": 8,
+   "seconds": 116.6,
+   "max": 29.1
+  },
+  "anthropic/claude-haiku-5-5 | vote.opens": {
+   "waits": 2,
+   "seconds": 8.2,
+   "max": 7.2
+  },
+  "openai/gpt-6-luna | day.speech": {
+   "waits": 9,
+   "seconds": 17.7,
+   "max": 4.0
+  },
+  "openai/gpt-6-luna | day.pass": {
+   "waits": 4,
+   "seconds": 42.5,
+   "max": 22.9
+  },
+  "openai/gpt-6-luna | morning.shutter-down": {
+   "waits": 2,
+   "seconds": 27.8,
+   "max": 17.3
+  },
+  "openai/gpt-6-luna | pack.line": {
+   "waits": 2,
+   "seconds": 4.7,
+   "max": 3.3
+  },
+  "anthropic/claude-haiku-5-5 | pack.line": {
+   "waits": 1,
+   "seconds": 0.9,
+   "max": 0.9
+  },
+  "gemini-3.5-flash-lite | morning.shutter-down": {
+   "waits": 1,
+   "seconds": 34.5,
+   "max": 34.5
+  },
+  "gemini-3.5-flash-lite | day.speech": {
+   "waits": 2,
+   "seconds": 1.9,
+   "max": 1.2
+  },
+  "gemini-3.5-flash-lite | day.pass": {
+   "waits": 2,
+   "seconds": 10.0,
+   "max": 7.7
+  }
+ },
+ "latency_by_node": {
+  "anthropic/claude-haiku-5-5 | ?": {
+   "calls": 2,
+   "p50": 5.1,
+   "p90": 5.8,
+   "p95": 5.9,
+   "max": 6.0
+  },
+  "anthropic/claude-haiku-5-5 | CARRIER_KILL": {
+   "calls": 24,
+   "p50": 4.2,
+   "p90": 6.7,
+   "p95": 7.2,
+   "max": 8.8
+  },
+  "anthropic/claude-haiku-5-5 | COLLECT_ROUND": {
+   "calls": 21,
+   "p50": 1.3,
+   "p90": 1.7,
+   "p95": 2.1,
+   "max": 2.6
+  },
+  "anthropic/claude-haiku-5-5 | FORTUNE_TELLER_NIGHT_PHASE": {
+   "calls": 8,
+   "p50": 4.2,
+   "p90": 6.5,
+   "p95": 6.8,
+   "max": 7.2
+  },
+  "anthropic/claude-haiku-5-5 | HEALER_NIGHT_PHASE": {
+   "calls": 29,
+   "p50": 5.4,
+   "p90": 7.3,
+   "p95": 8.3,
+   "max": 8.7
+  },
+  "anthropic/claude-haiku-5-5 | INVESTIGATOR_NIGHT_PHASE": {
+   "calls": 18,
+   "p50": 5.3,
+   "p90": 6.9,
+   "p95": 7.5,
+   "max": 8.7
+  },
+  "anthropic/claude-haiku-5-5 | NECROMANCER_NIGHT_PHASE": {
+   "calls": 10,
+   "p50": 7.8,
+   "p90": 10.7,
+   "p95": 11.5,
+   "max": 12.2
+  },
+  "anthropic/claude-haiku-5-5 | PACK_CHAT": {
+   "calls": 81,
+   "p50": 3.1,
+   "p90": 5.0,
+   "p95": 5.3,
+   "max": 6.6
+  },
+  "anthropic/claude-haiku-5-5 | PACK_SKILL": {
+   "calls": 37,
+   "p50": 5.1,
+   "p90": 6.4,
+   "p95": 6.8,
+   "max": 8.0
+  },
+  "anthropic/claude-haiku-5-5 | SENTINEL_NIGHT_PHASE": {
+   "calls": 21,
+   "p50": 5.3,
+   "p90": 7.6,
+   "p95": 9.0,
+   "max": 12.0
+  },
+  "anthropic/claude-haiku-5-5 | SERIAL_KILLER_NIGHT_PHASE": {
+   "calls": 7,
+   "p50": 3.2,
+   "p90": 5.9,
+   "p95": 5.9,
+   "max": 5.9
+  },
+  "anthropic/claude-haiku-5-5 | SIGILIST_NIGHT_PHASE": {
+   "calls": 22,
+   "p50": 4.9,
+   "p90": 7.2,
+   "p95": 7.9,
+   "max": 9.7
+  },
+  "anthropic/claude-haiku-5-5 | SPECULATOR_NIGHT_PHASE": {
+   "calls": 9,
+   "p50": 4.2,
+   "p90": 7.0,
+   "p95": 7.9,
+   "max": 8.9
+  },
+  "anthropic/claude-haiku-5-5 | SUMMARIZE_DAY_DISCUSSION": {
+   "calls": 37,
+   "p50": 11.1,
+   "p90": 25.0,
+   "p95": 26.8,
+   "max": 30.0
+  },
+  "anthropic/claude-haiku-5-5 | TRAILSEER_NIGHT_PHASE": {
+   "calls": 23,
+   "p50": 4.6,
+   "p90": 7.0,
+   "p95": 7.2,
+   "max": 8.5
+  },
+  "anthropic/claude-haiku-5-5 | VIGILANTE_NIGHT_PHASE": {
+   "calls": 24,
+   "p50": 5.6,
+   "p90": 8.3,
+   "p95": 9.3,
+   "max": 18.3
+  },
+  "anthropic/claude-haiku-5-5 | discuss": {
+   "calls": 389,
+   "p50": 5.4,
+   "p90": 9.1,
+   "p95": 10.8,
+   "max": 16.6
+  },
+  "anthropic/claude-haiku-5-5 | round_turn": {
+   "calls": 267,
+   "p50": 4.1,
+   "p90": 6.2,
+   "p95": 7.1,
+   "max": 11.7
+  },
+  "anthropic/claude-haiku-5-5 | round_turn_human": {
+   "calls": 3,
+   "p50": 0.9,
+   "p90": 1.2,
+   "p95": 1.3,
+   "max": 1.3
+  },
+  "anthropic/claude-haiku-5-5 | vote": {
+   "calls": 189,
+   "p50": 6.1,
+   "p90": 8.9,
+   "p95": 10.6,
+   "max": 14.5
+  },
+  "deepseek/deepseek-flash | CARRIER_KILL": {
+   "calls": 6,
+   "p50": 2.7,
+   "p90": 3.3,
+   "p95": 3.4,
+   "max": 3.5
+  },
+  "deepseek/deepseek-flash | COLLECT_ROUND": {
+   "calls": 6,
+   "p50": 1.3,
+   "p90": 1.4,
+   "p95": 1.4,
+   "max": 1.4
+  },
+  "deepseek/deepseek-flash | HEALER_NIGHT_PHASE": {
+   "calls": 4,
+   "p50": 2.8,
+   "p90": 3.8,
+   "p95": 4.0,
+   "max": 4.2
+  },
+  "deepseek/deepseek-flash | INVESTIGATOR_NIGHT_PHASE": {
+   "calls": 6,
+   "p50": 3.1,
+   "p90": 4.0,
+   "p95": 4.2,
+   "max": 4.4
+  },
+  "deepseek/deepseek-flash | NECROMANCER_NIGHT_PHASE": {
+   "calls": 1,
+   "p50": 4.4,
+   "p90": 4.4,
+   "p95": 4.4,
+   "max": 4.4
+  },
+  "deepseek/deepseek-flash | PACK_CHAT": {
+   "calls": 24,
+   "p50": 2.8,
+   "p90": 3.3,
+   "p95": 3.6,
+   "max": 3.7
+  },
+  "deepseek/deepseek-flash | PACK_SKILL": {
+   "calls": 10,
+   "p50": 2.9,
+   "p90": 3.6,
+   "p95": 3.7,
+   "max": 3.8
+  },
+  "deepseek/deepseek-flash | SENTINEL_NIGHT_PHASE": {
+   "calls": 5,
+   "p50": 2.5,
+   "p90": 4.1,
+   "p95": 4.1,
+   "max": 4.2
+  },
+  "deepseek/deepseek-flash | SERIAL_KILLER_NIGHT_PHASE": {
+   "calls": 6,
+   "p50": 3.2,
+   "p90": 3.8,
+   "p95": 4.1,
+   "max": 4.3
+  },
+  "deepseek/deepseek-flash | SIGILIST_NIGHT_PHASE": {
+   "calls": 5,
+   "p50": 2.9,
+   "p90": 3.5,
+   "p95": 3.5,
+   "max": 3.6
+  },
+  "deepseek/deepseek-flash | SPECULATOR_NIGHT_PHASE": {
+   "calls": 4,
+   "p50": 3.0,
+   "p90": 3.5,
+   "p95": 3.5,
+   "max": 3.5
+  },
+  "deepseek/deepseek-flash | SUMMARIZE_DAY_DISCUSSION": {
+   "calls": 9,
+   "p50": 2.0,
+   "p90": 5.1,
+   "p95": 5.1,
+   "max": 5.1
+  },
+  "deepseek/deepseek-flash | TRAILSEER_NIGHT_PHASE": {
+   "calls": 7,
+   "p50": 3.5,
+   "p90": 3.7,
+   "p95": 3.9,
+   "max": 4.0
+  },
+  "deepseek/deepseek-flash | VIGILANTE_NIGHT_PHASE": {
+   "calls": 3,
+   "p50": 3.5,
+   "p90": 3.7,
+   "p95": 3.8,
+   "max": 3.8
+  },
+  "deepseek/deepseek-flash | discuss": {
+   "calls": 115,
+   "p50": 3.5,
+   "p90": 4.2,
+   "p95": 4.5,
+   "max": 5.9
+  },
+  "deepseek/deepseek-flash | round_turn": {
+   "calls": 76,
+   "p50": 2.7,
+   "p90": 3.4,
+   "p95": 3.8,
+   "max": 4.5
+  },
+  "deepseek/deepseek-flash | round_turn_human": {
+   "calls": 1,
+   "p50": 0.9,
+   "p90": 0.9,
+   "p95": 0.9,
+   "max": 0.9
+  },
+  "deepseek/deepseek-flash | vote": {
+   "calls": 36,
+   "p50": 3.5,
+   "p90": 4.1,
+   "p95": 4.4,
+   "max": 4.5
+  },
+  "gemini-3.5-flash-lite | CARRIER_KILL": {
+   "calls": 4,
+   "p50": 4.0,
+   "p90": 4.5,
+   "p95": 4.5,
+   "max": 4.5
+  },
+  "gemini-3.5-flash-lite | COLLECT_ROUND": {
+   "calls": 4,
+   "p50": 1.1,
+   "p90": 1.2,
+   "p95": 1.2,
+   "max": 1.2
+  },
+  "gemini-3.5-flash-lite | HEALER_NIGHT_PHASE": {
+   "calls": 3,
+   "p50": 3.8,
+   "p90": 4.4,
+   "p95": 4.4,
+   "max": 4.5
+  },
+  "gemini-3.5-flash-lite | INVESTIGATOR_NIGHT_PHASE": {
+   "calls": 3,
+   "p50": 3.5,
+   "p90": 3.8,
+   "p95": 3.8,
+   "max": 3.8
+  },
+  "gemini-3.5-flash-lite | PACK_CHAT": {
+   "calls": 18,
+   "p50": 4.0,
+   "p90": 4.8,
+   "p95": 6.4,
+   "max": 15.0
+  },
+  "gemini-3.5-flash-lite | PACK_SKILL": {
+   "calls": 7,
+   "p50": 4.0,
+   "p90": 5.1,
+   "p95": 5.1,
+   "max": 5.2
+  },
+  "gemini-3.5-flash-lite | SENTINEL_NIGHT_PHASE": {
+   "calls": 2,
+   "p50": 5.0,
+   "p90": 5.5,
+   "p95": 5.6,
+   "max": 5.6
+  },
+  "gemini-3.5-flash-lite | SIGILIST_NIGHT_PHASE": {
+   "calls": 3,
+   "p50": 4.0,
+   "p90": 4.0,
+   "p95": 4.1,
+   "max": 4.1
+  },
+  "gemini-3.5-flash-lite | SPECULATOR_NIGHT_PHASE": {
+   "calls": 1,
+   "p50": 4.0,
+   "p90": 4.0,
+   "p95": 4.0,
+   "max": 4.0
+  },
+  "gemini-3.5-flash-lite | SUMMARIZE_DAY_DISCUSSION": {
+   "calls": 5,
+   "p50": 2.0,
+   "p90": 10.2,
+   "p95": 10.6,
+   "max": 11.1
+  },
+  "gemini-3.5-flash-lite | TRAILSEER_NIGHT_PHASE": {
+   "calls": 3,
+   "p50": 3.7,
+   "p90": 3.7,
+   "p95": 3.7,
+   "max": 3.7
+  },
+  "gemini-3.5-flash-lite | VIGILANTE_NIGHT_PHASE": {
+   "calls": 4,
+   "p50": 4.7,
+   "p90": 5.8,
+   "p95": 6.0,
+   "max": 6.1
+  },
+  "gemini-3.5-flash-lite | discuss": {
+   "calls": 65,
+   "p50": 5.2,
+   "p90": 7.6,
+   "p95": 8.0,
+   "max": 9.5
+  },
+  "gemini-3.5-flash-lite | round_turn": {
+   "calls": 36,
+   "p50": 4.8,
+   "p90": 6.5,
+   "p95": 6.6,
+   "max": 35.1
+  },
+  "gemini-3.5-flash-lite | vote": {
+   "calls": 26,
+   "p50": 5.5,
+   "p90": 7.6,
+   "p95": 9.8,
+   "max": 35.3
+  },
+  "openai/gpt-6-luna | ?": {
+   "calls": 3,
+   "p50": 5.7,
+   "p90": 5.8,
+   "p95": 5.8,
+   "max": 5.8
+  },
+  "openai/gpt-6-luna | CARRIER_KILL": {
+   "calls": 5,
+   "p50": 6.3,
+   "p90": 7.0,
+   "p95": 7.0,
+   "max": 7.1
+  },
+  "openai/gpt-6-luna | COLLECT_ROUND": {
+   "calls": 6,
+   "p50": 1.5,
+   "p90": 1.8,
+   "p95": 1.9,
+   "max": 2.0
+  },
+  "openai/gpt-6-luna | HEALER_NIGHT_PHASE": {
+   "calls": 4,
+   "p50": 5.2,
+   "p90": 7.1,
+   "p95": 7.2,
+   "max": 7.2
+  },
+  "openai/gpt-6-luna | INVESTIGATOR_NIGHT_PHASE": {
+   "calls": 2,
+   "p50": 3.6,
+   "p90": 3.6,
+   "p95": 3.6,
+   "max": 3.6
+  },
+  "openai/gpt-6-luna | NECROMANCER_NIGHT_PHASE": {
+   "calls": 3,
+   "p50": 6.1,
+   "p90": 6.6,
+   "p95": 6.7,
+   "max": 6.8
+  },
+  "openai/gpt-6-luna | PACK_CHAT": {
+   "calls": 12,
+   "p50": 5.0,
+   "p90": 7.1,
+   "p95": 7.7,
+   "max": 8.3
+  },
+  "openai/gpt-6-luna | PACK_SKILL": {
+   "calls": 5,
+   "p50": 4.6,
+   "p90": 6.2,
+   "p95": 6.3,
+   "max": 6.3
+  },
+  "openai/gpt-6-luna | SENTINEL_NIGHT_PHASE": {
+   "calls": 5,
+   "p50": 6.1,
+   "p90": 8.0,
+   "p95": 8.1,
+   "max": 8.2
+  },
+  "openai/gpt-6-luna | SERIAL_KILLER_NIGHT_PHASE": {
+   "calls": 2,
+   "p50": 4.7,
+   "p90": 5.6,
+   "p95": 5.7,
+   "max": 5.8
+  },
+  "openai/gpt-6-luna | SIGILIST_NIGHT_PHASE": {
+   "calls": 5,
+   "p50": 6.1,
+   "p90": 7.6,
+   "p95": 7.6,
+   "max": 7.7
+  },
+  "openai/gpt-6-luna | SPECULATOR_NIGHT_PHASE": {
+   "calls": 1,
+   "p50": 3.7,
+   "p90": 3.7,
+   "p95": 3.7,
+   "max": 3.7
+  },
+  "openai/gpt-6-luna | SUMMARIZE_DAY_DISCUSSION": {
+   "calls": 7,
+   "p50": 9.4,
+   "p90": 19.9,
+   "p95": 21.7,
+   "max": 23.5
+  },
+  "openai/gpt-6-luna | TRAILSEER_NIGHT_PHASE": {
+   "calls": 4,
+   "p50": 5.2,
+   "p90": 7.1,
+   "p95": 7.2,
+   "max": 7.2
+  },
+  "openai/gpt-6-luna | VIGILANTE_NIGHT_PHASE": {
+   "calls": 5,
+   "p50": 6.5,
+   "p90": 9.0,
+   "p95": 9.7,
+   "max": 10.3
+  },
+  "openai/gpt-6-luna | discuss": {
+   "calls": 59,
+   "p50": 6.4,
+   "p90": 8.9,
+   "p95": 9.3,
+   "max": 11.2
+  },
+  "openai/gpt-6-luna | round_turn": {
+   "calls": 46,
+   "p50": 4.4,
+   "p90": 5.4,
+   "p95": 6.7,
+   "max": 8.7
+  },
+  "openai/gpt-6-luna | round_turn_human": {
+   "calls": 1,
+   "p50": 1.0,
+   "p90": 1.0,
+   "p95": 1.0,
+   "max": 1.0
+  },
+  "openai/gpt-6-luna | vote": {
+   "calls": 27,
+   "p50": 6.3,
+   "p90": 8.3,
+   "p95": 9.3,
+   "max": 11.1
+  }
+ },
+ "games": [
+  {
+   "game_id": "e45eda20-ccbf-4d38-8be0-c18ccacd028f",
+   "model": "deepseek/deepseek-flash",
+   "human": "player_6",
+   "beats": 213,
+   "stage_seconds": 1139,
+   "waits_restart_seconds": 7.5,
+   "waits_continuous_seconds": 1.4,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.4
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 3.8
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 2.3
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 5,
+    "votes": 1,
+    "pack lines": 0,
+    "night actions": 2
+   }
+  },
+  {
+   "game_id": "59bd5470-4f07-4210-ae05-b4a5db7d9ff9",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_3",
+   "beats": 225,
+   "stage_seconds": 1111,
+   "waits_restart_seconds": 24.8,
+   "waits_continuous_seconds": 24.8,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 2.2
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 20.5
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.3
+    },
+    {
+     "beat": "vote.ballots-drop",
+     "scene": "vote",
+     "day": 3,
+     "seconds": 0.8
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 3
+   }
+  },
+  {
+   "game_id": "2b29bfe8-714d-4aa8-a4c2-f92b08d02aa5",
+   "model": "deepseek/deepseek-flash",
+   "human": "player_2",
+   "beats": 174,
+   "stage_seconds": 1029,
+   "waits_restart_seconds": 1.3,
+   "waits_continuous_seconds": 1.3,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.3
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 4,
+    "votes": 1,
+    "pack lines": 0,
+    "night actions": 2
+   }
+  },
+  {
+   "game_id": "25003626-2d0f-4150-9e3b-1f828d53a149",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_6",
+   "beats": 378,
+   "stage_seconds": 1957,
+   "waits_restart_seconds": 57.3,
+   "waits_continuous_seconds": 23.3,
+   "waits": [
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 1,
+     "seconds": 15.9
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 0.8
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 10.0
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.2
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 6.6
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 1.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 5.6
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 5,
+     "seconds": 1.4
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 5,
+     "seconds": 3.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 6,
+     "seconds": 1.4
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 6,
+     "seconds": 7.9
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 1,
+    "pack lines": 0,
+    "night actions": 3
+   }
+  },
+  {
+   "game_id": "bcccf605-368f-4201-9988-248f1deebe73",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_9",
+   "beats": 234,
+   "stage_seconds": 1247,
+   "waits_restart_seconds": 17.3,
+   "waits_continuous_seconds": 13.8,
+   "waits": [
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 1,
+     "seconds": 13.8
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 3.5
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 1,
+    "pack lines": 1,
+    "night actions": 3
+   }
+  },
+  {
+   "game_id": "e79f21d7-e0d5-4baa-b478-303aa21ace68",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_7",
+   "beats": 241,
+   "stage_seconds": 1190,
+   "waits_restart_seconds": 43.8,
+   "waits_continuous_seconds": 1.2,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.2
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 4.0
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.4
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 11.4
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 16.0
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 2.6
+    },
+    {
+     "beat": "vote.opens",
+     "scene": "vote",
+     "day": 4,
+     "seconds": 7.2
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 1,
+    "pack lines": 0,
+    "night actions": 3
+   }
+  },
+  {
+   "game_id": "64e0f58b-69de-4a1f-bb33-5812b6b7db2b",
+   "model": "deepseek/deepseek-flash",
+   "human": "player_2",
+   "beats": 255,
+   "stage_seconds": 1460,
+   "waits_restart_seconds": 1.2,
+   "waits_continuous_seconds": 1.2,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.2
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 4,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 1
+   }
+  },
+  {
+   "game_id": "88aee4e4-8cd0-4031-b5e7-d8dc7a770abe",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_10",
+   "beats": 315,
+   "stage_seconds": 1585,
+   "waits_restart_seconds": 72.0,
+   "waits_continuous_seconds": 15.2,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 1,
+     "seconds": 1.8
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.2
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 10.7
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 3.2
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 4.8
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 25.4
+    },
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 3,
+     "seconds": 7.3
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 1.7
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 7.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 5,
+     "seconds": 1.2
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 5,
+     "seconds": 5.7
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 2
+   }
+  },
+  {
+   "game_id": "f2e944a3-399d-4644-8a34-cd5721fc3c2c",
+   "model": "openai/gpt-6-luna",
+   "human": "player_5",
+   "beats": 236,
+   "stage_seconds": 1107,
+   "waits_restart_seconds": 41.8,
+   "waits_continuous_seconds": 4.0,
+   "waits": [
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 1,
+     "seconds": 2.2
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.8
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 5.4
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 2.0
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 22.9
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 2.0
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 4.0
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 1.5
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 2
+   }
+  },
+  {
+   "game_id": "59f6c7d2-9a0f-44ad-957e-9e0759c539ab",
+   "model": "openai/gpt-6-luna",
+   "human": "player_1",
+   "beats": 147,
+   "stage_seconds": 635,
+   "waits_restart_seconds": 50.9,
+   "waits_continuous_seconds": 31.9,
+   "waits": [
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 1,
+     "seconds": 10.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.6
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 4.2
+    },
+    {
+     "beat": "pack.line",
+     "scene": "pack",
+     "day": 2,
+     "seconds": 3.3
+    },
+    {
+     "beat": "pack.line",
+     "scene": "pack",
+     "day": 2,
+     "seconds": 1.4
+    },
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 2,
+     "seconds": 17.3
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.8
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 0.8
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 10.0
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 1
+   }
+  },
+  {
+   "game_id": "645228e7-a75b-4a57-a6e2-1a569838bf31",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_1",
+   "beats": 213,
+   "stage_seconds": 963,
+   "waits_restart_seconds": 100.2,
+   "waits_continuous_seconds": 51.9,
+   "waits": [
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 1,
+     "seconds": 11.0
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 18.6
+    },
+    {
+     "beat": "pack.line",
+     "scene": "pack",
+     "day": 2,
+     "seconds": 0.9
+    },
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 2,
+     "seconds": 29.1
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.3
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 1.5
+    },
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 3,
+     "seconds": 9.6
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 4,
+     "seconds": 20.8
+    },
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 4,
+     "seconds": 7.4
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 1,
+    "votes": 1,
+    "pack lines": 0,
+    "night actions": 1
+   }
+  },
+  {
+   "game_id": "2f19d908-a6b3-4faf-8f16-c2a009bb0428",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": null,
+   "beats": 143,
+   "stage_seconds": 718,
+   "waits_restart_seconds": 0,
+   "waits_continuous_seconds": 0,
+   "waits": [],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 1,
+    "pack lines": 0,
+    "night actions": 3
+   }
+  },
+  {
+   "game_id": "403f4dbc-4a16-45fc-bb22-1c5e67bd5936",
+   "model": "anthropic/claude-haiku-5-5",
+   "human": "player_3",
+   "beats": 264,
+   "stage_seconds": 1207,
+   "waits_restart_seconds": 155.6,
+   "waits_continuous_seconds": 122.0,
+   "waits": [
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 1,
+     "seconds": 22.5
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 2.8
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 24.6
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 3,
+     "seconds": 2.6
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 18.7
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 3,
+     "seconds": 17.4
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 4,
+     "seconds": 1.2
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 4,
+     "seconds": 15.9
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 4,
+     "seconds": 22.7
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 5,
+     "seconds": 2.1
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 5,
+     "seconds": 8.1
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 6,
+     "seconds": 5.3
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 6,
+     "seconds": 10.7
+    },
+    {
+     "beat": "vote.opens",
+     "scene": "vote",
+     "day": 6,
+     "seconds": 1.0
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 4
+   }
+  },
+  {
+   "game_id": "ab44887a-7f24-46a1-b512-3bca90be52d7",
+   "model": "gemini-3.5-flash-lite",
+   "human": "player_3",
+   "beats": 239,
+   "stage_seconds": 1139,
+   "waits_restart_seconds": 46.4,
+   "waits_continuous_seconds": 40.7,
+   "waits": [
+    {
+     "beat": "morning.shutter-down",
+     "scene": "morning",
+     "day": 1,
+     "seconds": 34.5
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 1.2
+    },
+    {
+     "beat": "day.speech",
+     "scene": "day",
+     "day": 2,
+     "seconds": 0.7
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 2.3
+    },
+    {
+     "beat": "day.pass",
+     "scene": "day",
+     "day": 2,
+     "seconds": 7.7
+    }
+   ],
+   "unmatched_counts": {
+    "speech and passes": 0,
+    "votes": 0,
+    "pack lines": 0,
+    "night actions": 2
+   }
+  }
+ ]
+}

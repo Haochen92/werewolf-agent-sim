@@ -9,6 +9,11 @@
 > Langfuse trace `0feb5de6`, 1,436 spans; 527 durable events) and the beat sheet's holds (§0).
 > Companion records: beat sheet §12 (live pacing), `server_design_notes.md` §7 (the AFK
 > clocks), `docs/agentic_ai_encountered_issues.md` entry 3 (how this came up).
+>
+> *2026-10-24: the lag was measured again, from traces, on 13 served games, mostly Claude Haiku 5.5,
+> by a runner that can be rerun on any served game: [`stage_fit/`](stage_fit/README.md). On Haiku the stage
+> waits for the model 2.7–5.1% of its playing time, mostly in runs of passes and at the morning after the
+> pack's night chain. The figures below are the flash-lite game of 2026-10-01.*
 
 ## 0. The ruling, and how to read the sheet
 
