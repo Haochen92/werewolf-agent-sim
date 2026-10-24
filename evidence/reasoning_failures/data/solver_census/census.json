@@ -1,0 +1,32 @@
+{
+ "pointer": {
+  "code": "evaluation/experiments/deduction_solver_census.py",
+  "git_commit": "e765a18ef49a2b398ee8e15858a93baf43841326",
+  "git_dirty": true
+ },
+ "games": 150,
+ "seed": 20261018,
+ "completeness": {
+  "public_views": 525,
+  "seat_views": 3408,
+  "views_with_a_miss": 0,
+  "roles_missed": 0,
+  "unsolved_views": 0,
+  "examples": []
+ },
+ "timing": {
+  "machine": "aarch64, aarch64",
+  "seat_candidates": {
+   "n": 3408,
+   "median_ms": 0.448,
+   "p99_ms": 1.65,
+   "max_ms": 5.113
+  },
+  "ac2_whole_turn": {
+   "n": 30,
+   "median_ms": 10.469,
+   "p99_ms": 12.308,
+   "max_ms": 12.308
+  }
+ }
+}
