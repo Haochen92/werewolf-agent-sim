@@ -24,6 +24,7 @@ from evaluation.src.model_admission.schemas import (
     ArmSampleStats,
     ArmVerdict,
     ArmVoteScore,
+    CaseSet,
     CriterionResult,
     VoteComparison,
 )
@@ -323,19 +324,20 @@ def vote_criteria(case_set_name: str, reference: ArmVoteScore | None, candidate:
     return results
 
 
-def speed_and_cost_criteria(case_set_name: str, candidate: ArmSampleStats | None,
+def speed_and_cost_criteria(case_set: CaseSet, candidate: ArmSampleStats | None,
                             config: AdmissionConfig) -> list[CriterionResult]:
     """Apply the speed and cost ceilings that are set, on one case set.
 
     Args:
-        case_set_name: e.g. "discussion".
+        case_set: the case set; its own ``speed`` limits, when set, replace the config's shared ones.
         candidate: the candidate arm's totals on this set, or None when its outputs are missing.
         config: the admission config (its ``criteria.speed`` and ``criteria.cost``).
 
     Returns:
         One result per ceiling that is not None, in the order p50, p95, output tokens, reasoning tokens.
     """
-    speed = config.criteria.speed
+    case_set_name = case_set.name
+    speed = case_set.speed if case_set.speed is not None else config.criteria.speed
     cost = config.criteria.cost
     if candidate is None:
         measured_by_name = {}
@@ -370,16 +372,37 @@ def speed_and_cost_criteria(case_set_name: str, candidate: ArmSampleStats | None
     return results
 
 
-def overall_verdict(criteria: list[CriterionResult]) -> str:
-    """Return one level's verdict from its criteria.
+def mark_advisory_criteria(criteria: list[CriterionResult], quality_rejects: bool) -> None:
+    """Mark the quality and vote criteria as advisory unless the config lets quality reject.
+
+    While the project is experimental a model is dropped only for cost, latency or integration
+    (owner, 2026-10-24), so its quality results are reported but do not decide the verdict.
 
     Args:
-        criteria: every criterion applied to the level.
+        criteria: every criterion applied to one level; changed in place.
+        quality_rejects: the config's ``criteria.quality_rejects``.
+    """
+    if quality_rejects:
+        return
+    for criterion in criteria:
+        if criterion.area in ("quality", "votes"):
+            criterion.blocking = False
+
+
+def overall_verdict(criteria: list[CriterionResult]) -> str:
+    """Return one level's verdict from its blocking criteria.
+
+    Args:
+        criteria: every criterion applied to the level; advisory ones (``blocking`` False) are ignored.
 
     Returns:
-        "reject" when any failed; else "incomplete" when any was not measured; else "admit".
+        "reject" when a blocking criterion failed; else "incomplete" when a blocking one was not measured;
+        else "admit".
     """
-    statuses = [criterion.status for criterion in criteria]
+    statuses = []
+    for criterion in criteria:
+        if criterion.blocking:
+            statuses.append(criterion.status)
     if "failed" in statuses:
         return "reject"
     if "not_measured" in statuses:
@@ -388,10 +411,12 @@ def overall_verdict(criteria: list[CriterionResult]) -> str:
 
 
 def cheapest_passing_level(arm_verdicts: list[ArmVerdict]) -> tuple[str | None, str]:
-    """Return the admitted level with the fewest output tokens per replayed sample.
+    """Return the cheapest admitted level, preferring levels that also passed the advisory checks.
 
-    Output tokens already include the reasoning tokens (the providers bill reasoning as output and
-    report it inside the output count), so they are the whole generated cost of a sample.
+    Cheapest means the fewest output tokens per replayed sample. Output tokens already include the
+    reasoning tokens (the providers bill reasoning as output and report it inside the output count), so
+    they are the whole generated cost of a sample. A level that failed an advisory quality check is
+    still admitted, but the cheapest level is chosen among those that failed none, when any did.
 
     Args:
         arm_verdicts: one verdict per level tried.
@@ -403,12 +428,25 @@ def cheapest_passing_level(arm_verdicts: list[ArmVerdict]) -> tuple[str | None, 
     admitted = [arm for arm in arm_verdicts if arm.verdict == "admit"]
     if not admitted:
         return None, "no level was admitted"
+    clean = []
+    for arm in admitted:
+        failed_any = False
+        for criterion in arm.criteria:
+            if criterion.status == "failed":
+                failed_any = True
+        if not failed_any:
+            clean.append(arm)
+    note = ""
+    if clean:
+        admitted = clean
+    else:
+        note = "no admitted level passed every advisory quality check; "
     priced = [arm for arm in admitted if arm.output_tokens_per_sample is not None]
     if not priced:
         return None, "no admitted level recorded token usage"
     cheapest = min(priced, key=lambda arm: arm.output_tokens_per_sample)
     others = [f"{arm.thinking_level} {arm.output_tokens_per_sample}" for arm in priced if arm is not cheapest]
-    basis = (f"fewest output tokens (reasoning included) per replayed sample over every case set: "
+    basis = (f"{note}fewest output tokens (reasoning included) per replayed sample over every case set: "
              f"{cheapest.thinking_level} {cheapest.output_tokens_per_sample}")
     if others:
         basis += f", against {', '.join(others)}"
@@ -500,8 +538,9 @@ def evaluate_admission(config: AdmissionConfig, probe_record_paths: dict[str, Pa
                 criteria += vote_criteria(case_set.name, scores_by_arm.get(reference_arm),
                                           scores_by_arm.get(arm_label),
                                           vote_comparisons.get(case_set.name, {}).get(arm_label), config)
-            criteria += speed_and_cost_criteria(case_set.name, candidate_stats, config)
+            criteria += speed_and_cost_criteria(case_set, candidate_stats, config)
 
+        mark_advisory_criteria(criteria, config.criteria.quality_rejects)
         arm_verdicts.append(ArmVerdict(
             thinking_level=level,
             arm_label=arm_label,

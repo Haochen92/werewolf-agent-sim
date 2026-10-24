@@ -41,6 +41,7 @@ from evaluation.src.model_admission.schemas import (
     AdmissionVerdict,
     ArmVoteScore,
     CaseSet,
+    CriterionResult,
     PlannedStep,
 )
 from evaluation.src.model_admission.vote_scoring import load_vote_cases, read_bench_jsonl, score_bench_votes
@@ -473,6 +474,20 @@ def _shown(value: object) -> str:
     return "not measured" if value is None else str(value)
 
 
+def criterion_status_text(criterion: CriterionResult) -> str:
+    """Return a criterion's status for the report table, marking advisory ones.
+
+    Args:
+        criterion: one applied criterion.
+
+    Returns:
+        The status, e.g. "failed", or "failed (advisory)" when the criterion does not decide the verdict.
+    """
+    if criterion.blocking:
+        return criterion.status
+    return f"{criterion.status} (advisory)"
+
+
 def _criteria_table(verdict: AdmissionVerdict, areas: tuple[str, ...]) -> list[str]:
     """Return markdown table lines for every level's criteria in the given areas.
 
@@ -489,7 +504,7 @@ def _criteria_table(verdict: AdmissionVerdict, areas: tuple[str, ...]) -> list[s
             if criterion.area not in areas:
                 continue
             lines.append(f"| {arm.thinking_level} | {criterion.name} | {criterion.case_set or '—'} | "
-                         f"{criterion.value} | {criterion.limit} | {criterion.status} |")
+                         f"{criterion.value} | {criterion.limit} | {criterion_status_text(criterion)} |")
     if len(lines) == 2:
         return ["No criterion in this area is set."]
     return lines

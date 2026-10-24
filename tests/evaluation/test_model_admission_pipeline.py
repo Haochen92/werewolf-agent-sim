@@ -11,7 +11,7 @@ from Agents.schemas.roles import TOWN, WOLVES, lineup, side_of
 from evaluation.src.cli_runner import admit
 from evaluation.src.core.settings import REPO_ROOT
 from evaluation.src.model_admission import gate, vote_scoring
-from evaluation.src.model_admission.schemas import AdmissionConfig
+from evaluation.src.model_admission.schemas import AdmissionConfig, SpeedCriteria
 
 PLAYERS = [f"player_{i}" for i in range(1, 11)]
 ROLES = dict(zip(PLAYERS, lineup("serial_killer", "speculator")))
@@ -236,6 +236,7 @@ def _gate(config: AdmissionConfig, results_root: Path):
 
 def test_the_gate_admits_rejects_and_marks_incomplete_and_names_the_cheapest_level(tmp_path):
     config = _config(_datasets(tmp_path), ["low", "medium", "high", "minimal"])
+    config.criteria.quality_rejects = True  # the commercial setting: a quality failure rejects
     results_root = tmp_path / "results"
     _write_synthetic_outputs(results_root, config)
 
@@ -256,6 +257,28 @@ def test_the_gate_admits_rejects_and_marks_incomplete_and_names_the_cheapest_lev
     assert (discussion_low.seconds_p50, discussion_low.seconds_p95) == (8.0, 8.0)
 
 
+def test_quality_failures_are_advisory_by_default_and_the_cheapest_level_avoids_them(tmp_path):
+    config = _config(_datasets(tmp_path), ["low", "medium", "high"])
+    assert config.criteria.quality_rejects is False  # experimental: drop only for cost, latency, integration
+    results_root = tmp_path / "results"
+    _write_synthetic_outputs(results_root, config)
+
+    verdict = _gate(config, results_root)
+    by_level = {arm.thinking_level: arm for arm in verdict.arms}
+    assert by_level["high"].verdict == "admit"  # its +50-point bad-rate gap is reported, not a rejection
+    advisory_failures = []
+    for criterion in by_level["high"].criteria:
+        if criterion.status == "failed":
+            advisory_failures.append((criterion.name, criterion.blocking))
+    assert advisory_failures == [("bad_rate_gap", False)]
+    assert verdict.cheapest_passing_level == "low"  # chosen among levels with no failed check
+    bad_rate_gap = None
+    for criterion in by_level["high"].criteria:
+        if criterion.name == "bad_rate_gap" and criterion.status == "failed":
+            bad_rate_gap = criterion  # one per case set; the discussion set's is the one that failed
+    assert admit.criterion_status_text(bad_rate_gap) == "failed (advisory)"
+
+
 def test_integration_fails_a_mode_that_does_not_reason_and_a_failed_real_turn(tmp_path):
     config = _config(_datasets(tmp_path), ["medium"])
     results = gate.integration_criteria(_probe_record(0.0, real_failures="3/6"), "medium", config)
@@ -271,8 +294,25 @@ def test_latency_is_not_measured_when_samples_have_no_timings(tmp_path):
     stats = gate.arm_sample_stats("candidate_low", samples, judged=True)
     assert stats.seconds_p50 is None and stats.seconds_p95 is None
     config = _config(_datasets(tmp_path), ["low"])
-    speed = gate.speed_and_cost_criteria("discussion", stats, config)
+    discussion_set = config.case_sets[0]
+    speed = gate.speed_and_cost_criteria(discussion_set, stats, config)
     assert [criterion.status for criterion in speed] == ["not_measured", "not_measured"]
+
+
+def test_a_case_set_s_own_speed_limits_replace_the_shared_ones(tmp_path):
+    samples = []
+    for sample_index in range(4):
+        samples.append({"case_id": "d0", "sample": sample_index, "valid": True, "bad": False, "units": [],
+                        "usage": {"seconds": 8.0}})
+    stats = gate.arm_sample_stats("candidate_low", samples, judged=True)
+    config = _config(_datasets(tmp_path), ["low"])
+    config.criteria.speed = SpeedCriteria(max_p50_seconds=12.0)
+    discussion_set = config.case_sets[0]
+    shared = gate.speed_and_cost_criteria(discussion_set, stats, config)
+    assert [criterion.status for criterion in shared] == ["passed"]  # 8 s against the shared 12 s
+    discussion_set.speed = SpeedCriteria(max_p50_seconds=5.5)
+    own = gate.speed_and_cost_criteria(discussion_set, stats, config)
+    assert [(criterion.limit, criterion.status) for criterion in own] == [("at most 5.5s", "failed")]
 
 
 # --- the runner ----------------------------------------------------------------------------------------

@@ -59,6 +59,10 @@ class CaseSet(BaseModel):
     """Vote sets only: case id → the targets that count as right on that case, replacing the role
     lookup, e.g. {"9b827b695a61ece9": ["player_6", "player_10", "abstain"]}. "abstain" may be listed.
     A case record can carry the same list itself as ``right_vote_targets``; this mapping wins."""
+    speed: SpeedCriteria | None = None
+    """This set's own latency limits, replacing ``criteria.speed`` for it; None uses the shared ones.
+    The stage gives each phase a different room (``frontend/docs/stage_fit/README.md``), so a
+    discussion set and a vote set can carry different limits."""
 
 
 class IntegrationCriteria(BaseModel):
@@ -97,7 +101,7 @@ class SpeedCriteria(BaseModel):
     """Seconds per replayed sample, from the timings each sample records. None skips the check."""
 
     max_p50_seconds: float | None = None
-    """Highest median seconds per sample allowed, e.g. 12.0."""
+    """Highest median seconds per sample allowed, e.g. 5.5."""
     max_p95_seconds: float | None = None
     """Highest 95th-percentile seconds per sample allowed, e.g. 30.0."""
 
@@ -124,6 +128,10 @@ class AdmissionCriteria(BaseModel):
     """Latency checks, per case set."""
     cost: CostCriteria = Field(default_factory=CostCriteria)
     """Token checks, per case set."""
+    quality_rejects: bool = False
+    """Whether a failed quality or vote criterion rejects the candidate. False while the project is
+    experimental (owner, 2026-10-24): a model is dropped only for cost, latency or integration, and its
+    quality results are reported beside the verdict. True for a commercial release."""
 
 
 class ProbeSettings(BaseModel):
@@ -359,6 +367,9 @@ class CriterionResult(BaseModel):
     """The criterion, e.g. "at most +6.0 points"."""
     status: CriterionStatus
     """Passed, failed, or not measured (the outputs needed are missing)."""
+    blocking: bool = True
+    """Whether this criterion decides the verdict. Quality and vote criteria are advisory (False) unless
+    the config's ``quality_rejects`` is set; an advisory failure is reported, never a rejection."""
 
 
 class ArmVerdict(BaseModel):
@@ -369,7 +380,8 @@ class ArmVerdict(BaseModel):
     arm_label: str
     """Its arm label in every bench run, e.g. "candidate_low"."""
     verdict: Literal["admit", "reject", "incomplete"]
-    """"reject" when any criterion failed, else "incomplete" when any was not measured, else "admit"."""
+    """"reject" when a blocking criterion failed, else "incomplete" when a blocking one was not measured,
+    else "admit". Advisory criteria never change it."""
     criteria: list[CriterionResult]
     """Every criterion applied."""
     output_tokens_per_sample: float | None
@@ -403,3 +415,7 @@ class AdmissionVerdict(BaseModel):
     """Vote case set name → arm label → that arm's vote score."""
     vote_comparisons: dict[str, dict[str, VoteComparison]] = Field(default_factory=dict)
     """Vote case set name → candidate arm label → its comparison with the reference arm."""
+
+
+# CaseSet refers to SpeedCriteria, defined after it.
+CaseSet.model_rebuild()
