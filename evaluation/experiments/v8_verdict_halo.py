@@ -2,7 +2,7 @@
 (2026-10-13).
 
 Record: evidence/memory_system/v8/decisions.md §13; the test the case study
-evidence/case_studies/observation_extraction.md named. Each night or vote observation's `net_verdict`
+evidence/extraction/selection/outcome_halo_case_study.md named. Each night or vote observation's `net_verdict`
 (positive +1, negative −1, mixed or unclear 0; as extracted, and as the de-halo pass left it) is fitted
 against the deterministic grade of that role's decisions in that game (grading.py, the mean over its
 scopes) and whether its side won. An observation does not say which decision it describes, so the grade

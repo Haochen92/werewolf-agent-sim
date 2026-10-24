@@ -76,9 +76,9 @@ def enrich_payload_with_memory(
             **kept["metadata"], "lookup_reused": True}
 
     situations, situation_dimensions = _generate_situations_for_agent(payload, action_phase)
-    # Non-reranked cap = 5: the observations-only saturation point measured in
-    # evidence/retrieval/capacity_limits (cap=7 regresses action quality below
-    # cap=3). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
+    # Non-reranked fetch width = 5, but cap_per_situation below still keeps 3 per situation, so the
+    # prompt sees the cap-3 condition of evidence/retrieval/capacity_limits, not its chosen cap 5 (the
+    # report's addendum). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
     # The stage filter searches the whole cell (STAGE_FILTER_TOP_K) so the cap can refill with
     # same-stage lessons.
     retrieval_top_k = (STAGE_FILTER_TOP_K if plan.stage_filter
