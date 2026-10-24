@@ -5,7 +5,7 @@ failure is entered as a case, frozen from the game's own checkpoints as a replay
 and tested. The register below is the index; the sections after it are the experiments, in the order
 they were run. A later section can revise an earlier one; earlier sections are left as they were.
 
-Companions: the population census of hallucinations (`evidence/evaluation/hallucination_bench/`), and
+Companions: the population census of hallucinations (`evidence/evaluation/factual_errors/`), and
 the first Haiku 5.5 game's failures (`evidence/game_play_enhancement/discussion_evidence.md` §8.6–8.7),
 whose frozen cases are reused here. Data is in `data/`; code and configs are listed in the sources
 footer.
@@ -159,6 +159,12 @@ standing (R5).
 the judge found all 27 wrong: 20 from Haiku, 6 from Sonnet, 1 live (R4, 2f19d908 day 3, "consistent with
 the nothing-to-protect premise"). None reported a real conflict. The claim ledger already checks claims
 against the record in code (`Agents/rules/claim_ledger.py`).
+
+*(2026-10-24.)* The judge, Sonnet 5.5, was also one of the two models compared, and a model tends to
+prefer its own output. That bias would favour Sonnet, which still came out no better (18 of 30 flawed on
+each), so the decision below holds; the `record_check` finding can be confirmed by reading each one against
+the record. What it weakens is the split of error kinds, including Sonnet's lower total (25 against 32). A
+judge from neither model compared, with a person's check on a few verdicts, would have removed the doubt.
 
 **Decision.** The summary stays on Haiku. `record_check` was removed on 2026-10-16 (owner): the summary no
 longer writes it, and seats no longer see it from older summaries. It had been added on 2026-10-03, when the

@@ -603,7 +603,7 @@ rejected the day before.
   The public saves were announced, but the healer believed a confident lie over them.
 
 **Revisions for information fidelity** (all matter more once phase 3 adds roles that act at night).
-A code audit the same day ([`code_audit_2026_10_03.md`](../evaluation/hallucination_bench/code_audit_2026_10_03.md))
+A code audit the same day ([the code audit](../evaluation/factual_errors/experiment_log.md), §8)
 found more of the same kind: information an agent needed that it was never given, or was given
 without saying how far to trust it. All were built on 2026-10-03 (commits `f1b3017`..`c9dbc79`,
 baseline tag `fidelity-baseline`), as the new default rather than behind a switch:
@@ -692,7 +692,7 @@ master makes it clear" (a guard for R-a).
   "supported / contradicted / unverified", written by the summariser. Nearly all were "unverified",
   and the compact claim record built from them dropped the field, so the next day's summariser
   never saw an earlier verdict (verification note
-  [`fix_verification_2026_10_04.md`](../evaluation/hallucination_bench/fix_verification_2026_10_04.md),
+  [the fix check](../evaluation/factual_errors/experiment_log.md) (§9),
   item 3).
 - *Two sections retold the day.* "Alliances and blocs" restated the accusations, and "village
   dynamics" retold the day as a story, which is how the wolf's premise in §6.4 entered the summary
@@ -2005,6 +2005,138 @@ Limits: a replay is a regression check on known failures, not a rate; the origin
 to measure the rule on its own; the judge made one wrong call in the verdicts read (it marked "the
 Illusionist was revealed as a wolf" false). Full games on the new prompts are the next check.
 
+### 8.7 Asking the reads to compare candidates: a replay of the game's votes (2026-10-16)
+
+**The vote that prompted it.** On day 5 of `403f4dbc` four players lived: the vigilante, the human Necromancer
+(seat 3), the real sentinel (seat 9) and the speculator, which had picked Town. The vigilante voted the sentinel
+out. Its private note gave the reason: "Player_9's sentinel claim is unverified and their watch reports are
+self-reported, so I treat them as the leading suspect." The day before, it had written that the same sentinel's
+night 2 watch fitted the investigator's check, and both the investigator and the illusionist the check named
+had since died with their roles shown. Nothing new contradicted the claim. The two quiet seats got "no evidence
+either way". So a consistent claim was held to a standard that silence never had to meet (investigation in
+[`data/haiku_sentinel_vote/`](data/haiku_sentinel_vote/README.md)).
+
+**Why the reads allow it.** Before every decision a seat writes a read of each living player: a suspected role,
+a confidence and one line of why. Each read is written on its own, so nothing in the format makes the model use
+one standard across players. "Unverified" can count against the claimant while "no claims" counts as neutral for
+everyone else.
+
+**The fixes weighed.** A rule about claims ("an uncontested claim is credible") would fix this ballot. It would
+also make an uncontested bluff more likely to work. The same game shows that bluff a day later: on day 6 the
+Necromancer claimed sigilist for the first time, unchallenged, and the real sigilist had died with its role
+hidden. The vigilante then voted out the speculator, and the Necromancer won. Reads organised by role (the
+candidates for each role, ranked) would make the comparison structural, but it is a new schema with its own
+failure modes. The owner chose the smallest change that could test the idea: one sentence in the rules block
+that every seat and call type reads, so it costs nothing per seat in the cached prefix:
+
+> Form your reads by comparing the living players, not assessing each in isolation. In each why, explain what
+> makes that player a stronger or weaker candidate for the suspected role than the strongest plausible
+> alternative. Weigh supporting and opposing evidence; if the evidence does not distinguish the candidates, say
+> so. Do not force a unique assignment or invent differences.
+
+**The test** (`data/haiku_vote_replay/`, per-case tables in its README). Eleven votes were frozen from the game's
+own checkpoints:
+
+- the two day-5 ballots on the sentinel (the vigilante and the speculator);
+- the two day-6 ballots the bluff won;
+- seven controls whose votes were right: the day-5 sentinel, and three town voters on each of days 3 and 4.
+
+Each was sampled ten times per arm on Haiku 5.5 at effort low, memory off. The measure is the vote: right means
+naming the actual threat. A regex count of the evidence each read cites shows what the vote rests on. The two
+planned arms were the current code (`1757a49c`) and the current code with the sentence. The current arm's day-4
+votes came out far below the original game's, so two earlier commits were added to find where that changed: the
+code before the October 12 fixes (`746197c4`), and the last commit with the earlier prompt layout
+(`09af8272`, tag `prompt-layout-baseline`).
+
+Votes right. Day 5's figure counts both ballots that went wrong; day 6 counts both bluff ballots:
+
+| Votes right | Before Oct 12 fixes | Earlier layout (tag) | Current | Current + sentence |
+|---|---|---|---|---|
+| Day 5, vigilante and speculator (of 20) | 8 | 5 | 7 | 0 |
+| Day 5, of which the vigilante (of 10) | 4 | 3 | 7 | 0 |
+| Day 6, after the bluff (of 20) | 0 | 0 | 1 | 2 |
+| Controls, day 3 (of 30) | 30 | 30 | 30 | 28 |
+| Controls, day 4 (of 30) | 25 | 20 | 13 | 17 |
+| Control, the day-5 sentinel (of 10) | 8 | 8 | 7 | 6 |
+
+**The sentence did not help on the ballot it was written for.** On the current code the day-5 vigilante voted
+the Necromancer in 7 of 10 samples, the sentinel in 1 and abstained in 2. With the sentence it never voted the
+Necromancer (0 of 10, Fisher p = 0.003), voted the sentinel 3 times and abstained 6. Its reads show why. Seven of
+the ten read player_3 as "nothing separates player_3 from player_10" or close to it. The one fact that did
+separate it was weak: player_3 alone abstained on day 4 while the town voted out the chanteuse. That fact was
+cited in 3 of 10 reads, against 8 of 10 on the current code. The sentence's escape clause ("if the evidence does
+not distinguish the candidates, say so") is what Haiku used, and the vote's abstain option absorbed the
+uncertainty it produced. The current arm's 7 of 10 is not all sound reasoning either: three of its reads say
+player_3 voted out the investigator on day 3, which player_1 did.
+
+**Where the evidence was strong, the sentence helped.** On day 4 the decisive evidence is the vote record: on day
+3 player_1 voted the investigator out alongside the illusionist wolf. The current arm's reads of player_1 cited
+that vote in 2 of 30 samples. With the sentence they cited it in 11 (p = 0.01), and the votes for player_1 rose
+from 13 to 17 of 30 (not significant at this size). One plausible reading of the two days together: comparing
+candidates surfaces a strong fact the model had passed over, and discounts a weak one, which turns a lean into an
+abstention.
+
+**No arm resists the bluff.** On day 6 the vigilante read player_3 as the sigilist in 7 to 10 samples of 10 on
+every arm, and voted the speculator out in 7 to 10. Two facts tell the two apart. The sentinel, confirmed by its
+own elimination, had voted player_3 the day before. And player_3 made its first claim on the game's last day. No
+read in any arm mentions the claim's timing. Two reads at the layout tag noted the sentinel's vote, and both
+still voted the speculator out. The sentence changed none of this.
+
+**The other turns, and the cost.** On the 18 discussion turns of §8.6 (five samples each), samples bad in any
+part stayed at 48 of 90 (sign test over turns: 6 better, 5 worse). The day-3 controls voted right 30 and 28 of
+30. The cost is in output: reads grew from 517 to 802 characters on average, and a vote's output tokens from 960
+to 1,297 (+35%). The input grew by about 120 tokens, inside the cached system block.
+
+**Decision: not adopted.** On this game the sentence trades the target ballot for a gain on the control day.
+That is the opposite of what it was for, and it costs a third more output on every vote. Its effect also depends
+on how strong the evidence is, which no fixed wording can know in advance. The prompt is unchanged, and there is
+no prompt epoch.
+
+**The day-4 votes found a larger problem: the vote record went out of use.** The day-4 controls were right 25 of
+30 times before the October 12 fixes, 20 of 30 at the layout tag, and 13 of 30 on the current code (25 against 13:
+p = 0.003). The reads show the same path. The day-3 vote on the investigator is cited in 19, 12 and 2 of 30
+samples. The day-4 sentinel, voting player_1 10 of 10 times on both earlier arms, voted the vigilante in 6 of 10
+on the current code. Its reads list player_1 as "asked pointed questions to player_9 but no evidence either way".
+The drop comes in two steps:
+
+- between `746197c4` and the tag (the visit-direction rule, reads-first output order);
+- between the tag and now (the shared-prefix layout, and dropping the unused memory-verdict fields).
+
+One plausible reading of the second step: the layout moved the role card, with its "the public voting record is
+the most durable hard evidence you have … weigh it", from before the transcript to after it. The ballots are then
+read before the instruction that tells the model what they are for. Neither step is isolated. The layout's own
+comparison (`evidence/caching/experiment_log.md` §13–14) measured invented facts and how often seats spoke, not
+votes. This is one game, three voters and one day, so it calls for a test on more votes, not a conclusion about
+the deployed game.
+
+**The original ballot on the older code.** The day-5 vigilante voted the sentinel 3 of 10 times before the
+October 12 fixes, 6 at the layout tag and 1 on the current code. The failure the owner saw does reproduce. But a
+spread of 1 to 6 across three arms is too wide to credit any change with fixing it.
+
+**Tagging each ballot with what its target turned out to be did not help either.** The prompt already holds every
+ballot, day by day, in the game master's record. A ballot and the reveal of its target's role sit in different
+announcements, though: "player_1 voted to eliminate player_4" on day 3, "player_4 … was a investigator" in the
+night 3 announcement after it. The accusations list already tags a dead player with its revealed role, so the
+same tag was put on each ballot's target, when the prompt is built:
+
+```
+  player_1 voted to eliminate player_4 (revealed investigator, killed night 3)
+```
+
+A living target, or one whose role was hidden, is left as written. On the current code (`1757a49c` plus this
+change, scored by vote only), day 4 was right 12 of 30 times against 13, and the read of player_1 cited the vote
+0 times in 30, with the role now on the ballot line. Day 5 fell from 14 to 7 of 30. Per case it moved both ways:
+the day-4 sentinel 4 → 9 of 10, the day-4 vigilante 6 → 2, the healer 3 → 1, the day-5 sentinel 7 → 3. The change
+only added true facts to earlier days' record, so this spread measures how far one case's ten samples move when
+any wording around them changes. That is more than any of the effects tested here. It also weakens the day-4
+reading above: part of the drop in day-4 votes across code versions may be this sensitivity. The citation counts
+were steadier: 19 and 12 of 30 on the earlier layout, 2 and 0 on the shared-prefix layout. The tag was not
+adopted, and the change was removed.
+
+Limits: one game, and a case's ten samples are answers to one prompt, not ten situations. The Sonnet 5.5 judge's
+verdicts are a fact guard only. Its day-4 flags are false positives from an ambiguous expectation, listed with the
+other judge notes in the data README.
+
 ---
 
 ## 9. Open questions (as of 2026-10-03)
@@ -2069,6 +2201,18 @@ Illusionist was revealed as a wolf" false). Full games on the new prompts are th
    or eval checks the tags. Candidate: a frozen set of messages with hand-labelled targets, form
    and stance, scored like the other judge cases, so a prompt or model change that degrades the
    tags is caught before it degrades the scheduler.
+9. **Limitation: one missing accusation tag can silence an accused player for the day (seen once,
+   2026-10-07; recorded 2026-10-13).** In step 8 game 1 (`phase2-step8-game1-c3eec1ba`), day 3, the
+   accusations against player_7 carried no tags, so every route to speak failed together: no reactive
+   turn was queued; the sweep line, a defence, met the echo gate without the "answering someone who
+   named me" exemption (it needs an earlier line tagged as naming the speaker), and the judge held it
+   as a repeat; a held player is not asked again that day; and no closing ran. Player_7 was lynched as
+   a villager without having spoken. The judge ran at minimal thinking (`get_llm_judge`), the players
+   at medium, both on `gemini-3.5-flash-lite`; whether either actually reasoned is not recorded.
+   Owner's reading: likely a rare case of a non-reasoning judge, not treated as a heavy one yet; it
+   stands as a limitation of the current design. Candidate fixes if it recurs: exempt a sweep line
+   when an earlier line today names the speaker in its text, not its tags; let a player whose held
+   line was a defence be asked again; item 8's tag set for the root cause.
 
 ---
 
