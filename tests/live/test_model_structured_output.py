@@ -40,17 +40,18 @@ from server.game.model_catalog import menu_models
 
 pytestmark = pytest.mark.live
 
+# The key each prefixed provider's chat model reads (Agents/llm_factory/providers/); a bare id is
+# Gemini. A Claude seat reads CLAUDE_API_KEY only: ANTHROPIC_API_KEY serves the direct SDK calls.
+_KEY_ENV = {"anthropic/": "CLAUDE_API_KEY", "deepseek/": "DEEPSEEK_API_KEY", "mistral/": "MISTRAL_API_KEY",
+            "nim/": "NVIDIA_API_KEY", "openai/": "OPENAI_API_KEY", "openrouter/": "OPENROUTER_API_KEY",
+            "xai/": "XAI_API_KEY"}
+
 
 def _credential_missing(model: str) -> str | None:
     """The reason to skip this model, or None when its credential looks present."""
-    if model.startswith("deepseek/"):
-        return None if os.getenv("DEEPSEEK_API_KEY") else "DEEPSEEK_API_KEY not set"
-    if model.startswith("nim/"):
-        return None if os.getenv("NVIDIA_API_KEY") else "NVIDIA_API_KEY not set"
-    if model.startswith("openai/"):
-        return None if os.getenv("OPENAI_API_KEY") else "OPENAI_API_KEY not set"
-    if model.startswith("openrouter/"):
-        return None if os.getenv("OPENROUTER_API_KEY") else "OPENROUTER_API_KEY not set"
+    key_env = next((env for prefix, env in _KEY_ENV.items() if model.startswith(prefix)), None)
+    if key_env:
+        return None if os.getenv(key_env) else f"{key_env} not set"
     adc = Path.home() / ".config/gcloud/application_default_credentials.json"
     if os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS") or adc.exists():
         return None
