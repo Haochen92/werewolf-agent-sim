@@ -119,8 +119,8 @@ evidence/gameplay/
                           problem 1, factual errors, is already written; 2–5 to write)
   discussion_evidence.md  the journey log, kept whole, with a section index at its head (drafted in the assessment)
   discussion/             from sequential_discussion/: the day discussion today (rewrite) + quality_gate/;
-                          the one home of the persona-voice and silence work (2026-10-18): the voices-off decision
-                          and the silence ruling, today recorded only in data/ READMEs; hub problem 4 links here
+                          the one home of the persona-voice and silence work (2026-10-18): the voices decision (on in
+                          hosted games since 2026-10-19, off in batch) and the silence ruling, today recorded only in data/ READMEs; hub problem 4 links here
   turn_prompt/            from generation_prompt/: NEW report (what a seat reads at its turn, in what order,
                           what it must output, which choices were tested); a short section on the record
                           each seat reads (day summary, claim ledger) that links to extraction/day_summary/,
@@ -226,7 +226,7 @@ different numbers or a different conclusion, which is the fault found today.
 | "Filtering doesn't stack on a clean store" | `retrieval` | `dedup/store_retrieval_impact` (the measurement) |
 | Discussion-tagger validation | `evaluation/llm_judge/discussion_tagger.md` | `discussion_tagger` |
 | Drift controls | `evaluation/experimental_controls` | `model_drift` (moved beside it) |
-| The silence ruling and voices off (2026-10-18) | `gameplay/discussion` | the gameplay hub, problem 4 |
+| The silence ruling and the voices (2026-10-18/19) | `gameplay/discussion` | the gameplay hub, problem 4 |
 
 ---
 
@@ -253,7 +253,7 @@ These state something the record has retracted or does not establish.
 
 | Document | Size | Action |
 |---|---|---|
-| `sequential_discussion/report.md` → `discussion/` | L | *Reference.* **Pilot.** Rewrite as the day discussion today (opening round → reactive obligations → sweeps → closing defence); the June concurrent → sequential decision and the quality gate as the case study, with N; the novelty gate kept as a falsified idea, not a mechanism; and a section on persona voices and silence (voices off, the silence ruling), written from the 2026-10-18 `data/` READMEs, since this report is their one home (§3.5). Its file references are stale (`decision.py`, `novelty_agent.py` no longer exist) |
+| `sequential_discussion/report.md` → `discussion/` | L | *Reference.* **Pilot.** Rewrite as the day discussion today (opening round → reactive obligations → sweeps → closing defence); the June concurrent → sequential decision and the quality gate as the case study, with N; the novelty gate kept as a falsified idea, not a mechanism; and a section on persona voices and silence (voices on in hosted games since 2026-10-19, the silence ruling), written from the 2026-10-18 `data/` READMEs, since this report is their one home (§3.5). Its file references are stale (`decision.py`, `novelty_agent.py` no longer exist) |
 | `generation_prompt/` → `turn_prompt/report.md` | L | *Reference.* New report: layout, board facts, results wording, the record (day summary + claim ledger), output schema, tested choices with N. Log §0 retitled "The call as of 2026-07-08" |
 | `roles/report.md` | L | *Reference.* New: the current cast and win logic, why it changed, the balance batches and the hold (with N), the evil contest |
 | `gameplay/report.md` | M | *Area overview.* Write problems 2–5 as short sections over the component reports; name the model in the thinking-budget row |
