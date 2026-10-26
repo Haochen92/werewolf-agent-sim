@@ -54,7 +54,10 @@ pack builder (`Agents/nodes/night/pack.py`) apply the same rule. Nothing downstr
 3 and 4 forward or only incidentally filter (§2), so the payload is the only place the guarantee can
 live. Two shaping decisions carry it: every non-wolf payload uses the role-blind `surviving_players`
 list, never the wolf-visible rosters, and every night actor gets its own records through one filter
-(`own_night_actions`).
+(`own_night_actions`). The deduction engine, which writes code-derived conclusions into an AI seat's
+prompt, is a consumer of the payload, not a second path: it reads a `SeatView` built only from that
+seat's payload (`Agents/deduction/seat_view.py::seat_view_from_payload`), so it can conclude only
+from what the seat may know ([the deduction report](../gameplay/deduction/report.md) §1).
 
 **How it is verified.** Eleven `check_*` invariants in `tests/leak_test.py`; nine run on every
 batch game over the prompt-input dict, one layer upstream of rendering, and the batch exits non-zero

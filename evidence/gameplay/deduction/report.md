@@ -1,5 +1,12 @@
 # The Deduction Engine
 
+**Version.** The implementation described here is the 2026-10-26 snapshot at
+`ccaec2f64788c1d3183940dd31a4c93475c164b5`. Against it were rechecked the modes and their per-side
+override, the leak boundary, the guard on unverified roles and limits, where the blocks sit, and the
+test files; the rest of §2 was written against `5574bb11` (2026-10-21). Historical results belong to
+the models, prompts and configurations recorded in each study; they are not all measurements of this
+snapshot.
+
 **Scope:** how the harness hands each AI seat the conclusions a careful human would draw from what
 that seat knows, computed by code and injected into its prompt: what the engine may state, where its
 one leak boundary sits, how it is verified, and what the screens showed.
@@ -11,7 +18,8 @@ that led here are [`experiment_log.md`](experiment_log.md).
 (block sizes over 278 turns) · `data/deduction_placement/`, `data/deduction_placement_n10/`,
 `data/deduction_ac2_2x2/`, `data/deduction_ac2_closing_fixed/` (the placement and vote screens) ·
 `data/solver_census/` (the solver against the brute-force oracle on random games, and its cost) ·
-`../data/evil_cover_screen/` and `evil_cover_games/` (the evil-seat lines).
+`../data/evil_cover_screen/` and `evil_cover_games/` (the evil-seat lines) · `../data/counter_claim_votes/`
+(the dropped counter-claim line).
 
 > **Orientation: one seat's turn.** Every injected line is produced along one path:
 >
@@ -143,7 +151,16 @@ engine adds roughly a paragraph to the prompt.
 ## 3. How we verify: soundness is tested, coverage is not
 
 The build bar for every row, set by the owner before any row was built, has four parts, and the
-test suite (372 tests under `tests/engine/deduction/`) is organised around them.
+tests in `tests/engine/deduction/` are organised around them. Each level has its own file
+(`test_own_results.py`, `test_skill_results.py` and `test_morning_results.py` for the seat's own
+results; `test_public_events.py`, `test_candidates.py`, `test_joins.py`, `test_conditionals.py`,
+`test_comparisons.py`, `test_explanations.py`; `test_evil_seat.py` and `test_covers.py` for the evil
+seats), and each file holds that level's examples, counterexamples and exact lines. Three files test
+what surrounds the levels: `test_render.py` asserts that the public block is the same for every seat
+and sits before the cache boundary, and that `off`, `record` and a human seat get no block;
+`test_verified.py` asserts that a role or use limit outside the verified set turns the engine off;
+`test_claim_view.py` checks the claims as the engine reads them, from the claim ledger and from
+today's speakers' own fields. The tests are largely AI-written and not yet audited.
 
 **An executable example and counterexample on the real engine.** Each row is exercised by a
 constructed night resolved through the real night rules: one night where it fires and its
@@ -165,12 +182,13 @@ has one, and asserts that every certain or conditional item holds in all of them
 oracle (`tests/factories/random_nights.py`) deals a random cast, kills some players on earlier nights
 and days, lets every living role make a random legal choice, resolves it with the real engine, and
 then checks every fact every surviving seat's lines state against the true roles and the resolved
-night. Twenty thousand such nights run in the suite. A rule that says more than the game guarantees
-fails here.
+night. Twenty thousand such nights run in each of `test_own_results.py`, `test_public_events.py`
+and `test_candidates.py`. A rule that says more than the game guarantees fails here.
 
 **A leak test.** The metamorphic form of the boundary in §1: several hidden states compatible with
 what a seat sees (other seats' roles and results permuted within the legal assignments) must render
-identical lines for that seat.
+identical lines for that seat. It runs per level (for example in `test_own_results.py`,
+`test_morning_results.py`, `test_comparisons.py` and `test_covers.py`).
 
 **The role-trait table is derived, not declared.** `test_role_traits.py` resolves real nights with
 every role attacked, blocked, watched, followed, checked and sigilled, and fails on any trait the
@@ -194,23 +212,32 @@ the acceptance cases are the only test of coverage.
 
 **Verdict.** The engine removes the inferential step it targets: on the R1 turn, every replay now
 writes the certain conclusion into its notes. It does not by itself change behaviour where a seat's
-own note or a misleading public line pulls the other way, and the one whole-game effect measured so
-far is on the evil side, where the engine's lines together with new card text moved the wolves from
-0 to 3 wins in 8 paired games. No town-side win-rate claim is made: the engine was assessed on
+own note or a misleading public line pulls the other way. The one whole-game comparison so far is on
+the evil side: with new card text and the engine's lines together, the wolves won 3 of 8 paired
+games, against none before. It is reported in the [roles report](../roles/report.md); the engine's
+share is below. No town-side win-rate claim is made: the engine was assessed on
 reasoning, on frozen turns, at small *n*, by design.
 
 ### The levers tried before code (why injection)
 
-Four levers were tried against the same failures before the engine was built. A higher thinking
-budget (Haiku at `medium` against `low`) is the one that moved votes: 98 of 160 right against 65 of
-160 on sixteen frozen vote cases, better on 12 cases and worse on 1 (sign test p = 0.003), at about
-2.7× the output tokens. Notes and discussion turns stayed within noise (notes 50% against 46%, 11
-cases better and 5 worse, p = 0.21; discussion 49 against 47 of 115 samples flawed). A stronger summariser (Sonnet 5.5 for the day summary) was not better: 18 of 30
-summaries flawed in each arm. A rewritten private-note prompt was worse on every judged measure (27
-fact errors against 15 in 56 samples) and was not adopted. A majority of three low-effort votes was
-right as often as one (39% against 41%): the errors repeat across samples, because the model holds the
-same wrong belief each time it reads the same context. That last result is the case for code. The
-missing step is deterministic, so it can be written down once rather than sampled for.
+Four levers were tried against the same failures before the engine was built:
+
+- **A higher thinking budget** (Haiku at `medium` against `low`) is the one that moved votes: 98 of
+  160 right against 65 of 160 on sixteen frozen vote cases, better on 12 cases and worse on 1 (sign
+  test p = 0.003), at about 2.7× the output tokens. The notes and the discussion turns stayed within
+  noise: the votes' notes had a fact error in 46% of samples at medium against 50% at low (11 cases
+  better, 5 worse, p = 0.21), and 47 of 115 discussion samples were flawed at medium against 49 at
+  low.
+- **A stronger summariser** (Sonnet 5.5 for the day summary) was not better: 18 of 30 summaries
+  flawed in each arm.
+- **A rewritten private-note prompt** was worse on every judged measure (27 fact errors against 15
+  in 56 samples per arm) and was not adopted.
+- **A majority of three low-effort votes** was right as often as one (39% against 41% of cases).
+  The errors repeat across samples, because the model holds the same wrong belief each time it reads
+  the same context.
+
+That last result is the case for code. The missing step is deterministic, so it can be written down
+once rather than sampled for.
 
 ### R1 replayed: the fact is absorbed, the silence is the note's
 
@@ -230,9 +257,11 @@ The seat block can sit before or after the seat's strategy note. Three screens o
 acceptance cases (n = 3 and n = 10 per case per arm, judged blind by chat subagents; then a 2×2 on
 AC2 alone at n = 25 per arm) found no placement difference that survived the sample size: at n = 10,
 AC1 and AC4 favoured `before_note` and AC2 favoured `after_note`; at n = 25 on AC2, player_8 (the
-real healer) got 9, 9, 10 and 5 of 25 votes across the four arms, pooled 33 of 100. The owner ruled
-`before_note` the default on 2026-10-18; it is also the cache-friendly order, since the note changes
-every turn and the block only at a morning or a vote. The two sentences about player_8 that the 2×2
+real healer) got 9, 9, 10 and 5 of 25 votes across the four arms, pooled 33 of 100. `before_note`
+was ruled the default on 2026-10-18; it is also the cache-friendly order, since the note changes
+every turn and the block only at a morning or a vote. The setting has since been removed: the block
+always sits before the note (`Agents/prompts/memory/context.py`, the `deduction_seat_before_note`
+slot). The two sentences about player_8 that the 2×2
 trimmed are kept: they are true and did not move the vote.
 
 What did move AC2 was outside the engine. The moderator's closing line in the frozen game still read
@@ -243,32 +272,47 @@ decisive; 5 of 25 is the best current estimate of the remaining AC2 failure with
 For scale, before the engine the same seat at low effort voted right in 1 of 10 replays with today's
 closing line (a different setup, so not a paired comparison).
 
-### The evil side: facts for a cover, and three wolf wins
+### The evil side: facts for a cover
 
-The owner's ruling of 2026-10-18 is that evil seats claim and never deny a sighting, because a denial
-is what gets a seat voted out. The engine's part is facts only: which roles the seat could still claim
-without a public contradiction, which night stories fit the record, and which of its own true visits
-a story would have to explain. The advice is the role cards'. On 41 pressured evil turns from earlier
-games (two samples per turn, one judge per line, different judges across steps), the card text alone
-did most of the work: claims rose from 13 to 33 and denials fell from 21 to 3. With the engine's
-cover lines added, claims rose to 44 and denials to 0, and the last version halved the Serial Killer's
-catchable claims (2 of 15 to 1 of 13) with nothing contradicting a sighting (0 of 42).
+Since a ruling of 2026-10-18, the evil role cards tell an evil seat to claim a role and never deny a
+sighting. The advice is the cards'. The engine's part is facts only: which roles the seat could
+still claim without a public contradiction, which night stories fit the record, and which of its own
+true visits a story would have to explain.
 
-In 8 paired whole games (same deals, before and after), evil seats that claimed a role went
-from 3 to 11 of 24, evil seats voted out from 15 to 10, and the winners from town 7 / Serial Killer 1
-to town 5 / wolves 3. Eight games is a direction, not an estimate. Reading the three wolf wins
-showed what the town now lacks: judgement between two claimants, not facts. A follow-up line that
-spelled out what each counter-claimant had named was screened on 10 town vote turns and dropped on
-the owner's decision: pooled it changed nothing (12 fake / 16 real against 12 / 17), and in the one
-game it was built for it moved votes the wrong way (7 / 4 to 5 / 7). One plausible reading: the
-model follows the seat the line names rather than the argument it makes.
+The engine's share was screened on 41 pressured evil turns from earlier games (Haiku 5.5 at low
+thinking, two samples per turn), with the new card text in every arm. Without the covers line (the
+night stories), the seats claimed a role 36 times and denied 4 times; with the line, after one fix,
+44 and 0. Claims that contradicted a sighting another player had reported fell from 4 to 1. The last
+version of the line cut the Serial Killer's catchable claims (those a careful town could show false)
+from 2 of 15 to 1 of 13, and none of the 42 claims under it contradicted a reported sighting. One
+judge labelled each line, and the arms with and without the line were labelled by different judges,
+so these are counts from one screen, not a measured effect. What the card text did on its own, and what whole games showed, is in
+the [roles report](../roles/report.md) ("The evil contest").
+
+### A dropped line: what each counter-claimant names
+
+Two of the wolves' three wins in the paired games with the new cards were counter-claims the town
+decided wrong: a fake claimant's word against a real one's, and the town sided with the fake. In the
+clearest case, two players claimed the Investigator and the engine said only that at most one of them
+holds it. A follow-up line (catalogue slice 16) spelled out the results each counter-claimant had
+named as the role, for example "As the Investigator, player_1 names a check of player_5 on night 1
+(Not suspicious), which a reveal of player_5's role would test; player_7 names no check result."
+
+It was screened on the 10 town vote turns of those games where the
+line appeared (3 samples per arm, Haiku 5.5 at low thinking, the vote as the measure). Pooled, it
+changed nothing: the votes went 12 to the fake claimant and 16 to the real one without the line, and
+12 and 17 with it. In the one game it was built for it moved votes the wrong way (7 fake and 4 real
+without, 5 and 7 with). One plausible reading: the model follows the seat the line names first and
+longest, rather than the argument it makes. The line was dropped on 2026-10-18 and never committed.
+It was a true fact, but past the facts the block already had, the vote is the model's call.
 
 ## 5. Limits: what the evidence does not say
 
 **No town-side outcome effect is claimed.** The engine was assessed on reasoning: frozen turns, exact
 sentences, small *n*. The owner's ruling was that replay measurements do not gate the build, and a
 paired whole-game A/B of town with and without the engine has not been run. The one whole-game
-number is the evil-side result above, which bundles the card text with the engine's lines.
+comparison is the evil-side one in the [roles report](../roles/report.md), which bundles the card
+text with the engine's lines.
 
 **Absorbed is not acted on.** §4 shows a seat writing the injected conclusion into its notes and still
 following an earlier "stay quiet". A later screen placed the block before the note; whether the

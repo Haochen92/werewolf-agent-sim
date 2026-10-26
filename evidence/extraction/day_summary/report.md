@@ -1,5 +1,10 @@
 # The day summary: how a past day reaches later prompts
 
+**Version.** The implementation described here is the 2026-10-22 snapshot at `c0732f88`; the
+summary's readers (§1, §3, §8) were rechecked against the 2026-10-26 snapshot at
+`ccaec2f64788c1d3183940dd31a4c93475c164b5`. Historical results belong to the models, prompts and
+configurations recorded in each study; they are not all measurements of this snapshot.
+
 **Scope:** the call that records each day's discussion at the end of the day, what it writes, what later
 prompts build from it, how it runs today, how it has been checked, and the October case where one
 summary error decided a game. It describes the ten-seat, twelve-role game.
@@ -23,7 +28,7 @@ So at the end of each day's discussion, before the vote, one model call records 
 It also means a mistake in the summary is a mistake every seat reads for the rest of the game. A seat that heard a claim rejected in the discussion may accept the same claim from the summary the next morning. Much of the design below exists to keep that from happening.
 
 **Who writes it:** one call per day, on the same model the game's seats play on.
-**Who reads it:** every later seat prompt; the replay page, which shows each day's summary and a "Record" tab with the claim ledger; and the post-game analysis (the tagger, which labels what each player did, and the credit scoring of the agents' memory lessons), which reads the role claims and accusations.
+**Who reads it:** every later seat prompt; the replay page, which shows each day's summary and a "Record" tab with the claim ledger; and some post-game analysis, which reads only the role claims. One reader is the discussion tagger (`evaluation/src/loop/discussion_tagger.py`), a model pass that labels each player's day; since its use for memory credit was retired on 2026-07-13, it runs only as a diagnostic on stored games. Another is the factual-error screen (`evaluation/src/audits/role_hallucination_screen.py`). The credit scoring of the agents' memory lessons does not read the summary: it uses the speakers' own accusation tags (`Agents/memory/consolidation/credit.py`).
 
 ## 2. What the summary writes
 
@@ -71,7 +76,7 @@ The three blocks have three different authors.
 
 1. **The game master's record** is written by the game engine, not by a model: each night's outcome, each vote ballot by ballot, and each revealed role. The summariser never writes these facts, so a summary error cannot lose or alter them.
 2. **The claim ledger** is built by code. It folds every day's role claims and claimed night actions into one history per player. It then checks each claim against what the engine has made public: a dead claimant's revealed role, an investigation result against the target's revealed role, a claimed save against the announced saves, more living claimants of a role than the cast holds. A check states a fact ("Record: player_9 was revealed as illusionist, as claimed") and nothing more. Where the record fits more than one reading it says nothing. A shot player who lived may have been saved, or may be the serial killer, whose survival is never announced. The ledger is never stored; every prompt rebuilds it, so a role revealed overnight appears in the next prompt's checks.
-3. **The accusations** come from the summary's accusation list, each player tagged with their revealed role once dead.
+3. **The accusations** come from the summary's accusation list, each player tagged with their revealed role once dead. They go into the prompt directly (`Agents/prompts/prompt_formatters.py::format_accusations`), not through the claim ledger.
 
 Older summary sections (alliances, "village dynamics", the evidence-type labels) are not shown. A day stored only as text is shown as written. That happens when every summary attempt failed, or for a game from before the structured summary.
 
@@ -80,7 +85,7 @@ Older summary sections (alliances, "village dynamics", the evidence-type labels)
 The current design rests on one rule. **The summariser records what was said; it never judges whether it is true.** Judging is done by code, against facts the engine holds. This rule came from two observed failures (the journey log has both):
 
 - When the summariser retold the day as a story, a wolf's false premise entered the record as narration, and seats who had rejected it in the discussion accepted it the next morning.
-- When the summariser was asked to check claims against the record itself, its checks were wrong. In a test of 66 summaries, all 27 checks it wrote were judged wrong (§6).
+- When the summariser was asked to check claims against the record itself, its checks were wrong. In the stronger-model test of §6, it wrote a check 27 times across 66 summaries (the 60 written for the test and the 6 the games had used), and all 27 were judged wrong.
 
 **Where role claims come from today.** A speaking seat now fills in its own claim as part of its turn: the role it claims and the night actions it says it took. The ledger takes a seat's claims from those fields first. The summary's transcription of a role claim is used only for a player who filled no field of that kind that day: a human player, whose line carries no fields, or a game recorded before the fields existed. The summary remains the only source for three things: the accusations, the retractions, and the stated plans.
 
@@ -114,9 +119,9 @@ Both comparisons ran with seats that did not reason before answering. The same b
 
 These are regression checks on known failures, five samples a case, not error rates.
 
-**Would a stronger model write better summaries?** Every day with speech in two Claude Haiku 5.5 games (6 days) was re-summarised five times each on Haiku and on Claude Sonnet 5.5, and Sonnet judged each summary against the transcript and the record. Both models had flaws in 18 of 30 summaries. Sonnet made fewer errors in the accusation's record check and more transcription errors. The summary stayed on the game's model. The same run found that the record check written by the summariser was wrong all 27 times it was written, and it was removed on 2026-10-16.
+**Would a stronger model write better summaries?** Every day with speech in two Claude Haiku 5.5 games (6 days) was re-summarised five times each on Haiku and on Claude Sonnet 5.5, and Sonnet judged each summary against the transcript and the record. Both models had flaws in 18 of 30 summaries. Sonnet made fewer errors in the accusation's record check and more transcription errors. The summary stayed on the game's model. The same run found that the record check written by the summariser was wrong all 27 times it was written: 20 times on Haiku and 6 on Sonnet, among the 60 test summaries, and once among the 6 summaries the games had used, which the judge read too. It was removed on 2026-10-16.
 
-**Do the rules hold in code?** The claim ledger and the "Previous days" rendering are pinned by unit tests (`tests/engine/test_claim_ledger.py`, `tests/engine/test_information_fidelity.py`); their 73 tests pass on the working tree at `c0732f88`. The rescue path is covered in `tests/engine/test_model_fallback.py`.
+**Do the rules hold in code?** The claim ledger and the "Previous days" rendering are pinned by unit tests (`tests/engine/test_claim_ledger.py`, `tests/engine/test_information_fidelity.py`); they passed on the working tree at `c0732f88`. The rescue path is covered in `tests/engine/test_model_fallback.py`.
 
 ## 7. Case study: one transcription error decided a game
 
@@ -136,10 +141,10 @@ These are regression checks on known failures, five samples a case, not error ra
 
 ## 8. What is not established
 
-- **That seats decide better with the summary than with the raw transcript.** This is a real gap: no comparison has given seats the full earlier discussions instead of the summary. The summary is kept for two reasons that do not depend on that comparison. It keeps every prompt bounded as a game runs on. And its structured fields are read by code, not only by the seats: the claim ledger takes accusations, retractions and plans from it (`Agents/rules/claim_ledger.py`), and the deduction engine builds each seat's view of the claims from it (`Agents/deduction/claim_view.py`). A raw transcript would leave the seats readable text but give that code nothing to read. So the comparison would answer whether the seats lose anything, not whether the summary is needed.
+- **That seats decide better with the summary than with the raw transcript.** This is a real gap: no comparison has given seats the full earlier discussions instead of the summary. The summary is kept for two reasons that do not depend on that comparison. It keeps every prompt bounded as a game runs on. And its structured fields are read by code, not only by the seats: the claim ledger takes retractions and plans from it (`Agents/rules/claim_ledger.py`), the accusations block is rendered from its accusation list (§3), and the deduction engine builds each seat's view of the claims from the ledger's fold (`Agents/deduction/claim_view.py`). A raw transcript would leave the seats readable text but give that code nothing to read. So the comparison would answer whether the seats lose anything, not whether the summary is needed.
 - **The current error rate.** The summary's errors have been counted on replayed cases and on small samples: 6 days from two games in the stronger-model test, and ten audited games in which summary errors were the most common error found. There is no population rate for today's prompt on today's default model.
 - **A current quality judge.** The five-dimension judge built in May still exists in code. It scores sections the summary no longer writes (alliances, village dynamics), so it does not measure the current design.
-- **Plans, retractions and accusations still rest on the summary alone.** A speaker fills its own role claim and claimed night actions, so for those the summary is only a fallback. There is no field on the speaker's turn for a plan ("tonight I'll protect player_4"), a withdrawn claim or an accusation, so the ledger takes these as the summary transcribed them, and a slip there reaches every seat. Giving the speaker those fields too, with the summary as fallback, would close it; it is not built.
+- **Plans, retractions and accusations still rest on the summary alone.** A speaker fills its own role claim and claimed night actions, so for those the summary is only a fallback. There is no field on the speaker's turn for a plan ("tonight I'll protect player_4"), a withdrawn claim or an accusation, so the ledger takes plans and withdrawn claims as the summary transcribed them, the prompt shows the accusations as the summary wrote them, and a slip in any of them reaches every seat. Giving the speaker those fields too, with the summary as fallback, would close it; it is not built.
 - **Claims the record cannot check.** The ledger checks only against public facts. A false claim that the record never contradicts, such as a fake investigation of a player still alive, stays a claim. The ledger is right to say nothing, but the seats still have to weigh it.
 
 ## Sources and implementation

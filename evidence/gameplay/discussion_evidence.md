@@ -13,6 +13,28 @@
 > document builds on them without changing them. Only options with a real trade-off are written down
 > here. Ideas rejected outright are left out.
 
+**Section index** (added 2026-10-26). This log is kept whole. Each row names a group of sections, what
+it holds, and the report that carries its result today. Paths are relative to `evidence/gameplay/`.
+
+| Section | Content | Feeds |
+|---|---|---|
+| §1, §2.1–2.3, §2.5 | Premise check: accusations rest on votes; the investigator is not hiding; the talk is flat because one source of truth is never contested | The [hub](report.md), problem 2 (thin talk); [roles](roles/report.md) (why Phase 3) |
+| §2.4 | Most "silence" is the scheduler's doing | [discussion](discussion/report.md) |
+| §3 P1, P2, P5; §4; §5; §6.1; §6.3 | Phase 1 prompt changes to turn-taking, the summary and message length; the measurement plan; the build; the two v2 games | [discussion](discussion/report.md) (Phase 1); the judge's method → [llm_judge](../evaluation/llm_judge/) |
+| §3 P3 | Telling evil players that claiming a role is an option | [roles](roles/report.md) (the evil contest, its first step) |
+| §3 P4 | The voting instructions, deliberately left unchanged | [turn_prompt](turn_prompt/report.md) |
+| §6.2 | The invented investigator result, and its results reworded | The [hub](report.md), problem 1; [turn_prompt](turn_prompt/report.md) (how results are worded); the measurement → [factual_errors](../evaluation/factual_errors/report.md), step 3 |
+| §6.4–6.5 | A game won on a fabricated premise; the code audit; the fidelity pass on the bench | [turn_prompt](turn_prompt/report.md) (what a seat is given); [factual_errors log](../evaluation/factual_errors/experiment_log.md) §8–9 |
+| §6.6 | Day summary v4: the summariser transcribes, code keeps the claim ledger | [turn_prompt](turn_prompt/report.md) (the record a seat reads); the [hub](report.md), problem 1 |
+| §6.7 | Turns ran with zero reasoning tokens; the thinking budget | The [hub](report.md), problem 1, and its decisions; [model admission](../evaluation/model_admission/report.md) (the thinking-level search) |
+| §7.1–7.4 | Phase 2: counts from the game records, then the day redesign (opening round, sweeps, echo gate, opening filter, closing defence) | [discussion](discussion/report.md) (the current day). Steps 6–7 (the wire and the stage) → the frontend docs |
+| §7.5 | List-order and example-seat bias; the night-1 lot | [turn_prompt](turn_prompt/report.md) |
+| §8 R1–R7, §8.1–8.3 | Phase 3: the role plan, the build order, the wiring, four balance batches and the hold | [roles](roles/report.md) |
+| §8.4–8.5 | What goes wrong in the ten-seat game and what fixed what; the learnings | The [hub](report.md), problem 1; [factual_errors log](../evaluation/factual_errors/experiment_log.md) §6. §8.5 item 5 → [roles](roles/report.md); item 7 → [turn_prompt](turn_prompt/report.md) |
+| §8.6 | The first Haiku game: visits read backwards, replies that repeat, votes without reasons | [turn_prompt](turn_prompt/report.md) (the rules text); [discussion](discussion/report.md) (repeats); [deduction](deduction/report.md) (the source of acceptance cases AC3 and AC4) |
+| §8.7 | Asking the reads to compare candidates; a vote-history tag tried and removed | [turn_prompt](turn_prompt/report.md) (reads and decisions) |
+| §9 | Open questions as of 2026-10-03; dated notes mark the ones later work answered or overtook | The [hub](report.md), what is unresolved |
+
 ---
 
 ## 1. The problem
@@ -2144,14 +2166,24 @@ other judge notes in the data README.
 1. **Does the investigator's certainty, not just evil's silence, flatten the talk?** P3 tests the second
    half with prompts alone. If evil starts contesting claims and the talk is still thin, the exact
    investigator itself (R1) is the next suspect.
+   *Overtaken 2026-10-07: P3's wording did not make evil claim (no fake claim in either v2 game,
+   §6.3), so the test as framed never ran. Phase 3 changed the investigator anyway: it became a pure
+   wolf detector beside two narrower observers, the Sentinel and the Trailseer (§8.1).*
 2. **How reliable is the judge?** It is unvalidated until the owner's hand-check in §6.
 3. **Whether speaking order is ever used as evidence** rests only on a crude keyword count (§2.4). The
    judge's "participation" label can answer it once it separates turn order and silence from the
    timing of a reveal (§6.1).
+   *Answered in part 2026-10-03: with the label split, turn taking was the basis of 7 of the 117
+   baseline messages and of no accusing message (0 of 78), and of no message in the first v2 game
+   (§6.1); one message in the second v2 game used it (§6.3). Three games before and two after, on two
+   models, with a judge no person has checked.*
 4. ~~Why the investigator invented a result~~ Answered by the replay (§6.2): the wording of its
    results. The turn is now a seeded case, with a hand-written expectation, in the standing
    hallucination bench (`eval-hallucination-bench`). Still open is how often other private facts are misread the same way. The vigilante's
    shot results are the obvious next place to look.
+   *Addressed, not measured, 2026-10-03: the code audit gave the healer, the vigilante and the serial
+   killer a private night record written by the engine, saying what each did and what it may know of
+   the result (R-d, §6.4). How often other private facts are misread was not counted.*
 5. **A human's vote waits on the slowest agent (2026-10-03).** In the first v2 game, the owner's
    ballot was not offered until all seven agents had voted. One agent's call hit two Google timeouts
    and was rescued by the fallback model after about a minute, so the owner waited that minute with
@@ -2178,6 +2210,10 @@ other judge notes in the data README.
      bench, reporting errors per checkable statement as well as per sample (a terser prompt can
      score better just by saying less), then in played games. Per-message updates only if v3 helps
      and dialogue later grows long.
+
+   *Answered 2026-10-04: the summary route was taken, with no board. Summary v4 transcribes the day's
+   accusations and role claims in fixed words, and a claim ledger kept by code folds each player's
+   claims and checks them against the engine's facts (§6.6).*
 7. **Deferred idea: a rephrasing layer for what humans read (2026-10-04).** The owner's idea: the
    agent decides what to say, and a second small call rewrites the wording to sound more human,
    optionally with a per-character personality. Shape agreed for when it is taken up:
@@ -2192,6 +2228,12 @@ other judge notes in the data README.
      move from the agent prompt into the rephraser.
    - *First step:* rephrase messages from existing replays offline, then read them for fidelity and
      naturalness, before any server change.
+
+   *Answered 2026-10-18: the offline screen ran, and the rewrite was not adopted. Blind judges
+   preferred the rewrites in 74 of 90, but 19 of the 90 changed something a listener could act on,
+   and the check on names and nights caught 1 of those 19. The voice went into each player's own
+   prompt instead ([discussion](discussion/report.md), decision 21;
+   [the rewrite study](data/voice_rewrite/README.md)).*
 
 8. **The accusation and response tags carry more rules than they were measured for
    (2026-10-07).** The reactive queue, the closing pick (§7.2 S2), the proactive round's "who has
