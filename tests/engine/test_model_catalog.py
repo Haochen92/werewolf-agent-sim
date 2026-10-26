@@ -37,11 +37,18 @@ def installed(monkeypatch):
     return install
 
 
-def test_the_migration_writes_exactly_the_seed():
+def test_the_seed_is_the_migration_plus_the_live_edits_since():
+    """The seed starts as the migration's rows; it differs only by the listed later edits of the
+    live table (and their notes), so a process on the seed runs each model as a live game does."""
     m = _migration()
-    assert [tuple(row) for row in m.MODELS] == [
-        (r.model, r.display_name, r.listed, r.menu_order, r.house_funded, r.rescue_model,
-         r.turn_thinking, r.summary_thinking, r.structured_mode, r.notes) for r in catalog.SEED_MODELS]
+    fields = ("model", "display_name", "listed", "menu_order", "house_funded", "rescue_model",
+              "turn_thinking", "summary_thinking", "structured_mode")
+    migrated = {row[0]: dict(zip(fields, row[:9])) for row in m.MODELS}
+    for model, edits in catalog.LIVE_EDITS_SINCE_MIGRATION.items():
+        migrated[model].update(edits)
+    seeded = {r.model: {f: getattr(r, f) for f in fields} for r in catalog.SEED_MODELS}
+    assert seeded == migrated
+    assert [row[0] for row in m.MODELS] == [r.model for r in catalog.SEED_MODELS]
     assert sorted((row[0], row[1], row[2], row[3], row[4], row[5]) for row in m.PRICES) == sorted(
         (name, p.since.isoformat(), p.input, p.cached, p.output, p.peak)
         for name, rows in PRICES.items() for p in rows)
