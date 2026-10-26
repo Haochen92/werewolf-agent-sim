@@ -78,6 +78,15 @@ general cause).
 discussion tagger moves to `credit/` (filing only); `extraction/day_summary/` and
 `dedup/incremental_convergence.md` stay where they are.
 
+**Ruled and done 2026-10-26:** D1 (gameplay grouped under `evidence/gameplay/`), D2 (the memory hub and
+the merged v7 report, with `v7_final/` and `execution_plan/` moved under `memory_system/v7/`), D3 (the
+wording, applied in the effectiveness report), D4 (one retrieval area report, written in step 5), D5
+(all five group A moves), D6, D7 (the pilot). Step 4, the moves, landed in five commits (`8fb7cd88`,
+`18686b32`, `bde9da1e`, `430956c0`, `5ffb009d`). Two choices made in the move: `gameplay/data/` stays one
+folder (the roles and deduction data were not split out of it, so no README path had to change), and
+`role_set/` moved whole to `gameplay/roles/role_set/`. Runs, logs and frozen scripts inside
+`evidence/` keep the paths they recorded.
+
 | # | Decision | Recommendation |
 |---|---|---|
 | D1 | Group the gameplay folders into `evidence/gameplay/` (§3.1) | Yes, with the layout in §3.1 |
