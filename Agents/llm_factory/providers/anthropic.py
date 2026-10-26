@@ -33,7 +33,7 @@ import logging
 import os
 import threading
 import time
-from typing import Any
+from typing import Any, Callable
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
@@ -326,14 +326,40 @@ def parse_with_claude(prompt: str, schema: type[BaseModel], model: str, thinking
 
 def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | None = None,
                 cache_prefix: str | None = None, poll_seconds: int = 30,
-                cache_ttl: str | None = None, schema_in_prompt: bool = False) -> dict[str, BaseModel | None]:
+                cache_ttl: str | None = None, schema_in_prompt: bool = False,
+                batch_id: str | None = None,
+                on_submit: Callable[[str], None] | None = None) -> dict[str, BaseModel | None]:
     """Each request's parsed output, by id, from one Message Batch ({id: (prompt, schema)}, or
     (prompt, schema, prefix) to mark that request's own cached prefix instead of ``cache_prefix``).
     Blocks until the batch ends; a request that errored, expired or did not parse maps to None, for
-    the caller to retry directly (with ``schema_in_prompt``, best with the schema enforced)."""
+    the caller to retry directly (with ``schema_in_prompt``, best with the schema enforced).
+
+    A batch can run for hours and is paid for once it is created, so a caller that may be stopped
+    before it ends passes ``on_submit`` to record the new batch's id, and on a rerun passes that id as
+    ``batch_id``: nothing is sent again, and the results are collected (Anthropic keeps them 29 days).
+    The requests must be the same ones, by id; they are needed to read each reply's schema."""
+    client = _client()
+    if batch_id is None:
+        batch = client.messages.batches.create(
+            requests=_batch_requests(requests, model, thinking_level, cache_prefix, cache_ttl, schema_in_prompt))
+        batch_id = batch.id
+        logger.info("Message batch %s: %d requests on %s", batch_id, len(requests), model)
+        if on_submit is not None:
+            on_submit(batch_id)
+    else:
+        batch = client.messages.batches.retrieve(batch_id)
+        logger.info("Message batch %s: resumed (%s)", batch_id, batch.processing_status)
+    while batch.processing_status != "ended":
+        time.sleep(poll_seconds)
+        batch = client.messages.batches.retrieve(batch_id)
+    return _batch_results(client, batch_id, requests, model, schema_in_prompt)
+
+
+def _batch_requests(requests: dict[str, tuple], model: str, thinking_level: str | None,
+                    cache_prefix: str | None, cache_ttl: str | None, schema_in_prompt: bool) -> list[dict]:
+    """The Message Batch request list for ``batch_parse``'s requests."""
     from anthropic.lib._parse._transform import transform_schema  # the schema transform parse() applies
 
-    client = _client()
     thinking = _thinking(thinking_level, model)
     batch_requests = []
     for custom_id, (prompt, schema, *own_prefix) in requests.items():
@@ -346,15 +372,17 @@ def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | No
             output_format = {"type": "json_schema", "schema": transform_schema(TypeAdapter(schema).json_schema())}
             params["output_config"] = {**params.get("output_config", {}), "format": output_format}
         batch_requests.append({"custom_id": custom_id, "params": params})
-    batch = client.messages.batches.create(requests=batch_requests)
-    logger.info("Message batch %s: %d requests on %s", batch.id, len(batch_requests), model)
-    while batch.processing_status != "ended":
-        time.sleep(poll_seconds)
-        batch = client.messages.batches.retrieve(batch.id)
+    return batch_requests
+
+
+def _batch_results(client, batch_id: str, requests: dict[str, tuple], model: str,
+                   schema_in_prompt: bool) -> dict[str, BaseModel | None]:
+    """An ended batch's replies, parsed by request id; None for any that errored, expired or did not
+    parse."""
     out: dict[str, BaseModel | None] = dict.fromkeys(requests)
-    for result in client.messages.batches.results(batch.id):
+    for result in client.messages.batches.results(batch_id):
         if result.result.type != "succeeded":
-            logger.warning("Batch %s request %s: %s", batch.id, result.custom_id, result.result.type)
+            logger.warning("Batch %s request %s: %s", batch_id, result.custom_id, result.result.type)
             continue
         message = result.result.message
         _count(message.usage, batched=True, model=model)
@@ -366,6 +394,6 @@ def batch_parse(requests: dict[str, tuple], model: str, thinking_level: str | No
         try:
             out[result.custom_id] = schema.model_validate_json(text)
         except Exception as e:  # noqa: BLE001 — a reply that does not parse is retried by the caller
-            logger.warning("Batch %s request %s did not parse (%s): %s", batch.id, result.custom_id,
+            logger.warning("Batch %s request %s did not parse (%s): %s", batch_id, result.custom_id,
                            message.stop_reason, e)
     return out
