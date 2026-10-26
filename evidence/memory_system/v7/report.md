@@ -221,6 +221,10 @@ games).
   by board (p ≈ 0.06: a gap this size would appear about 6% of the time by chance). Memory did worse on
   19 of the 30 boards. As committed, this was reported as "no compounding detected", with the estimate
   leaning toward harm.
+- **The test behind the p-value** (rebuilt 2026-10-26 from the per-game records, see Provenance). The
+  p ≈ 0.06 is a paired t-test on the 30 board gaps (0.065). Two tests that assume less give weaker
+  readings: the Wilcoxon signed-rank test, which does not assume the gaps are normally spread, gives
+  0.105, and a sign test, which counts only the direction (19 worse against 11 better), gives 0.20.
 - **A secondary measure was clearer.** In the same games, town players with memory voted for a real
   threat about 15 percentage points less often (the rate without memory was near 50%) and abstained
   more (31% of votes against about 23%). Counted vote by vote this gave p < .001, but votes within one
@@ -291,20 +295,10 @@ waived on purpose (`evaluation/src/loop/driver.py::run_loop`, `evaluation/src/lo
 The July run declared "town only", and the test's log confirms the arm (healer, investigator,
 vigilante, villager) before reporting.
 
-**A by-product, tentative.** Read as what it actually was, a test of every faction with memory on paired
-boards, the second run showed one rising pattern (memory minus no memory, generations 2–6, vote and night
-decisions; `runs/v2_full/v2_salvage.py`):
-
-| Faction | Average gap | Trend per generation |
-|---|---|---|
-| Wolves | +0.077 (rising to +0.28 by generation 6) | +0.086 |
-| Town | −0.189 | −0.027 |
-| Lone killer | −0.142 | +0.027 |
-
-The wolves' gap rose across generations: −0.14, −0.05, −0.11, +0.17, +0.10, +0.28. This is 4 games per
-generation with swings of ±0.2–0.3, from a run invalid for its own question, so it is a direction worth
-noting, not an effect. It is not part of any verdict. The town row is not a verdict on town memory,
-because of the confound above.
+**A by-product, not a result.** Re-read as a test of every faction with memory, the second run showed
+the wolves' gap rising across generations, but from 4 games per generation, in a run that was invalid
+for its own question, so it is no evidence for wolf memory; the per-faction table is in the
+[log appendix](experiment_log.md) and `runs/v2_full/v2_salvage.py`.
 
 ## What followed and what runs today
 
@@ -381,6 +375,11 @@ evicted 4 lessons ([`../v8/experiment_log.md`](../v8/experiment_log.md)).
 The per-game records of the July runs (190 MB and 123 MB) were not copied into `execution_plan/data/`;
 the [data README](execution_plan/data/README.md) lists what was. The committed `endpoint_result.json`
 holds pooled per-decision scores (town 0.039 with memory over 458 decisions, 0.247 without over 438).
-The board-paired figures above (−0.147, 19 of 30, p ≈ 0.06) are as recorded in the July log
-([`credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §①); no committed
-file or script reproduces them, and the record does not name the test behind p ≈ 0.06.
+The board-paired figures were reported in July without a committed source
+([`credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §①). On
+2026-10-26 they were rebuilt from the per-game records with the pre-registered scorer, at no cost
+(`evaluation/experiments/v7_endpoint_paired.py`; output
+[`paired_boards.json`](execution_plan/data/v7_endpoint_ab/paired_boards.json), one row per board). The
+rebuild matches the pooled file exactly and gives 19 of 30 boards worse and a paired t-test p of
+0.065. Its mean gap is −0.1465, which rounds to −0.146 against the recorded −0.147; the record does
+not explain the 0.001 difference.
