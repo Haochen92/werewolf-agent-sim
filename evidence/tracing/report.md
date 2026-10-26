@@ -1,528 +1,706 @@
-# Tracing & Observability
+# Observability: what a game leaves behind
 
-**Scope:** Most evaluable moments in a game — agent decisions, post-game extraction, dedup, and day
-summaries — are captured as one of four *cases* (`EvalCase`, `ExtractionCase`, `DedupCase`,
-`DaySummaryCase`), written to two sinks at once (the live Langfuse trace + a local JSONL sidecar) in one
-shared shape, and frozen into reproducible eval sets. This is the **capture** half of evaluation — the
-instrument that makes judging possible. The **judge** half (score design, LLM-judges, metric validation)
-is the *evaluation system* and is out of scope here (see the `metrics/` and `memory_system/` evidence).
-The one seam between them — pushing computed scores back onto the trace — is §2.8.
-**Last updated:** 2026-06-27 (consolidates the dated logs in `implementation_notes/`).
-**Runtime:** **Langfuse 3.14.6** — the OpenTelemetry-based v3 Python SDK, self-hosted — with the
-LangGraph `CallbackHandler` integration. Framework behaviours asserted below (§2) are described against
-that version; a reader on another should re-confirm.
+Observability has two jobs in this project: explain what happened in a live game, and preserve the
+inputs and decisions needed to evaluate a change later. A trace helps inspect execution; a durable
+evaluation record lets a study survive missing traces or a changed tracing service.
 
-## Why — the motivation behind the tracing system
+The two execution paths meet those needs differently. Batch runs save evaluation cases to local
+files and also emit Langfuse traces. Capture scripts save local artifacts without the graph callback
+trace tree. Served games save events, checkpoints, usage counts and completed-game prompt captures
+to PostgreSQL, but do not persist their in-memory evaluation-case sink.
 
-Two goals drive everything below.
+The main chapter-7 finding is uneven coverage, not a lack of instrumentation:
 
-1. **Measure whether the memory system actually works.** A core objective of this project is an
-   episodic-memory system that makes an agent play *better* with it than without. Win-rate alone is a
-   noisy signal at the sample sizes we can afford (N≈30–50), but under a fair, paired A/B it still tells
-   us whether we're moving in the right direction.
+| Gap | Consequence | Evidence in this review |
+|---|---|---|
+| Served games have no runtime fingerprint | A result cannot be tied directly to its complete execution configuration | `GameSession` builds config without fingerprint metadata; no server fingerprint writer was found |
+| Served evaluation cases have no durable copy outside Langfuse | Loss or absence of trace data can lose those case records, although events and checkpoints remain separate | The session creates and passes `EvalCaseSink` but does not persist its records |
+| The fingerprint's backend field still resolves only Google or Vertex | A Claude run can be labelled `vertex`; the field does not identify its actual provider | `runtime_fingerprint()` uses `_use_vertex()` for every model; the original report records two affected Claude runs |
 
-   The harder problem is that the memory system isn't one thing — it's a pipeline of components that can
-   each fail independently, and a single win-rate number can't tell you *which* one. Day-summary
-   extraction distils each day's discussion into the facts later turns rely on; situation-summary
-   generation forms the query that drives semantic retrieval; the agent's own reasoning turns retrieved
-   memory into a decision; game design shapes the raw material (e.g. moving discussion from parallel to
-   sequential, or adding roles); and post-game extraction, store management, and synthesis decide what
-   gets remembered at all. Each is a potential failure point, so we have to observe, evaluate, and debug
-   them *individually* before asking whether the whole system works end-to-end — and tracing is what
-   makes each of those stages observable.
-2. **Build a frozen dataset for labelling and future fine-tuning.** Capturing every decision as a
-   structured case gives us a durable, curatable corpus we can later label and turn into training data —
-   e.g. a cross-encoder reranker for retrieval, or a dedup classifier — without re-running games.
+The last gap concerns runs that have a fingerprint, principally batch and capture runs. It does not
+mean served Claude games have a fingerprint, or that a `vertex` label proves a call used Vertex.
 
-## Infrastructure decisions
+The records have already helped diagnose a real failure. In the cross-game cache incident, a prompt
+capture lacked one seat's opening, the event log showed a `generation_failed` pass, and the usage
+ledger showed no failed call. Together with the cache investigation, these supported the finding
+that the turn had reused another game's result. Missing telemetry alone would not establish that
+cause.
 
-**Choosing the observability backend** — the shortlist was LangSmith, Arize Phoenix, and Langfuse.
+Read [the two paths](#the-two-paths-today) first, then [rebuilding a turn](#rebuilding-a-turn). The
+[decision index](#decision-index) gives the reasons and costs; [incidents](#incidents),
+[checks](#how-it-was-checked) and [gaps](#what-is-not-recorded-and-what-is-not-read) follow.
 
-1. **The bar: self-hostable and open-source/free.** For a solo project the backend has to run locally, so
-   the trace data is ours, it costs nothing per trace, and we can retroactively mine *any* old span into a
-   new case type later. This **dropped LangSmith** — a closed SaaS whose self-hosting sits behind a paid
-   tier. Phoenix and Langfuse both clear it.
-2. **The tiebreak: fit, since Phoenix and Langfuse are both OSS and self-hostable.** Two things this
-   pipeline leans on chose Langfuse over Phoenix:
-   - **Explicit, hand-shaped spans.** The design writes a structured case into a span's `output` at the
-     exact decision point and reads it back by name (§2.3–§2.4). Langfuse's SDK is built for that manual
-     span shaping; Phoenix leans auto-instrumentation-first (its instrumentors auto-capture framework
-     calls), so a bespoke "put my `EvalCase` in this span" cuts against its grain.
-   - **Ease of LangGraph wiring.** Langfuse's standard LangChain `CallbackHandler` covers LangGraph out of
-     the box — the span tree emits automatically (§2.2) with near-zero glue.
+**Version and evidence.** The original review describes code at `5d8ea41c` (2026-10-26), with LangGraph 1.1.10
+and the Langfuse Python SDK 3.14.6 against a self-hosted Langfuse server. The website ran server image
+`2ecec0cc` on that date: the deployed `dd985ebe` plus the cache fix, without the later server commits
+([deploy log](../../frontend/docs/deploy_log.md), 2026-10-26). Counts of served games come from a
+read-only query of the game database on 2026-10-26. Incidents and measurements belong to the dates and
+versions named with them. No alternative recording design was compared; the evidence is the code,
+tests, the records themselves and the incidents. This editorial review spot-checked the session,
+case sink, fingerprint, release setup, Dockerfile and error-reporting code. It did not query production,
+re-read the historical datasets, rerun tests or verify current hosted-service behaviour.
 
-   It was a fit judgment at decision time, not a benchmarked shootout — but a considered one, on those two
-   axes. Langfuse then bundles scores, sessions, and prompt/version management as first-class features the
-   pipeline goes on to use (§2.7–§2.8).
+## What has to be visible
 
-Those two goals, on a self-hosted Langfuse, produce one capture pipeline — and the rest of the report is
-its *how* (each §2 section opens with why its piece exists, then how it works):
+Four questions, each with a different consumer:
 
-> **Orientation — the capture pipeline.** Every gradable decision flows along one path:
->
-> **game decision → Langfuse span** ─┬─ **span output:** a frozen `*Case` (the gradable record)
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ **local sidecar JSONL** (same shape) ← **PRIMARY** for builds
-> → `eval-build-*` freezes the selected cases → `frozen_eval_sets/<id>.jsonl`
->
-> The mental model the whole design turns on: **the trace is for *watching*; the case is for
-> *building*. Two sinks, one shape.** Every identifier below (`freeze_case`, `EvalCaseSink`,
-> `span_names`, `EvalProvenance`, `runtime_fingerprint`) hangs somewhere on this path.
+1. **What did each model call see?** The leak checks need every prompt a seat was given, and a fault
+   is often diagnosed by reading the input beside the bad answer.
+2. **Can a past turn be run again?** Testing a fix on a failure seen once means rebuilding that turn
+   under today's prompt ([turn replays](../evaluation/evaluation_scopes/turn/report.md)).
+3. **Which build produced a result?** Interpreting a difference requires knowing the code, prompts,
+   models and settings behind each result; provenance alone does not make a comparison controlled.
+4. **What failed, and what did it cost?** A crash in a live game has to be found without reading the
+   container's log, and each game's cost has to be known per model.
 
----
+The batch record was first built in June for two more uses. The memory system is a chain of stages
+(the day summary, the lookup's query, the lookup, the seat's use of what it found, extraction after the
+game), and a win rate cannot say which stage failed, so each stage needed records it could be judged on
+by itself. And a corpus of frozen decisions could later be labelled and used for training, such as a
+reranker or a dedup classifier, without re-running games.
 
-## Vocabulary
+Two constraints apply to all of them. Evaluation records must be practical to read in bulk; the
+original trace-fetch path was not (the [422 incident](#the-422-collapse-2026-06-11)). And nothing written down may hold a player's API
+key.
 
-The ten terms the rest of this report leans on (skip if fluent):
+## The two paths today
 
+A **trace** is Langfuse's record of one run: a tree of **spans**, each a step with its input, output
+and timing. A **session** groups traces. An **evaluation case** is one gradable unit of work (a seat's
+turn, a day summary, a finished game) frozen as a record that a judge or a replay can use without the
+game. A **checkpoint** is LangGraph's saved copy of the whole game state after a step.
 
-| Term                            | Plain meaning                                                                                                                              | Lives in                                  |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| **trace**                       | the full record of one game run — a tree of spans under one root                                                                          | Langfuse                                  |
-| **span**                        | one node in that tree: a subgraph / node / LLM call, with input, output, timing                                                            | Langfuse (auto-made by the callback)      |
-| **case**                        | a*frozen, self-describing* record of one gradable unit of work, written into a span's `output`                                             | `Agents/schemas/evaluation.py`            |
-| **EvalCase**                    | the case for one agent decision (day message / vote / night action) — the richest case type                                               | `agent_action_eval_*` spans               |
-| **sink**                        | the in-process accumulator (`EvalCaseSink`) that keeps a local copy of every case during a game                                            | `Agents/observability/case_sink.py`       |
-| **sidecar**                     | the per-game JSONL the sink is flushed to after the game (`batch_results/eval_cases/…`)                                                   | disk — the**primary** source             |
-| **frozen eval set**             | a curated, immutable dataset of cases selected from sidecars; the input a judge replays against                                            | `evaluation/frozen_eval_sets/<id>.jsonl`  |
-| **candidate pool**              | the*wide* retrieval set (before rerank/filter narrowed it), kept on the case so the reranker can be trained/judged on what it actually saw | `EvalCase.candidate_*`                    |
-| **release / fingerprint / SHA** | three views of "what*code* produced this" — see §2.7                                                                                     | trace`release` field + metadata + records |
-| **provenance**                  | the*data/config* identity of a case (which store? rerank/filter on?) — distinct from the *code* fingerprint                               | `EvalCase.provenance`                     |
+| Record | Batch and capture runs | Served games |
+|---|---|---|
+| Langfuse trace | One per game from `run_game`; the capture scripts attach none | One per run of the game's task, grouped by game id |
+| Evaluation cases | Local per-game files; traced batch runs also emit them in spans | In memory during the run; Langfuse is the only configured durable sink |
+| Every seat prompt and private read | In memory for the leak checks; on disk only from the voice-game runner | Saved compressed when the game ends |
+| The game's course | One record per game: result, roles, transcript, summaries, resolutions, metrics | The event log the replays play from |
+| Checkpoints | In process memory, gone when the process ends | PostgreSQL, kept |
+| Which build ran | Fingerprint on batch records/config and capture manifests, with coverage gaps | No runtime fingerprint; deployment records provide indirect build evidence |
+| Model calls and cost | Per call (`calls.json`) and per model (the manifest), capture scripts only | Per model and hour on the game's row |
+| Errors | The process's traceback; an error record in the batch file | Sentry |
 
----
+The rest of this section takes each record in turn, with one real example per path.
 
-## 1. The guarantee (current contract)
+### Batch and capture runs
 
-Each game run produces, in one Langfuse trace:
+`scripts/run_batch.py` plays games through `Agents/main.py::run_game` and writes them under
+`batch_results/<experiment>/`. The capture scripts in `evaluation/experiments/`
+(`phase3_capture.py`, `persona_voice_games.py` and others) drive the graph themselves and write files
+beside the evidence they serve.
 
-- **One root span** (`werewolf-game`) wrapping the whole game, with the LangGraph callback handler
-  auto-nesting a child span for every subgraph / node / LLM call beneath it.
-- **A frozen, self-describing *case* at every gradable decision**, written into that decision's span
-  output **and** teed to a local per-game JSONL sidecar — byte-identical normalized shape, so one set
-  of converters reads either source.
+#### The Langfuse trace
 
-**The four case types** (each = a gradable unit of work; span prefix is the single-source name it's
-fetched by):
+`run_game` opens a root span and names the trace; LangGraph's callback (Langfuse's `CallbackHandler`)
+then records every graph node and model call as a nested span on its own. A few spans are shaped by
+hand at fixed points in the game:
 
-
-| Case             | Span prefix            | What it freezes                                                                                   | Captured for                                                                  |
-| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `EvalCase`       | `agent_action_eval_`   | one agent decision (day message / day vote / night action) + its full information set + retrieval | situation/retrieval/application judges; reranker + agent-dialogue fine-tuning |
-| `ExtractionCase` | `postgame_extraction_` | one game's post-game extraction (inputs → observations / strategy points)                        | extraction judge                                                              |
-| `DedupCase`      | `dedup_`               | one dedup decision (new entry vs candidate pool + verdict + similarities)                         | dedup judge; dedup-classifier fine-tuning                                     |
-| `DaySummaryCase` | `day_summary_eval_`    | one day's summary (raw transcript → summary)                                                     | day-summary judge                                                             |
-
-**Self-describing, by construction.** A frozen case carries everything needed to re-judge it offline
-without re-reading game state or re-joining the trace: the decision-time information set (visible
-discussion + role-private context), the retrieval (final picks **and** the pre-rerank candidate pool),
-the agent's actual output, and an `EvalProvenance` stamp (store dir + rerank/filter flags). The trace
-additionally carries the game's `runtime_fingerprint` (code SHA, prompt-bundle hash, model IDs,
-backend) and the git commit as Langfuse's first-class `release`.
-
-**How it's persisted.** `run_batch` writes a game-run log `batch_results/<session_prefix>.jsonl` and a
-per-game eval-case sidecar `batch_results/eval_cases/<session_id>/<game_id>.jsonl`; the log record
-points to the sidecar via `eval_cases_path`. Frozen eval sets are then built **local-sidecar-first**,
-with a Langfuse read path retained only as a fallback for games that predate local emission.
-
-**The rule, quotable:** *emit the gradable record locally at decision-time; the tracer is the
-secondary archive, not the source of truth.* §4 is the incident that forced that rule.
-
-What this contract does **not** yet cover is in §5.
-
-## Worked example — one vote, end to end
-
-The four case types above stay abstract until you watch one move. Follow a single decision — **villager
-`player_3` casts a day-2 vote** — as a concrete `EvalCase`; every term in the mechanism (§2) is a step
-here:
-
-1. **The span opens.** The day subgraph runs `player_3`'s vote node; the LangGraph callback handler
-   (§2.1) auto-creates a span for it under the game's root trace (no manual code). The emission site
-   also names a child span `agent_action_eval_player_3_day_2_round_0_vote` (name built by
-   `span_names.py`, §2.5).
-2. **The case is built (§2.3).** At decision time the code assembles an `EvalCase`: the visible day-2
-   discussion, `player_3`'s private context (its previous-strategy note — a villager has no wolf
-   channel / investigator results), `memory_enabled`, the situation queries it generated, the
-   observations/strategy points retrieved (plus the wider `candidate_*` pool if rerank/filter ran), the
-   `provenance` stamp, and the actual `agent_vote`.
-3. **`freeze_case` tees it to two places (§2.4).** It stamps the live span's `trace_id` +
-   `observation_id` onto the case, dumps it once, writes it into the span's `output` (`{"eval_case": …}`,
-   visible in the Langfuse UI), **and** appends the same dict to the local `EvalCaseSink`. Same shape,
-   two destinations; `case_id = {trace_id}:{observation_id}` is identical in both.
-4. **The game ends; the sink is persisted (§2.6).** `run_game` returns `eval_sink.records`; `run_batch`
-   writes them to `batch_results/eval_cases/<session>/<game_id>.jsonl` and records the `eval_cases_path`
-   pointer in the game-run log.
-5. **A frozen set is built (§2.6).** `eval-build-*` reads that sidecar (no Langfuse call), converts the
-   span dict back into an `EvalCase` via `eval_case_from_span`, samples it among the others, and writes
-   `evaluation/frozen_eval_sets/<id>.jsonl`.
-6. **(Out of scope — the judge.)** Later a runner replays `player_3`'s frozen vote against a judge or
-   gold label. That's the *evaluation system*, not this report.
-
-## 2. The mechanism
-
-### 2.1 Langfuse wiring
-
-This section is about the two pieces of plumbing in `Agents/tracing.py` that connect the game to
-Langfuse. First, the basics: the file opens **one shared connection to Langfuse for the whole run**.
-`langfuse = get_client()` hands back the *same* client object every time anyone asks for it, so every
-part of the program records into the same place instead of each opening its own connection. Two things
-about this wiring are worth understanding.
-
-**1. Every game's trace is labelled with the exact code version that produced it.**
-
-*The problem.* A trace on its own doesn't say *which version of the code* generated it. Without that you
-can't tell two A/B arms apart after the run, or trace a regression back to the commit that introduced
-it.
-
-*The fix, in plain terms.* When the program starts, the code reads the current git commit and stamps it
-onto every trace as Langfuse's built-in **`release`** label — a field you can filter and group by
-directly in the Langfuse UI. You don't set this by hand: the code writes it, so it is **not** a
-configured value and won't appear in `.env` (which only holds the Langfuse login credentials). If you
-*do* want to override it — say, a CI pipeline tagging a run — an explicit value still wins; the code
-only fills it in when nothing else has. So the takeaway most readers need is just: **games are
-auto-tagged with their code version, and you filter by that tag in Langfuse.**
-
-*Mechanism — skip unless you're debugging release-stamping (verified, Langfuse 3.14.6).*
-
-The whole subtlety is **timing**, and an analogy makes it click. Think of Langfuse's tracer as a
-**label-printer for traces**. When the printer is switched on, it loads one stamp — *"made by this code
-version"* — and from then on, every trace it prints carries that same stamp. The catch: the stamp is
-loaded **only at switch-on**, and can't be swapped while the printer is running.
-
-The printer switches on the **first time anything asks Langfuse for a client** (the first `get_client()`
-call). At that instant, it reads the code version from an environment variable (`LANGFUSE_RELEASE`) to
-decide what the stamp says. So the version has to be set *before* that first request. If it isn't, the
-printer switches on with a blank stamp — every trace in the run goes out unlabelled, and nothing later
-can add the version back.
-
-That single rule — *set it before switch-on* — is the only reason the code is ordered the way it is.
-`Agents/tracing.py` writes the git commit into the variable at **import time**, which runs before it ever
-asks for the client, so the stamp is always loaded in time. (And `run_batch.py` reads the `.env` file
-first, so a version you set by hand still wins over the default.)
-
-In API terms, mapping the analogy onto the SDK: the "printer" is the process-wide **`TracerProvider`**,
-set up once. The "stamp" is an **OpenTelemetry Resource** — a fixed bag of facts about who produced the
-telemetry, with the version inside it. The Resource is attached to the `TracerProvider` and shipped with
-every span; Langfuse then lifts the version into the trace's `release` column. "Switch-on" is the
-`set_tracer_provider` call, which fires only while the provider is still OTel's placeholder
-(`ProxyTracerProvider`) — i.e. exactly once. Call chain: `_init_tracer_provider`
-(`resource_manager.py:453,460`) reads the value into
-`Resource.create({LangfuseOtelSpanAttributes.RELEASE: <sha>, …})`, then installs the provider
-(`resource_manager.py:467,474`).
-
-**2. Each game gets its own recorder that captures every step automatically.**
-
-`build_game_config()` hands LangGraph a fresh `CallbackHandler` per game (in its `callbacks` list). This
-is the piece that makes the whole span tree appear *on its own* — every subgraph, node, and model call
-is recorded as a nested span with no manual logging code (§2.2). The same config also tucks the full
-`runtime_fingerprint()` (the complete provenance bundle, §2.7) into the trace's metadata, so the record
-of *what produced this run* travels with the trace.
-
-### 2.2 Trace & span hierarchy
-
-`run_game` (`Agents/main.py`) opens the root span as a context manager
-(`langfuse.start_as_current_observation(as_type="span", name="werewolf-game")`), then
-`root.update_trace(...)` stamps the trace name, `session_id`, and a metadata block (game_id + every
-memory/rerank/filter/persistence config). The LangGraph callback handler attached in §2.1
-auto-captures all downstream subgraph/node/LLM runs as nested spans — **the tree comes for free from
-the callback; the case spans (§2.3) are the only manually-shaped observations.** `Metrics` and the
-`EvalCaseSink` are threaded into the graph via LangGraph **runtime context**
-(`context={"metrics": ..., "eval_sink": ...}`), not graph state — so they accumulate per-game with no
-global mutable state and no cross-game races.
-
-### 2.3 The case abstraction — the frozen case is the unit of truth, not raw state
-
-**Why capture this much.** To re-judge a decision offline you must freeze everything the agent had: what
-it saw, what it retrieved (including the wide pre-rerank pool), what it decided, and how it rated each
-memory. (Capture pays off for secondary uses too — debugging a run, inspecting LangGraph state step by
-step, the planned frontend "X-ray" of each agent's mind [`frontend/design_log.md`], a considered
-rendered-prompt leak spot-check [`agent_boundaries/report.md` §5] — but *measuring the memory system* is
-what made it non-optional.)
-
-**Why freeze it *now*, not derive it later.** An earlier design kept the case implicit in the full trace
-and re-derived it on read — flexible (recombine raw spans into any case shape on demand), but it couldn't
-hold. Part of a case exists *only* at decision-time — the pre-rerank candidate pool, the assembled
-`private_context`, the situation queries that drove retrieval — and can't be reconstructed from raw spans
-afterward; and bulk-reading heavy traces back to re-derive cases didn't scale (§4). So the case is shaped
-*eagerly* at the decision point and frozen whole. The flexibility that survives is at the *set* layer
-(sample/select frozen cases into any eval set, §2.6) and a *retroactive-mining* escape hatch (`fetch_spans`
-over the retained full trace can still turn any span into a net-new case type, §2.6); what's gone is
-re-shaping an *existing* case's content after the fact — a field not frozen at decision-time is
-unrecoverable (wolf-night, which freezes no case at all, is the limiting proof — §5).
-
-The contract every consumer relies on: **read a frozen `*Case` from a span's output, never raw game
-state.** `EvalCase` (`Agents/schemas/evaluation.py`, `schema_version="eval_case_v2"`) is the richest;
-its fields group into the information set a judge needs:
-
-
-| Group           | Fields                                                                                                                                                                      | Why captured                                                                                              |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Identity        | `trace_id`, `observation_id`, `span_name`, `player_id`, `player_role`, `day`, `round`, `action_phase`                                                                       | `case_id = {trace_id}:{observation_id}` is the stable, source-independent key (§2.4)                     |
-| Information set | `visible_discussion`, `private_context` (`EvalPrivateContext`: previous strategy, day summaries, wolf channel, investigator/vigilante results, surviving rosters)           | reproduces*exactly what the agent could see* at decision time                                             |
-| Retrieval       | `memory_enabled`, `retrieval_skipped_reason`, `situations`, `situation_dimensions` (v6 query enums), `retrieved_*`, **`candidate_*`** (pre-rerank pool w/ embedding scores) | judging retrieval + training the reranker need the pool that*entered* reranking, not just the final top-k |
-| Output          | `agent_message` \| `agent_vote` \| `agent_night_action`                                                                                                                     | the decision actually taken (a night action is a target pick, so it's its own field)                      |
-| Credit signals  | `strategy_verdicts`, `strategy_index_to_key`, `adopted_strategy_*`, `memory_applicability`, `updated_strategy`                                                              | the agent's per-item follow/override/not-relevant judgements, joinable to the exact stored entry          |
-| Provenance      | `provenance` (`EvalProvenance`: store_dir, reranking_enabled, filtering_enabled)                                                                                            | makes the case self-describing — see §2.7                                                               |
-
-`schema_version` gates format migrations across runs. The other three case types follow the same
-frozen, self-describing pattern at coarser granularity (game / dedup-decision / day).
-
-### 2.4 Dual-sink emission — one shape, two destinations
-
-**Why a local sink at all.** A tracer is for *watching* a run, not for storing data you read back in
-bulk. Langfuse's read APIs make that concrete: they cap query cost (and return a 422 on heavy traces),
-they truncate large fields, and they tie the eval pipeline to a service being up. So each case is written
-to **both** places at once during the game — the Langfuse span and an in-process local sink. At game-end
-the local sink is flushed to a durable JSONL file. That local file is the *primary* source for builds;
-Langfuse is the *secondary*, retrospective archive (the lesson of §4).
-
-The mechanism — a single function, `freeze_case(span, case, *, kind, case_key, sink)`
-(`Agents/observability/case_sink.py`), is called at every emission site. It (a) stamps the live span's
-identity onto the case (`case.trace_id = span.trace_id`, `case.observation_id = span.id`), (b)
-`model_dump`s it once, (c) appends a **normalized span-dict** to the local `EvalCaseSink`, and (d)
-returns the payload for the producer's `span.update(output={case_key: payload})`. The local record is
-deliberately the *exact* shape the Langfuse read side produces from a fetched span —
-`{kind, id, name, trace_id, output: {case_key: payload}, ...}` — so the `*_case_from_span` converters
-and frozen-set builders apply **verbatim to either source.** Because both copies carry the same real
-`(trace_id, observation_id)`, a case's identity is **source-independent**: a frozen set built from
-local sidecars and one built from Langfuse contain the same case ids, and judge score push-back works
-on either. `run_game` returns the accumulated `eval_sink.records` on the `GameOutcome` so `run_batch`
-can persist them.
-
-### 2.5 Span names — a single source of truth
-
-`Agents/observability/span_names.py` is the only place span names are defined; both producers (the
-emission sites) and the consumer (`evaluation/src/data/langfuse.py`) import the prefixes + builder
-functions from it, so a rename can never silently strand a builder matching a stale prefix. One
-deliberate sharp edge is documented there: the extraction parent case-span
-(`postgame_extraction_<game_id>`) and its per-role child LLM runs (`postgame_extraction_<role>_...`)
-**share a prefix** — so a name-scoped reader must select the parent *structurally*, not by prefix
-alone, and the dedup LLM run names (`DEDUP_LLM_RUN_NAMES`) must be excluded up front. (That collision
-is also one of the things the §4 fix had to get right.)
-
-### 2.6 Persistence & the data plane
-
-**Why freeze into curated sets.** Replaying a decision, judging it, or training on it all require holding
-every other variable constant and staying re-runnable; re-reading the trace each time would re-instantiate
-nondeterministic retrieval and possibly-drifted models, and a *mutable* set silently orphans every result
-computed against its old contents. So cases are sampled into immutable, hash-linked frozen sets — the
-stable input to all replay/judging/training (`decision_replay/`, the same-seed `paired_ab/`, hash-lineage
-in `tracing/fingerprinting/report.md`).
-
-The flow is four stages, not duplicated stores (`evaluation/README.md` "Data plane"):
-
-```
-run_batch ─→ batch_results/<session>.jsonl              (game log; self-stamped fingerprint + configs + game_id/trace_id)
-          ─→ batch_results/eval_cases/<session>/<game>.jsonl   (per-game sidecar; pointer in eval_cases_path)
-  → eval-build-* freezes cases ─→ frozen_eval_sets/<id>.jsonl (+ <id>.manifest.json)
-       source = local sidecars (config `local_results`, PREFERRED — no Langfuse read)
-              | or Langfuse traces (for games predating local emission)
-  → eval-* runners ─→ eval_results/…                     (the judge side — out of scope here)
+```text
+trace "werewolf_game"   session = the run's session id · release = the git commit
+                        metadata: game id, memory, rerank, filter and retrieval settings, game config
+└─ span "werewolf-game" (the root)
+   ├─ graph nodes and model calls            from the callback, named after the nodes
+   ├─ agent_action_eval_<seat>_day_<d>_round_<r>_<phase>   one per AI seat turn; output.eval_case
+   │    └─ memory_retrieval_<seat>_day_<d>_round_<r>        the lookup, when memory is on
+   ├─ day_summary_eval_<game>_day_<d>                       output.day_summary_case
+   ├─ day_resolution_day_<d>, night_resolution_day_<d>      the tally and the night's outcome
+   └─ postgame_extraction_<game>                            output.extraction_case
+scores: one per computed game metric (a dnu_ prefix marks the do-not-use ones)
 ```
 
-The **Langfuse read path** (`evaluation/src/data/langfuse.py`, the fallback) is the post-§4 design:
-`trace.get()` to enumerate observation names/ids cheaply, then a name-scoped `get_many()` to pull only
-the parent case-span with full output — with a batched server-side prefix-filter fast path and a
-per-name fallback. A generic `fetch_spans` preserves the ability to retroactively mine *any* span into
-a new case type later (a real benefit of a self-hosted archive).
+The span names come from one module (`Agents/observability/span_names.py`). The release is the git
+commit, set in `Agents/tracing.py` at import, before the Langfuse client exists, because the SDK reads
+it once per process. The runtime fingerprint rides in the run's metadata
+(`build_runnable_config(run, callbacks=[...], metadata={"runtime_fingerprint": ...})` in `run_game`).
+After the game, `Agents/compute_metrics.py::push_scores_to_langfuse` writes each computed metric as a
+score on the trace and on the session, with an id derived from the trace and the metric, so pushing
+twice does not duplicate it. Langfuse prices each call from model definitions synced from the project's
+price table (`Agents/observability/langfuse_prices.py`), and calls made outside LangChain, such as
+Claude batch calls, are recorded as generations by `Agents/llm_factory/providers/anthropic.py::_trace`.
 
-### 2.7 Provenance stamping
+The capture scripts pass only their own callbacks (a usage meter and a call log), so their games get
+no Langfuse span tree; the voice-game runner's documented command also turns Langfuse tracing off.
 
-**Why provenance.** Runs are comparable only if you know they used the same code, prompts, models, store,
-and backend; without that stamp you get *silent staleness* (a result pointing at inputs quietly rebuilt)
-and *unattributable confounds* — exactly why win-rate alone can mislead. Concretely: an early A/B saw the
-*same* memory-on condition swing 96.7%→73.3% between batches, not from sampling noise but a quiet
-store/namespace change underneath it — invisible without a stamp. The honest boundary: this buys
-*traceability and drift-detection, not byte-reproducibility* — LLM output isn't byte-reproducible (temp-0
-even differs across backends), so the target is statistical equivalence from a provably-identical setup
-(`tracing/fingerprinting/report.md`, `evaluation/experimental_controls/drift_surfaces_and_guards.md`).
+#### Evaluation cases, and their local copy
 
-The mechanism produces four terms, easily confused:
+At each gradable step the code builds a case and calls `Agents/observability/case_sink.py::freeze_case`.
+It stamps the live span's trace and observation ids onto the case, dumps it once, writes the dump into
+the span's output, and appends the same dump to the game's in-process sink (`EvalCaseSink`). The local
+record has exactly the shape the Langfuse reader produces from a fetched span, so one set of converters
+can read either source, and a case's id (`{trace_id}:{observation_id}`) is the same in both. `run_batch`
+writes the sink as one JSONL file per game,
+`batch_results/<experiment>/eval_cases/<session>/<game>.jsonl`, and puts its path on the game's record.
 
+Inside a game, three kinds are written today:
+- **a turn case** (`EvalCase`) for every AI seat turn, day or night: what the seat saw (today's
+  transcript and its private context), the memory lookup and the wider pool it was drawn from before
+  reranking, the decision taken, the seat's verdict on each lesson it was shown and its reads of the
+  other players, with a `schema_version` (`eval_case_v2`) that gates format changes;
+- **a day-summary case** per day: the raw discussion and the summary written from it;
+- **the extraction input** once per game: what the offline extraction job will read. Since a ruling on
+  2026-10-12 extraction no longer runs inside a game; the dedup pass after it writes its own cases
+  (`DedupCase`) wherever it runs.
 
-| Term                       | What it is                                                                                                                   | Where it lives                         | Changes when                      |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | --------------------------------- |
-| **git SHA** (`git_commit`) | the full commit hash (`git rev-parse HEAD`), plus a `git_dirty` flag for uncommitted edits to tracked files                  | inside`runtime_fingerprint`            | code is committed (or dirtied)    |
-| **release**                | that*same SHA*, promoted to Langfuse's first-class, filterable trace field (§2.1)                                           | trace`release` column                  | = the SHA                         |
-| **prompt_bundle_hash**     | SHA-256 (16 hex) over top-level `Agents/prompts/*.py`; nested-package gap documented in the fingerprinting report            | inside`runtime_fingerprint`            | a covered prompt / formatter file changes |
-| **runtime_fingerprint**    | the run-level bundle declaration: Git state + prompt hash + principal model IDs, params, backend, and embedding settings     | trace **metadata** + every batch record | any recorded field changes        |
+One real file: game `8d33c5a3` of the `v8_demo_0` run (Claude Haiku 5.5, 2026-10-14) left 134 records,
+129 turn cases, 4 day summaries and 1 extraction input. One turn case, abridged (the store path is
+shortened, and 22 of the case's 30 fields are left out):
 
-**The join key.** The same `git_commit` SHA is written into *three* places: the trace's `release` field,
-the trace metadata's `runtime_fingerprint`, and every `batch_results` JSONL record. Because the value is
-identical in all three, it stitches them together. The workflow: filter traces by `release` in the UI,
-read the full fingerprint from the trace metadata, line that up with the batch records, then, for a
-clean-tree run, `git checkout` the exact committed code. Each form has its own job —
-**`release` is the cheap one-field filter,
-`runtime_fingerprint` is the complete record, and the SHA is the join key between them.**
-(`prompt_bundle_hash` is the sharper signal when you specifically care whether two runs had identical
-prompts — e.g. comparing A/B arms across a code change that didn't touch prompts.)
+```json
+{"kind": "agent_action_eval", "id": "d4b3ca3b8f92c71a",
+ "name": "agent_action_eval_player_2_day_1_round_1_night_action",
+ "trace_id": "58cf929c293e962a3117eb588dda7a8c",
+ "output": {"eval_case": {
+   "player_id": "player_2", "player_role": "chanteuse", "day": 1, "round": 1,
+   "action_phase": "night_action",
+   "agent_night_action": {"role": "chanteuse", "kind": "chat", "target": null,
+                          "via": null, "role_named": null},
+   "memory_enabled": false, "retrieval_skipped_reason": "day_1",
+   "provenance": {"store_dir": ".../memory_stores/ten_seat_v2",
+                  "reranking_enabled": false, "filtering_enabled": false}}}}
+```
 
-Two layers, by design — **code vs data:**
+This is a wolf's chat turn in the pack's night. The case records that the turn was a chat, not the line
+the wolf wrote: the line is in the span's `resolved_turn` output in Langfuse, and in the next wolf's
+case as part of what it saw. `provenance` is the data side of provenance: which store the lookup read
+and whether reranking or filtering ran, kept on the case because a frozen case travels without its
+trace.
 
-- **Code level (git-versioned):** the `runtime_fingerprint` above. Model / prompt / backend are *code*,
-  so they're versioned in git, not copied into the data. (Current details and limitations:
-  `evidence/tracing/fingerprinting/report.md`.)
-- **Data level (case-stamped):** `EvalProvenance{store_dir, reranking_enabled, filtering_enabled}` on
-  every `EvalCase`. The frozen dataset embeds the case but strips it from the trace, so without this the
-  store/config that *conditioned a retrieval* is only recoverable by re-joining the trace. Stamping it
-  on the case keeps the frozen record self-describing (its absence was that confound; closed as
-  sufficiency-audit gap #4, §3).
+**From case files to test sets.** The builders (`eval-build-*`) read these files, not Langfuse, and
+sample cases into *frozen sets* under `evaluation/frozen_eval_sets/`: immutable files with a manifest
+that hashes their inputs, so a judge, a replay or a training run always reads the same cases. The
+Langfuse reader remains for games that predate the local files: it lists a trace's spans cheaply, then
+fetches only the named case span, and a generic span fetch can still mine any retained span into a new
+kind of case.
 
-### 2.8 Score capture — the seam to the evaluation system
+#### The prompt log and the reads log
 
-The one place the capture layer touches the judge layer: after a game,
-`push_scores_to_langfuse(game_metrics, trace_id, session_id)` (`Agents/compute_metrics.py`) writes
-each non-null computed metric as a **Langfuse score** (`create_score`, `NUMERIC` or `CATEGORICAL`),
-with a deterministic `score_id` for idempotency, scoped to the trace and (if present) the session. That
-is the *capture* of scores — they become filterable/aggregatable alongside the traces. **What those
-scores mean, how the deterministic proxies are designed and validated, and the LLM-judge pipeline are
-the evaluation system, not this report** (`evidence/metrics/`, `evidence/memory_system/`).
+`Agents/turn/agent_player.py::run_agent`, which every AI seat decision goes through, records each
+prompt input before the model is called (`Agents/turn/eval.py::log_prompt`), and each private read the
+seat returns (`record_reads`). They go to the game's `TurnCapture`, held in a context variable so two
+games in one process never share a list. The prompt input is the dictionary of named fields the
+template is filled from (the transcript block, the dead roster, the seat's night records and so on), not
+the rendered text.
 
-## 3. How we verify capture is *sufficient*
+The batch runner reads both lists in memory after each game to run the nine leak checks, puts the
+verdict on the game's record, and writes neither list to disk. The voice-game runner
+(`persona_voice_games.py`, whose games also fed the evil-cover screen) saves them as
+`<label>.capture.json.gz`, in the server's capture format with a fuller final state. In
+`voices-01.off` (2026-10-18, Claude Haiku 5.5) the log holds 98 prompt entries, and the manifest counts
+104 model calls: calls made outside `run_agent`, such as the day summary, are not seat prompts. One
+entry, its 52 prompt-input keys abridged:
 
-The bar is not "does a trace appear" but "does a game emit **everything every downstream consumer
-needs**." The method (the 2026-06-06 tracing-sufficiency audit): map the production eval pipeline →
-catalog each consumer (judges, fine-tuning, replay) → find where a consumer needs a field the trace
-doesn't carry. That audit found five gaps and has since closed four — #2 pre-rerank pool, #3 day-summary
-case, #4 case-level provenance (all plumbing), and #5 the computed-metrics + night-decision dump (now in
-each batch record, §2.6, and pushed to Langfuse scores, §2.8; night decisions are captured as
-`EvalCase`s) — leaving only #1, the wolf-night case, deferred (§5).
+```json
+{"player_id": "player_2", "player_role": "sigilist", "output_key": "day_channel",
+ "day": 1, "round": 1,
+ "prompt_input": {"preamble": "...", "day_channel": "No messages yet.",
+                  "dead_roster": "...", "night_actions": "...", "previous_strategy": "..."}}
+```
 
-Capture is checked on live smoke games, not asserted (raw logs in `implementation_notes/`):
+Who may see which field, and the checks that read these lists, are the
+[agent boundaries report](../agent_boundaries/report.md)'s.
 
-- **Night-action coverage** (the Phase A#3 work): single-target night roles
-  (healer/investigator/SK/vigilante) were routed through a new memory-informed night path so they emit
-  an `EvalCase` + run retrieval like day actions. Verified across memory-off/on smokes: night eval
-  spans emit, nest under the root, carry the correct `agent_night_action` target; in the decisive
-  all-roles run the healer retrieved 3 obs + 3 strategy points on nights 2–4 and recorded adoption,
-  while SK/vigilante correctly returned 0 (empty namespaces) — the branch fires, content arrives once
-  populated.
-- **Sufficiency live-check:** on a seeded all-enabled game, **72/72** eval cases carried
-  `provenance.store_dir`, and **46/72** carried the pre-rerank candidate pool (the other 26 = day-1
-  retrieval skips + empty SK/vig namespaces, both expected).
-- **Source equivalence:** for a throwaway game, the local-sidecar build and the Langfuse build
-  produced **identical `(trace_id, observation_id)` case sets** — proving the dual-sink shapes don't
-  diverge.
+#### The game record, the manifests and `calls.json`
 
-## 4. Case study — the 422 collapse (2026-06-11)
+**The game record.** `run_batch` writes one JSONL line per game: the result and roles, the transcript
+and day summaries, the per-day vote tallies and per-night outcomes, the computed metrics, the leak
+verdict, the game id, the trace id and the path of the case file. A failed game gets an error record
+with its traceback. The capture scripts write the same content as `<label>.record.json`.
 
-Building a frozen eval set from Langfuse started failing with a **422** on heavy games: in one
-5-trace session, **3 succeeded and 2 errored** — short games passed, long games didn't. The cause was
-a latent inefficiency in the read side, not a tracing bug: the shared fetch helper pulled **every**
-span of a trace via paginated `observations.get_many` (a 9-player sequential game logs hundreds–to–
-thousands of spans) and filtered client-side, and Langfuse's query-cost guard rejects that once a
-trace is large enough. The fix made **local emission the primary source** (the case was already built
-in-process and dumped to the span — it just had no local sink) and reworked the Langfuse path into a
-cheap `trace.get`-then-name-scoped-`get_many`. Result: all 20 `v5_seed_b*` games built with **zero
-422**, every record's `formatted_discussions` full-length (20–43 KB). This is the incident that turned
-"emit locally, tracer is secondary" from a nicety into the load-bearing rule (§1).
+**The provenance.** Every `run_batch` record, success or error, carries the runtime fingerprint, and the
+experiment folder's `config.json` holds the resolved run settings with the same fingerprint. The capture
+scripts write a `<label>.manifest.json`: the commit and the modified and untracked files, the fingerprint,
+the LangGraph version, the model, the run settings, the token usage and the cost. What the fingerprint
+covers and misses is the [fingerprinting report](fingerprinting/report.md)'s.
 
-*The rest of this section is the forensic detail — skip by subhead (Cause / Why the obvious fixes
-failed / Fix / Verification / Lessons) if the verdict is all you need.*
+**One row per model call.** The capture scripts also attach a call log (`phase3_capture.py::CallLog`)
+and save it as `<label>.calls.json`. A real row from `phase3_games/game1` (2026-10-09, gemini-3.5-flash
+-lite, 95 calls, $0.4552 by its manifest):
 
-**Cause — the tracer was the primary eval store.** The eval cases were always built at game-time
-(`turn/pipeline.py` for `EvalCase`, `orchestrator.py` for `ExtractionCase`) and dumped into span
-output, but `run_batch` persisted only raw metrics — so the only way to *read a case back* was to
-re-fetch it from Langfuse. As span volume grew (v5's longer games), the fetch-all read pattern crossed
-Langfuse's cost guard. The instrument for *watching* a run had been quietly drafted into being the
-*source of truth* for building eval sets, and it doesn't scale to that.
+```json
+{"node": "round_turn",
+ "checkpoint_ns": "DAY_PHASE:bcbf953d-67a9-559e-c348-03575f4d266a",
+ "model": "gemini-3.5-flash-lite",
+ "started": 1791541908.8565261, "ended": 1791541915.2535865, "ok": true}
+```
 
-**Why the obvious fixes failed.** (a) Date-bounding doesn't help — the cost is the heavy trace's own
-span count, already `trace_id`-filtered; a window inside its ~15-min life shrinks nothing. (b)
-`trace.get` alone doesn't help — it enumerates all span ids in one call (no 422) but **truncates large
-`output`** (the extraction span came back 8.3 KB with *no* `extraction_case` key, vs `get_many`'s full
-38 KB) — so it can enumerate but can't carry the case content. (c) A naive name-scoped fetch grabs the
-wrong span — the `postgame_extraction_` prefix matches both the parent case-span and per-role child
-runs (§2.5), so the parent must be selected structurally.
+### Served games
 
-**Fix (7 commits, dependency-ordered).** Span-name single source of truth (`span_names.py`) →
-`EvalCaseSink` + `freeze_case` (the dual-sink, identical-shape design of §2.4) → tee at all five
-emission sites → `run_batch` per-game sidecar + record pointers → builders gain the `local_results`
-source with an input hash-chain to the batch run → Langfuse read rework (delete fetch-all; enumerate →
-name-scoped fetch; keep generic `fetch_spans` for retroactive mining).
+`server/game/game_session.py::GameSession` runs each game as an asyncio task over the same compiled
+graph, streaming its output to the browsers. On 2026-10-26 the database held 68 served games, from
+2026-08-21 to 2026-10-21; 51 had completed.
 
-**Verification.** The repro session (previously 3 ok / 2×422) fetched all 5 traces (25–38 KB each);
-the primary-path smoke wrote a 148-case sidecar read with **no Langfuse call**, and the local vs
-Langfuse copies had **identical `(trace_id, observation_id)` sets**. Post-acceptance hardening found
-live: the SDK's ~5 s default read timeout is too tight for `trace.get` on a fresh heavy trace
-(~7 s on 1,439 obs) → now an explicit 120 s timeout.
+#### The event log
 
-**Lessons.**
+Each chunk the graph streams is translated into typed events (`server/game/translate.py`) and appended,
+in sequence, to the `events` table right away (`server/storage/game_repository.py::record_events`).
+The event log is what a replay plays and what a reconnecting browser catches up from. When the game
+ends, `complete_game` derives the winner, days and counts from it and marks the row completed, or marks
+it dropped if the log has no clean ending. Evaluation reads served games through the public replay
+endpoint, rebuilt into the batch record's shape (`evaluation/src/data/sources/replay_api.py`), so readers
+written for batch games take them unchanged. The event at the centre of the cache incident, from game
+`51226f24`:
 
-- **The tracer is for watching, not for being your eval store.** Emit the gradable record to a durable
-  local artifact at run-time; treat the observability backend as a *secondary* archive. The pattern
-  transfers to any tracing stack.
-- **Make the local and remote records the *same shape*.** One converter set then reads either source,
-  and case identity is source-independent — no divergence to maintain.
-- **Define span names once.** Producer/consumer drift across a rename is silent (the builder just
-  matches nothing); a single source of truth makes it a compile-time-ish concern.
-- **A latent inefficiency surfaces as a hard failure at scale.** The read pattern was "fine" on v4
-  games; the same code 422'd on v5. Scale-test the read path against your *largest* expected trace.
+```json
+{"day": 1, "seq": 32, "type": "pass_marker", "player": "player_9", "channel_seq": 8,
+ "pass_reason": "generation_failed", "gated": false, "gated_candidate": null}
+```
 
-## 5. Known gaps — what isn't captured / verified yet
+#### The prompt capture and the leak audit
 
-Ordered by criticality (likelihood × impact × detectability). Each carries a freshness date so a later
-reader knows whether to re-confirm. A gap stays listed even when minor — the list *is* the audit trail.
+When a game ends, `GameSession._save_capture` packs its `TurnCapture` with six fields of the final state
+that the leak checks read, compresses it, and writes one row to `prompt_captures`
+(`server/storage/prompt_captures.py`): the blob, `n_prompts`, a `partial` flag for a game resumed after
+a restart (its earlier prompts died with the old process), and, once audited, `audited_at` and the list
+of leaks. The nightly audit (`server/housekeeping/leak_audit.py`) runs the batch runner's nine checks
+over every capture not yet audited. It runs from a checkout on the host, because the checks live in
+`tests/`, which the server image does not include.
 
-### Wolf-night discussion emits no `EvalCase` — criticality: medium
+On 2026-10-26, 11 of the 68 served games had a capture, all completed games from 2026-10-16 to
+2026-10-21; captures arrived with the 2026-10-15 deploy. None was partial, and none had been audited.
+Game `51226f24`'s row: 115 prompts, not partial, captured 2026-10-17 08:02 UTC, `audited_at` empty.
 
-- **Gap.** Single-target night actions are first-class cases (§3), but **wolf night discussion is
-  not** — it's a combined discuss-and-vote into `wolf_channel`, a different shape from a single-target
-  pick, so it was deferred rather than forced into the day pattern. Consequence: the wolf-night
-  decision is **absent from the eval pool**, so application/pipeline judging and any wolf-night memory
-  read have no case to consume there. It's a coverage hole, not a correctness bug.
-- **Considered solution.** A wolf-night `EvalCase` adapter (emission-only first, full memory context
-  later); flagged to land with the deferred wolf-night `round`-schema cleanup.
-- **Status — open, verified 2026-06-27.** Deferred since 2026-06-06; not yet built.
+#### Checkpoints
 
-### `round` is vestigial in the eval layer — criticality: low
+`server/graph_runtime.py::GraphRuntime` compiles the graph over a PostgreSQL checkpointer
+(`AsyncPostgresSaver`), one thread per game id. A restarted server resumes each running game from its
+last committed step. The replays read the same checkpoints, read-only, to recover the exact state before
+a turn (`evaluation/experiments/investigator_claim_replay.py::load_state`). Nothing deletes a finished
+game's thread. On 2026-10-26, 49 of the 68 game rows had checkpoint threads.
 
-- **Gap.** The sequential scheduler hardcodes day `current_round=0`, but `round` still lives in
-  `EvalCase.round`, span names, and frozen JSONL (and is genuinely load-bearing only in wolf-night's
-  2-round loop). Its removal was deferred to a label-once regeneration cut where frozen data is rebuilt
-  anyway, and comes out with the wolf-night-eval adapter above.
-- **Status — open, verified 2026-06-27.** Harmless (a constant slot); a cleanliness item, not a risk.
+#### The usage ledger
 
-### Pre-fix artifacts carry an empty day-summary `game_id` slot — criticality: low (historical)
+A `UsageMeter` rides with the game's callbacks (`server/game/usage.py`). It counts each model call's
+tokens and wall time per model and UTC hour, because prices change by date and DeepSeek bills peak hours
+at a different rate. The session saves the counts on `games.usage` at most every 30 seconds and at the
+end, so a restarted game carries on from them. The cost is not stored: `game_cost` works it out from the
+counts and the price table whenever a replay is read. 37 of the 68 rows carry counts. Game `51226f24`
+(GPT-6 Luna), first of its two hourly buckets:
 
-- **Gap.** Day-summary spans before the 2026-06-11 fix read `game_id` from graph state (where it's
-  unset) rather than config, so their names are `day_summary_eval__day_N`. Already-run games (incl. the
-  v5 seed batch) keep the empty slot; join those by `trace_id`, which is the identity anyway. Fixed for
-  all games since.
-- **Status — closed for new games 2026-06-11**; the note remains for anyone reading old artifacts.
+```json
+{"model": "gpt-6-luna", "hour": "2026-10-17T07:00:00+00:00", "calls": 104, "failed": 0,
+ "input": 486111, "cached": 294102, "written": 5832, "output": 56478, "reasoning": 21302,
+ "seconds": 529.359}
+```
 
-### Self-hosted assumption — criticality: low (context, not a defect)
+A call counts as failed when the provider raises; a failed call adds no tokens.
 
-- The 422 in §4 was a **query-cost guard on a self-hosted Langfuse**, not API rate-limiting; there are
-  no external rate limits in this deployment. A managed-cloud move would add rate-limit considerations
-  to the (now secondary) read path. Recorded so the §4 reasoning isn't misread as cloud-throttling.
-- **Status — informational, verified 2026-06-27.**
+#### Error reports
+
+`server/error_reporting.py` sends a game that dies, or a request that fails, to Sentry, tagged with the
+game id, the model, whether the player paid, and whether the failure came before or after the game's
+end. The integration disables collection of request bodies, headers, cookies, query strings, stack-frame
+variables and model inputs and outputs. It removes named private fields recursively and scrubs the
+supplied game keys from game-failure reports. These are explicit safeguards, not a proof that every
+possible exception or breadcrumb is free of sensitive text. It is off unless a
+DSN is set, it records no performance traces, and ordinary log lines stay breadcrumbs, so routine
+fallbacks do not use the plan's quota. A refused player key is not reported: it is the player's key, not
+a bug.
+
+#### Langfuse on the server
+
+The session opens one trace per run of the game's task (`GameSession._run`): root span `werewolf-game`,
+trace name `werewolf_game`, session = the game id, metadata the game id, the model, whether the player
+paid, and whether this run is a recovery. A game resumed after a restart is therefore a second trace in
+the same session. A human seat's draft preview is a trace of its own (`draft_preview`) in that session.
+Inside, the graph emits the same spans as on the batch path, eval-case spans included. The server creates
+a case sink but never writes it, so **Langfuse is the only configured durable destination for a served game's evaluation cases.
+The in-memory copy lasts only as long as its session, and durable availability depends on trace export
+and retention.** No scores are pushed.
+
+#### Which build served a game
+
+The inspected served-game path adds no runtime fingerprint: the session calls
+`build_runnable_config(run)` without fingerprint metadata. The trace's release stamp is computed from git at import; the server image copies `Agents/`
+and `server/` without the repository, and the original review found no production `LANGFUSE_RELEASE` override. Without an override,
+`git_revision()` falls back to `unknown` in that image. This is a code-based expectation, not a release
+value checked in the live trace store; an explicit environment override takes precedence. What the row does record is the model, whether the player paid, the memory switch,
+the seats and the human players. The rest of the run's settings follow from the code
+(`server/game/run_config.py::game_run_config`).
+
+The build is therefore identified only from outside the game: the deploy log names each server image by
+its commit and date ("2026-10-26 server rebuilt at `2ecec0cc`"), and a game is matched to the image
+that was live when it was created. The log gives dates, not times, so a game played on a deploy day is
+ambiguous.
+
+## Rebuilding a turn
+
+**The question:** can a turn played weeks ago be run again under today's prompt, to test a fix? The replay tools support discussion and vote reconstruction from four kinds of saved record, subject
+to the fields and game version available. They use today's builders by design: reconstructing a
+situation is different from reproducing the original prompt or execution.**
+
+The method and its results are the [turn-replay report](../evaluation/evaluation_scopes/turn/report.md)'s.
+The part that belongs here is which record supplies the state:
+
+| Saved record | How the turn's state is recovered |
+|---|---|
+| A batch turn case | Its transcript and private context become the seat's payload (`evaluation/src/replay/situation_summary.py::eval_case_to_agent_payload`) |
+| A served game's checkpoints | The checkpoint just before the line is read, read-only (`investigator_claim_replay.py::load_state`) |
+| A prompt capture | The prompt input locates the turn: the transcript block the prompt showed is matched to a prefix of the final transcript, and the payload is rebuilt from the final state as of that turn (`deduction_block_census.py::_payload_at`, `_transcript_then`) |
+| A capture script's record and stream | The state is rebuilt from the record and the chunk stream (`phase3_turn_cases.py`) |
+
+From that state the engine's own builders make the payload and today's template renders it
+(`evaluation/src/replay/hallucination_bench.py::turn_payload`, `turn_template`). Text the engine wrote
+in the old state, such as ballot lines, is brought to today's wording; what players and the summariser
+wrote stays as it was. On the evil-cover turns the rebuild reproduced all 41 captured seat blocks
+exactly.
+
+What a rebuild cannot give back:
+- **A guaranteed archive of the exact rendered prompt.** The local prompt capture keeps template
+  inputs, not rendered messages. A retained model-call trace may contain messages, but the capture
+  format alone cannot reproduce old rendering code or guarantee a complete historical prompt.
+- **The provider's state on the day,** or the old model's sampling. The replay calls today's model.
+- **What the rest of the day would have done.** The transcript after the turn is frozen.
+- **Night turns, on the ten-seat game.** The shared replay bench behind the October screens rebuilds
+  discussion and vote turns only. The memory replays of June and July did replay night actions, from
+  nine-seat batch cases ([turn replays](../evaluation/evaluation_scopes/turn/report.md) §1).
+- **A nine-seat turn under today's prompts.** Its payload builds, but the ten-seat prompts do not
+  render it.
 
 ---
 
-## Key decisions (why this shape, not the alternative)
+## The decisions behind it
 
-Each §2 section opens with why its piece exists; this table recaps the cross-cutting *shape* choices —
-why each took the form it did, and what it rejected:
+Each decision gives the choice, what it was chosen over and why, the cost, and the evidence. Where no
+record gives the reason, the text says so.
 
+### Decision index
 
-| Decision                                                                     | Why                                                                                                        | Rejected alternative                                                                         |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **Shape each case eagerly at decision-time, not late-derived**               | decision-time-only fields (pre-rerank pool, private ctx) can't be rebuilt later; bulk late-read 422'd (§4) | late-bind: persist raw, derive cases on read — flexible but lossy + doesn't scale (§4)      |
-| **Emit cases locally at game-time; tracer = secondary archive**              | the read path 422'd on heavy traces (§4); a local artifact you own is durable, scalable, offline-readable | keep the tracer as the eval store — doesn't scale (§4)                                     |
-| **Local + Langfuse records share one shape**                                 | one converter set reads either source; case identity is source-independent                                 | two converters → silent drift between the sources                                           |
-| **`Metrics` + `EvalCaseSink` on LangGraph runtime context, not graph state** | per-game accumulation, no global mutable state, no cross-game races                                        | module globals → races + manual reset between games                                         |
-| **Single source of truth for span names**                                    | a rename can't silently strand a builder matching a stale prefix                                           | hardcode names on both sides → producer/consumer drift (the original bug)                   |
-| **Provenance split: code in git, data on the case**                          | code is already git-versioned; only the data/config identity needs copying onto the frozen case            | stuff everything into the trace → not self-describing once frozen (the §3 gap-#4 confound) |
-| **`release` *and* `runtime_fingerprint`**                                    | release = cheap first-class filter; fingerprint = complete record; SHA joins them (§2.7)                  | one or the other → either un-filterable or incomplete                                       |
+| Question | Decisions | Evidence and remaining uncertainty |
+|---|---|---|
+| Which tracer, and what is it for? | [1–3](#decision-1): self-hosted Langfuse; cases shaped at decision time; the local record first | The 422 incident; a June check that both copies hold the same case ids |
+| How is a record kept consistent? | [4–6](#decision-4): one shape for both copies; span names in one module; per-game accumulators | Unit tests on the sink and the per-game capture |
+| How is a result tied to its build? | [7–8](#decision-7): code identity by fingerprint, data identity on the case; release and fingerprint joined by the commit | Batch fingerprints have coverage gaps; served games have no fingerprint and an unverified release stamp |
+| How does a served game record itself? | [9–12](#decision-9): one trace per task run; a capture at the end; counts not costs; errors without secrets | Unit tests; the cache incident; no audit has run |
+| What was superseded? | [13](#decision-13): Langfuse as the only store; extraction and dedup cases inside the game | Dated |
 
----
+### Which tracer, and what it is for
 
-## Sources & references
+<a id="decision-1"></a>
 
-**Source logs (raw — the proof behind §3–§4):** `implementation_notes/experiment_log.md` (Phase A#3
-night-eval coverage, 2026-06-06) · `implementation_notes/ISSUE_frozen_set_fetch.md` +
-`implementation_notes/frozen_set_fetch_explained.md` (the 422 collapse + fix, 2026-06-11) ·
-`implementation_notes/smoke_*.log`.
+#### 1. Self-hosted Langfuse, chosen over LangSmith and Arize Phoenix (recorded June 2026).
 
-**Code:** `Agents/observability/` (sink + span names) · `Agents/tracing.py` · `Agents/main.py` ·
-`Agents/schemas/evaluation.py` (the case schemas) · `evaluation/src/data/` (the read side) ·
-`evaluation/README.md` "Data plane".
+- *Why, as recorded in the June version of this report:* the backend had to run on the project's own
+  host, so the trace data is the project's, avoids a hosted per-trace charge, while leaving infrastructure and storage costs, and any old span can later be
+  mined into a new kind of case. That ruled out LangSmith, whose self-hosting is a paid tier. Between
+  Phoenix and Langfuse, both open source, two needs chose Langfuse: hand-shaped spans that carry a case
+  in their output and are read back by name, which Langfuse's SDK is built for while Phoenix leans on
+  automatic instrumentation; and LangGraph wiring through Langfuse's standard LangChain callback.
+  Scores and sessions, which the pipeline uses, come with it.
+- *How firm:* a judgement of fit at the time, not a benchmark or a current feature comparison between the products.
+- *Cost accepted:* the project runs and stores the stack itself, and its storage has filled the host's
+  disk (the [disk incidents](#disk-full-spans-silently-dropped-2026-06-07-to-2026-10-22)).
+
+<a id="decision-2"></a>
+
+#### 2. Each case is shaped when the decision is made, not derived from the trace later.
+
+- *Instead of:* keeping only the raw trace and building cases from it on demand, which keeps every
+  option open.
+- *Why:* some fields are available at decision time but are not otherwise guaranteed to be retained: the
+  wide pool of memory candidates before reranking cut it down, the private context as assembled for the
+  seat, the queries that drove the lookup. And reading heavy traces back in bulk did not scale (the
+  [422 incident](#the-422-collapse-2026-06-11)).
+- *Cost accepted:* a field not retained in the case or another surviving record cannot be recovered later. The flexibility
+  that remains is at the set level (choosing which cases go into a test set) and through Langfuse's
+  generic span fetch, which can still mine any retained span.
+
+<a id="decision-3"></a>
+
+#### 3. The local record is primary; the tracer is a secondary archive (2026-06-11).
+
+- *Instead of:* the 2026-06-06 design, in which every evaluation consumer read its cases from Langfuse
+  and no local copy was kept ([decision 13](#decision-13)).
+- *Why:* the 422 incident. A tracer's read API caps query cost, truncates large outputs and ties every
+  build to a service being up; a local file has none of those limits.
+- *Exceptions today:* a served game's cases exist only in Langfuse (decision 9); stage fit reads served
+  games' traces for event timing (`evaluation/experiments/stage_fit.py`); and the learning loop reads a
+  session's cost from Langfuse (`evaluation/src/loop/cost.py`, through
+  `evaluation/src/data/sources/langfuse.py::session_cost`).
+- *Evidence:* on a throwaway game in June, the case set built from the local file and the one built from
+  Langfuse had identical `(trace_id, observation_id)` sets. The local copy also survived the 2026-07-21
+  deletion of the trace data, which cost the evaluation record nothing.
+
+### How a record is kept consistent
+
+<a id="decision-4"></a>
+
+#### 4. The local and Langfuse copies of a case have one shape.
+
+The local record is written as the reader's normalised span dictionary, so the `*_case_from_span`
+converters and the frozen-set builders read either source unchanged, and a case keeps its id across
+both. The rejected alternative was two converters, one per source, which would add a risk of silent format drift.
+Test: `tests/evaluation/test_eval_case_sink.py` round-trips sink records through all four converters.
+
+<a id="decision-5"></a>
+
+#### 5. Span names are defined in one module.
+
+Producers and the Langfuse reader import the prefixes and name builders from
+`Agents/observability/span_names.py`. Before 2026-06-11 both sides hard-coded the names, so a rename on
+one side would leave a builder matching nothing, with no error. The module also names its one sharp
+edge: the extraction case's span and its per-role model calls share a prefix, so a reader must pick the
+parent span by structure, not by prefix.
+
+<a id="decision-6"></a>
+
+#### 6. Per-game accumulators travel with the game, not in globals or graph state.
+
+The metrics and the case sink are handed to the graph as LangGraph runtime context, so they collect one
+game's records with no shared mutable state. The prompt and reads capture followed on 2026-10-14: it had
+been one process-wide list, which the server never cleared, so served games' prompts interleaved across
+games. It is now a context variable set per game. Test: `tests/engine/test_turn_capture.py` (two games
+at once never write into each other's capture).
+
+### How a result is tied to its build
+
+<a id="decision-7"></a>
+
+#### 7. Code identity goes in the fingerprint; data identity goes on the case.
+
+- *The split:* the fingerprint records code identity and selected model and runtime settings. This
+  is partial provenance: model services and database catalogue settings are not fully versioned by
+  the source commit. Which store a lookup read, and whether reranking or filtering ran, is data, so it is
+  stamped on every turn case (`EvalProvenance`). A frozen case is copied out of its trace, so without
+  the stamp the store behind a lookup could only be found by joining back to the trace.
+- *Why it mattered:* in two unpaired 30-game batches before the v5 rebuild of the game, the village
+  with memory on for every role won 29 of 30 games in one batch and 22 of 30 in the next, while two
+  things changed at once: the store version, and how finely the store was split by role and phase
+  ([effectiveness](../memory_system/effectiveness/report.md)). The record could not say which change
+  mattered. The stamp was added in the 2026-06-06 audit of what a game must record.
+
+<a id="decision-8"></a>
+
+#### 8. The release field and the fingerprint, joined by the commit (batch path).
+
+The release is the commit as Langfuse's own filterable field; the fingerprint is the full record; the
+same commit in every batch record joins the two. A reader filters traces by release, reads the
+fingerprint, and lines it up with the batch records. The detail is the
+[fingerprinting report](fingerprinting/report.md)'s. Served games have no fingerprint; their release stamp is expected to be `unknown` without an override (the
+[build section](#which-build-served-a-game)).
+
+### How a served game records itself
+
+<a id="decision-9"></a>
+
+#### 9. One trace per run of the game's task, grouped by the game id (September 2026).
+
+- *Instead of:* one trace per game, forced by seeding the trace id from the game id, so that a game
+  resumed after a restart would continue its trace.
+- *Why:* the seeded id made the SDK treat the root span as the child of a remote parent that did not
+  exist, so the trace had no root and lost its name; handing the ids to the callback instead made the
+  graph's own chain span a second root, which Langfuse then named the trace after (`GameSession._run`,
+  comments). Grouping by session keeps a game findable by its id.
+- *Cost accepted:* a resumed game is two traces, and the cases inside them are the only copy (the sink is
+  not written; no record says why).
+- *Evidence:* `tests/server/test_game_session.py` checks one named root, the session, and no explicit
+  ids anywhere.
+
+<a id="decision-10"></a>
+
+#### 10. Save completed-game prompts once; provide an offline audit job (2026-10-14).
+
+- *Why, as recorded in the code:* each prompt repeats the conversation so far, so a game's prompts run
+  to megabytes of repeated text, which gzip shrinks many times over. They sit in a table of their own
+  because the game listings read whole `games` rows. The audit runs from a checkout on the host because
+  the checks live in `tests/`, outside the server image.
+- *Cost accepted:* a game that never completes has no capture, a game resumed after a restart has only
+  the part after it, and the audit depends on a scheduled job someone has to install.
+- *Evidence:* `tests/server/test_leak_audit.py` (below). The cache incident is the first use of a capture
+  recorded here.
+
+<a id="decision-11"></a>
+
+#### 11. The ledger stores counts, and the cost is worked out when read.
+
+`server/game/usage.py` says why: a price can change on a date and some providers bill by hour, so counts
+are kept per model and hour, and pricing them at read time means a corrected price corrects every game it
+applied to. The cost: a model with no price for that date shows no cost at all ("never a guess").
+Test: `tests/server/test_usage.py`.
+
+<a id="decision-12"></a>
+
+#### 12. Report exceptions with explicit collection limits and credential redaction (2026-10-17).
+
+`server/error_reporting.py` gives the reasons: a game's creation request carries the player's API key,
+and so can a stack frame's local variables, so every collected category is named and turned off; the
+model-provider integrations are off because they would report every 401 and 429 the turn already
+handles; and only real exceptions become reports, to keep within the plan's quota. Test:
+`tests/server/test_error_reporting.py` (off without a DSN; a failure is tagged and never carries the
+keys; private fields are dropped at any depth).
+
+### What was superseded
+
+<a id="decision-13"></a>
+
+#### 13. Superseded designs, with dates.
+
+- **Langfuse as the single source of truth** (2026-06-06), replaced by the local-first rule on
+  2026-06-11 (decision 3).
+- **Extraction and dedup inside the game.** In June a game's last step ran extraction, and the dedup
+  pass after it wrote a case per decision into the game's trace. Since a ruling on 2026-10-12 extraction
+  is an offline batch job: the game saves only its extraction input, and the dedup cases come from the
+  offline job when it runs.
+
+## Incidents
+
+### The 422 collapse (2026-06-11)
+
+**Verdict.** Building a frozen test set from Langfuse failed with HTTP 422 on long games: in one
+five-game session, 3 traces built and 2 failed. The builder fetched every span of a trace (hundreds to
+thousands per game) and filtered on the client, and the self-hosted server's query-cost guard rejects
+that once a trace is large. It was a read-side inefficiency the longer nine-seat games exposed, not a
+tracing bug, and not rate limiting. The fix made the local case file the primary source and rebuilt the
+Langfuse reader to list a trace's spans cheaply and then fetch only the named case span. Afterwards all
+20 games of the seed batch built with no 422, every record's discussion text full length (20,416 to
+43,477 characters). One more limit was found live: the SDK's read timeout of about 5 seconds was too
+short for listing a fresh 1,439-span trace (about 7 seconds), and it is now 120 seconds.
+
+**What it taught.** For this workload, evaluation needed a bulk-readable source independent of the trace service. Write
+the gradable record locally at run time, in the same shape as the tracer's copy. Define span names once.
+And test a read path against the largest trace you expect: this one had worked on smaller games. The
+forensics (why date bounds, the cheap listing call and a naive name filter each failed) are in
+[the issue record](implementation_notes/ISSUE_frozen_set_fetch.md) and its
+[plain retelling](implementation_notes/frozen_set_fetch_explained.md).
+
+### Disk full, spans silently dropped (2026-06-07 to 2026-10-22)
+
+The host's disk filled five times, from Docker logs, build caches and, once, the trace data itself. On
+2026-07-09 traces appeared with missing heads, a game "starting" in the middle of a night: the object
+store behind Langfuse refused writes at its minimum-free threshold, the Langfuse server returned 500s,
+and the SDK retried and then dropped the span batches without an error in the game. On 2026-07-21 the
+trace data had grown to 43 GB, and the object-store and ClickHouse volumes were deleted, keeping
+Langfuse's own PostgreSQL. Traces from before that date are gone, including Langfuse sessions that June
+records cite as their evidence; the local records were untouched. The working rule since: when a trace
+looks truncated, check the disk first. (Recorded in the project's operations notes, not in `evidence/`.)
+
+### Server traces with no root, or named "LangGraph" (September 2026)
+
+The first served traces were seeded with the game id as trace id, to keep one trace per game across
+restarts. The root span then hung under a parent that did not exist, so the trace had no root and no
+name; passing the ids to the callback instead made LangGraph's chain span a root, and Langfuse named the
+trace "LangGraph" and took the chain's output as the trace's. The fix is decision 9.
+
+### An empty trace was a human, not a stall (2026-08-24)
+
+The first game served through the proxy stopped at "player_2 is thinking", and Langfuse showed no model
+call, which pointed at the new model selection. The seat was the human's: the browser had lost its seat
+cookie behind the proxy and never received the turn's controls
+([server challenges](../../frontend/docs/server_encountered_challenges.md) §7). The absence of a trace
+said only that no model was called.
+
+### The cross-game node cache (fixed 2026-10-26)
+
+The engine caches some AI turns in process memory, so that a resume after a human's answer does not pay
+for them again. Its key covered the turn's payload but not the game, so two served games with the same
+lineup could share a seat's day-1 opening. In game `51226f24` (GPT-6 Luna, 2026-10-17), the Serial
+Killer at `player_9` passed with "generation failed", the failure of a game played nine minutes earlier
+on Claude Haiku 5.5. Three records, combined with the cache investigation, supported that diagnosis. The capture held day-1 opening
+prompts for 8 of the game's 9 AI seats, none for `player_9`. The event log held the `generation_failed`
+pass shown above. And the usage ledger recorded 142 calls for the game with none failed, where a real
+failed call is counted. A node-cache hit skips the instrumented turn body, so it produces no fresh model call or prompt
+capture. There is no explicit cache-hit record here; the investigation had to correlate the other
+records. Mechanism, fix and extent:
+[orchestration, decision 12](../gameplay/orchestration/report.md#decision-12).
+
+## How it was checked
+
+| What | How | How far to trust it |
+|---|---|---|
+| The sink and its converters | `freeze_case` stamps the ids and returns the dump; no sink means no copy; sink records round-trip through all four converters (`tests/evaluation/test_eval_case_sink.py`) | Unit tests on the shared shape |
+| Building from the local copy | Cases grouped by trace and filtered by kind; the extraction builder builds from local files; a build needs exactly one source (`tests/evaluation/test_local_case_source.py`) | Unit tests |
+| Per-game prompt capture | Two games at once never write into each other's capture (`tests/engine/test_turn_capture.py`) | Unit test |
+| The served capture and audit | A capture round-trips through its compressed form; the audit finds a saved game clean, flags a planted leak and reads the dead roster from the saved state; concurrent served games save only their own prompts; a capture that cannot be saved never fails the game; the command prints a line per game, records verdicts and fails on a leak (`tests/server/test_leak_audit.py`) | Unit tests; the audit has never run on the 11 real captures |
+| The usage ledger | Counts per model, a failed call adds no tokens, cache writes priced at their premium, a restarted game carries on, saved at most every 30 s and at the end (`tests/server/test_usage.py`) | Unit tests |
+| Served traces and Sentry | One named root in the game's session with no explicit ids (`tests/server/test_game_session.py`); Sentry off without a DSN, keys never sent (`tests/server/test_error_reporting.py`) | Unit tests with a fake client; nothing checked against the live trace store here |
+| What a game must record (June) | The 2026-06-06 audit listed every consumer and the fields each needs, found five gaps and closed four (the candidate pool, the day-summary case, the store stamp, the metrics in the batch record); on a seeded game with every memory option on, 72 of 72 turn cases carried the store stamp, and 46 of 72 the candidate pool (the rest were day-1 skips and roles with no stored lessons) | One nine-seat game; the June trace it was read from no longer exists ([log](implementation_notes/experiment_log.md)) |
+| Night turns (June) | Smoke games showed the single-target night roles' cases nested under the root with the right target ([log](implementation_notes/experiment_log.md)) | Three nine-seat smoke games |
+| The records on this page | The sidecar, capture, manifest and served rows shown above were read on 2026-10-26 | One example per record; read-only |
+
+The tests are largely AI-written and not yet audited; this page names them and what they assert, never a
+count.
+
+## What is not recorded, and what is not read
+
+**Closed or changed since June.**
+- *"Wolf-night discussion emits no evaluation case"* (June). Today every turn of the pack's night,
+  the chat, the carrier's kill and each wolf's skill, goes through the night pipeline
+  (`Agents/turn/pipeline.py::run_memory_informed_night_action`) and writes a turn case, with a `kind`
+  that tells the three apart since 2026-10-11. What a chat case still lacks is the line itself (above).
+  When the gap closed is not recorded; a dated note in the
+  [log](implementation_notes/experiment_log.md) gives what the June files show.
+- *"`round` is vestigial"* (June). At night it now numbers the pack's chat rounds and marks the kill and
+  skill turns. A day turn's round is always 0, so a seat's discussion turns on one day share one span
+  name: in game `8d33c5a3`, 20 span names repeat, one 9 times. The case id is unaffected.
+- *Day-summary spans with an empty game id* in games before 2026-06-11: closed that day; old artifacts
+  are joined by trace id ([issue record](implementation_notes/ISSUE_frozen_set_fetch.md)).
+
+**What a served game does not record.**
+- **Its build.** No fingerprint, and a release stamp that by the code reads `unknown`. A result from a
+  served game can be tied to its code only through the deploy log's dates.
+- **A durable copy of its evaluation cases outside Langfuse.** The session's sink remains in memory.
+  This leaves those cases dependent on trace retention. The report records no routine builder using
+  served cases, although a Langfuse reader exists.
+- **The prompts of games that did not complete,** or of the part before a restart. Two prompt builders
+  are never logged: the memory lookup's query and the human seat
+  ([agent boundaries](../agent_boundaries/report.md) §5).
+- **An explicit cache hit.** Cached turns skip the prompt/model-call instrumentation, and the server
+  drops cached chunks without a cache-hit log line.
+- **A hang.** No watchdog notices a game that stops producing output while nothing fails
+  ([server design notes](../../frontend/docs/server_design_notes.md) §5c, mode 4).
+
+**What a fingerprint does not reliably identify.**
+- **The actual backend for each model.** `runtime_fingerprint()` sets `llm_backend` to `vertex` or
+  `google` from a legacy switch, independently of the selected model's provider. The original review
+  records Claude examples stamped `vertex`; this pass confirms the code path, not those artifacts.
+- **The complete prompt and runtime configuration.** The prompt hash covers only top-level
+  `Agents/prompts/*.py`, excluding nested role cards and other prompt packages. The fingerprint also
+  omits the rescue model and resolved per-model catalogue settings. An equal fingerprint is therefore
+  evidence about covered fields, not proof of identical prompts or execution.
+
+**What a batch run does not record.**
+- **Its prompts, on disk.** `run_batch` checks them in memory and keeps no copy; only the voice-game
+  runner saves them.
+- **Some requested settings, outside the experiment folder.** The deduction mode, the voices and the
+  stage filter are in `config.json`, not on each game record ([fingerprinting](fingerprinting/report.md)
+  §5).
+
+**Records that are written but not routinely read.**
+- **The prompt captures.** None of the 11 has been audited: the nightly job was found not installed on
+  2026-10-23 ([deterministic audits](../evaluation/deterministic_audits/report.md), case 1).
+- **The Langfuse scores.** The same metrics are in each batch record, which is what evaluation reads; no
+  reader of the scores was found in `evaluation/`.
+- **The checkpoints.** Kept for every game and read only when a replay needs one. Why 19 of the 68 game
+  rows have no checkpoint thread was not checked.
+
+## When to revisit the design
+
+| Choice | Assumption | Evidence that would justify revisiting it |
+|---|---|---|
+| Served cases only in Langfuse (9) | Trace retention is sufficient for later case retrieval; no rationale for omitting persistence is recorded | Preserve case files or database records when served turns become evaluation inputs |
+| No fingerprint on served games | Deployment dates provide enough attribution; no explicit design rationale is recorded | Store build and resolved runtime configuration with the game, especially when comparing served failures |
+| Capture at game end only (10) | End-of-game persistence is sufficient despite losing unfinished and pre-restart prompts | A leak suspected in a dropped game, or frequent restarts mid-game |
+| Local file primary, tracer secondary (3) | The tracer's read path stays secondary | A new reader that needs span timing or cost from many traces |
+
+## Code and data
+
+| Part | Code |
+|---|---|
+| The tracer client and the release stamp | `Agents/tracing.py` (`create_langfuse_handler`, `flush`) |
+| Cases, the sink, span names | `Agents/observability/` (`case_sink.py::freeze_case`, `EvalCaseSink`; `span_names.py`); `Agents/schemas/evaluation.py` |
+| Where cases are written | `Agents/turn/pipeline.py`; `Agents/nodes/day/flow.py`; `Agents/nodes/orchestrator.py::post_game_analysis`; `Agents/memory/deduplication/pipeline.py` |
+| The prompt and reads capture | `Agents/turn/eval.py` (`TurnCapture`, `TURN_CAPTURE`, `log_prompt`, `record_reads`) |
+| The batch entry and its records | `Agents/main.py::run_game`; `scripts/run_batch.py`; `evaluation/src/data/batch_layout.py` |
+| The capture scripts | `evaluation/experiments/phase3_capture.py`, `persona_voice_games.py` |
+| Reading cases back | `evaluation/src/data/sources/` (`sidecar.py`, `langfuse.py`, `replay_api.py`) |
+| Rebuilding a turn | `evaluation/src/replay/hallucination_bench.py`, `situation_summary.py` |
+| The served game | `server/game/game_session.py::GameSession`; `server/storage/game_repository.py`, `prompt_captures.py`; `server/housekeeping/leak_audit.py`; `server/graph_runtime.py`; `server/game/usage.py`; `server/error_reporting.py` |
+| Provenance | `Agents/run_fingerprint.py`; contract in [fingerprinting](fingerprinting/report.md) |
+
+The June build records are in [`implementation_notes/`](implementation_notes/experiment_log.md): the
+night-turn coverage and the sufficiency audit, the 422 issue record and its plain retelling, and the
+smoke-game logs.
+
+*Originally rewritten 2026-10-26 from `5d8ea41c` and historical records, replacing the batch-only
+June report. This editorial revision adds targeted code checks and distinguishes configured recording
+paths from observed production data. Historical counts and incidents were not independently rechecked.*

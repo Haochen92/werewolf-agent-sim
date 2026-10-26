@@ -262,6 +262,11 @@ rules while it also constructed callbacks, tracing metadata, IDs, and framework 
 The old `build_game_config()` entry point remains as a compatibility wrapper. That is useful during
 migration, but the conceptual ownership is now clearer:
 
+> *Note 2026-10-26.* The wrapper is gone: no code calls or defines `build_game_config()`. Entry points
+> compose `build_runnable_config(run, callbacks=..., metadata=...)` themselves
+> (`Agents/main.py::run_game`, the capture scripts); the server's `GameSession` passes no fingerprint
+> at all ([`report.md`](report.md) §2).
+
 - configuration owns requested behavior;
 - fingerprinting owns execution identity;
 - tracing transports and observes both.

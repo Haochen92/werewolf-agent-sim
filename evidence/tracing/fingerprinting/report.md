@@ -1,10 +1,12 @@
-# Experiment Provenance — How It Works
+# Experiment provenance: how it works
 
-**Scope:** the configuration, runtime fingerprint, and artifact-manifest mechanisms that identify
-what produced a game or evaluation result.
+**Scope:** the configuration, runtime fingerprint and artifact-manifest mechanisms that identify what
+produced a game or evaluation result.
 
-**Current-state audit:** 2026-07-23. This report describes the implementation as it exists now,
-including known gaps. The chronological reasoning is in [`experiment_log.md`](experiment_log.md).
+**Version.** Re-verified on 2026-10-26 against the code at `5d8ea41c`; the first audit was on
+2026-07-23. This report describes the implementation as it is now, including its gaps. The
+chronological reasoning is in [`experiment_log.md`](experiment_log.md). Results stamped with an older
+fingerprint belong to the code that stamped them.
 
 > **The 30-second mental model**
 >
@@ -34,26 +36,63 @@ three practical questions:
 - A clean `git_commit` identifies the committed repository snapshot.
 - `git_dirty` tells the reader when tracked files differed from that commit.
 - The prompt bundle hash identifies the covered prompt-source files by content.
-- Principal model IDs, temperature, thinking settings, backend, and embedding settings are
+- The principal model IDs, temperature, thinking settings, backend field and embedding settings are
   recorded.
-- Batch game records carry the resolved runtime fingerprint.
+- Batch game records and the capture scripts' manifests carry the resolved runtime fingerprint.
 - Experiment folders record the resolved run configuration and fingerprint in `config.json`.
 - Evaluation manifests make it possible to detect when an input file changes while keeping the
   same filename.
 
 ### What it does not guarantee
 
+- **A served game carries no fingerprint at all** (§2).
 - A dirty run cannot be reconstructed from `git_commit` plus `git_dirty=True`; the diff is not
   stored.
-- The current prompt hash does not include nested prompt packages.
+- The prompt hash does not include nested prompt packages, which now hold the role cards (§4.2).
+- The backend field says `vertex` or `google` even when the game model is Claude (§4.3).
 - A remote model provider can change serving behavior behind a stable model name.
-- The shared artifact manifest does not currently include the complete runtime fingerprint.
+- The shared artifact manifest does not include the complete runtime fingerprint.
 - The fingerprint is a run-level declaration. Langfuse generation records remain the source for
-  the exact rendered prompt and model call seen at one invocation.
+  the exact model call at one invocation, and a prompt capture for the prompt input
+  ([tracing report](../report.md)).
 
 The accurate claim is therefore **drift-evident provenance**, not byte-for-byte reproducibility.
 
-## 2. How the pieces travel through one run
+## 2. What the fingerprint covers on each path
+
+Games run on two paths ([tracing report](../report.md)), and only one is stamped.
+
+| Path | Where the fingerprint is written | What else identifies the run |
+|---|---|---|
+| `run_batch` games | Every game record, success or error; the experiment folder's `config.json`; the run metadata passed to the Langfuse callback | The commit as the trace's `release` field |
+| Capture scripts (`evaluation/experiments/`) | Each game's `<label>.manifest.json` | The same manifest also lists the modified and untracked files and the LangGraph version |
+| Learning-loop runs | The game records, through `run_batch` | Checked between games by `evaluation/src/loop/invariants.py::assert_fingerprint_consistent` |
+| Served games | Nowhere: `GameSession` calls `build_runnable_config(run)` with no metadata | The `games` row (model, whether the player paid, the memory switch, the seats); the deploy log's image commit, matched by date |
+| Evaluation outputs (artifact manifests) | Only `git_commit` and `git_dirty` | The literal evaluation config and the input hashes (§6) |
+
+**Served games.** The trace's release stamp comes from git at import. The server image holds `Agents/`
+and `server/` without the repository, and the production settings set no `LANGFUSE_RELEASE`, so by the
+code the stamp reads `unknown`. That is read from the code and the image definition, not checked in the
+trace store. The settings a served game ran with follow from its row and the code at that build
+(`server/game/run_config.py::game_run_config`), so the missing piece is which build it was: the deploy
+log names each server image's commit and date ("2026-10-26 server rebuilt at `2ecec0cc`"), and a game
+is matched to the image live on the day it was created. The log gives dates, not times.
+
+A capture-script manifest shows the batch-side stamp as written. Game `phase3_games/game1` (2026-10-09):
+
+```json
+{"git_commit": "9aef645780f654e8dcd48096f01a4e1e0e2eec99", "git_dirty": true,
+ "prompt_bundle_hash": "efd7cd1e423abe60", "llm_backend": "vertex",
+ "game_model": "gemini-3.5-flash-lite", "temperature": 1.0, "game_thinking_level": "medium",
+ "summary_thinking_level": "medium", "judge_thinking_level": "minimal",
+ "pro_model": "gemini-2.5-pro", "pro_backup_model": "gemini-3.5-flash",
+ "embedding_model": "gemini-embedding-2", "embedding_dims": 1536, "vertex_location": "global"}
+```
+
+The same manifest lists the 184 paths `git status` reported as modified or untracked at the time; a
+`run_batch` record keeps only the `git_dirty` flag.
+
+## 3. How the pieces travel through one run
 
 The entry point first resolves the requested settings:
 
@@ -61,29 +100,31 @@ The entry point first resolves the requested settings:
 RunConfig
   ├── game rules
   ├── memory/reranking/filtering arms
+  ├── stage filter, deduction mode, persona voices
   ├── persistence settings
   ├── game ID
   └── session ID
 ```
 
-`build_runnable_config()` converts those settings into LangGraph’s transport:
+`build_runnable_config()` converts those settings into LangGraph's transport. On its own it adds no
+observability; the entry point injects the callbacks and the fingerprint metadata:
 
 ```text
 RunnableConfig
   ├── configurable
   │     └── serialized RunConfig fields
   ├── metadata
-  │     └── runtime_fingerprint
+  │     └── runtime_fingerprint      (added by run_game and the capture scripts)
   ├── callbacks
-  │     └── Langfuse callback
+  │     └── Langfuse callback        (run_game; the server adds its own)
   └── recursion_limit
 ```
 
-The graph receives the settings under `configurable`. Langfuse receives the fingerprint through
-metadata. Separately, `run_batch` writes the same kind of fingerprint into every success or error
-record.
+The graph receives the settings under `configurable`. The fingerprint reaches the Langfuse callback as
+run metadata. Separately, `run_batch` writes the same fingerprint into every success or error record.
 
-For an experiment launched with `--experiment`, the output folder is:
+For an experiment (the default layout; `--flat` writes the older flat files instead), the output folder
+is:
 
 ```text
 batch_results/<experiment>/
@@ -97,11 +138,11 @@ batch_results/<experiment>/
 also carries the fingerprint, allowing evaluation code to reject records from a different
 execution bundle.
 
-## 3. Runtime fingerprint: the execution-bundle label
+## 4. Runtime fingerprint: the execution-bundle label
 
 `Agents.run_fingerprint.runtime_fingerprint()` combines three groups of fields.
 
-### 3.1 Source identity
+### 4.1 Source identity
 
 `git_revision()` runs:
 
@@ -125,7 +166,7 @@ Interpretation:
 |---|---|
 | Known commit, clean tree | The committed source can be reconstructed exactly from Git |
 | Known commit, dirty tree | The commit is a baseline; the executed tree had unrecorded tracked edits |
-| Unknown commit | Git was unavailable or the command failed |
+| Unknown commit | Git was unavailable or the command failed (this is the served image's case) |
 
 Untracked files do not set `git_dirty`. This avoids marking ordinary result artifacts as source
 changes, but it also means an untracked Python module can affect execution without appearing in
@@ -135,9 +176,9 @@ this signal.
 if someone commits or edits files afterward. Normally Python has already imported the running code,
 but the cache is still part of the contract.
 
-### 3.2 Prompt-source identity
+### 4.2 Prompt-source identity
 
-`prompt_bundle_hash()` currently:
+`prompt_bundle_hash()`:
 
 1. Lists top-level `Agents/prompts/*.py` files.
 2. Sorts them.
@@ -159,62 +200,86 @@ receiving the same bundle hash. Hashing raw source also catches uncommitted edit
 
 This is a source hash, not a rendered-prompt hash. A comment-only change alters it even though the
 model sees the same text. Runtime data can also change rendered prompts without changing the source
-hash; that variation belongs to the game record and individual Langfuse generation.
+hash; that variation belongs to the game record, the prompt capture and the individual Langfuse
+generation.
 
 #### Current coverage gap
 
-The discovery pattern is non-recursive. It does not include:
+The discovery pattern is non-recursive. On 2026-10-26 it covers the top-level modules (the shared
+rules and layout, the day and night templates, the formatters and prompt inputs, the voices) and does
+not include:
 
 ```text
-Agents/prompts/extraction/*.py
-Agents/prompts/memory/*.py
+Agents/prompts/roles/*.py        the role cards: 13 modules, one per ten-seat role and the pack
+Agents/prompts/extraction/*.py   the extraction and day-summary prompts
+Agents/prompts/memory/*.py       the memory lookup's prompts
+Agents/prompts/goldens/          the prompt snapshot's renderer and stored texts
 ```
 
-The dedicated prompt hash is therefore narrower than the whole prompt surface. Git still detects
-committed changes and marks tracked uncommitted changes as dirty, but `prompt_bundle_hash` itself
-does not change for those nested files.
+Model-visible text also comes from outside `Agents/prompts/`: the structured-output schemas
+(`Agents/schemas/`) and the deduction engine's rendered lines (`Agents/deduction/render.py`).
 
-### 3.3 Model environment
+**Consequence.** Since the ten-seat game, each seat's role instructions live in `roles/`, so an edit
+to a role card leaves `prompt_bundle_hash` unchanged. Git still gives partial protection: a committed
+change moves `git_commit`, and an uncommitted tracked change sets `git_dirty`. But two runs with the
+same prompt hash may have read different role cards, and the hash cannot say whether two commits
+differ in prompt text. The day-discussion prompt snapshot test catches any change to that one prompt,
+whatever its source ([experimental controls](../../evaluation/experimental_controls/report.md) §1).
+
+### 4.3 Model environment
 
 `runtime_fingerprint()` imports defaults from `Agents.llm_factory` and resolves selected environment
-variables. It currently records:
+variables. It records:
 
-| Field | Meaning |
-|---|---|
-| `llm_backend` | `vertex` or `google`, as inferred by `_use_vertex()` |
-| `game_model` | Main game model |
-| `temperature` | Shared generation temperature |
-| `game_thinking_level` | Main game reasoning setting |
-| `summary_thinking_level` | Day-summary reasoning setting |
-| `judge_thinking_level` | Lightweight judge reasoning setting |
-| `pro_model` | Higher-capability model |
-| `pro_backup_model` | Backup higher-capability model |
-| `embedding_model` | Embedding model constant |
-| `embedding_dims` | Vector dimensions |
-| `vertex_location` | Vertex region when Vertex is selected |
+| Field | Meaning | Default on 2026-10-26 |
+|---|---|---|
+| `llm_backend` | `vertex` or `google`, as inferred by `_use_vertex()` | (see below) |
+| `game_model` | Main game model (`GOOGLE_GENAI_MODEL`) | `anthropic/claude-haiku-5-5` |
+| `temperature` | Shared generation temperature | 1.0 |
+| `game_thinking_level` | Game turn reasoning setting, from the environment or the model's catalogue row | The model's row, else `minimal` |
+| `summary_thinking_level` | Day-summary reasoning setting | `medium` |
+| `judge_thinking_level` | Lightweight judge reasoning setting | `minimal` |
+| `pro_model` | The offline extraction model | `anthropic/claude-sonnet-5-5` |
+| `pro_backup_model` | Its backup | `anthropic/claude-haiku-5-5` |
+| `embedding_model` | Embedding model (`MEMORY_EMBEDDING_MODEL`) | `qwen/qwen3-embedding-8b` |
+| `embedding_dims` | Vector dimensions | 1536 |
+| `vertex_location` | Vertex region when Vertex is selected | `global` |
 
-This mirrors the central model factory for the original Google/Vertex paths. It is not yet a
-complete description of every newer path:
+The defaults have been Claude models since 2026-10-15, when the Gemini credits ran out
+(`Agents/llm_factory/accessors.py`, comment at `DEFAULT_GAME_MODEL`). The fingerprint mirrors the
+factory's original Google and Vertex paths, and it is not a complete description of the newer ones:
 
-- NIM and Mistral models are selected by model-name prefixes, but `llm_backend` still resolves only
-  Google versus Vertex.
-- Dedup and some study models have their own per-run settings.
-- Per-call overrides are not discovered automatically.
+- **The backend field is wrong for every non-Google model.** `llm_backend` still resolves only Google
+  versus Vertex. The experiment `v8_demo_0` (Claude Haiku 5.5, 2026-10-14) shows `"backend": "vertex"`
+  in its `config.json` overview, and the voice game `voices-01.off` (Claude Haiku 5.5, 2026-10-18)
+  records `"llm_backend": "vertex"` in its manifest. The model name, which carries the provider
+  prefix, is the reliable field.
+- **The rescue model is not recorded.** A seat whose model stalls or keeps breaking the schema hands
+  the turn to the rescue model (`GAME_FALLBACK_MODEL`, default Claude Sonnet 5.5).
+- **Per-model catalogue settings are not recorded,** apart from the thinking level: for example how a
+  model is asked for structured output.
+- Dedup and some study models have their own per-run settings, and per-call overrides are not
+  discovered automatically.
+- **A setting is recorded, not its effect.** On 2026-10-04 a probe found that the "minimal" thinking
+  level gave `gemini-3.1-flash-lite` no reasoning at all, while every record said "minimal"
+  ([experimental controls](../../evaluation/experimental_controls/report.md) §4).
 
 The safe maintenance rule is: **when model construction gains a new behavioral input, either add it
 to the fingerprint or record it in the literal run/evaluation configuration.**
 
-## 4. RunConfig: what the experiment requested
+## 5. RunConfig: what the experiment requested
 
-`RunConfig` is deliberately separate from the runtime fingerprint.
+`RunConfig` (`Agents/config/run.py`) is deliberately separate from the runtime fingerprint.
 
 It contains:
 
 - `GameConfig`;
 - memory-enabled roles;
 - reranking, filtering, and retrieval-type settings;
+- the stage filter, the deduction mode (and its per-side override) and the persona voices;
 - memory persistence settings;
 - strategy-point tiering flags;
+- the human seat, if any;
 - `game_id`;
 - `session_id`.
 
@@ -223,16 +288,13 @@ These values answer questions such as:
 - Was memory enabled for villagers?
 - Which store was seeded?
 - How many vigilante bullets did the game start with?
-- Which game ID seeded deterministic scheduling?
+- Which game ID seeded the deal?
 
 Those are experimental choices, not source-code identity.
 
 `build_runnable_config()` serializes nested Pydantic models to plain dictionaries because graph
 nodes read `config["configurable"]` directly. Callbacks and fingerprint metadata are injected by
-the caller, keeping the configuration package independent from tracing.
-
-The older `Agents.tracing.build_game_config()` remains as a compatibility wrapper. New code should
-prefer the explicit composition:
+the caller, keeping the configuration package independent from tracing:
 
 ```python
 run = RunConfig(...)
@@ -243,7 +305,13 @@ config = build_runnable_config(
 )
 ```
 
-## 5. Artifact manifests: linking outputs to concrete inputs
+**Where the requested settings are written.** Each `run_batch` game record carries the memory,
+reranking, filtering, retrieval-type, game and persistence settings. The stage filter, the deduction
+mode and the voices are in the experiment's `config.json` only, so a `--flat` run keeps no record of
+them. A capture script's manifest holds the whole `RunConfig`. A served game's settings follow from its
+row and the code (§2).
+
+## 6. Artifact manifests: linking outputs to concrete inputs
 
 A runtime fingerprint identifies a run. An artifact manifest links a derived file to the exact
 files it consumed.
@@ -291,7 +359,7 @@ Batch experiment folders are richer: their `config.json` stores both resolved co
 runtime fingerprint. Readers should not assume every `_manifest` or `.manifest.json` has that same
 shape.
 
-## 6. What a fingerprint can and cannot prove
+## 7. What a fingerprint can and cannot prove
 
 ### Clean source tree
 
@@ -313,39 +381,64 @@ git_dirty  = true
 ```
 
 The code differs from commit `abc123`, but the record does not say how. Covered prompt edits may be
-distinguished by `prompt_bundle_hash`; other code edits are not reconstructable.
+distinguished by `prompt_bundle_hash`; other code edits are not reconstructable. (A capture-script
+manifest at least lists which files were modified.)
 
-The correct interpretation is “known to have drifted,” not “exactly reproducible.”
+The correct interpretation is "known to have drifted," not "exactly reproducible."
 
 ### Same fingerprint, different provider behavior
 
 A remote provider can update the implementation behind a stable model ID. Timestamps and
-interleaved A/B arms reduce this risk, but the local code cannot hash a provider’s private serving
+interleaved A/B arms reduce this risk, but the local code cannot hash a provider's private serving
 stack.
 
 The target is therefore statistically comparable reruns from a drift-checked setup, not identical
 tokens.
 
-## 7. Verification currently in the repository
+### A matching fingerprint as a refactor gate
+
+On 2026-06-08 two commits replaced the per-role day and night node functions with factories, a change
+meant to alter no behavior. It was accepted on three checks: 95 passing tests, an import sweep with no
+failures, and a runtime fingerprint the record calls byte-identical (`prompt_bundle_hash
+c35e68e2d0cca9f0`) ([node factory record](../../refactor/node_factory_pattern.md)). Since the fingerprint
+includes the commit, two commits cannot match in full; the comparison left the git field out. The
+same day's companion commit says so: "runtime_fingerprint (minus git) byte-identical" (`fbe4cff1`).
+
+What the matching fingerprint showed is narrow: the covered prompt files and the model setup were
+unchanged, so any change in behavior would have to come from the refactored code, which the tests
+covered. The fingerprint cannot see tracing, so the span names were checked separately, by reading the
+code that builds them. The case shows the fingerprint used as one gate among several, not as proof of
+equivalence on its own.
+
+### Two runs compared by a person
+
+Within one learning-loop run, a change in the fingerprint between games stops the run
+(`assert_fingerprint_consistent`). Across runs nothing stops automatically; a person compares the
+fingerprints ([experimental controls](../../evaluation/experimental_controls/report.md)). With the
+backend field wrong for Claude and the role cards outside the prompt hash, that comparison has to read
+the model name and the commit, not the backend and the hash.
+
+## 8. Verification currently in the repository
 
 | Contract | Current verification |
 |---|---|
-| Root runnable config retains its historical serialized shape | `tests/test_run_config_contract.py` |
-| Child configs preserve opaque LangGraph fields | `tests/test_child_config_unit.py` |
-| Nested subgraph interrupts pause and resume | `tests/test_subgraph_interrupt.py` |
-| Input-file content changes alter artifact hashes | `tests/test_manifest.py` |
-| Manifest config hashes are deterministic | `tests/test_manifest.py` |
-| Loop records reject a different fingerprint on resume/append | `tests/test_loop_invariants.py` |
-| Fingerprint reaches runtime metadata | Indirectly checked by the run-config contract; historically live-smoked |
+| Root runnable config keeps its serialized shape; with injection, the metadata holds only `runtime_fingerprint`; the bare builder injects no observability | `tests/engine/test_run_config_contract.py` |
+| Child configs preserve every top-level field, the metadata included | `tests/engine/test_child_config_unit.py` |
+| Input-file content changes alter artifact hashes; config hashes are stable and content-addressed; the sidecar and the embedded `_manifest` are written | `tests/evaluation/test_manifest.py` |
+| Loop records: the first stamp is read, a missing stamp raises, a backend flip mid-run raises, unstamped records are skipped | `tests/evaluation/test_loop_invariants.py` |
+| The experiment overview takes the model, backend and commit from the fingerprint | `tests/evaluation/test_batch_layout.py` |
+| Fingerprint reaches runtime metadata | Indirectly, by the run-config contract; live-smoked in June 2026 |
 
-What is missing is just as important:
+These tests are largely AI-written and not yet audited.
+
+What is missing is just as important, re-checked on 2026-10-26:
 
 - no focused tests for `git_revision()`;
 - no prompt-bundle coverage or determinism tests;
 - no test comparing fingerprint model fields with instantiated model settings;
 - no carrier test proving one fingerprint reaches both a trace and a batch record.
 
-## 8. Maintenance guide
+## 9. Maintenance guide
 
 ### When adding or moving prompt files
 
@@ -379,8 +472,8 @@ Add an explicit schema version before relying on comparisons across the change:
 }
 ```
 
-Without a schema version, a reader cannot distinguish “prompt content changed” from “the hashing
-algorithm began covering more files.”
+Without a schema version, a reader cannot distinguish "prompt content changed" from "the hashing
+algorithm began covering more files."
 
 ### When adding a configuration field
 
@@ -401,51 +494,59 @@ Avoid putting a field into all three without a clear reason.
 5. Keep the input artifacts, not only their hashes.
 6. Interleave experimental arms to reduce provider-time drift.
 
-## 9. Known gaps
+## 10. Known gaps
 
-Severity considers likelihood, impact, and how easily the problem is detected.
+Each gap was re-checked against the code on 2026-10-26 (first verified 2026-07-23), with its
+consequence.
 
-### Nested prompt packages are omitted — severity: high
+### Nested prompt packages, the role cards among them, are omitted
 
-**Verified open 2026-07-23.** The code uses `glob("*.py")`, while prompt source exists in
-`prompts/extraction/` and `prompts/memory/`. A nested prompt change does not update the dedicated
-prompt hash. Git gives a secondary signal, so the failure is detectable but easy to misread.
+The code uses `glob("*.py")`, while prompt source sits in `roles/`, `extraction/`, `memory/` and
+`goldens/` (§4.2). **Consequence:** an edit to a role card, an extraction prompt or a lookup prompt
+leaves the prompt hash unchanged, so equal hashes do not mean equal prompts. Git detects the change, so
+it is detectable but easy to misread.
 
-### Dirty runs are not reconstructable — severity: medium-high
+### Served games are not stamped
 
-**Verified open 2026-07-23.** Dirty status is recorded but the diff is not. Detection is strong;
-reconstruction is absent. A `--require-clean` policy for citable batches is likely simpler than
-serializing arbitrary source changes.
+**Consequence:** a result from a served game can be tied to its code only through the deploy log's
+dates (§2), and a game played on a day with two deploys cannot be placed from the record.
 
-### Backend/model resolution can drift from the factory — severity: medium-high
+### Backend and model resolution drift from the factory
 
-**Verified open 2026-07-23.** The fingerprint independently reads environment variables and private
-factory helpers. New NIM/Mistral support demonstrates how duplicated resolution logic can become
-incomplete.
+The fingerprint reads environment variables and private factory helpers on its own. **Consequence:**
+every Claude game is labelled `vertex` or `google`, and neither the rescue model nor a served game's
+model selection appears in it (§4.3). The model name is still right on the batch path.
 
-### Artifact manifests omit the full runtime fingerprint — severity: medium
+### Dirty runs are not reconstructable
 
-**Verified open 2026-07-23.** The shared manifest carries Git/config/input hashes. Batch experiment
-folders carry the richer fingerprint separately. This is usable but not a single uniform contract.
+Dirty status is recorded but the diff is not. **Consequence:** a result from a dirty tree is known to
+have drifted from its commit, by an unknown edit. A `--require-clean` policy for citable batches is
+likely simpler than serializing arbitrary source changes. The capture scripts' manifests list the
+modified files, which narrows the search but does not restore the edit.
 
-### Fingerprint definition has no schema version — severity: medium
+### Artifact manifests omit the full runtime fingerprint
 
-**Verified open 2026-07-23.** Past content-neutral bundle expansions required narrative transition
-notes. A schema field would make these changes machine-readable.
+The shared manifest carries Git, config and input hashes; batch experiment folders carry the richer
+fingerprint separately. **Consequence:** an evaluation output names its commit but not its model setup,
+unless its config lists the models.
 
-### Prompt hash is truncated to 64 bits — severity: low
+### Fingerprint definition has no schema version
 
-**Verified open 2026-07-23.** Sixteen hexadecimal characters are sufficient for ordinary accidental
-drift detection at this project’s scale, but the field should not be presented as a
-collision-resistant archival identifier.
+**Consequence:** a change in what the hash covers looks like a prompt change. Past content-neutral
+expansions needed narrative transition notes (the log, §5); a schema field would make them
+machine-readable.
 
-### Remote serving-stack drift is unobservable — inherent
+### Prompt hash is truncated to 64 bits
 
-**Verified open 2026-07-23.** A stable provider model name does not freeze the provider’s private
-implementation. This is mitigated operationally through timestamps, pinned names where available,
-and interleaved comparisons.
+Sixteen hexadecimal characters are enough to detect accidental drift at this project's scale, but the
+field should not be presented as a collision-resistant archival identifier.
 
-## 10. The code, re-derived from the contract
+### Remote serving-stack drift is unobservable (inherent)
+
+A stable provider model name does not freeze the provider's private implementation. This is mitigated
+operationally through timestamps, pinned names where available, and interleaved comparisons.
+
+## 11. The code, re-derived from the contract
 
 An equivalent implementation can be reconstructed from four operations:
 
@@ -481,8 +582,9 @@ manifest = {
 ```
 
 The current code is close to this model but does not yet implement every line: prompt-tree
-discovery is non-recursive, there is no fingerprint schema field, and shared artifact manifests
-carry only the Git subset of the runtime fingerprint.
+discovery is non-recursive, there is no fingerprint schema field, model settings are read beside the
+factory rather than from it, shared artifact manifests carry only the Git subset of the runtime
+fingerprint, and a served game makes no `build_provenance` call at all.
 
 That difference is intentional in this report. The pseudocode is the target contract; the gap list
-states exactly where today’s implementation falls short.
+states exactly where today's implementation falls short.
