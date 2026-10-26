@@ -112,7 +112,7 @@ HAIKU_VOTE_CASES = REPO_ROOT / "evidence/gameplay/deduction/data/haiku_effort_re
 @pytest.mark.skipif(not (HAIKU_VOTES / "generations_haiku_low.jsonl").exists() or not HAIKU_VOTE_CASES.exists(),
                     reason="the Haiku effort replay's outputs (gitignored eval_results) are not on this machine")
 def test_the_haiku_effort_replay_reproduces_65_and_98_of_160():
-    # The 16 cases "as played" (reasoning_failures/experiment_log.md §2): the closing-line rerun is left out.
+    # The 16 cases "as played" (gameplay/deduction/experiment_log.md §2): the closing-line rerun is left out.
     cases = vote_scoring.load_vote_cases(HAIKU_VOTE_CASES, ["vote_compare", "vote"])
     assert len(cases) == 16
     by_roles = vote_scoring.score_bench_votes(HAIKU_VOTES, ["haiku_low", "haiku_medium"], cases, {})

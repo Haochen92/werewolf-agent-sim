@@ -54,7 +54,7 @@ auto-discarding.
 ## Calibrate — zero-error boundaries on the golden set (65)
 
 Using the 65-case golden label set (`dedup_v2_golden_labels.json`: D=30, M=5, K=29, M/K=1), embedded with
-`gemini-embedding-001` at 1536D (cached to `golden_eval/embedding_cache.json`), the D/K distributions show
+`gemini-embedding-001` at 1536D (cached to `data/golden_embedding_cache.json`), the D/K distributions show
 a clean gap:
 
 - **Strategy points** (25: D=10, K=15): all D `action_sim` ≥ 0.813 (5/10 above 0.90), all K ≤ 0.899 →

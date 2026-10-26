@@ -16,7 +16,7 @@ export const SITE = {
    */
   // TODO(owner): the case study, once it is published
   caseStudy:
-    'https://github.com/Haochen92/werewolf-agent-sim/blob/main/evidence/memory_system/store_progression.md',
+    'https://github.com/Haochen92/werewolf-agent-sim/blob/main/evidence/memory_system/report.md',
 
   /** The top nav, in order. `match` is the path prefix that marks the link as the current page. */
   nav: [

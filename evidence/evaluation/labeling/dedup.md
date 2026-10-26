@@ -135,7 +135,9 @@ the **live data plane** (`frozen_eval_sets/`) and are referenced by live code (`
 `batch_dedup_eval.py:400`); `golden_eval/embedding_cache.json` is a **hard default** in
 `fine_tuning/cross_encoder/dedup_prefilter/eval_modal.py:180` — moving it silently breaks the Modal eval. The
 frozen result JSONs *are* clean pure-L2, but they're referenced by their L0 `experiment_log.md` siblings, so
-moving them would break the design log's links for no real gain. The key numbers are distilled into the tables
+moving them would break the design log's links for no real gain. *(2026-10-26: the embedding cache did move, to
+`dedup/embedding_prefilter/data/golden_embedding_cache.json`, beside its one consumer's other data; the
+Modal eval's default was updated in the same commit.)* The key numbers are distilled into the tables
 above, giving this report standalone value without a physical move.
 
 *(Apparatus-inspected 2026-06-28; judge-folder verification sweep 2026-06-30 — re-pointed refactor-stale refs
