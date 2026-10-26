@@ -601,8 +601,10 @@ permanent, a wrong keep is not), Sonnet is the safer batch judge on this set. On
 nine-seat May content.
 
 **Where the wrong discards fell, and what they cost (same day).** All seven of Haiku's wrong discards
-were in lesson clusters (21, 25, 28); on the observation clusters it made none. So the fold, which judges
-observations, showed no unsafe discard. The lesson dedup is where the risk sits, and it is smaller than
+were in strategy-point clusters (21, 25, 28: 18 discards on 40 entries, 11 right). On the six observation
+clusters (71 entries) it discarded nothing at all: no wrong discard, but it also missed all 6 labelled
+copies (and proposed 23 merges, which triage-only mode keeps). So the fold, which judges observations,
+is safe but catches no copies on this set; the copies stay as recoverable bloat. The lesson dedup is where the risk sits, and it is smaller than
 "permanent" suggests: in production it discards only a newly synthesised lesson into an older one
 (freeze-old), the observations the lesson came from stay in the store for synthesis to use again, and a
 lesson from another game stage is never discarded (a rule this replay does not apply, so some of the
