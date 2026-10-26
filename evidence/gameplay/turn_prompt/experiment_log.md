@@ -17,7 +17,9 @@
 > full detail.
 >
 > **Companion docs.** The current-state anatomy, stated destination-first, is
-> [`docs/generation_prompt.md`](../../../docs/generation_prompt.md). The current beat's pre-registered
+> [`docs/generation_prompt.md`](../../../docs/generation_prompt.md). *(Note 2026-10-26: that doc
+> dates from July 2026, before the shared-prefix layout; the call as it runs today is in
+> [the report](report.md).)* The current beat's pre-registered
 > test suite is [`validation_plan.md`](validation_plan.md), its results in [`validation/`](validation/).
 >
 > **Two principles recur through every beat**, so they are worth naming up front. First: **the
@@ -29,7 +31,10 @@
 
 ---
 
-## 0 · The call, as it stands today (orientation)
+## 0 · The call as of 2026-07-08
+
+> *Note 2026-10-26.* This section describes the call as it stood in July 2026 (nine-seat, flash-lite).
+> The call as it runs today, with the decisions and tests behind it, is in [the report](report.md).
 
 Every agent action in a game is **one LLM call**, and every such call is assembled the same way.
 The model is flash-lite (weak and cheap), running at temp 1.0. Half the rules in this log exist because of that model choice: a stronger model would
