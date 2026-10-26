@@ -501,7 +501,7 @@ the boundary between blocking and async code sits inside LangGraph, not in appli
 
 | What | How | How far to trust it |
 |---|---|---|
-| A whole game on the real parent graph | A scripted model fills whatever schema it gets; the game streams through the server's translator, for both drawn lineups, and every dealt solo role is routed (`tests/engine/test_ten_seat_game.py`) | The wiring runs end to end; no model, so nothing about play |
+| A whole game on the real parent graph | A scripted model fills whatever schema it gets; the game streams through the server's translator, for two of the four lineups, which between them deal every drawn role, and every dealt solo role is routed (`tests/engine/test_ten_seat_game.py`) | The wiring runs end to end; no model, so nothing about play |
 | Interrupt and resume through an imperatively invoked subgraph | A toy parent and subgraph, paused and resumed twice on one thread (`test_subgraph_interrupt.py`) | Its docstring warns it cannot check the config helper, which `test_child_config_unit.py` pins |
 | Cache and checkpoint identity | A payload round-tripped through the real serializer keeps its key; two games' day-1 openings get different keys (`test_turn_cache_key.py`). Paired ids across multiple configs are refused (`test_run_batch_experiment.py`) | Regression coverage for key stability and game isolation; no post-fix served-game verification recorded here |
 | State preservation | A one-key note update keeps other seats' notes (`test_agent_strategies_merge.py`); every model in state is allowlisted (`test_checkpoint_allowlist.py`) | Regression coverage for the note-merge and serialization failures |
