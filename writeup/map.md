@@ -435,7 +435,7 @@ process-wide, so two served games shared one seat's answer across models (`14926
 2026-10-17, a replayed failed turn). Fixed 2026-10-26 with a test that fails without it. Lesson
 candidate: a cache key must name its scope, and a fix that makes a key stable can widen it.
 
-Serves chapter 1, pages "Executing a day and night" (104, 107–113), "Turning an answer into a legal
+Serves chapter 1, pages "Executing a day and night" (104, 107–113), "One agent turn, from input to
 action" (103–104) and "Adding a human in the loop" (105–106, 111, 165), plus the Level 3 page "The cache
 key that crossed games" (115).
 The orchestration code is about 90% the owner's (authorship rule in `structure_proposal.md`).

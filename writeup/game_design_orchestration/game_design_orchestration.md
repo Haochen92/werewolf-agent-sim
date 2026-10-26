@@ -140,46 +140,73 @@ Code decides who speaks; the model decides what to say.
 [Orchestrating the conversation](conversation/conversation.md) explains each rule, how I traced and
 fixed the silence in earlier games, and the check that keeps repetition off the table.
 
-#### Moving from discussion to voting and night actions
+#### Running the game: coordinating phases and player decisions
 
-The next requirement is to turn discussion into decisions and advance the game. In this version,
-votes are chosen independently, and night actions are collected before their effects are resolved.
-A player choosing later in the round should not gain access to choices that have not yet been
-announced.
+A complete game needs to keep track of more than individual replies. It must know which phase is
+running, who is still alive, which players can act, and whether a win condition has been reached.
+Results from one phase also become inputs to the next: a vote changes who survives into the night, and
+night outcomes change what players know the following morning.
 
-A human moderator manages the transition between phases, collects choices and announces their
-outcomes. In the agent game, I need an explicit execution sequence to perform those tasks: finish
-the discussion, request votes, resolve the vote, collect night actions, resolve the night and deliver
-the results for the next day.
+I organise that progression using LangGraph, a framework that runs connected steps over shared state.
+The graph determines which step runs next, while the state records the game's progress and the results
+those steps produce.
 
-I represent that sequence in LangGraph, a framework that runs a program as connected steps with
-shared state. Discussion proceeds one speaker at a time because each response changes what the next
-speaker can say. Votes and night choices can be requested in parallel from each player's permitted
-view of the same game state. A resolution step then applies the rules to the collected choices.
+Within that sequence, different activities need different execution patterns. Discussion runs one
+speaker at a time so each agent can respond to the updated conversation. Votes and night choices are
+independent: each player receives its permitted view of the same game state, without seeing choices
+submitted by others in that round. (The wolves are the exception by design: they agree on their kill in
+their own chat first.) Those model calls can therefore run in parallel, reducing the time spent waiting
+for separate responses.
 
-The code that maintains this state and applies the rules is the **game engine**. It decides what
-happens when actions interact, such as an attack meeting a protection. Agents choose their actions;
-they do not decide whether those actions succeed. [Executing a day and night](day_and_night/day_and_night.md)
-explains how the steps, shared records and resolution fit together.
+The game must then collect the choices before resolving their effects. Night actions can interact: a
+block may prevent an action, while a protection may stop an attack. A dedicated resolution step applies
+the game's rules to the collected choices, rather than applying each action as soon as its model call
+finishes. This separates the order in which agents respond from the order in which game effects are
+resolved.
 
-#### Turning a player's choice into a legal action
+[Executing a day and night](day_and_night/day_and_night.md) explains the graph's structure, how results
+update the shared state, and the controls that keep execution bounded.
 
-Collecting an answer is not enough: the chosen action must be allowed. A player may only target
-someone permitted by its role, and a limited ability cannot be used after its uses are spent.
-The system also needs to distinguish the actual choice from the explanation accompanying it.
+#### One agent turn, from input to action
 
-At a human table, the moderator can clarify a choice or reject an illegal one; an online interface
-can restrict the available options. A model produces a reply, so I need an explicit answer format
-and validation before that reply becomes a game action.
+Within that game sequence, each agent needs a way to receive information and return a decision the
+game can use. A discussion turn produces speech; a vote or night turn produces a choice. Each follows
+the same basic path: prepare the player's input, request a model response, validate it, and return the
+result to the game.
 
-For each turn, I supply the legal targets and ask for a structured response containing the decision.
-Code checks the reply and handles failures, with a legal fallback if the turn cannot produce a valid
-answer. The agent remains responsible for choosing well: an allowed action can still be a poor
-strategic choice.
+The input contains only information that player is allowed to receive, following the information
+boundaries described earlier. The request also specifies what kind of answer is needed and the available
+choices. For example, a vote identifies a target, while a Vigilante's night action selects a legal
+target or declines to shoot. The model can explain its reasoning, but the action itself must appear in
+a predictable format that code can read.
 
-This gives the models freedom to reason within the game while keeping rule enforcement in the
-engine. [Turning an answer into a legal action](legal_action/legal_action.md) develops the response
-format, validation and fallback behaviour, including the trade-offs in how the format is enforced.
+I use a structured response for this because the available actions are known in advance. The model
+chooses among those actions; it does not need to discover which tools are available or decide how to
+invoke them. The detailed page explains that design choice and how the response format is enforced.
+
+The response is then checked before it enters the game record. Invalid replies can trigger another
+attempt; if the turn still cannot produce a valid answer, a defined fallback supplies a permitted
+outcome, such as passing in discussion or declining an action. A valid vote or night choice is collected
+for the resolution step described above: it does not immediately change the game when the model
+returns.
+
+```mermaid
+flowchart LR
+    I["Player's permitted input"] --> M["Model response"]
+    M --> V{"Valid?"}
+    V -- "no" --> R["Retry, then a legal fallback"]
+    R --> A
+    V -- "yes" --> A["Accepted speech or choice"]
+    A -- "speech" --> D["Published to the discussion"]
+    A -- "vote or night choice" --> C["Collect every player's choice"]
+    C --> P["Resolve the phase by the game's rules"]
+```
+
+*One turn ends with an accepted answer. A vote or night choice changes the game only when the phase
+resolves.*
+
+[One agent turn, from input to action](agent_turn/agent_turn.md) explains the response contract,
+validation, retries and fallbacks.
 
 #### Letting a human join the same game
 

@@ -45,7 +45,7 @@ them.
 | **1. Designing evidence worth debating** | What must the roles give players, so that there is something to argue about and evil can contest it? | Diagnoses thin talk from one exact source that nobody contested. Then a cast design (partial observers; an engine that never reports a false result) and an evil contest through claims, with the chapter's strongest controlled result | 131–139 |
 | **2. Orchestrating the conversation** | Ten players share one day: who speaks, what gets said aloud, and when does the talk stop? | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
 | **3. Executing a day and night** | Conversation is in turn, but votes and night choices are made independently and must all be collected before anything resolves. How does the familiar cycle become execution? | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
-| **4. Turning an answer into a legal action** | A role may act only on certain players, and only while uses remain. How does a model's answer become a move code can apply? | The output contract: one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, and a legal fallback on every path. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
+| **4. One agent turn, from input to action** | A role may act only on certain players, and only while uses remain. How does a model's answer become a move code can apply? | The output contract: one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, and a legal fallback on every path. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
 | **5. Adding a human in the loop** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116, 165 |
 
 **Why the arrangement holds.**
@@ -178,7 +178,7 @@ uncertain. A descriptive link closes each.
      sequential steps for conversation.
    - **Lead example:** a parallel open floor generated seven lines to keep two and was reverted
      (2026-10-07). Alternative: the note-wipe bug as a caught-and-fixed episode.
-4. *Turning an answer into a legal action.*
+4. *One agent turn, from input to action.*
    - **Decision:** one structured question per turn, with legal targets in the schema and a legal move
      at the end of every path.
    - **Finding:** on Haiku the schema is written as text and checked in code. Unenforced replies failed
@@ -217,7 +217,7 @@ Proposed files:
 | 1 | `evidence_design/evidence_design.md` |
 | 2 | `conversation/conversation.md` |
 | 3 | `day_and_night/day_and_night.md` |
-| 4 | `legal_action/legal_action.md` |
+| 4 | `agent_turn/agent_turn.md` |
 | 5 | `human_in_the_loop/human_in_the_loop.md` · Level 3: `human_in_the_loop/cache_key.md` |
 
 ### 1. Designing evidence worth debating
@@ -423,7 +423,14 @@ noticed is not recorded (commit `d1cbd2f8`, 2026-07-23); do not infer it from sa
 
 **Tags:** multi-agent orchestration, LangGraph, fan-out/fan-in, shared-state architecture.
 
-### 4. Turning an answer into a legal action
+### 4. One agent turn, from input to action
+
+**Widened 2026-10-26 (owner):** the page follows one whole turn: the player's input, the model's
+response, validation, retries and fallback, and the hand-off to the game (speech published; a vote
+or night choice collected for the resolution, which is page 3's). What goes into the input is
+chapter 2's; how it is worded is chapter 3's. The optional-field and Haiku-cache findings stay on
+this page, not on Level 1. Diagram: input → response → validation / retry / fallback → accepted
+speech or choice → (for choices) collect → resolve, as on the chapter page.
 
 **Reader question:** how do you make a model's turn something code can trust? One answer of a known
 shape, always legal, and always resolvable, even when the model or the provider fails.

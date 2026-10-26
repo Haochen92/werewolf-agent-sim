@@ -1,6 +1,6 @@
 # Adding a human in the loop
 
-*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Turning an answer into a legal action](../legal_action/legal_action.md) (not yet drafted) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
+*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [One agent turn, from input to action](../agent_turn/agent_turn.md) (not yet drafted) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
 
 ## Brief
 
