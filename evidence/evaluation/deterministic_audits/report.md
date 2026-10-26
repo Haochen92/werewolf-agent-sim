@@ -152,8 +152,9 @@ passes.
 
 **What and why.** When a player asks its memory for help during a game, a model first summarises the
 player's situation and fills in a few fields: players alive, the vigilante's bullets left, whether this
-is a swing vote. Memory search used those fields as metadata filters on the stored lessons. If a field
-was wrong, the search filtered on the wrong value. (Stored lessons carry the same kind of fields,
+is a swing vote. Memory search used those fields to re-rank the stored lessons it found (dimension gating: each
+candidate's score tilted by how many fields matched, then the top few kept; no hard filter). If a field
+was wrong, the search ranked on the wrong value. (Stored lessons carry the same kind of fields,
 written at extraction; one of them, the uses-left count, was checked the same way: 84% exact. See
 the detailed record §5c.)
 
@@ -162,7 +163,7 @@ thousands of cases, for free.
 
 **How it works.** For every recorded search (nine-seat, July 2026), recompute each field from the game
 state and compare it with what the model wrote. A rule was fixed before the run: if any field the
-filter relied on scored under 80%, the earlier result "this filtering doesn't help" would be reopened.
+ranking relied on scored under 80%, the earlier result "this gating doesn't help" would be reopened.
 
 **Result.** The model got the values it was handed right and the values it had to work out wrong.
 Players alive was right 97% of the time (6,099 cases); bullets left 16% (1,109); the wolves' "swing

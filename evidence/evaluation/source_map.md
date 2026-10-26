@@ -26,6 +26,31 @@ no spoke re-rates them.
 | Provenance manifest | `evaluation/src/core/manifest.py`; test `tests/evaluation/test_manifest.py` | both | July ✅ | same. Methodology spoke: "drift-evident provenance, not byte-for-byte reproducibility" (`tracing/fingerprinting/report.md` §1, §5) |
 | Cost estimates | `evaluation/src/core/costs.py` | both | 🟡 (model admission §9) | **changed**: prices now come from the model catalogue (`costs.py:13-14`). The 4-characters-per-token estimate remains (`costs.py:16`) |
 
+## Model calls in the code (found 2026-10-25)
+
+The code behind each model call in the hub's "Every model call, by job" table.
+
+| Job | Model call | Code |
+|---|---|---|
+| Playing | A seat's turn (line, vote, night action, private note and role guesses; the wolves' night chat) | `Agents/turn/agent_player.py` (`run_agent`, called by the day and night nodes) |
+| Running the game | Day summariser | `Agents/nodes/day/summary_agent.py` |
+| | Echo gate | `Agents/turn/echo_gate.py` |
+| | Opening filter | `Agents/turn/round_filter.py` |
+| | Addressing classifier (human seats) | `Agents/turn/addressing_agent.py` |
+| | Drafting helpers (human seats) | `Agents/turn/drafting_agent.py` |
+| Memory | Memory search query | `Agents/memory/retrieval/situation_agent.py` |
+| | Extraction | `Agents/memory/extraction/extraction_agent.py`, `offline.py` |
+| | De-halo pass | `Agents/memory/extraction/dehalo.py` |
+| | Decision tagger | `Agents/memory/extraction/decision_tags.py` |
+| | Dedup decision | `Agents/memory/deduplication/dedup_agent.py` |
+| | Point dedup | `Agents/memory/batch_deduplication/cluster_agent.py` |
+| | Strategy synthesis | `Agents/memory/strategy_synthesis.py` (run by the consolidation tick, `Agents/memory/consolidation/store_ops.py`) |
+| | Reranker (off by default) | `Agents/memory/retrieval/rerank_agent.py` |
+| | Namespace augmentation (built, parked) | `Agents/memory/extraction/augment_agent.py` |
+| Measuring | LLM judges | `evaluation/src/judges/`, `evaluation/src/loop/`, `evaluation/experiments/` |
+| | Labelling panel | `evaluation/src/labeling/engine.py` |
+| | Blind model readers | Claude subagents started from a working session; not in the code |
+
 ## Records: retired, frozen and archived
 
 | Record | Code | Record | Status |

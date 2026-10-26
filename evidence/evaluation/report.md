@@ -1,306 +1,548 @@
 # Evaluation: how the project checks its agents, and how far to trust each check
 
-**The system being checked.** Werewolf, a hidden-role game, played by AI agents. Around the players the
-project built a memory of lessons from past games, a deduction engine that writes certain conclusions into
-each player's prompt, a catalogue of models the players can run on, and a public website.
-
-**What this page is.** The overview of the project's evaluation: what is evaluated, the methods used, how
-to choose between them, what the methods caught about themselves, and how far each can be trusted. It is
-meant to be read on its own. Each method has its own page with the detail, linked below. Two questions are
-kept apart throughout:
-1. **Does a part work?** (does memory improve play, does a prompt fix help) That is answered in the design
-   folders named in the first table.
-2. **Is the check that judged it any good?** That is answered here and in the method pages.
-
-The earlier version of this page, with the dated memory-campaign section and the full instrument ledger, is
-kept whole in the [experiment log](experiment_log.md). Records that live outside git, and the data every
-method reads, are in [the source map](source_map.md).
+This report explains how the project evaluates its AI agents: what it measures, how it tests a change,
+and how it checks whether the measurements are reliable. Each section introduces a method and its limits;
+the linked method pages contain the experiments, results and code behind it.
 
 ## In short
 
-- **Seven methods, cheapest first.** Code checks with no model; LLM judges; labelling by readers (one-off
-  sampled reads and reusable golden sets); tests of a change at three scopes (one frozen turn, one day,
-  whole games); scores computed from the game record; and the controls that keep every comparison fair.
-  Two pipelines are built from them: the factual-error checks and model admission.
-- **The rule that runs through all of it:** use code wherever the answer can be computed from the game
-  record or the rules, and a reader only for meaning, with readers anchored to a person.
-- **The apparatus caught its own errors, repeatedly**: a drifted baseline, a misconfigured memory arm, leak
-  checkers that checked nothing, a thinking level that produced no reasoning, a test that let a replayed
-  vote see its own result.
-- **What holds:** code checks, exact counts and scores against the true roles, and the nine-seat gold sets.
-  **What is directional only:** model judges and model readers, none checked against a person on the
-  ten-seat game.
-- **The largest gaps:** no person's check on any ten-seat label set, no factual-error rate on the ten-seat
-  game, no CI, and the nightly leak audit not installed.
+- **The evaluation covers the agents and the system around them.** The agents play Werewolf, a game in
+  which players hide their roles, discuss whom to trust and vote each other out. Other model calls summarise
+  the discussion, select which lines are spoken, and build memories from past games. Evaluation asks
+  whether each part does its job, whether a change improves play, and whether the checks used to reach
+  those conclusions are reliable.
+- **Different questions need different kinds of evidence.** Code checks facts that can be computed from
+  the game record, such as whether a vote targeted an enemy or a prompt included private information from
+  another seat. LLM judges and human readers assess meaning, such as whether a summary misrepresents a
+  claim. Model-generated labels need checking against human-labelled examples; agreement between models
+  alone does not establish that their labels are correct.
+- **A replay isolates a change; a whole game shows what follows from it.** A frozen turn reconstructs
+  what an agent saw and samples its response repeatedly under each version. This helps test a prompt fix
+  or investigate a particular failure. Whole games are needed to observe wins and effects that accumulate
+  across turns. Replaying a known failure can show whether it still occurs in that situation, but cannot
+  establish how often it occurs in ordinary play.
+- **A comparison must separate the change from sampling noise and changes in the model service.**
+  Repeated samples show how much answers vary. Running both versions in the same time window reduces the
+  risk of mistaking a provider change for an improvement. Configuration checks also test whether the run
+  matches the intended experiment. These safeguards grew out of actual failures, including a shifted
+  baseline, a misconfigured memory arm and leak checkers that received no inputs. Some safeguards are
+  enforced by code; others still depend on the person running the experiment.
+- **The evidence is strongest for checkable facts and controlled comparisons, with a clear gap in human
+  calibration.** Code checks support claims within the rules they implement; repeated replays support
+  findings about the cases tested when the difference exceeds measured noise. The current ten-seat
+  game's model judges and readers have not yet been checked against human labels, so their assessments
+  remain provisional. The labelling tools and review packets exist, but the human review is still needed.
 
-## What is evaluated
+## The system being checked
 
-Six subjects. Memory was the first, and since the memory research closed in July 2026 most evaluation work
-has been on the other five.
+Model calls do four jobs in the game:
+- **Playing:** each seat's turns: what it says, how it votes, its night action, and the private note and
+  role guesses it keeps.
+- **Running the game around the players:** the summariser that writes up each day; the echo gate and the
+  opening filter, which decide which lines are said aloud; and, for human seats, a classifier that tags whom
+  a message addresses and helpers that draft a line.
+- **Building and serving memory:** a call that turns the situation into a memory search, extraction of
+  lessons after each game, and passes that clean the lessons (removing an outcome bias, tagging decisions,
+  merging duplicates, distilling strategy).
+- **Measuring:** LLM judges and model readers that label the other calls' outputs.
 
-| Subject | The question | Main methods | Design verdict lives in |
+Three pieces of ordinary code are evaluated alongside the model calls: the deduction engine, which writes
+certain conclusions into each prompt; the code that builds each prompt, which decides what each seat may
+see; and the scores computed from game records. A model catalogue sets which model does each job.
+
+The game has had two versions. Until July 2026 it had nine seats, ran on Gemini flash-lite, and evaluation
+centred on memory. Since October it has ten seats drawn from a larger cast and runs on Claude Haiku 5.5 by
+default. This page calls them the **nine-seat** and the **ten-seat** game, because a result from one does
+not automatically hold for the other.
+
+**Every model call, by job, and where it is checked.** The code behind each is in the
+[source map](source_map.md).
+
+| Job | Model call | What it does | Where it is checked |
 |---|---|---|---|
-| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | whole-game A/Bs, the decision replay, the loop's credit validators, memory-component judges, golden sets, field audits | [`memory_system/`](../memory_system/report.md), [`memory_system/v7/execution_plan/`](../memory_system/v7/execution_plan/report.md), [`credit/`](../credit/report.md) |
-| **Play quality** | do prompt, rule and card changes make the agents argue, vote and talk better | turn replays, blind sampled reads, ten-seat metrics, the read Brier score, vote-target counts, same-deal games, balance batches | [`gameplay/`](../gameplay/report.md), [`gameplay/discussion/`](../gameplay/discussion/report.md) |
-| **Factual errors** | how often agents state something the record contradicts, and does a change reduce it | the census (code screen plus model reader), the factual-error test sets, pinned-case replays | [`gameplay/`](../gameplay/report.md) (problem 1), [`gameplay/turn_prompt/`](../gameplay/turn_prompt/validation_plan.md) |
-| **The deduction engine** | is every line it writes true in every legal game; does it help the seat | soundness tests over random legal nights, a brute-force oracle, acceptance cases, censuses, injection and placement replays | [`gameplay/deduction/`](../gameplay/deduction/report.md) |
-| **Models and cost** | can a candidate model play the game's turns; is it worse than the current one; what does a game cost | test prompts, replays against the current model, real games, cost and cache accounting | [`caching/`](../caching/report.md), [`model_selection/`](model_admission/model_selection.md) |
-| **The information boundary** | does any prompt carry another seat's private information | batch leak checks, payload leak tests, the served-game leak audit, fidelity pins | [`agent_boundaries/`](../agent_boundaries/report.md) |
+| **Playing** | A seat's turn | Its line, vote or night action, with the private note and role guesses it keeps | [factual_errors](factual_errors/report.md), [metrics](metrics/report.md), [turn replays](evaluation_scopes/turn/report.md), [sampled reads](labeling/sampled_reads/report.md), [model_admission](model_admission/report.md) |
+| **Running the game** | Day summariser | Writes up each day; it transcribes accusations and role claims, and code keeps the record of claims | [factual_errors](factual_errors/report.md), [llm_judge](llm_judge/report.md) |
+| | Echo gate | Holds back an open-floor line that adds nothing | [llm_judge](llm_judge/report.md) |
+| | Opening filter | Keeps the opening lines that are claims, results or challenges | [llm_judge](llm_judge/report.md) |
+| | Addressing classifier (human seats) | Tags whom a human's message addresses, which sets who must reply | [llm_judge](llm_judge/report.md) (not yet checked) |
+| | Drafting helpers (human seats) | Draft a line for the player to send | Not evaluated: the player reads and sends the line |
+| **Memory** | Memory search query | Turns the seat's situation into the query memory is searched by | [llm_judge](llm_judge/report.md), [deterministic_audits](deterministic_audits/report.md) |
+| | Extraction | Writes lessons from a finished game | [llm_judge](llm_judge/report.md), [deterministic_audits](deterministic_audits/report.md) |
+| | De-halo pass | Rewrites verdicts in lessons that the game record does not support | [llm_judge](llm_judge/report.md) |
+| | Decision tagger | Says which decision a lesson describes | [llm_judge](llm_judge/report.md), [sampled reads](labeling/sampled_reads/report.md) |
+| | Dedup decision | Keeps, discards or merges a new lesson | [labeling](labeling/report.md) |
+| | Point dedup | Finds duplicate strategy points in the store | [llm_judge](llm_judge/report.md), [labeling](labeling/report.md) |
+| | Strategy synthesis | Distils strategy points from groups of lessons | Outside this folder: the rule screen in [`memory_system/v8/`](../memory_system/v8/experiment_log.md) |
+| | Reranker (off by default) | Reorders retrieved lessons by relevance | [labeling](labeling/report.md) |
+| | Namespace augmentation (built, parked) | Re-mines one role and phase of a finished game | Not evaluated |
+| **Measuring** | LLM judges, the labelling panel, blind model readers | Label or score the other calls' outputs | [llm_judge](llm_judge/report.md), [labeling](labeling/report.md), [sampled reads](labeling/sampled_reads/report.md) |
 
-**The game changed under the methods.** Through July 2026 the game had nine seats, was played by Gemini
-flash-lite, and evaluation centred on memory. Since 2026-10-09 the live game has ten seats drawn from a
-twelve-role cast, seats default to Claude Haiku 5.5, and memory is a per-game choice served from a Postgres
-store. Most memory results describe the nine-seat game; most play, factual-error and deduction results
-describe the ten-seat game. The status board says which.
+## Why evaluating an LLM system is different
 
-## The methods
+Many conventional unit tests use a fixed input, a known expected output and a deterministic check. Model
+calls often require a different approach: several answers may be acceptable, repeated calls can disagree,
+and the model used to judge an answer may also make mistakes. A hosted model service can change even when
+the application's code does not. These properties shaped the methods below.
 
-### Judging one output, cheapest first
-
-A single output (a line, a vote, a summary, a stored lesson) is judged by one or more of these.
-
-0. **Code checks with no model** ([deterministic_audits](deterministic_audits/report.md)). Pass-or-fail
-   checks and exact counts over prompts, game records and the engine: leak checks after every batch game,
-   the deduction engine tested against a brute-force oracle over 20,000 random legal nights per test,
-   model-written numbers recomputed from the board. Free and noiseless; they find only what a rule someone
-   wrote can see. The information boundary and the deduction engine's soundness rest entirely on them.
-1. **LLM judges** ([llm_judge](llm_judge/report.md)). One model scores another against a rubric: the
-   factual-error readers, the in-game classifiers (the echo gate, the opening filter, the speakers'
-   accusation tags), labelling at scale, the memory-era 1–5 rubric judges. The page explains how the judges
-   were built: decide whether a model is the right tool, choose the kind of judging, design the rubric,
-   validate it against a golden set, a stronger model or a real outcome. Only the factual-error judges were
-   checked against a person, in the nine-seat Gemini era.
-2. **Labelling by readers** ([labeling](labeling/report.md)). Readers label items against a rubric, for two
-   uses: **golden sets**, kept as a reference a cheaper check is scored against, and **sampled reads**
-   ([sampled_reads](labeling/sampled_reads/report.md)), made once to decide between two versions. Both use
-   the same techniques: draw items blind to the outcome, hide the source behind a key file, fix the rubric
-   and the bar first, measure agreement, anchor to a person. The gold sets (labelled or checked by a
-   person) are nine-seat, May–July 2026; every ten-seat set is silver (model readers) or a hand-written
-   expectation. The code to score model labels against a person's was built on 2026-10-23, and owner-check
-   packets for three model sources wait on the owner's labels.
-3. **Scales and scores** ([scoring](scoring/report.md)). How a label is recorded (binary, categorical,
-   graded, pairwise, probability), how a judge is scored against a golden set (precision and recall, kappa,
-   NDCG, Brier), and the paired tests that compare two versions.
-
-The rungs form a calibration chain: a person's labels calibrate the judges and readers, which then label at
-scale. In practice the links are mostly unconnected; the first owner checks are the step that connects them.
-Code checks sit below the chain: they answer only questions written as rules, so they need no calibration.
-
-### Testing a change
-
-4. **Evaluation scopes** ([evaluation_scopes](evaluation_scopes/report.md)). The same controlled experiment
-   at three scopes, like unit, integration and end-to-end tests:
-   - **[One frozen turn](evaluation_scopes/turn/report.md)**: a recorded turn's whole input rebuilt exactly,
-     each version answering it many times. Holding everything else fixed makes an effect visible from tens
-     of samples, at under $0.01 to about $0.25 a screen. Fourteen screens, June–October 2026.
-   - **One day**: replay one day live with the earlier days frozen. Designed in July 2026, not built.
-   - **[Whole games](evaluation_scopes/game/report.md)**: the same deals played with and without the
-     change. The only way to see outcomes and effects that cascade across days; noisy (30 games a side show
-     only a win gap of about 35 points).
-5. **Play metrics** ([metrics](metrics/report.md)). Scores code computes from a game record: decisions
-   graded by the rules against the true roles, then checked against each side's win. On the nine-seat game
-   the check chose the scores (48 tried, 11 kept); on the ten-seat game the rules define a good move and the
-   check confirms or questions it (78 games, 2026-10-24).
-6. **Experimental controls** ([experimental_controls](experimental_controls/report.md)). What keeps any A/B
-   fair: both sides in one time window, one change per side, the same judge for both, a runtime fingerprint
-   that stops a run if anything underneath changes, the arm guard for memory runs, a power check before a
-   paid run.
-
-### Pipelines built from these
-
-7. **Factual errors** ([factual_errors](factual_errors/report.md)). Find errors in played games, freeze them
-   as test cases, measure a rate with the census (a code screen, then a cheap reader, then a stronger
-   re-read of its positives, then the owner), and check every fix on the test set. About 3% of public
-   messages had an error in July (nine-seat); the problem side, what was tried and what worked, is in
-   [the gameplay report](../gameplay/report.md).
-8. **Model admission** ([model_admission](model_admission/report.md)). Five questions of a model migration:
-   quality (replays against the current model), integration (can the code use it), cost and speed,
-   reliability (rate limits, the rescue model, drift), rollout and records. Since 2026-10-24 one command
-   runs the checks for a candidate with pass criteria fixed beforehand; it has not yet been run on one.
-
-```
- how one output is judged, cheapest first
-   ⓪ code check (no model; exact; only what a rule encodes)
-   → ① LLM judge (cheap; mostly uncalibrated)
-   → ② labelling: sampled reads (one-off) · golden sets (reusable; a person anchors them)
- how a change is tested
-   one frozen turn → one day (not built) → whole games      scored by play metrics
-   kept fair by experimental controls
- pipelines: factual errors · model admission
-```
-
-## Choosing the method: two rules
-
-**1. Code checks what has a ground truth it can compute; meaning needs a reader.** Five kinds of code check
-recur:
-
-| Kind | Example | Where |
+| Evaluation challenge | How it appears in this project | What the project does about it |
 |---|---|---|
-| A structured field against the truth | the vote target, the night pick or the claimed role against the true roles | [metrics](metrics/report.md), [turn replays](evaluation_scopes/turn/report.md) |
-| A forbidden term in text | a seat id written into a lesson; another seat's private information in a prompt | [deterministic_audits](deterministic_audits/report.md) |
-| A number the model wrote, recomputed from the board | players alive exact in 97% of 6,099 cases; the Vigilante's shots left in 16% of 1,109 | [deterministic_audits](deterministic_audits/report.md), case 3 |
-| A structured claim against the engine's record | claims in the ledger checked against announced deaths, saves and the cast | [deterministic_audits](deterministic_audits/report.md) |
-| Format and events | schema validity, retries, timeouts, the rescue model firing | [model_admission](model_admission/report.md) |
+| Outputs vary between runs | The same frozen turn can produce different answers, so one response gives limited evidence | Sample repeatedly and compare rates or scores, with uncertainty and a check on sampling noise |
+| Several outputs may be acceptable | Two summaries can use different words and both preserve the important facts | Use code for checkable fields and a reader for meaning, with explicit criteria for an acceptable answer |
+| The evaluator can make mistakes | A model judge can disagree with itself or confidently assign the wrong label | Compare judges with human labels and test code checks on known faults; human calibration remains incomplete |
+| Dependencies can change without an application change | A hosted model or its serving behaviour may change between experiments | Run both versions in the same time window and record their configurations; enforcement varies by runner |
+| Configuration can fail silently | A requested thinking level may produce no reasoning tokens while calls still succeed | Inspect what the setting produced, rather than relying on the requested value |
+| Errors propagate between components | A false claim in a summary becomes an input to later players | Check the changed component, then the decisions it affects; use whole games for consequences that accumulate |
+| Evaluation has a limited budget | Repeated model calls cost money, and full games require many calls | Choose the smallest scope that can answer the question |
 
-Outside these, code loses. A keyword count of meaning said 32 summaries named a quiet player, and reading
-the matches found 4 of 124. A regex agreed with the model's addressee tags on 63% of 30 cases, so tagging
-went to the model. The prose leak pass is substring matching, so a paraphrased leak passes.
+The game provides a useful reference: the engine records deaths, votes, night actions and claims.
+Structured outputs can be compared directly with those records. Free-text statements may still need a
+reader to establish what they mean before deciding whether they contradict the record.
 
-**2. When a model screens for a person, set it to catch too much.** When a person checks every flag, a false
-alarm costs seconds and a miss is never seen. The factual-error census is the worked example: code flags
-every unit that names a dead player, a dead role or a count; a cheap model reads each flag; a stronger model
-re-reads its positives; the owner checks the result. A sample of the rejections is read too, because misses
-hide there: 2 to 3 of 15 were real errors, so the published counts are floors.
+## What the evaluation is for
 
-## What the methods caught about themselves
+**1. Does each part do its job well enough to trust?** Each component needs criteria tied to its job,
+though the coverage listed above is incomplete. Players should use the available facts correctly while
+reasoning about hidden roles; deliberate deception is part of the game. The summariser should
+record claims as they were made; the echo gate should hold back only lines that repeat; the extractor's
+verdict on a play should follow the play, not who won; the deduction engine should never write a false
+conclusion; no prompt should carry another seat's secrets.
 
-The strongest evidence that the evaluation is real is that it repeatedly found its own faults.
+**2. Can the checks themselves be trusted?** A judge, a label or a code check can be wrong too, and a wrong
+check can make an unreliable result look precise. The methods for checking them differ: compare a model
+judge with human labels, give a code check a known fault it must catch, and examine whether a play score
+is associated with winning. The method pages distinguish checks already completed from those still needed.
 
-**June and July 2026 (nine-seat, memory):**
-- A fresh no-memory baseline came back with the villagers winning 10% of games against 67% before, on
-  identical prompts (Fisher p = 0.0028): the model service had drifted. Old baselines were dropped, and both
-  sides of a comparison now run in one time window.
-- A configuration slip let the memory side run memory for every faction instead of the town only. The check
-  became the arm guard, which stops the run before spending.
-- An engagement score was retracted (about 0.70 to 0.55) once the model was found to have silently skipped a
-  third of its inputs.
-- An investigator score that came out significantly backwards (+0.38, p = 0.039, 30 games) was re-run at six
-  times the sample and the sign was noise (+0.15, not significant, 180 games).
-- Both of the June paid loop runs were flagged invalid by the loop's own checks before they were reported.
-- A free audit of model-filled memory fields fired its own pre-registered re-open condition: a field the
-  retrieval gate keyed on was worse than a constant (0.606 against 0.827 for always-False).
-- A check showed that pairing the two sides by deal buys almost no noise reduction, so running both sides in
-  one window was what made comparisons fair.
+**3. Does a change make it better?** A prompt fix, a model switch or a memory feature is judged by
+measuring question 1 on both versions, under controls that keep everything else the same.
 
-**October 2026 (ten-seat, play, factual errors, models):**
-- Three leak checkers had checked nothing on every live game, because the batch runner never passed them
-  their inputs; found and fixed on 2026-10-14.
-- Every memory game had run at a thinking level that produced zero reasoning tokens, confirmed in 680
-  records. Both sides ran alike, so the comparisons stand, but every memory verdict is about players that do
-  not reason first.
-- The factual-error test set's first build let a replayed vote turn see its own result; reading the controls
-  by hand caught it, and showed the July ship test had the same leak.
-- DeepSeek V4 Pro passed 27 of 27 test prompts and answered 3 of 6 real turns in prose; real turns now count
-  in admission.
-- A replay read an 8-of-10 against 1-of-10 split on an identical prompt as noise, and got a stable rate
-  (about one in three) only by shuffling every arm into one schedule at 25 samples.
-- Re-embedding a 232-pair calibration set showed that dedup thresholds re-derived for a new embedding model
-  would discard two labelled keeps.
-- The ten-seat check of play scores against win (2026-10-24) showed the healer's save rate, trusted on nine
-  seats, no longer goes with winning.
+The questions apply to eight subjects. Memory came first; since its research closed in July 2026 most
+evaluation work has been on the others. Each subject's design folder says whether the part works; the method
+pages below say how it was checked and how far that check can be trusted.
 
-## Status board
+| Subject | The question | Design verdict lives in |
+|---|---|---|
+| **Memory** | Do stored lessons improve play, and are the fields the models write right? | [`memory_system/`](../memory_system/report.md), [`memory_system/v7/execution_plan/`](../memory_system/v7/execution_plan/report.md), [`credit/`](../credit/report.md) |
+| **Retrieval (memory as RAG)** | Does the memory search find lessons that fit the situation, and do the seats use what it finds? | [`retrieval/`](../retrieval/filtering/report.md), [`extraction/situation_summary/`](../extraction/situation_summary/report.md), [`memory_system/v8/`](../memory_system/v8/experiment_log.md) |
+| **Play quality** | Do prompt, rule and card changes make the agents argue, vote and talk better? | [`gameplay/`](../gameplay/report.md), [`gameplay/discussion/`](../gameplay/discussion/report.md) |
+| **Model calls that run the game** | Does the summariser keep claims straight; do the classifiers label lines as intended? | [`gameplay/`](../gameplay/report.md), [`gameplay/discussion/`](../gameplay/discussion/report.md) |
+| **Factual errors** | How often do agents state something the record contradicts, and does a change reduce it? | [`gameplay/`](../gameplay/report.md), [`gameplay/turn_prompt/`](../gameplay/turn_prompt/validation_plan.md) |
+| **The deduction engine** | Is every line it writes true in every legal game, and does it help the seat? | [`gameplay/deduction/`](../gameplay/deduction/report.md) |
+| **Models and cost** | Can a candidate model play the game's turns, and what does a game cost? | [`caching/`](../caching/report.md), [`model_selection/`](model_admission/model_selection.md) |
+| **The information boundary** | Does any prompt carry another seat's private information? | [`agent_boundaries/`](../agent_boundaries/report.md) |
 
-Marks: ✅ sound · 🟡 usable with caveats · ⚠️ smoke test only · ❌ does not hold · ⏸ designed, not built ·
-⛔ underbuilt. Each mark is the method page's own verdict. "9" and "10" mark the nine-seat and ten-seat games.
+**Retrieval, evaluated as RAG.** The memory is retrieval-augmented generation: lessons from past games are
+searched and placed in each seat's prompt. The pages never call it RAG, so here is where each standard RAG
+measure lives under the project's own names.
+
+| RAG measure | What the project did | Where |
+|---|---|---|
+| **Ranking quality** (precision@k, NDCG@k) | The reranker scored against graded relevance labels (not relevant, partly, fully) | [scoring](scoring/report.md), [labeling](labeling/report.md); [`retrieval/`](../retrieval/reranking/report.md) |
+| **Context relevance** | The lessons seats were actually shown, read for whether each fits the situation: the precision of the top few, under another name | [labeling](labeling/report.md), [turn replays](evaluation_scopes/turn/report.md); [`memory_system/v8/`](../memory_system/v8/experiment_log.md) |
+| **Query quality** | A pairwise judge comparing two versions of the call that writes the search query, and a golden set built from the queries outward | [llm_judge](llm_judge/report.md); [`extraction/situation_summary/`](../extraction/situation_summary/report.md) |
+| **Recall** | Attempted, and the attempt caught a trap: a new query brings back results nobody labelled, which count as irrelevant and distort the comparison until they are labelled too | [`extraction/situation_summary/`](../extraction/situation_summary/report.md) |
+| **Retrieved-memory adherence** (utilization) | Did a decision follow, contradict or ignore each lesson it was shown. This is not faithfulness: a lesson is advice, and ignoring one can be the right move | [llm_judge](llm_judge/report.md); [`credit/`](../credit/report.md) |
+| **Groundedness** | Measured for the facts in the prompt, not for retrieved lessons: the factual-error checks ask whether what an agent says is supported by the game record. The lessons themselves are checked against the rules and against the game they came from | [factual_errors](factual_errors/report.md), [deterministic_audits](deterministic_audits/report.md); [`memory_system/v8/`](../memory_system/v8/experiment_log.md) |
+| **Quality of the stored documents** | Duplicates scored against golden sets, synthesized lessons screened for wrong rules, verdicts corrected for outcome bias | [labeling](labeling/report.md), [llm_judge](llm_judge/report.md) |
+| **End-to-end effect** | Whole-game comparisons with memory on and off; the results belong to the memory chapter | [whole games](evaluation_scopes/game/report.md) |
+
+What is missing: recall has never been measured against a complete set of relevance labels; the adherence
+and query judges have not been checked against a person; and most of this work is from the nine-seat game.
+
+---
+
+## The method pages
+
+The methods answer four separate questions. A frozen turn, for example, can be scored by code or by a
+reader; choosing its scope does not determine how its output should be judged.
+
+| Decision | Available methods | What the choice determines |
+|---|---|---|
+| **Scope: how much of the system runs?** | One frozen turn, one day (designed, not built), or whole games | Whether the test isolates one response or includes later consequences |
+| **Scoring: how is the output assessed?** | Code checks, play metrics, LLM judges or human reads | Which facts, behaviours or outcomes the test measures |
+| **Validation: why trust the assessment?** | Human-labelled reference sets, tests of code checks, and checks of metrics against winning | What supports the evaluator's verdict, and where its limitations remain |
+| **Controls: is the comparison fair?** | Matched inputs, contemporaneous runs, configuration guards and noise checks | Whether an observed difference can reasonably be attributed to the intended change |
+
+The factual-error and model-admission workflows below combine these methods for recurring tasks.
+
+**The calibration chain.** A person's labels check the judges and model readers, which then label at a
+scale no person could. The chain is only as strong as its first link: on the ten-seat game no person has
+checked a judge yet. Completing the owner's labelling packets would provide the reference needed for that
+comparison. Code checks require a different kind of validation: their rules, inputs and implementation
+must be correct, and tests must show that they detect known faults without rejecting valid cases.
+
+**Trust marks**, taken from each method page's own verdict: ✅ sound · 🟡 usable with caveats · ⚠️ a smoke
+test only · ❌ does not hold · ⏸ designed, not built.
 
 ### Judging one output
 
-| Page | Subject | What it covers | Trust |
-|---|---|---|---|
-| [**Code checks**](deterministic_audits/report.md) | information boundary · deduction engine · memory · play | batch leak checks; payload leak tests; served-game leak audit; fidelity pins; deduction soundness over 20,000 random legal nights per test and a brute-force oracle; 4 acceptance cases; solver and block censuses; record audits (9); embedding check; model-written memory fields recomputed (9, 10) | ✅ leak checks, payload tests, deduction soundness and oracle, embedding check (batch runner only) · 🟡 served-game audit (built; nightly job not installed), acceptance cases (the only coverage test), block census, record audits · ⚠️ pivotal-turn flags |
-| [**LLM judges**](llm_judge/report.md) | memory · play · factual errors | every judge and in-game classifier: how each was built, what it was checked against, top-ups for today's game | 🟡 factual-error judges (person-checked, nine-seat, Gemini era) · 🟡 echo gate (model readers) · ⚠️ opening filter, accusation tags · ⚠️ memory-era rubric judges |
-| [**Labelling**](labeling/report.md): golden sets, [sampled reads](labeling/sampled_reads/report.md) | memory · play · factual errors | the shared techniques; every golden set by who labelled it; the labelling pipeline and its calibration step; the October blind reads, the decision-tag read, hand-read games | 🟡 gold sets (nine-seat) · ⚠️ ten-seat silver sets (no person's check) · 🟡 blind reads (one model reader per item) · ✅ decision-tag read (98 of 102, above a bar set beforehand) · 🟡 calibration step (built 2026-10-23, not yet used) |
-| [**Scales and scores**](scoring/report.md) | all | label scales; scores against a golden set; paired tests | 🟡 standard scores built and used · ⚠️ no 1–5 judge scored against people |
+#### Code checks with no model ([deterministic_audits](deterministic_audits/report.md))
+
+**What it answers.** Is the output right, where code can work out the right answer for itself from the game
+record or the rules? A code check adds no model-call cost and gives the same result on the same input.
+It can cover every supplied item, but its correctness still depends on the rule, the implementation and
+the completeness of its inputs.
+
+**How it works.** The page shows five ways of using code, one case each:
+- **Check every output against a rule.** The leak checks look for private information that the acting
+  seat is not allowed to see, within the fields and leak patterns they cover.
+- **Compare with independent test code.** The deduction engine's conclusions are tested against a
+  brute-force search of every deal of roles a player's knowledge allows.
+- **Score a model's structured output against the truth.** Numbers a model wrote are recomputed from the
+  board. The pattern found: the model copied the numbers it was handed correctly and got the ones it had to
+  work out wrong, so those moved into code.
+- **Let code narrow and a reader judge.** Code flags statements matching known error patterns, and a
+  model reads those candidates to decide whether they are errors.
+- **Guard the experiment's own set-up**, such as stopping a run whose sides are configured differently from
+  what was declared.
+
+**How far to trust it.** ✅ The leak checks and the deduction engine's tests provide strong evidence for
+the conditions they cover. A passing check does not establish that every possible fault is absent: an
+unwritten rule is not tested, and missing inputs can make a check pass without examining anything.
+Known-fault tests help establish that a checker actually detects the failures it was built to catch.
+
+**Read it when** you want to know which conditions code checks, what inputs it covers, or how the checker
+itself was tested.
+
+#### LLM judges ([llm_judge](llm_judge/report.md))
+
+**What it answers.** For questions of meaning (is this line new, does this summary mislead), how was each
+model judge built, and how far can its labels be trusted? An *LLM judge* reads another model's output and
+labels it against a rubric, a written statement of what to look for. The page also covers the *classifiers
+in the product*, which label the same way but whose label changes the game or the memory. They are things
+to be measured, not measurements.
+
+**How it works.** Start with a question that requires interpretation, such as whether a line repeats an
+earlier claim. Give the judge the relevant context and a rubric that defines the labels, including
+borderline cases. Then compare its verdicts with reference labels and inspect disagreements before using
+it at scale. The page records how this was done for each judge, what configuration was used, and where
+validation stopped at comparison with another model rather than a person.
+
+**How far to trust it.** 🟡 The judges that held up asked a narrow question against facts handed to them. ⚠️
+The open 1–5 quality rubrics did not: their scores hardly moved, so they could not tell versions apart. The
+classifiers in today's game have been checked only against other models, and every judge now runs on the
+same model as the players. That creates a potential source of shared errors or preference for similar
+outputs; its effect has not been measured.
+
+**Read it when** you need to know how a model judge was built, what it was checked against, or whether its
+score provides enough evidence to support a decision.
+
+#### Labelling: golden sets ([labeling](labeling/report.md))
+
+**What it answers.** What reference labels exist to score a cheaper check against, who made them, and how
+far can they be trusted? A *golden set* is a set of items with trusted labels. **Gold** labels are made or
+checked by a person; **silver** labels are made by models alone, so they are a reference, not ground truth.
+
+**How it works.** The page explains five techniques that make labels trustworthy: draw the items without
+seeing the outcome, hide which version produced each item, fix the rubric and the pass bar before reading,
+measure agreement between readers, and check against a person. It then lists every golden set by how it was
+made: a person labelling everything, a panel of models with a person settling disagreements, models only, or
+a written expectation per case. One lesson recurs: models agreeing with each other is not the same as being
+right. A panel's confident majority was often wrong when a person reviewed it.
+
+**How far to trust it.** 🟡 Gold sets exist only for the nine-seat game. ⚠️ Every ten-seat set is silver,
+and some of them back live features. The tooling to check model labels against a person is built, and the
+owner's first packets are waiting.
+
+**Read it when** you need the reference a check was scored against, or want to know how a label set was
+made.
+
+#### Labelling: sampled reads ([sampled_reads](labeling/sampled_reads/report.md))
+
+**What it answers.** When two versions of a prompt or feature need judging and no golden set exists, which
+is better? A *sampled read* labels a sample of cases once, for that decision, and is not kept as a
+reference.
+
+**How it works.** Cases are drawn by a fixed seed, packed so the reader cannot see which version wrote each
+line, read against a fixed list of questions, and scored by code. The readers are Claude subagents, not
+people. Most qualitative design calls in the project were made this way.
+
+**How far to trust it.** 🟡 Each item had one model reader, and agreement between readers was never
+measured. When fresh readers re-read the same items by chance, labels about a plain act ("did the seat claim
+a role?") held, while labels needing judgment drifted.
+
+**Read it when** a design call was made by reading cases and you want to know how the read was run.
+
+#### Scales and scores ([scoring](scoring/report.md))
+
+**What it answers.** How is one label recorded, how is a judge scored against a golden set, and how are two
+versions compared beyond chance? These are separate questions: a label describes an output, a validation
+score describes the evaluator's agreement with a reference, and a statistical comparison assesses the
+evidence for a difference between versions.
+
+**How it works.** Consider a factual-error check:
+
+1. **Record a label:** does this response contain a factual error, yes or no?
+2. **Check the judge:** compare its labels with human-labelled examples. Precision measures how many
+   flagged errors are real; recall measures how many real errors it finds.
+3. **Compare versions:** run two prompts on the same cases and compare their error outcomes. A paired
+   test uses the cases where those outcomes differ to assess whether the improvement exceeds what chance
+   could plausibly explain.
+
+An error rate alone answers neither how accurate the judge is nor whether a difference between prompts
+is convincing. Sample size, uncertainty and variation in the judge's own verdicts matter too.
+
+**How far to trust it.** 🟡 The project uses precision and recall, confusion tables, ranking scores and
+statistical tests for version comparisons. Their interpretation still depends on the reference labels and
+sampling design. ⚠️ No 1–5 rubric judge has been scored against human labels, so a higher rubric score is
+not established evidence of better quality.
+
+**Read it when** a report quotes a score or a test and you want to know what it measures.
 
 ### Testing a change
 
-| Page | Subject | What it covers | Trust |
-|---|---|---|---|
-| [**Evaluation scopes**](evaluation_scopes/report.md): [turn](evaluation_scopes/turn/report.md) | memory · play · deduction engine | the decision replay (9); checkpoint and tell-book replays (9); stage-filter replay (10); night-1 target check (9); nine October prompt, wording and deduction screens (10) | ✅ decision replay (as a direction-finder), night-1 check · 🟡 October screens (direction, not size), checkpoint replay · ⚠️ tell-book, counter-claim, private-note screens |
-| [**Evaluation scopes**](evaluation_scopes/report.md): day | — | the per-day replay | ⏸ designed July 2026 |
-| [**Evaluation scopes**](evaluation_scopes/report.md): [game](evaluation_scopes/game/report.md) | memory · play | June memory A/B, strategy-point A/B, pre-registered v7 endpoint (9); persona-voice and evil-cover pairs, 8 deals each (10) | 🟡 nine-seat memory harness (wins underpowered; pairing buys little; the endpoint's statistic has no committed script) · ⚠️ ten-seat same-deal pairs |
-| [**Play metrics**](metrics/report.md) | play · memory | decisions graded by the rules; each score checked against its side's win (9: June–July; 10: 78 games); read Brier; vote-target accuracy; prompt and rule counts | ✅ town lynch scores, power roles lost, wolf blending (both games) · ❌ healer save rate on ten seats · 🟡 new roles' scores (too few games) · 🟡 read Brier · ✅ counts / 🟡 readings |
-| [**Experimental controls**](experimental_controls/report.md) | all | same window, fingerprint, arm guard, embedding check, seedability, power gate, prompt golden, run graduation | ✅ arm guard, in-run fingerprint, power gate, seedability · 🟡 prompt golden (one turn type), run graduation (first used 2026-10-23) · manual: cross-epoch comparisons, interleaving a hand-run batch, checking a setting did what it names |
+**A change raises two questions: did the component improve, and did that improve play?** The first can be
+tested by freezing the component's input, running both versions and scoring their outputs against its job.
+The second requires following the output into the decisions it affects. A player's turn replay can test
+the immediate decision, but later consequences still need a broader test. Some components have only been
+checked in isolation, as the table shows.
 
-### Pipelines
+| Component | Its own unit, re-run on frozen inputs | Its effect on play |
+|---|---|---|
+| **Day summariser** | One day's summary, re-run on exactly the input production gave it, checked by code for known failures | The player turn that read the summary, replayed |
+| **Dedup decision** | One candidate lesson, scored against human-labelled golden sets | Through retrieval checks and whole-game memory comparisons |
+| **Extraction** | One finished game, re-extracted and scored by a judge and against the record | Memory lookups searched again against the rebuilt store; extraction alone was never isolated |
+| **Echo gate, opening filter** | One candidate line, read blind | Not measured separately |
 
-| Page | Subject | What it covers | Trust |
-|---|---|---|---|
-| [**Factual errors**](factual_errors/report.md) | factual errors · models | the July census (9); the nine-seat test set and ten-seat test turns; pinned cases; the summary-claim replay (10) | ✅ census screen within its scope · 🟡 reader, test-set runs (regression checks, not rates) · ⛔ no factual-error rate on the ten-seat game |
-| [**Model admission**](model_admission/report.md) | models and cost | the five migration questions; test prompts, replays against the current model, real games; thinking level for votes; summariser and memory-job models; rate limits and rescue; cost accounting; the one-command pipeline | 🟡 as a gate, not a ranking (replay spread about 6 points at 70 samples) · ✅ rescue path (deployed) · ⚠️ summariser and memory-job comparisons, seat-model games, live schema check · ⏸ the pipeline (built, never run on a candidate) |
+#### Evaluation scopes: one turn, one day, whole games ([evaluation_scopes](evaluation_scopes/report.md))
 
-**Dated records, kept for provenance:** [`loop/`](loop/report.md) (the v7 learning loop's checks, closed July
-2026; part of the memory chapter), [`hardening_pass/`](hardening_pass/report.md) (the July review of the
-memory methods), and the retired discussion tagger ([llm_judge/discussion_tagger.md](llm_judge/discussion_tagger.md)).
+**What it answers.** How much of the game should a test hold fixed? The same experiment (change one thing,
+run both versions, compare) can be run at three scopes, much like unit, integration and end-to-end tests.
+Unlike software tests they are statistical: a model's answer varies, so each input is sampled many times and
+the versions are compared by rate.
 
-## Cross-cutting findings
+**How it works.**
+- **[One frozen turn](evaluation_scopes/turn/report.md)** rebuilds a recorded turn exactly (the board, the
+  transcript, the seat's private record) and lets each version answer it many times. It is cheap and sharp,
+  and it is where most changes were tested. It estimates the change in responses on the selected cases,
+  not the improvement across ordinary games. It also stops at the response: later turns do not play out
+  under the intervention. Repeated samples of one turn measure variation within that situation; they do
+  not provide evidence from additional situations.
+- **One day** would replay a day live with the earlier days frozen, to see effects that build within a day.
+  ⏸ It is designed, not built.
+- **[Whole games](evaluation_scopes/game/report.md)** play the same deals with and without the change. They
+  are the only way to see who wins and effects that cascade across days, and they are noisy and costly, so
+  only large effects show at the sizes the project could afford.
 
-**1. What can be trusted.**
-- **Code checks.** The batch leak checks have run on every batch game since 2026-06-06; their one confirmed
-  catch was 109 violations from a refactor, 0 after the fix. Every "certain" line of the deduction engine
-  holds over 20,000 random legal nights per test and against every allowed deal. The arm guard and the
-  in-run fingerprint stop a run rather than warn. Their limit is what they encode: a paraphrased leak or a
-  rule nobody wrote down passes.
-- **Exact and outcome-anchored scores.** Vote targets and winners counted by code; the town's lynch scores,
-  which go with winning on both games (about +0.5 to +0.65); the decision tags against a bar set beforehand;
-  test-set sign tests whose effect clears the set's own noise (re-judging moved totals by 1–2 of 267; reruns
-  moved an arm by about 6 points at 70).
-- **Gold sets.** The dedup decision keys, the census reader's July hand check, the hand-written expectations,
-  the four deduction acceptance cases.
+**When to move up a scope:** when the question is an outcome over a game, when the effect builds across
+turns, or when a feature must be shown running in the real game.
 
-**2. What is directional only.**
-- The memory-component judges, the discussion-evidence judge and the summariser-comparison judge: none
-  checked against a person.
-- The model readers. Every October blind read is Claude subagents, one per item. Re-read by fresh readers,
-  labels tied to an act held exactly (claims 13 and 33) and judgment labels moved by several items (29 to 19
-  of 73).
-- Same-family judging. Every judge defaults to the players' own model, and the admission replays had Gemini
-  judges grading a Gemini reference. Neither bias was measured.
+**How far to trust it.** ✅ Turn replays can isolate a change's effect on the cases tested. 🟡 Whole-game
+comparisons include later consequences, but the small batches run here leave substantial uncertainty
+about the size of an effect on winning.
 
-**3. Where the anchors are thin.**
-- **The ten-seat game's labels and scores.** No ten-seat label set has a person's check. The first ten-seat
-  check of play scores against win (78 games) confirmed the core and left most new roles' scores untested;
-  the grade table is an owner ruling never tested as a whole. Balance was read on flash-lite only.
-- **Factual errors.** The only rate is July and nine-seat: about 3% of public messages (68 of 2,292) and
-  about 4% of private notes. The census has never run on a ten-seat game. The test sets replay day turns
-  only, though July found night notes the worst surface (9.6%).
-- **The deduction engine's coverage** rests on four acceptance cases: soundness is tested at scale,
-  completeness is not.
-- **Replays.** Ten samples of one case are the spread of one prompt, not ten situations; few screens
-  measured their own noise.
-- **Scorers tied to role names.** Three scored the new evil roles as town until they were switched to the
-  role registry on 2026-10-24; three places still name the nine-seat roles (two return nothing on ten seats,
-  one research helper miscounts).
-- **Every memory verdict** is about players with zero reasoning tokens.
+**Read it when** you want to know which scope a question needs, or what a replay or a whole-game comparison
+can claim.
 
-**4. What is not running.**
-- The nightly leak audit is documented but was found not installed on 2026-10-23, so no served game is known
-  to have been leak-checked.
-- There is no CI; tests run only when someone runs pytest. The tests in `tests/` are largely AI-written and
-  unaudited, so the method pages cite deliberate tests for what they pin, never a test count.
+#### Play metrics ([metrics](metrics/report.md))
 
-**Failure modes worth naming once:**
-- **Flat judge scores** carry no information (village dynamics pinned at 5.00).
-- **Outcome halo:** a measure that can see who won measures the win. The extraction model's verdict on a
-  play follows the side's win about twice as strongly as the decision's grade.
-- **A setting is not its behaviour:** town-only memory believed while every faction ran it; "minimal"
-  thinking with zero reasoning; leak checkers configured and checking nothing; field order kept 17 of 17
-  times on test prompts and 15 of 24 on real turns.
-- **One case resampled, read as many situations** (the AC2 vote).
-- **Keyword counts of meaning** (32 against 4 of 124).
-- **A frozen transcript hides what follows:** abstains ran 12–18% on frozen turns against 31% in live games.
+**What it answers.** How well did the agents play, beyond who won? A win carries a lot of luck, so code
+scores each decision instead: was the vote on a real threat, did the save keep a townsperson alive, how
+close were a player's role guesses to the truth.
+
+**How it works.** The rules define a good move; each decision is graded by them against the true roles. Each
+score can then be checked for association with its side winning. That is a separate validation step:
+correctly counting a useful action does not establish how strongly it contributes to winning. The healer's
+save rate illustrates the distinction. It was associated with town wins in the nine-seat game, but no
+clear association appeared in the ten-seat sample. There, healers made similar numbers of saves in wins
+and losses; some saved players died later, and some saves coincided with another player's death. A save
+remained useful without separating winning games from losing ones in that sample.
+
+**How far to trust it.** ✅ The town's voting scores go with winning on both games. 🟡 Most new roles' scores
+are graded by the rules but have too few games to check. ⚠️ The ten-seat decision grades have never been
+tested against winning as a whole.
+
+**Read it when** a report says agents played better or worse, and you want to know what was scored.
+
+#### Experimental controls ([experimental_controls](experimental_controls/report.md))
+
+**What it answers.** When two versions are compared, do they differ only in the change? The comparisons are
+small and the models sample at random, so one silent change underneath can fake a result.
+
+**How it works.** Two problems need separate treatment. Unintended differences between versions can
+create an apparent improvement: perhaps the provider changed, or one version was scored by a different
+judge. Sampling variation can also create an apparent difference or hide a real one. Matching the setup
+addresses the first problem; repeated samples and uncertainty estimates address the second.
+
+The controls have three jobs:
+
+- **Record what ran.** Each game's runtime fingerprint identifies the model, backend, settings, prompts
+  and code revision. This makes differences inspectable; a record alone does not prevent them.
+- **Enforce the intended experiment.** The loop driver stops if fingerprints change within a run, and
+  memory-specific guards check that the roles receiving memory match the declaration. Both versions use
+  matched inputs and the same evaluator. Coverage varies by runner, as the method page records.
+- **Keep the baseline current.** If a new prompt runs today, comparing it only with last week's results
+  mixes the prompt change with anything the provider changed in between. Run the old prompt again beside
+  the new one, preferably interleaving calls or games. Two versions already run in the same session do not
+  automatically need a third run, but still need enough samples to assess noise.
+
+A check against an absolute criterion fixed in advance does not necessarily need a baseline. For example,
+a regression check can ask whether a known error recurs under the new prompt. But a criterion such as
+"no worse than the current model" is a comparison and does require results from that model under comparable
+conditions. Pinning a model version reduces one source of change; it does not eliminate sampling variation
+or every possible change in the serving system.
+
+The rule came from a real case. A fresh baseline once came back with the town winning far less often than
+before, on identical prompts and code. Whether the model had changed or it was chance could never be
+settled. That uncertainty established the rule that comparative experiments should run both versions in
+the same time window. The method page records where code enforces it and where it remains a manual step.
+
+**How far to trust it.** ✅ The controls are strong where code enforces them. 🟡 They are weaker where a
+person must remember a step: interleaving a hand-run batch, never comparing across prompt versions, and
+checking that a setting really did what it names.
+
+**Read it when** you want to know why a comparison can be believed, or which control a given comparison had.
+
+### Two worked workflows
+
+A *workflow* is a fixed sequence of the methods above, run again and again for one recurring question. Most
+subjects have one: the leak checks for the information boundary live in
+[`agent_boundaries/`](../agent_boundaries/report.md), the deduction engine's tests in
+[`gameplay/deduction/`](../gameplay/deduction/report.md), and the memory comparisons under memory. These two
+have their own pages because they answer questions for the whole project and show the methods working
+together.
+
+#### Factual errors ([factual_errors](factual_errors/report.md))
+
+**What it answers.** How often do agents state something the game record contradicts, and does a fix reduce
+it? A *factual error* is a statement the record shows is false, or reasoning that only makes sense if
+something false were true ("we must find the last wolf" when both wolves are dead). Guesses about hidden
+roles and deliberate lies are not errors; they are the game.
+
+**How it works.** Four steps:
+1. **Find** errors, by screening a sample of games (code flags candidates, a cheap model reads them, a
+   stronger model rechecks, a person checks the result) or by playing and reading games.
+2. **Freeze** each failing turn as a test case with a written expectation.
+3. **Diagnose** the cause: was the fact in the agent's input, and how was it worded? Replaying the turn with
+   one thing changed tells a misleading input from a reasoning slip.
+4. **Check** a fix by replaying the frozen cases to detect whether a known failure returns.
+
+**How far to trust it.** 🟡 The frozen cases are regression checks, not a rate. The only measured rate is
+from the nine-seat game, about 3 in 100 public messages. No rate has been measured on the ten-seat game.
+What was tried against the errors, and what worked, is in [the gameplay report](../gameplay/report.md).
+
+**Read it when** you want to know how a hallucination was found, counted, diagnosed or shown fixed.
+
+#### Model admission ([model_admission](model_admission/report.md))
+
+**What it answers.** May a model do one of the game's jobs, and with which settings? In industry this is
+model migration, and the page asks it as five questions: quality, integration, cost and speed, reliability,
+and rollout.
+
+**How it works.** Candidate evaluation has three stages: short test prompts, then a replay of saved game
+turns against the current model, then real games. Each catches what the one before cannot; a model can pass
+every test prompt and still fail on real turns. Since late October one command runs the checks for a
+candidate, with its pass criteria written down before the run. The method page records that this combined
+command has not yet been run on a candidate.
+
+**How far to trust it.** 🟡 The replay can identify a large quality deficit, but cannot reliably rank
+close models: repeated runs of the same model already differ by several points. Measurement and admission
+policy are separate here. While the project is experimental, quality findings are recorded but do not
+exclude a model from the menu; cost, speed and integration determine exclusion. The quality check could
+support a stricter admission policy later, within the limits of its cases and judge.
+
+**Read it when** you want to know why a model is on the menu, or what a switch would need.
+
+### Other records in this folder
+
+- [experiment_log.md](experiment_log.md): every earlier version of this page and of the source map, kept
+  whole.
+- [source_map.md](source_map.md): the data every method reads, the code behind each model call, the retired
+  records, and the records outside version control.
+- Dated records, kept for provenance and not part of the current methods: [`loop/`](loop/report.md) (the
+  checks on the July 2026 learning loop; part of the memory chapter), [`hardening_pass/`](hardening_pass/report.md)
+  (the July review of the memory methods), and the retired discussion tagger
+  ([llm_judge/discussion_tagger.md](llm_judge/discussion_tagger.md)).
+
+---
+
+## Choosing the method: two rules
+
+**1. Code checks what has an answer it can compute; meaning needs a reader.** Code can check a structured
+field against the true roles, a forbidden term in a text, a number recomputed from the board, a claim
+against the engine's record, and the format of a reply. Free text often needs interpretation first. In
+this project, keyword counts included matches that did not express the intended meaning, and pattern
+matching could not reliably identify whom a message addressed. A reader was needed to resolve those cases.
+
+**2. When a person reviews the flags, favour finding possible errors over eliminating every false alarm.**
+A reviewer can dismiss a false alarm, but an unflagged error may never reach them. A generous screen is
+therefore useful when the review workload is manageable. Also inspect a sample of unflagged items: that
+is how the project can discover errors the screen misses, rather than measuring only the quality of its flags.
+
+## What the methods caught about themselves
+
+Auditing the evaluation changed both the tooling and the interpretation of results. The following cases
+show the faults found, the safeguards added and the limits that still apply:
+- **A baseline that shifted** on identical prompts, its cause never settled, which made running both sides
+  together the rule.
+- **A memory side set up differently from what was declared**, which became a guard that stops such a run
+  before it spends anything.
+- **Leak checkers that checked nothing**, because the runner never passed them their inputs; found and fixed
+  the same day.
+- **A thinking setting that produced no reasoning tokens.** The same behaviour occurred in both arms,
+  so it did not introduce that particular difference between them. The historical memory findings apply
+  to those settings; they do not establish how memory performs with a different reasoning budget.
+- **A test case that let a replayed vote see its own result**, caught by reading the controls by hand.
+- **A model that passed every test prompt and failed on real turns**, so real turns now count in admission.
+- **An apparent benefit from later investigator discoveries weakened in a larger sample.** The early
+  association with town wins was no longer statistically significant when more games were included, so
+  it did not support treating later discovery as better play.
+- **The healer's save rate did not retain its association with winning after the game changed.** It
+  remained a count of useful actions, but needed reassessment as evidence of overall play quality.
+
+## What holds across the methods
+
+**What has the strongest support.** Tested code checks provide repeatable answers within their encoded
+rules and supplied inputs. A vote can be scored against the true roles without asking a model to judge it.
+Controlled comparisons support findings on the cases tested when the difference is distinguishable from
+sampling and measurement noise. Human-reviewed reference sets support validation on the kinds of examples
+they contain; they do not guarantee accuracy on every new situation.
+
+**What remains provisional.** The ten-seat game's model judges and readers have not been compared with
+human labels. Their verdicts can guide investigation, but neither the size nor the direction of an apparent
+quality difference is independently validated. Using the same model family to play and judge also creates
+a risk of shared errors that has not been measured.
+
+**Where validation is incomplete.** The ten-seat game's model-generated labels lack human calibration,
+and its combined decision grade has not been tested against winning. Factual-error rates have been
+measured only on the nine-seat game. The deduction engine's soundness checks support the conclusions it
+does emit, but evidence about useful conclusions it misses comes from only a few real cases. Replays
+also have a coverage limit: many samples of one turn still represent only one situation.
+
+**What is not running.** The nightly leak audit of games on the website is built but not installed, and the
+tests run only by hand, with no continuous integration.
+
+**Recurring interpretation errors.**
+
+- **High scores can fail to distinguish versions.** If a judge gives nearly every output the same score,
+  the score provides little evidence for choosing between them.
+- **Knowing the winner can bias a judgement of an earlier move.** A judge may reward a poor decision
+  because its team eventually won; this is the outcome halo.
+- **Requested settings do not prove actual behaviour.** Check the returned output and usage records
+  when the experiment depends on a setting taking effect.
+- **Repeated samples do not expand case coverage.** Twenty replies to one turn show variation in that
+  situation, not performance across twenty different situations.
+- **Keyword matches need interpretation.** A role name appearing in a sentence does not establish that
+  the speaker claimed that role.
+- **A frozen-turn test stops before the consequences.** Changes to later replies, votes or survival
+  require a test that lets those events unfold.
 
 ## What we would do differently next time
 
-| Stage | Change | What was done | What it would buy |
-|---|---|---|---|
-| Design | **1. Anchor every judge and reader to a person when it is built**, with a 30–50 item owner sample | Person checks only in the nine-seat era; ten-seat labels all model-made | Every number that rests on a model label carries an error rate |
-| Design | **2. Write scorers against sides and the role registry, never role names** | Six places tied to the nine-seat roles; three fixed on 2026-10-24 | A new cast scores correctly the day it ships |
-| Testing | **3. Fix each test's measure, pass bar and noise floor before running it** | Done for the v7 endpoint, the decision-tag read and a few screens | Every comparison a test, not a description |
-| Records | **4. Commit every cited run's outputs, and the script behind every reported statistic, at the time** | Outputs graduated into `evidence/` only on 2026-10-23; one endpoint statistic has no script | Every number re-runnable from the record |
-| Operations | **5. Run the deterministic tests in CI, and install the leak audit with the server** | No CI; the nightly audit never installed | Regressions and leaks caught without someone remembering |
+| Stage | Change | What it would buy |
+|---|---|---|
+| Design | **Check every judge and reader against human-labelled examples when it is built** | An estimate of its errors on the reviewed sample, with uncertainty and examples of disagreement |
+| Design | **Use the role registry for faction membership, with explicit rules for role-specific actions** | Fewer errors when the cast changes; new abilities still need their own scoring rules and tests |
+| Testing | **Choose the measure and decision criterion in advance, and establish the relevant noise floor** | Less freedom to select a favourable result after seeing the data, and a basis for interpreting small differences |
+| Records | **Preserve each cited run's outputs and the script behind each statistic** | Reported statistics can be recomputed from saved outputs, even when new model calls would differ |
+| Operations | **Run code checks automatically, and install the leak audit with the server** | Covered regressions and leaks can be detected without someone remembering to run the checks |
 
-**Bottom line.** The project's evaluation is strongest where code can decide (leaks, the deduction engine,
-votes and winners against the true roles) and where it tests one change at a time on frozen turns with the
-noise measured. It is honest about its weak rung: model judges and readers carry most ten-seat judgments of
-meaning, and none has yet been checked against a person. The tooling to close that gap exists, and the owner
-checks are its first use.
+The next priority is to complete human review of the ten-seat labelling packets and measure where the
+model judges agree or disagree with those labels. That would strengthen the assessments of meaning that
+code cannot resolve. It would not replace the need for broader game samples, regression coverage or
+automatic execution of the existing checks; each addresses a different gap.
 
-*Rewritten 2026-10-24 as a standalone overview, from the method pages linked above. The previous hub
-(2026-10-23), including the dated memory-campaign section, is kept whole in the
-[experiment log](experiment_log.md), Part 1. The memory campaign's verdicts live in
-[`memory_system/report.md`](../memory_system/report.md) and
-[`../memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md): in short, June's memory improved the town's
-decisions but not significantly its wins, the v6 store did not repeat it, and the pre-registered v7 endpoint
-found no compounding, leaning toward harm; the ten-seat memory has not been tested at scale.*
+*Rewritten 2026-10-24 as a standalone overview; restructured 2026-10-25 into one block per method page, then
+rewritten the same day to explain the methods conceptually, with the numbers left to the method pages. Every
+earlier version is kept whole in the [experiment log](experiment_log.md). The memory campaign's verdicts live
+in [`memory_system/report.md`](../memory_system/report.md) and
+[`../memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md).*

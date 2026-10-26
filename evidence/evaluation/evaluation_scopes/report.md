@@ -10,6 +10,13 @@ decision with its inputs fixed, as a unit test isolates one component. A replaye
 react to each other inside a day (the speaking order, the other players, the votes) play live. Whole games
 run the system as it really runs. One difference from software tests: these are statistical, not pass/fail.
 The same input is sampled many times and versions are compared by rate, because a model's answer varies.
+
+**The scopes are about play.** Every change is tested at two levels. First the changed call itself: its own
+input frozen (a player's turn, one day's summary, one finished game's record, one candidate lesson) and the
+call run again under the change, scored against its job. Then its effect on play, through the three scopes
+on this page. For a change to a player's prompt the two are the same test, which is the turn scope; for the
+summariser, the memory jobs and the classifiers they are separate, and some components have only the first.
+Which component was tested how is tabled in [the hub](../report.md), "Testing a change".
 The usual name in agent evaluation is a **turn-level** (or step-level) eval, against an end-to-end
 (trajectory) eval.
 
