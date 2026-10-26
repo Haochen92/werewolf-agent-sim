@@ -5,7 +5,7 @@ ends, every seat, human or agent, gets a score for its role. The site also publi
 role scores across all the archived games, filterable by model. There is no player
 leaderboard (it would need accounts).
 
-Status: planned, nothing built.
+Status (2026-10-26): planned 2026-09-28; nothing built as of 2026-10-26.
 
 ## The scores: one per role, from the eval's own ruler
 

@@ -1,5 +1,9 @@
 # Frontend Design Log
 
+Status (2026-10-26): The June 2026 paper design. §8 became the shipped transport; §2 and §6
+became build_plan's phases; most of §7, §9, §10 and §11 stayed ideas. The status below was true
+on 2026-06-06.
+
 Ideas log for a frontend to the werewolf agent sim. Status: **ideas only — nothing here is
 implemented or scheduled.** Captured 2026-06-06 from a design discussion; this folder is for
 frontend concerns only (the `Agents/` package stays backend-only).

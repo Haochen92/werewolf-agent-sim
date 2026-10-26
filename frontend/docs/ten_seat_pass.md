@@ -1,11 +1,11 @@
 # The ten-seat pass — wiring the frontend to the Phase 3 cast
 
 Started 2026-10-10. The engine deals ten seats from a twelve-role pool (the role sheet,
-`evidence/game_play_enhancement/role_sheet.md`); the wire changed on 2026-10-09 and 2026-10-10
+`evidence/gameplay/roles/role_sheet.md`); the wire changed on 2026-10-09 and 2026-10-10
 (`event_derivation.md`, night sections). This document is the pass's plan and its rulings; the
 beat sheet stays the source of truth for what a scene shows and the agents doing a slice change
 its rows first. The census of every nine-seat assumption is
-`evidence/game_play_enhancement/phase3_wiring_census.md` §7.
+`evidence/gameplay/roles/phase3_wiring_census.md` §7.
 
 Goal: landing, ticket, live and replays show the full cast, a human can complete every turn the
 engine can ask of it, and an archived nine-seat replay still plays. Then user testing.
@@ -15,7 +15,9 @@ engine can ask of it, and an archived nine-seat replay still plays. Then user te
 Owner's, before the pass: the side is **Town**, not Villagers, UI-wide (2026-10-07); the
 reanimated attacker kinds use the body kind's icon, no new icons (2026-10-10); memory stays
 off for the ten-seat game until a store exists for it (the seeding runs in parallel,
-`evidence/memory_system/v8/plan.md`); no balance dials in this pass.
+`evidence/memory_system/v8/plan.md`); no balance dials in this pass. [2026-10-26: the memory
+ruling was overtaken on 2026-10-14, when the Postgres store made memory available for the
+ten-seat game, off by default.]
 
 Mine, flagged for the owner (change here first if overruled):
 
@@ -114,7 +116,7 @@ Fixtures: `tests/fixtures/translator_golden.jsonl` is a full ten-seat game (seri
 fortune teller lineup, a sigil kill, a concealed body, a neutral result) → wrap it as
 `frontend/src/stage/fixtures/replay-phase3.json` the way `replay-phase2.json` wraps the Phase 2
 golden. A necromancer + speculator game comes from a batch capture
-(`evidence/game_play_enhancement/data/phase3_balance_4/e0N.chunks.jsonl` through the
+(`evidence/gameplay/data/phase3_balance_4/e0N.chunks.jsonl` through the
 translator, `tests/fixtures/stream.py`). The nine-seat fixtures stay as the regression.
 
 ## 5. Ready for user testing
@@ -134,6 +136,7 @@ Record tab on ten-seat games.
   winner and `ReplayBase.winner` is non-null, so the archive's Draw chip matches nothing until
   the server archives draws. That is a wire change (a nullable winner on the replay row), so it
   waits for the next wire epoch, after the memory seeding's no-wire-change window.
+  [2026-10-26: closed 2026-10-17; the server archives draws and lists them (`cca44ed8`).]
 - **The human claim selector** (§1): same reason.
 
 ## 7. Follow-ups queued inside the pass (from the slice reports) — all done 2026-10-10
@@ -153,6 +156,8 @@ Record tab on ten-seat games.
 - Nine-seat archives now get the pool's plate and notebook order (healer after vigilante).
 
 ## 8. Acceptance, 2026-10-10 (uncommitted, P0 met)
+
+[2026-10-26: committed and deployed 2026-10-11 at `74d8206b` (build_plan deploy record).]
 
 Typecheck 0 errors, lint clean, vitest 56 files / 1397 tests, Playwright 13 baselines regenerated
 and checked by eye (ticket at 390 and 1440, rooms, landing, replays slate, game-over, record
@@ -178,6 +183,8 @@ For the owner to rule (not changed):
 - The sigilist's pixel death glyph (§1) still awaits your eye.
 
 ## 9. Review batch, 2026-10-11 (uncommitted)
+
+[2026-10-26: committed and deployed 2026-10-11 at `74d8206b` (build_plan deploy record).]
 
 Six review findings fixed and the two stale landing tests rewritten: the pack chat's send state
 now comes from the container (reopens on a 422, browser-tested); nine-seat replays read a frozen

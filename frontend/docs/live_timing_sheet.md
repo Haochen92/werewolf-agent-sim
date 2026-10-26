@@ -14,6 +14,9 @@
 > by a runner that can be rerun on any served game: [`stage_fit/`](stage_fit/README.md). On Haiku the stage
 > waits for the model 2.7–5.1% of its playing time, mostly in runs of passes and at the morning after the
 > pack's night chain. The figures below are the flash-lite game of 2026-10-01.*
+> [2026-10-26: stage_fit measured the waits on 13 games (how often the stage stands with nothing to
+> play), not the lag (how far the stage runs behind the server); the lag figures below are still the
+> one flash-lite game's.]
 
 ## 0. The ruling, and how to read the sheet
 

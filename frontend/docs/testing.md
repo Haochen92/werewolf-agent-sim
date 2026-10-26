@@ -7,10 +7,10 @@ them can tell you. Commands run from `frontend/`.
 
 | Layer | Tool | What it checks | Size, time |
 | --- | --- | --- | --- |
-| Unit | Vitest, in Node (no browser) | The logic: the event fold and the store, the beat list, the live and replay reducers, the paint generators' markup, the dock's rules, the music's cue sheet. A small layer renders components to HTML on the server (`renderToStaticMarkup`) to prove private data reaches only the right reader. | About 63 files and 1,600 tests, 20 s. `npm test` |
+| Unit | Vitest, in Node (no browser) | The logic: the event fold and the store, the beat list, the live and replay reducers, the paint generators' markup, the dock's rules, the music's cue sheet. A small layer renders components to HTML on the server (`renderToStaticMarkup`) to prove private data reaches only the right reader. | About 20 s. `npm test` |
 | Types, lint, format | `tsc`, ESLint (with React's hook rules), Prettier | Types; hook dependency lists (`react-hooks/exhaustive-deps`, which is what keeps a `useMemo` from serving stale data); formatting. | Seconds. `npm run typecheck`, `npm run lint`, `npm run format:check` |
 | Build | `next build` | What the three above miss: a server component calling a client hook fails only here, when the page is prerendered. | About 2 min |
-| Browser | Playwright, headless Chromium | The pages as a browser draws them, against a mocked API (below). | 5 spec files, 173 tests, about 16 min. `npm run e2e` |
+| Browser | Playwright, headless Chromium | The pages as a browser draws them, against a mocked API (below). | About 16 min. `npm run e2e` |
 | Diagnostics | Scripts, not pass/fail | Measurements taken while working on performance (below). | As needed |
 | The real phone | The owner's iPhone, Safari's Web Inspector over a cable | Memory crashes, frame rate, touch, sound. | By hand |
 
@@ -100,7 +100,8 @@ one sitting (`frontend_lessons.md` 25).
 
 ## Who runs the browser tests
 
-Headless is the normal way to run Playwright for everyone, people and CI alike: it is faster,
+Headless is the normal way to run Playwright for everyone (a CI would run it so too; this
+project has no CI): it is faster,
 and it is what a test machine has. A person debugging a failure adds:
 - `--headed`, to watch the browser;
 - `--ui`, to step through tests with a timeline;

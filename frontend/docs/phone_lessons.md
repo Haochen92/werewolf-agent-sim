@@ -186,7 +186,8 @@ it, found one instance per crash because the only instrument was your phone.
 which part crashes a page when nothing else is known. A *census* (grep for the things that make
 layers) to find every instance at once. Then a *gate*, `e2e/phone-rule.spec.ts`, that walks
 every scene and beat in the phone frame and fails on any new instance, so the class stays
-closed without anyone remembering the rule.
+closed without anyone remembering the rule. [2026-10-26: this project has no CI, so the gate
+keeps the class closed only when someone runs it, as in the step below.]
 
 **See it yourself.** `npm run e2e -- e2e/phone-rule.spec.ts` with the dev server up. Its report
 lists what still moves and how much of the stage it paints.

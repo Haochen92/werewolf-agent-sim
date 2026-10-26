@@ -1,5 +1,10 @@
 # Rendering audit — 2026-10-02
 
+- **Question:** before any Safari diagnosis, what does the stage's rendering cost in a controlled browser?
+- **Test:** 2026-10-02, a read-only audit of a production snapshot, 42 transition captures and microbenchmarks, CPU throttled four times.
+- **Answer:** the lighting geometry is generated in render (57.7 ms median for the day's light; 109 ms observed on a counted chip); the scene keys replace almost every node (385 of 388 on a counted chip); the light and the grade cost raster under movers; movers ride full-stage wrappers; a night selection peaks at 30 layers; the phone gate misses short animations.
+- **What followed:** the same day, build_log §8.9's "second pass" took the grade, the night choice and the light's cache, and §8.10 took the bounded movers. The 2026-10-11 audit calls this one "a historical baseline, not a list of current defects".
+
 The code and controlled browser measurements identify several rendering costs before any Safari-specific diagnosis is needed. They do not establish the cause of an iPhone process termination or a safe GPU memory budget.
 
 ## Scope and reproducibility

@@ -49,17 +49,22 @@ role that did nothing is indistinguishable from a slow one.
 
 Two clocks per waiting seat: 120 seconds to think, cut to 30 once their last stream drops.
 When it runs out and another human is connected, that one turn is played by the seat's own
-agent and the game moves on. If nobody is connected the game parks: nothing runs, nothing
-is billed, and the first player back restarts the clocks. A parked game has a shelf life,
-an hour solo and a day for a table, after which a sweeper drops it.
+agent and the game moves on. A seat whose agent has played two turns in a row while nobody
+held its stream is taken to have left, and its next turns go to the agent at once until it
+reconnects (2026-10-15). If nobody is connected the game parks: nothing runs, nothing is
+billed, and the first player back restarts the clocks. A solo game is the same idea one step
+earlier: while its living player has no stream open, the engine stops at the end of the step
+it is in, so a phone in a pocket cannot get its owner killed (2026-10-11). A parked game has a
+shelf life, an hour solo and a day for a table, after which a sweeper drops it.
 
 ## "How do you keep the demo from bankrupting you?"
 
 The house pays for games up to a daily cap, counted from the games table itself rather than
 a counter that could drift. The cap, the default model and an off switch are live settings
 behind an admin endpoint, so they change on the day, not on the next deploy. A player who
-brings a key runs any model and is never counted. The credits behind the house end on
-2026-10-27; the switch is what makes that date survivable.
+brings a key runs any model and is never counted. The funding behind the house has changed
+once already (Gemini credits, then a Claude default from 2026-10-15); the switch and the live
+default are what make a change like that survivable without a deploy.
 
 ## The failure story
 
@@ -84,7 +89,9 @@ migration mistakes the fakes cannot.
 
 ## "How much of this did you write?"
 
-I designed it, directed the build, and reviewed it line by line until I could defend any
-part of it. Several things I found in that review were wrong and got fixed. For the three
-core files I can draw the design and explain any method; for the rest I own the contract
-and the tests, and I would open the file.
+I wrote the event schema and co-wrote the beat sheet, and every design decision in the
+records is one I ruled, with the date and the alternatives beside it. The code, the tests
+included, was written by AI agents to those specs. I reviewed the three core files line by
+line, and several things I found in that review were wrong and got fixed; for those I can
+draw the design and explain any method. For the rest I own the contract, the rulings and
+what the tests prove, and I would open the file.

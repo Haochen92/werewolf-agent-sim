@@ -403,6 +403,8 @@ hidden under it, and the replay starts playing only then. The wait for the pictu
 (`stage/pictures-of.ts`) is the one the replay page's curtain already used, now shared. The
 general check: for every place the viewer waits, ask what they see at each step (nothing, a
 dark ground, half the pictures), not only whether the data have arrived. Not deployed yet.
+[2026-10-26: deployed 2026-10-16 with the frontend at `87499f98`; `TrainLoader` in its place
+followed the same day at `aceaf93f`.]
 
 **40. A transform set from script moves a picture only if it has a layer of its own; otherwise
 every frame repaints it.** The owner saw a speaker's puppet rise into the stand at a low frame

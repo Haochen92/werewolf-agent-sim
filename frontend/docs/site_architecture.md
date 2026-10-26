@@ -1,5 +1,7 @@
 # Site architecture: the pages around the theatre
 
+Status (2026-10-26): Living spec for the site pages, current to 2026-10-18.
+
 The app has two halves with two toolkits. The **site** is the pages you move between: `/`, `/play`,
 `/rooms`, `/play/room` and `/replays`. It is built from Mantine components themed from the page
 mockups (`claude_artifacts/design/pages/*.html`, with `landing.html` as the style source). The

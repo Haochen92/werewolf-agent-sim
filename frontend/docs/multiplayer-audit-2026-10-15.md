@@ -1,5 +1,8 @@
 # Multiplayer audit — 2026-10-15
 
+Status (2026-10-26): Dated audit. Its fixes are deployed: the page's with the frontend on
+2026-10-16 (`87499f98`), the server's with both containers on 2026-10-17 (`c00ec36c`).
+
 What can go wrong when several friends play one game: what one of them can learn that their
 seat should not know, how one can hold up or abuse the table, and how a friend's screen can
 fall out of step. Two read-only scans, one of the server (`server/`) and one of the page

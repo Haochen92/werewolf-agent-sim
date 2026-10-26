@@ -4,7 +4,8 @@ Ruled with the owner on 2026-10-16 (the type review, worked out on a mock with a
 change: https://claude.ai/artifact/XomZwHAP9xuq5ahhWcsWuC). One set of faces serves the site and
 the theatre. This file is the rule; `src/theme/fonts.ts` and `src/stage/fonts.ts` load the faces.
 
-**Status: built 2026-10-16** (the four steps at the end), not yet deployed.
+**Status: built 2026-10-16** (the four steps at the end), deployed 2026-10-16 with the frontend at
+`87499f98` (build_plan deploy record).
 
 ## The six faces
 

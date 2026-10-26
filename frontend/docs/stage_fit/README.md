@@ -12,7 +12,9 @@ in runs of passes, where a pass shows for 4 s but the next seat still takes a fu
 about twice as fast, kept ahead almost always (0.1–0.3%).
 
 This replaces the one earlier measurement, by hand on a flash-lite game (`../live_timing_sheet.md`,
-2026-10-01), with a measurement that can be rerun on any served game.
+2026-10-01), with a measurement that can be rerun on any served game. [2026-10-26: it replaces
+that game's per-call latencies only; it measures the waits, not the lag, so the timing sheet's lag
+figures are still the flash-lite game's.]
 
 ## How it was measured
 
@@ -75,7 +77,7 @@ stage only falls further behind):
 
 | Phase | What the stage gives the next call | Haiku today | Provisional limit |
 |---|---|---|---|
-| Discussion, after a pass | 4 s (the pass hold) | 5.4 s median: waits | Median at or under 4 s for no waits; at or under today's 5.5 s median and 11 s slowest 5% not to be worse than the default |
+| Discussion, after a pass | 4 s (the pass hold) | 5.4 s median: waits | Median at or under 4 s for no waits; at or under today's 5.4 s median and 11 s slowest 5% not to be worse than the default |
 | Discussion, after a speech | 5–15 s (the line's hold) plus 2 s | 10.8 s slowest 5%: mostly fits | Slowest 5% at or under 11 s |
 | Votes | the vote's opening beats, with all ballots written at once | 10.6 s slowest 5%: rarely waits | Slowest 5% at or under 11 s |
 | Night | what the stage shows at night, against the pack's chain (chat lines, kill, skills) one after another | 15–30 s waits at the morning | The pack's chain added up must fit the night's display; not yet a per-call limit |
