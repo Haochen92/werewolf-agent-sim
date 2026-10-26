@@ -722,6 +722,8 @@ investigator lynch, the cross-game key. State each as found, the change made and
 - Give the frame, then the parts ("two mechanisms: …").
 - No dates, scope clauses or caveats inside an explanation; each caveat goes once, beside the claim it
   limits.
+- On the chapter page, a result appears only where it pushed the design (e.g. the five identical
+  openers that ended concurrent rounds), never for its own sake (owner, 2026-10-26).
 - Avoid abstract nominalisations ("that distinction creates the central design problem"), defensive
   negations ("it was not a comparison of …") and trade-off jargon.
 

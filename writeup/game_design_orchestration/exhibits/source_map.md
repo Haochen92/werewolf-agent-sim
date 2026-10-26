@@ -20,7 +20,7 @@ Paths are from the repository root.
 | Id | Exhibit | Form | Source | State |
 |---|---|---|---|---|
 | L1-loop | The day-and-night loop in game terms: day (discussion, then a vote that may remove a player; day 1 has no vote) → night (private actions, resolved together) → morning report → next day; exit when a side meets its win condition, or at the day-12 backstop. No graph nodes. File: `day_night_loop.svg` | diagram | `evidence/gameplay/roles/report.md`, "The cast today", "How each side wins", "The deal and the vote"; `evidence/gameplay/discussion/report.md`, "A day today" (day 1: openings only); `evidence/gameplay/orchestration/report.md`, "The parent graph" (both end checks, day 12); `evidence/gameplay/roles/role_sheet.md`, "Death reveal" | drafted |
-| L1-requirements | What the game requires → what the system must provide → where it is developed: six rows | content | `writeup/game_design_orchestration/content_plan.md`, "Level 1 presentation", item 4 (the table is the plan's, with the chapter 2 cell shortened) | drafted |
+| L1-boundaries | Full game state → per-player input construction → two illustrative model calls, showing shared public records and permitted private fields. Mermaid diagram inline on the chapter page. | diagram | `evidence/agent_boundaries/report.md`, §§1–2 (input construction enforces the boundary); conceptual summary, not the complete prompt pipeline | drafted |
 
 ## Level 2: [Adding a human in the loop](../human_in_the_loop/human_in_the_loop.md)
 

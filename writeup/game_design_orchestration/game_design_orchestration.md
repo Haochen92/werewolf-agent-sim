@@ -2,8 +2,9 @@
 
 Level 1 page copy. The chapter's structure is in [`content_plan.md`](content_plan.md); each Level 2 page
 has its own folder here, with its Level 3 pages beside it; exhibits and where they come from are in
-[`exhibits/source_map.md`](exhibits/source_map.md). Only page 5 is drafted; the other four summaries
-link to planned paths. Lines marked **Exhibit** and **Link** are specs for the page, not page copy.
+[`exhibits/source_map.md`](exhibits/source_map.md). Only page 5 is drafted; links to pages 1–4 still point to planned paths.
+This revision integrates the Level 2 links into the chapter narrative; the content plan retains the
+earlier summary-based layout until this draft has been reviewed.
 
 ---
 
@@ -11,122 +12,199 @@ link to planned paths. Lines marked **Exhibit** and **Link** are specs for the p
 
 ### Game design and orchestration: making ten agents play together
 
-The Ninth Express is a variant of the Mafia-style game, played with AI agents. It is a social deduction game where players have secret roles and competing objectives. A typical game of Mafia has two factions. A majority faction, e.g. the town, has the numbers but does not know the true roles of the other players. A minority faction, e.g. the wolves, whose members know one another, tries to pass as townspeople. A faction wins by eliminating the other, usually through two basic mechanisms: a day phase, where players from the majority faction try to reason out who is from the other faction and vote them out, and a night phase, where the minority faction gets to remove someone from the majority faction.
+The Ninth Express is a variant of Mafia played with AI agents. It is a social deduction game where
+players have secret roles and competing objectives. A typical Mafia game has two factions. The
+majority faction, such as the town, has the numbers but does not know the other players' true roles.
+The minority faction, such as the wolves, knows its own members and tries to pass as townspeople.
 
-My version takes inspiration from an advanced variant known as Town of Salem, which adds features beyond the basic Mafia game, such as giving each player a unique skill and adding more factions.
+Play alternates between two phases. During the day, players discuss whom they suspect and vote on
+whom to remove. At night, the wolves secretly choose someone to kill. The town tries to identify and
+remove the wolves before the wolves gain control of the vote.
 
-The game has ten players from four different factions: six town roles, two wolves, a lone killer and a neutral. The lineup is public; who holds each
-role is secret. Each side has its own win condition to fulfil: the town wins by removing every evil player, the wolves once they equal or outnumber everyone else, the lone killer once at most one other player is left, and the neutral alongside another side.
-Three town roles gather different pieces of evidence to feed the deductions and discussion behind voting out an evil player in the day.
+My version takes inspiration from Town of Salem, which extends the basic Mafia format with additional
+factions and role-specific abilities. The Ninth Express has ten players across four sides: six town
+roles, two wolves, a lone killer and a neutral. Some information is public, such as the roles in the
+lineup and the voting records. Each player's actual role and night results are private, although the
+wolves know one another's identities.
 
-The engine never lies: every result it reports is true. Players can lie, about their results or about
-which role they hold. So the design problem is to give players enough true evidence to reason with,
-while leaving room for competing stories.
+Night abilities give players information and decisions to work with. Investigative roles receive
+private evidence they can choose to share, while roles such as the Healer and Vigilante must decide
+whom to protect or shoot based on what they believe.
+
+These decisions serve different objectives. The town must identify and eliminate the wolves and lone
+killer, deciding whom to trust and when to reveal evidence. The wolves must conceal their identities
+and coordinate their actions, sometimes sacrificing an ally to protect the others. The lone killer
+must remain hidden while managing the balance between opposing factions. The neutral pursues a
+separate objective and may benefit from cooperating with another side.
+
+The roles, abilities and information available to each side are explained in
+[Designing evidence worth debating](evidence_design/evidence_design.md).
 
 ![The day-and-night cycle: discussion and a vote, private night choices, resolution, then the morning report](exhibits/day_night_loop.svg)
 
 *Day 1 has openings only. Later days include a vote, which may remove a player. Night actions produce
 private results and a public morning report.*
 
-Human players run much of a Werewolf conversation themselves: they take turns, answer each other and
-sense when to stop. With ten AI agents, I had to make each of those arrangements explicit: who speaks
-next, what each seat knows, which choices are made independently, and when an action changes the game.
-A human at the table adds one more: the game must be able to pause and resume.
+#### Keeping each player's information separate
 
-I split the work with one rule: **code applies the rules and updates the game's state; models
-interpret what they see and choose actions.** The table lists what the game needs, what the system
-provides for it, and where each is explained. The game today has ten seats; numbers from the earlier
-nine-seat version say so.
+For this game to work, players must have different information while sharing the same rules. Each
+player knows their own role and private results, but learns about other players through public events
+and claims that may be false. The game system therefore has to control who receives each piece of
+information: public events go to everyone, private results only to the player or faction entitled to
+them.
 
-| What the game requires | What the system provides | Where |
-|---|---|---|
-| Hidden roles and private results | Separate information for each seat | Information boundaries (chapter 2) |
-| Evidence players can weigh and contest | Partial, truthful results; room to make false claims | [Designing evidence worth debating](evidence_design/evidence_design.md) |
-| Discussion that responds to earlier speech | Turn scheduling and updated context | [Orchestrating the conversation](conversation/conversation.md) |
-| Independent votes and night choices | Collect every decision before resolving its effects | [Executing a day and night](day_and_night/day_and_night.md) |
-| Actions restricted by role and remaining uses | Validation and rule-based updates | [Turning an answer into a legal action](legal_action/legal_action.md) |
-| A human who may take time to answer | Checkpointed progress and a controlled resume | [Adding a human in the loop](human_in_the_loop/human_in_the_loop.md) |
+At a human table, the separation is physical. Role cards are dealt face down. At night everyone
+closes their eyes, and the moderator wakes each role in turn: the wolves open their eyes to recognise
+each other and point at a victim, and the Seer points at a player and the moderator silently shows
+whether they are a wolf. What a player learns stays in their head. If they share it, the others hear
+only a claim they cannot check. Online games such as Town of Salem do the same in software: each
+screen shows only that player's role and results, and the Mafia talk in a private night chat.
 
-<!-- **Link (planned):** "Information boundaries (chapter 2)" → the chapter 2 page, once built. -->
+AI agents have no heads to keep secrets in. The whole game lives in one program, and a model call
+knows only what its input contains: it starts every turn with nothing. So before every turn, the
+system has to rebuild what that player knows, and nothing more.
 
-#### Designing evidence worth debating
+I construct a separate input for each turn: the public record, the player's own role and night
+results, and any information its faction is allowed to share. For example, wolves receive their
+private faction conversation, while a town player does not.
 
-An exact result can settle an accusation before there is much to discuss. The earlier nine-seat game
-had one role with exact results. I replaced it with three roles that each see part of the truth, a
-narrowed Investigator among them. Evil players needed help too: their instructions now push them to
-answer an accusation with a claim of their own, instead of a flat denial.
+This is **context isolation**: controlling which game information enters each agent's context. The
+boundary sits in the code that selects the input, before the prompt is formatted. I also use checks
+on the assembled inputs to look for private fields reaching the wrong player. The aim is to keep
+unauthorised information out of the input, rather than depend on an agent ignoring a secret it has
+already received.
 
-When I replayed 41 recorded turns where an evil player was under suspicion, on Claude Haiku 5.5,
-changing only its role card, claims rose from 13 to 33 (82 samples per version, one blind model judge
-per response). That shows the card change works in those recorded situations. I did not measure
-whether discussion got better than in the nine-seat game, and I tuned the balance between the sides
-separately, on Flash-Lite.
+```mermaid
+flowchart TB
+    S["Full game state: public and private records"] --> B["Build each player's permitted input"]
+    B --> T["Town investigator: public record + own role and results"]
+    B --> W["Wolf: public record + own role and results + wolf information"]
+    T --> TP["Investigator's model call"]
+    W --> WP["Wolf's model call"]
+```
 
-**Link:** Explore the cast, the role cards and the limits of the balance checks →
-[Designing evidence worth debating](evidence_design/evidence_design.md).
+*Two illustrative seats. Public information can reach both; private fields are selected for the
+player or faction entitled to them. The model calls do not receive the full game state.*
 
-#### Orchestrating the conversation
+The detailed boundary design and its checks are recorded in
+[Agent information boundaries](../../evidence/agent_boundaries/report.md), the source for chapter 2.
 
-A good discussion needs replies, not just speeches. Each AI player tags its own line with whom it
-questions or accuses. I use those tags to pick the next speaker: anyone who owes an answer goes first,
-then the floor goes round the players who have not spoken.
+<!-- Replace the report link with the chapter 2 page when that page is drafted. Diagram source:
+evidence/agent_boundaries/report.md §§1–2; conceptual input selection, not the full prompt pipeline. -->
 
-Silence needed a diagnosis too. In 28 nine-seat Flash-Lite games, 367 of 517 passes were lines a model
-filter had held back, not players choosing to stay quiet. So I made speaking the default, with a later
-check that only holds back repetition. On 65 lines from ten-seat Haiku games, it held back 10 of 29
-restatements and none of 36 lines judged worthwhile. One model judged each line, and no person has
-checked those labels yet.
+#### Giving players opportunities to discuss and respond
 
-**Link:** Explore turn order, the sources of silence and the repetition check →
-[Orchestrating the conversation](conversation/conversation.md).
+Once players have their information, they need chances to share evidence, challenge claims and
+answer accusations. The discussion also has to end, so the game can move on to a vote.
 
-#### Executing a day and night
+In a human game, the day usually runs on a timer, and anyone can speak whenever they like, especially
+online. That works because people listen all the time: they hear each line as it is said, notice when
+someone else starts talking, and jump in when they are accused.
 
-Some choices happen at the same time, e.g. votes and night actions: every player decides from the same
-state, and nothing takes effect until all the choices are in. Conversation is the opposite: each
-speaker needs to hear the last line before answering. I built the game in LangGraph around that
-difference: parallel steps for decisions, followed by one step that resolves them, and sequential
-steps for discussion.
+A model can do none of that. It exists only while it is being called: it reads one fixed snapshot of
+the conversation, takes a few seconds to answer, then stops until it is called again. It cannot listen
+in between, or notice that another player is about to make the same point. So "speak whenever you
+want" has to be imitated, and the obvious ways fail:
 
-When I tried open discussion in parallel, in one nine-seat test game on 2026-10-07, the speakers made
-overlapping points: seven lines were generated to keep two. I went back to one speaker at a time. That
-game shaped the design; I did not compare other orchestration frameworks.
+- **Ask everyone at once, every round.** Every player answers the same snapshot, so they talk past
+  each other. My first design worked this way, and on one day five of eight players opened with the
+  same question: "Does anyone have any initial thoughts…?" An accused player could answer only after
+  the round, to everyone at once.
+- **After every line, ask every player whether they want to speak.** That would cost nine extra model
+  calls for every line spoken.
+- **Run the day on a clock.** How much a player said would then depend on how fast its model answers,
+  not on what it has to say.
 
-**Link:** Explore how the game cycle becomes graph execution →
-[Executing a day and night](day_and_night/day_and_night.md).
+So I let code decide who speaks next, from the conversation itself. I built a turn scheduler that
+imitates the shape of a human discussion. In a real conversation, a question gets an answer before the
+talk moves on, someone accused defends themselves straight away, and a person who has not said
+anything is eventually asked what they think. The scheduler turns each of those habits into a rule.
 
-#### Turning an answer into a legal action
+Every AI player tags its own line: whom it addresses, and whether it is questioning, accusing,
+defending or agreeing. A question or an accusation creates a debt: the player named owes an answer and
+speaks next, before anyone else, the most recent debt first. That gives the day its back-and-forth: A
+accuses B, B answers, and the others hear the exchange before they join in. A player accused by three
+others is asked to answer all three in one turn. When nobody owes anything, the floor goes round the
+players who have not spoken yet, like a moderator asking the quiet ones, so a player sitting on a night
+result still gets a turn.
 
-Models choose; code enforces the rules. Each turn asks the model one question with a fixed answer
-format that lists only the legal targets, then checks the reply and falls back to a legal move if it
-fails. I chose this over letting the model call tools because the possible actions are few and fixed;
-that was my judgement, not something I measured.
+Other rules stop a few players from taking over. Pressing a player again before they have answered
+creates no new debt. After two rounds of back-and-forth between the same two players, they stop
+creating debts for each other for a while, so one feud cannot fill the day. The discussion ends when
+nobody owes an answer and the floor has gone round, at most twice, and the whole day is capped at three
+lines per living player. If the cap is reached first, open questions get one last answer and the
+discussion closes. The one or two players accused by at least two others then get a last word in
+their defence, and everyone votes at the same time, without seeing each other's votes.
 
-The answer format also affected cost. On Claude Haiku 5.5, a format enforced by the provider counts as
-the start of the input, so seats with different legal targets could not share the provider's prompt
-cache. I moved the format into plain text after the shared part and check replies in my own code. In
-a trial on 2026-10-13, one of 412 Haiku replies broke the format, and in paired games votes and night
-actions went from never reading the cache to reading most of it. The price is that checking the
-format is now my code's job.
+Code decides who speaks; the model decides what to say.
+[Orchestrating the conversation](conversation/conversation.md) explains each rule, how I traced and
+fixed the silence in earlier games, and the check that keeps repetition off the table.
 
-**Link:** Explore the output contract, validation and fallbacks →
-[Turning an answer into a legal action](legal_action/legal_action.md).
+#### Moving from discussion to voting and night actions
 
-#### Adding a human in the loop
+The next requirement is to turn discussion into decisions and advance the game. In this version,
+votes are chosen independently, and night actions are collected before their effects are resolved.
+A player choosing later in the round should not gain access to choices that have not yet been
+announced.
 
-A human's answer goes through the same checks as an AI's, but it may arrive minutes later. While the
-game waits, a checkpoint saves it. At first, resuming re-ran the AI players' votes and some changed
-their minds; caching their finished turns kept the original answers, as long as the cache entries were
-still there. In one nine-seat verification game on 2026-08-19, 20 ballots replayed from cache.
+A human moderator manages the transition between phases, collects choices and announces their
+outcomes. In the agent game, I need an explicit execution sequence to perform those tasks: finish
+the discussion, request votes, resolve the vote, collect night actions, resolve the night and deliver
+the results for the next day.
 
-The checkpoint survives a restart; the cache does not. The cache key also had to tell games apart: in
-one recorded case, a game reused another game's failed opening. My fix added the game id, checked by
-regression tests and a scripted before-and-after control.
+I represent that sequence in LangGraph, a framework that runs a program as connected steps with
+shared state. Discussion proceeds one speaker at a time because each response changes what the next
+speaker can say. Votes and night choices can be requested in parallel from each player's permitted
+view of the same game state. A resolution step then applies the rules to the collected choices.
 
-**Link:** Explore pausing, resuming and hosting a human's game →
-[Adding a human in the loop](human_in_the_loop/human_in_the_loop.md).
+The code that maintains this state and applies the rules is the **game engine**. It decides what
+happens when actions interact, such as an attack meeting a protection. Agents choose their actions;
+they do not decide whether those actions succeed. [Executing a day and night](day_and_night/day_and_night.md)
+explains how the steps, shared records and resolution fit together.
 
-<!-- Authoring sources for the Level 1 copy (drafted 2026-10-26):
+#### Turning a player's choice into a legal action
+
+Collecting an answer is not enough: the chosen action must be allowed. A player may only target
+someone permitted by its role, and a limited ability cannot be used after its uses are spent.
+The system also needs to distinguish the actual choice from the explanation accompanying it.
+
+At a human table, the moderator can clarify a choice or reject an illegal one; an online interface
+can restrict the available options. A model produces a reply, so I need an explicit answer format
+and validation before that reply becomes a game action.
+
+For each turn, I supply the legal targets and ask for a structured response containing the decision.
+Code checks the reply and handles failures, with a legal fallback if the turn cannot produce a valid
+answer. The agent remains responsible for choosing well: an allowed action can still be a poor
+strategic choice.
+
+This gives the models freedom to reason within the game while keeping rule enforcement in the
+engine. [Turning an answer into a legal action](legal_action/legal_action.md) develops the response
+format, validation and fallback behaviour, including the trade-offs in how the format is enforced.
+
+#### Letting a human join the same game
+
+A human taking one of the seats needs the same private information, opportunities to speak and legal
+actions as the AI player they replace. Their answer, however, may arrive minutes later or after they
+close the tab and reconnect.
+
+At a human table, the group can simply wait or agree to let someone else take over. A hosted agent
+game needs to represent that wait explicitly and retain enough progress to continue when an answer
+arrives. It must also account for decisions the other players have already made.
+
+I pause execution at the human's decision and save a checkpoint—a record of game progress that can
+be loaded again. The submitted answer goes through the same validation as an AI reply. If resuming
+repeats an unfinished step, a separate cache lets completed AI turns return their earlier answers
+without another model call, while the human's turn accepts the new input.
+
+Those mechanisms have different limits. The checkpoint survives a server restart, but cached AI
+answers live in server memory and expire. The game can resume after those entries are lost, though
+it may have to ask the affected agents again. [Adding a human in the loop](human_in_the_loop/human_in_the_loop.md)
+explains the pause, checkpoint and cache, along with how the web server hosts the game while players
+are waiting.
+
+<!-- Authoring sources retained from the fuller draft (2026-10-26). Historical findings and
+experiment figures are no longer part of Level 1; the references below remain for deeper-page drafting.
+Sources:
 The game: evidence/gameplay/roles/role_sheet.md, "Renames" (1920s setting, away from Town of Salem),
 "The lineup" (10 seats, 12 roles, 6 town / 2 wolves / 1 lone killer / 1 neutral, 8 fixed, 2 drawn),
 "Win logic" (compressed per the plan's victory rule); roles/report.md "The cast today" (lineup public,
