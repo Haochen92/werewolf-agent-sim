@@ -51,7 +51,7 @@ vote, night), each partition a **cell**.
   each decision at which a seat followed a lesson, using a fixed rule per role and action, and compares
   the lesson's grades with memory-off play of the same kind. It then prunes a lesson whose grades
   fall more than 0.15 below memory-off play over at least eight follows, and evicts one shown at least
-  eight times, never followed, and overridden at least as often as judged not relevant.
+  eight times, never followed, and overridden at least once and at least as often as judged not relevant.
   The thresholds are carried over from the nine-seat loop and not validated for ten seats. The pass
   grades only AI seats' decisions, in games with or without a human seat (since 2026-10-26;
   extraction still reads only AI-only games). The **learning tick** folds new observations in

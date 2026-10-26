@@ -158,7 +158,7 @@ Both passes live in `Agents/memory/consolidation/tick.py`; no schedule runs them
   decisions of the same kind, so a lesson attached to an easy decision gets no credit for it. It
   then prunes a lesson that scores below −0.15 after at least 8 follows, protects one that scores
   above 0 after at least 2, and evicts one shown at least 8 times, never followed, and overridden at
-  least as often as marked not relevant. The thresholds are carried over from the nine-seat loop and
+  least once and at least as often as marked not relevant. The thresholds are carried over from the nine-seat loop and
   are not validated for ten seats. It reads batch-run games from files and served games from the
   database; in a game with a human seat only the AI seats' decisions are graded (since 2026-10-26,
   [decisions](decisions.md) §15). Every change is recorded with its numbers. The
