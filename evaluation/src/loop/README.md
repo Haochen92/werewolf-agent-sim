@@ -83,5 +83,5 @@ the measurement harness that decides *whether* the loop compounds, and stays her
 
 - **The record:** [`evidence/memory_system/v7/`](../../../evidence/memory_system/v7/) — the v7 campaign (the cheap-screen
   gates, the compounding runs, the tagger de-leak work). Start at its `review_map.md`.
-- **The forward plan:** [`evidence/memory_system/v7/execution_plan/report.md`](../../../evidence/memory_system/v7/execution_plan/report.md)
-  — the power analysis, the readout redesign and the signed pre-registration for the compounding run.
+- **The method and the result:** [`evidence/memory_system/v7/report.md`](../../../evidence/memory_system/v7/report.md)
+  — the power analysis, the paired redesign, the signed pre-registration and what the July run found.

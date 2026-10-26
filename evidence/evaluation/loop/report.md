@@ -3,7 +3,7 @@
 This page covers every check made on the v7 learning loop (June–July 2026, nine-seat), with as much of the
 loop as the checks need for context. Checks that another report already tells are listed here with a link;
 the ones with no other home are told in full. Whether memory improved from batch to batch is the design
-question, closed in the [execution plan report](../../memory_system/v7/execution_plan/report.md); the scoring design is in
+question, closed in the [v7 report](../../memory_system/v7/report.md); the scoring design is in
 the [credit report](../../credit/report.md); the June–July run records are in [v7_final](../../memory_system/v7/).
 How the evaluation reports fit together: [the hub](../report.md).
 
@@ -24,7 +24,7 @@ The players were `gemini-3.1-flash-lite`, with zero reasoning tokens in every ga
 
 **How it ended.** The one run under rules fixed in advance finished on 2026-07-19, and its endpoint test
 closed negative: on 30 paired boards the town's decision score was 0.147 lower with memory (p ≈ 0.06), lower
-on 19 of 30. The memory research closed on 2026-07-21 ([execution plan](../../memory_system/v7/execution_plan/report.md) §5).
+on 19 of 30. The memory research closed on 2026-07-21 ([v7 report](../../memory_system/v7/report.md), "What the signed run found").
 The discussion tagger, an LLM judge of each player's day, had been retired from credit on 2026-07-13
 ([its note](../llm_judge/discussion_tagger.md)).
 
@@ -41,7 +41,7 @@ loop and has not been tested at scale.
 |---|---|---|---|---|
 | **Batch score** (`loop/measure.py`) | One de-lucked decision score per arm per generation, with no model call | Deterministic and unit-tested; pinned to the rule the July endpoint pre-registered | ✅ | Below |
 | **Fail-loud guards** (`loop/invariants.py`) | Does a wrongly set-up run stop at once? | Both invalid June runs were caught on audit, and each slip became a guard | ✅ | Below; the guards themselves in [experimental controls](../experimental_controls/report.md) |
-| **The July 19 run** | Did the loop run a declared experiment to its planned end? | Yes, with the guards on | ✅ | Below; the result in the [execution plan](../../memory_system/v7/execution_plan/report.md) |
+| **The July 19 run** | Did the loop run a declared experiment to its planned end? | Yes, with the guards on | ✅ | Below; the result in the [v7 report](../../memory_system/v7/report.md) |
 | **Credit validators** | Does a decision's grade carry signal above luck, and which shortcuts fail? | Signal for some channels; override-based decay and a survival window ruled out | 🟡 | Below |
 | **Held-out reproduction** | Does a lesson's score on half the games predict the other half? | r = +0.54 over 31 lessons; 8 of 9 flagged losers stayed negative | 🟡 | [credit](../../credit/report.md) §5 |
 | **Attribution spot-check** | Do "followed" claims match what the agent did? | 13 of 15 | 🟡 | [credit](../../credit/report.md) §5 |
@@ -178,7 +178,7 @@ the ten-seat credit that runs today has its own checks.
 | Tests named above | `tests/evaluation/test_loop_measure.py`, `test_loop_invariants.py`, `test_credit_blend.py`, `test_credit_blindspot_fix.py`, `test_read_ledger_first_link.py` (largely AI-written and unaudited; cited for what they pin) |
 | Credit validators | `evaluation/src/instrument_validation/credit/` |
 | June runs | [v7_final](../../memory_system/v7/) (`experiment_log.md` §1–6, §11–12; `runs/`); v2's cost in `runs/v2_full/cost_report.json` |
-| Pre-registration, the July run, the result | [execution plan](../../memory_system/v7/execution_plan/report.md) §4–5; [its data](../../memory_system/v7/execution_plan/data/README.md) `v7_compound_town5/`, `v7_endpoint_ab/` |
+| Pre-registration, the July run, the result | [v7 report](../../memory_system/v7/report.md), "The pre-registration" and "What the signed run found"; [its data](../../memory_system/v7/execution_plan/data/README.md) `v7_compound_town5/`, `v7_endpoint_ab/` |
 | Blind-spot fix | `evaluation/experiments/credit_blindspot_validation.py`; [credit/blindspot_fix/](../../credit/blindspot_fix/) |
 | Tells | `evaluation/src/loop/{tells,tell_credit,tell_fold}.py`; [tell_extraction](../../extraction/tell_extraction/report.md); [store_curation/tells.md](../../store_curation/tells.md) |
 | Ten-seat credit | `Agents/memory/consolidation/`; [credit](../../credit/report.md) |

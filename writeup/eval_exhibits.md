@@ -112,8 +112,7 @@ the record is, and how it would be shown:
   +0.20 at 200 games), run, and closed negative. Later it emerged that every memory game ran with zero
   reasoning tokens; arms were matched, so the comparison stands, but every memory verdict is scoped to
   "a non-reasoning player", and the record says so.
-- **Record:** `evidence/memory_system/v7/execution_plan/report.md`, `evidence/memory_system/v7/report.md`
-  (addendum), `evidence/gameplay/discussion_evidence.md` §6.7.
+- **Record:** `evidence/memory_system/v7/report.md` ("Scope"), `evidence/gameplay/discussion_evidence.md` §6.7.
 - **Show:** content.
 
 ### 9. An outcome halo in the extractor's verdicts, and the pass that corrects it

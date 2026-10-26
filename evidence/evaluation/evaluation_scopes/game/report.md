@@ -206,7 +206,7 @@ enough to detect a real effect was not checked for the final design.
 
 **Code and data.** `evaluation/src/loop/measure.py`; the pre-registration, amendment, config and run
 log in [execution_plan/data](../../../memory_system/v7/execution_plan/data/README.md);
-[execution_plan](../../../memory_system/v7/execution_plan/report.md) §4–5.
+[the v7 report](../../../memory_system/v7/report.md), "The pre-registration" and "What the signed run found".
 
 ## Case 3. Small whole-game runs: smoke tests with a direction (persona voices, evil covers)
 

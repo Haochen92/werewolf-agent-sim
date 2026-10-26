@@ -30,7 +30,7 @@ INVOKE (from the repo root):
 No console entry, no manifest stamping — this is a standing $0 apparatus. It prints markdown tables
 (pool SD preamble, primary-estimator detection grid, per-gen-Delta secondary grid, MDE lines, a
 closed-form ANALYTIC cross-check (anchor cells + an effect-scaling ladder at N=4/G=6), cost lines,
-limitations). Its 2026-07-05 readout is summarised in evidence/memory_system/v7/execution_plan/report.md §2; the full
+limitations). Its 2026-07-05 readout is summarised in evidence/memory_system/v7/report.md ("Testing the test"); the full
 table (power_analysis/mde_table.md) is in git history at 24dfd3a7.
 """
 

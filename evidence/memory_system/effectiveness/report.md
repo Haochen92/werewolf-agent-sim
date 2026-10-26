@@ -9,7 +9,7 @@ corroborates the direction rather than proving the magnitude. **Companion docs:*
 version-by-version arc is
 [`../report.md`](../report.md); the full A/B statistics and design are in
 [`paired_ab/`](paired_ab/report.md); the closed *compounding* question lives in
-[`../v7/execution_plan/report.md`](../v7/execution_plan/report.md).
+[`../v7/report.md`](../v7/report.md).
 
 **Provenance.** The A/B arms ran 2026-06-11 on `gemini-3.1-flash-lite` / Vertex, prompt_bundle
 `16f7f700`, store `memory_stores/v5_0` (consumption mode, `--no-memory-dump`). Every win-rate and proxy
@@ -201,7 +201,7 @@ with memory (p ≈ 0.06), and, as committed, this was reported as "no compoundin
 estimate leaning toward harm. The owner closed the memory research on 2026-07-21 without a further run.
 Closed is not disproved: the run detected no compounding, at this size and with players that answered
 without a reasoning step. The pre-registration and result are in
-[`../v7/execution_plan/report.md`](../v7/execution_plan/report.md) §4–5.
+[`../v7/report.md`](../v7/report.md), "The pre-registration" and "What the signed run found".
 
 ## Artifacts
 

@@ -48,7 +48,7 @@ Pointers only, not yet checked against their sources. Verify each instance befor
   `memory_system/`.
 - **A value that cannot be computed reads as missing, never as zero.** *Owner's own note for handling
   missing data (2026-10-22); not a lesson for the write-up.* Three instances: v7's "+0.41 town lift",
-  a raw rate with the no-memory baseline pinned to 0, retracted as halo (`memory_system/v7/report.md`); July
+  a raw rate with the no-memory baseline pinned to 0, retracted as halo (`memory_system/v7/experiment_log.md` §12f); July
   credit's missing memory-off comparison taken as 0, so the abstain lesson sat at 0.00 (the smaller of
   the two gaps: −0.16 against the real baseline; `credit/report.md` §6); and the 21 metrics that read 0
   on every ten-seat game, set to None before they were ported (`memory_system/v8/decisions.md` §2). The

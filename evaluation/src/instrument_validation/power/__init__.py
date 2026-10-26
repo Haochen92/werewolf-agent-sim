@@ -5,7 +5,7 @@ per-game records (v2, v6ab, run-1), injects a known true effect (0 / +0.1 / +0.1
 planned slope analysis many times, and reports detection rate at N∈{4,5,10,20}/gen × {6,8,10} gens —
 the minimal detectable slope at the affordable N. Reuse the de-luck loader
 (``evaluation.src.instrument_validation.proxies.metrics_common.load_v6ab``) + ``decision_scoring``;
-printed on each run (the 2026-07-05 readout is summarised in ``evidence/memory_system/v7/execution_plan/report.md`` §2;
+printed on each run (the 2026-07-05 readout is summarised in ``evidence/memory_system/v7/report.md`` ("Testing the test");
 its full table is in git history at 24dfd3a7). Until a current table exists, the compounding paid
 runs stay gated (a powered live test is a costed deferral, not a coin flip).
 """
