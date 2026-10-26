@@ -813,6 +813,22 @@ See [`testing.md`](testing.md).]
 > sections above: what happened, the mechanism, what it cost, how it was settled, and an honest
 > reading of where the art pipeline stands against production practice.
 
+The sections of §8 (index added 2026-10-26; four entries carry dated notes where a later reading
+overturned a claim):
+
+| Section | Content |
+|---|---|
+| §8.1 | Every stage page killed: five full-stage SVG masks; the subtraction probe; who did what |
+| §8.2 | Where the art pipeline stands against production practice (dated note: motion is script, not the compositor) |
+| §8.3 | Fast beats killed the page: the scene keyed per beat; the set and beat split; the bake; the inspector's layer table (534 MB to 114) |
+| §8.4 | The jar and the shutter: an SVG transform attribute against a CSS transform on an HTML box |
+| §8.5 | The camera's move repaints the world: a cut on a phone; raster per transition |
+| §8.6 | Three things still animating at rest; the census instead of a layer readout (dated note: CDP does count layers) |
+| §8.7 | The rule becomes a gate (`e2e/phone-rule.spec.ts`); the sweep's whole list in one batch; one flag for "a phone" |
+| §8.8 | The black frame: the backdrop remounted; one backdrop owned by the Stage; `decoding="sync"` (dated note: a remount is not proven a re-decode) |
+| §8.9 | The stutter left: one host for the car, 24 steps a second, the GPU route measured and refused, the picture census; the second pass from the rendering audit; before and after |
+| §8.10 | The box, not the figure: bounded movers; the day-4 walk; the countdown as a leaf; test waits sized to the stream (dated note: three of the five "next" items done) |
+
 ### 8.1 🔴 iPhone Safari killed every stage page
 
 **What happened.** On an iPhone, every page with a stage — a live game, a replay, the landing's
@@ -850,6 +866,10 @@ brief and reviewed on the goldens and on the phone.
 Not the cause, and worth saying so: JavaScript is not the bottleneck (the scene's JS heap is about
 10 MB and nothing is computed per frame; motion runs on the compositor), and image size is not
 either (the whole sprite set is 12 MB of WebP; a day scene decodes about 18 MB).
+[2026-10-26: "motion runs on the compositor" was wrong. Reading motion's source on 2026-10-02
+(§8.4) showed it writes `style.transform` from script each frame for `x`, `y`, `rotate` and
+`scale`, so its moves get no layer of their own; `frontend_lessons.md` lesson 40 (2026-10-15)
+is the same finding on the puppet's rise.]
 
 Where it is below production grade:
 
@@ -916,7 +936,7 @@ What a beat step rebuilds, Chromium, 30 steps at 330 ms (`.churn` probe, Mutatio
 (stage_architecture §6). The workbench's URL writes went to the browser's history API at the
 same time: a Next `router.replace` refetches the page from the server on every search-param
 change, which over the internet capped the probe at about three beats a second, the very rate
-in question. The phone’s reading, before the split (iPhone, Safari, the day scene on a loop): the page died at `auto=1000`, `500` and `330` alike, so the cost is cumulative as well as rate-bound: the loop walks every speaker’s puppet and the decoded pictures pile up on top of the rebuilds. After the split: _[pending the owner’s reading]_.
+in question. The phone’s reading, before the split (iPhone, Safari, the day scene on a loop): the page died at `auto=1000`, `500` and `330` alike, so the cost is cumulative as well as rate-bound: the loop walks every speaker’s puppet and the decoded pictures pile up on top of the rebuilds. After the split: the loop still died at one beat a second (the owner's reading the same day, in the next paragraph).
 
 **The bake (same day, after the phone's reading on the split).** The split did not move the
 floor: the loop still died at one beat a second, and the subtraction probe on the loop said
@@ -1078,6 +1098,10 @@ in a night room), the DOM is modest, and the JS heap sits at 13–21 MB; none of
 gigabyte. Chromium's layer tree is no longer readable over the protocol (the Layers panel is
 gone from DevTools), so the layers were found by census instead: every `animation:`,
 `will-change`, filter, blend, mask and scroller in the stage's css.
+[2026-10-26: headless Chromium does count layers over the protocol: `LayerTree.enable`, then
+the `layerTreeDidChange` events. It was used on 2026-10-22 to count the deal's layers
+(`frontend_lessons.md` lesson 47 and S16). The census stands as the method that found these
+three.]
 
 **Found.** Three things still animated at rest, each the §8.3 mechanism (a layer of its own,
 and every stage layer painted over it promoted with it):
@@ -1154,6 +1178,10 @@ keyed whole per beat, so every beat there unmounts the scene and mounts a fresh 
 sets `decoding="async"`), so for a frame the house's dark shows through the empty picture, and
 the 18 MB sheet is decoded again each beat, which also feeds the stutter. Chromium keeps the
 decoded picture and shows no flash, which is why the goldens never saw it.
+[2026-10-26: the re-decode is inferred from the remount, not measured. The rendering audit of
+the same day ("What these results deprioritize") recorded no `Decode Image` work in its warm
+traces while a transition rebuilt the room, and notes that a remount does not prove a picture
+was decoded again. The black frame itself was seen on the phone and stands.]
 
 **Done.** The Stage draws one backdrop (`BackdropSheet`) at the foot of the paint layer, in a
 box of its own present from the first render, from a description the scene registers through
@@ -1401,3 +1429,11 @@ render, and the set re-registered with it, if live typing shows on a phone's tim
 light's cache keyed by geometry, if a remount ever shows the holes' 60–110 ms again. The deal
 and the ending's figures per beat, if their beats ever show. Transcript rows in view only,
 for very long games.
+[2026-10-26: three of the five were done later. The catch-up frames are handed to the store as
+one block (`frontend/src/hooks/catch-up-boundary.ts::catchUpBatch`, `88f491a7`, 2026-10-15;
+lesson 32). The typed text moved into the dock and the scene's props keep their identity
+(`1f3f2769`, 2026-10-15; lessons 33 and 34). The light's cache is kept by the options alone
+(`frontend/src/stage/Stage.tsx::drawn`, `f30d4496`, 2026-10-15; lesson 36). Still open: the
+deal and the ending key their figures per beat (`DealBeat`, `OverBeat`), and the drawer renders
+every row. `frontend_lessons.md` has since grown from twenty entries to 50 numbered lessons
+(1 to 49, with 29a and 29b) and 23 small things.]

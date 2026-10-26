@@ -266,3 +266,5 @@ Sprites are decoded as files under `sprites/` (day/<character>/{base,talking,thi
 - `kits/`: the three vector kits and the cast module, as the benches froze them (§8 lists what the benches draw over them that the kit should absorb).
 - `sprites/`: every raster asset, decoded; `manifest.json` has sizes and body measures.
 - `reference-events-schema.py`: the wire contract the beats are built on. `landing-handoff-2026-09-22.md`: the landing's state, for the chat after this one.
+
+[2026-10-26: where the bundle went. In git, in `frontend/docs/design_2026-09-25/`: this file, `kits/`, the sprite manifest as `sprites-manifest.json`, `landing-handoff-2026-09-22.md`, and the bundle's `README.md` as `BUNDLE_README.md`. Archived in `frontend/claude_artifacts/design/`, which `frontend/.gitignore` excludes, so on the build machine only and not in git: `benches/` (the thirteen pages, `hud-blockout.html` and `landing-prototype-v1.html` among them), `sprites/` with `manifest.json`, and `production-log-rev-62.html`. `reference-events-schema.py` was not kept: it was byte-identical to `server/schemas/events.py` (`stage_architecture.md` §9), which is the contract.]

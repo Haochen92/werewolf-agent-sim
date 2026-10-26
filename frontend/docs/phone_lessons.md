@@ -1,6 +1,6 @@
 # What the phone taught us
 
-Written for: the owner, to re-own and re-explain. Eleven lessons from making the theatre survive
+Written for: the owner, to re-own and re-explain. Twelve lessons from making the theatre survive
 and feel right on an iPhone (2026-10-01 to 2026-10-02), each in plain words: what you saw on the
 phone, what the browser was actually doing, what fixed it, and how to see it yourself. The
 numbers and the dated detail live in `build_log.md` §8; each lesson points at its section. The
@@ -33,10 +33,25 @@ we read was 17 layers and 534 MB before a beat had played (§8.3).
 **See it yourself.** Safari on the Mac → Develop → your iPhone → the page → the Layers tab.
 The count and the total are the two numbers that matter.
 
+[2026-10-26: this lesson and the next tell two crashes as one. **The first crash** (§8.1) came
+with the redesign's deploy on 2026-09-28 and killed every stage page at once, before any beat
+played: five full-stage SVG `<mask>` elements (the house light, the atmosphere's veil and frame
+shadow, the night room's candle, the drape's fade), which iOS renders through a software path
+with buffers at three times the CSS resolution, more than it allows one tab. The subtraction
+probe found it (`frontend/src/styles/gpu-probe.css`: of all its words only `?gpu=nomask` and
+`nosvg` kept the page up), and the masks became plain vector sheets, one `fill-rule="evenodd"`
+path with each hole softened by a gradient. A guard test keeps `<mask` out of the stage
+(`paint.test.ts`, `atmosphere.test.ts`). That was a platform limit on one technique, not the
+layer cascade. The layers above, 17 and 534 MB, belong to **the second crash** (§8.3): with the
+masks gone, the page died when beats came faster than one a second.]
+
 ## 2. One animating element promotes everything painted above it
 
 **What you saw.** The felt country scrolling behind the car's window, a tiny thing, was the
 whole first crash (§8.3).
+[2026-10-26: not the first crash, which was the masks (§8.1, see the note under lesson 1), and
+not the whole of the second: in that one the felt country's cascade was the cost held at rest,
+beside the scene rebuilt every beat (lesson 5).]
 
 **What was happening.** An element with a running animation gets its own layer, so the GPU can
 move it without repainting. But the browser must keep paint order correct, so every element
@@ -102,6 +117,10 @@ settled, and at speed the garbage outran the collector.
 light, the wing) that updates in place, and a small keyed part (the puppet, the box) that is
 rebuilt per beat. Done for the day and the morning; the vote, lynch, night, deal, game over and
 replay night are still keyed whole and are the next thing to split (§8.3, §8.8).
+[2026-10-26: they were split the same day, 2026-10-02, under one host for every scene in the
+car (`frontend/src/stage/scenes/CarScene.tsx`; §8.9, lesson 11 here). Only the deal's and the
+ending's figures are still keyed per beat (`DealBeat`, `OverBeat`; §8.10), their set the
+host's.]
 
 **See it yourself.** React DevTools' highlight-updates, or the probe trick from §8.8: mark a DOM
 element with a property, step a beat, and see whether the mark survives.
@@ -150,6 +169,10 @@ paint the page before the picture is decoded. On a desktop the decoded picture i
 cache, so a remounted image paints at once. iOS purges that cache, so a freshly mounted `<img>`
 paints nothing until its decode lands, one frame of the page's dark behind it. Every scene keyed
 whole remounted its backdrop and its wing per beat (lesson 5), so every beat showed the gap.
+[2026-10-26: the black frame was seen on the phone and stands. That the picture was decoded
+again each beat (§8.8) is inferred from the remount, not measured: the rendering audit of
+2026-10-02 recorded no `Decode Image` work in its warm traces and notes that a remount does not
+prove a re-decode.]
 
 **What fixed it.** The backdrop now belongs to the Stage and is never remounted by a beat; and
 every stage picture decodes synchronously, so what is still remounted paints at once.
@@ -213,8 +236,9 @@ price). So the GPU route was refused, except for things painted last.
 **What fixed it.** The set stays up for the whole car, from the deal to the ending, as one
 host that every scene describes its set to; a beat changes two wing tiles, not the car. And on
 a phone every move steps at 24 frames a second: the same curve, sampled 24 times a second, so
-the browser repaints on a steady beat with 42 ms for each frame. Film is 24. A puppet theatre
-at 24 reads as intended. Under the moving rectangle the light's two screened sheets were boxed
+the browser repaints on a steady beat with 42 ms for each frame. [2026-10-26: that is the aim
+of the policy, not a guarantee: 24 positions a second are not certain to be presented as evenly
+spaced frames (audit 2026-10-11, §4).] Film is 24. A puppet theatre at 24 reads as intended. Under the moving rectangle the light's two screened sheets were boxed
 to their gradients, so the figure no longer rises through a full-stage blend, and the phone
 draws its own smaller copies of the pictures it draws small.
 
@@ -245,6 +269,10 @@ replay and jump straight to day 4 with the scrubber.
 **What fixed it.** Each mover's box is now its load's own bounds, clipped, with the stage's
 coordinates put back inside it, so the repaint is the figure's column, not the stage. And on a
 phone the ending's winners are simply there: no rise, no stand fading in.
+[2026-10-26: what was measured is narrower. On Chromium the bounded boxes cut the paint records
+(the table's sink from 88 to 22) but barely moved raster (the vote over 15 steps, 10,489 to
+10,341 ms), because Chromium rasters in tiles; the phone's reading of the paint rectangles was
+left to the owner and is not recorded (§8.10).]
 
 **See it yourself.** In the Safari timeline, a move's paint records are the figure's width.
 
@@ -262,3 +290,8 @@ per mover was measured on the phone and refused (it lifts the whole stage with i
 port would make every move a GPU matrix and the memory predictable, at the price of rewriting
 the stage's drawing side; the DOM stage with these rules holds, so the port is the known next
 step only if the stage has to be a showcase of motion on phones.
+
+[2026-10-26: the first crash was not the animation. It was five full-stage SVG masks, a platform
+limit on one technique, found by subtraction in eight taps and fixed with plain vector sheets
+(§8.1; the note under lesson 1). The small animation and its layer cascade were the second
+crash (§8.3), together with the scene rebuilt every beat.]

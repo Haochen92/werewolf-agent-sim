@@ -3,7 +3,11 @@
 Every scene of the live game and the replay, one row per beat. This table is mirrored by
 `src/stage/beats/beatsFor(events, { xray })` and checked by goldens on the fixture game
 (9369a5c1, memory on; seq numbers below are that game's). Change the table, change the code,
-regenerate the golden, in that order. The narrative behind each row is the handoff
+regenerate the golden, in that order. [2026-10-26: a second game is pinned too: the
+2026-10-07 game of the day with rounds (`src/stage/fixtures/replay-phase2.json`, memory off),
+the fixture of §2 rows 7 to 10, with goldens `beats/__goldens__/phase2.public.txt` and
+`phase2.xray.txt` (`src/stage/beats/beatsFor.test.ts`). The seq numbers below are still
+9369a5c1's.] The narrative behind each row is the handoff
 ([design_2026-09-25/HANDOFF.md](design_2026-09-25/HANDOFF.md) §4, cited as H§n); the code shape is
 [stage_architecture.md](stage_architecture.md).
 
@@ -1250,5 +1254,14 @@ None open (the 2026-09-25 list is fixed; each fix is an "As built" line in its s
 
 - `firing_reason` and `addressed_targets` (deferred by decision; the fold already joins them).
 - Motion inside the night rooms beyond the timings above.
-- Whether a seat can be reclaimed after leaving (the server's call).
-- The landing's miniature replay: which beats it plays (decided with the landing).
+- Whether a seat can be reclaimed after leaving (the server's call). [2026-10-26: closed. A seat
+  keeps its token, and connecting again with it takes the seat back: a seat taken to have left
+  (two turns missed, 2026-10-15) is back the moment it connects
+  (`server/game/seat_clocks.py::SeatClocks.on_seat_returned`), and a lost cookie is restored
+  through `POST /games/{id}/rejoin` (`server/routes/rooms.py::rejoin_game`; the reclaim door,
+  `server_client_transport.md` §6b, `seat_continuity.md` §4).]
+- The landing's miniature replay: which beats it plays (decided with the landing). [2026-10-26:
+  closed. Ruled in `design_2026-09-26/pages_review.md` §F ruling 7 (2026-09-26, amended
+  2026-09-27): the same `ReplayTheatre` in its mini mode, no second engine. Since 2026-10-22
+  (owner) it plays a reel in the X-ray's cut: the deal done, the first night's pack, its morning,
+  the featured lines and the vote they lead to (`frontend/src/lib/featured-reel.ts::featuredReel`).]

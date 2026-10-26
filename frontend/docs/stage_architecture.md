@@ -119,7 +119,9 @@ wing's tiles scale with everything else.
 a glass overlay: deep walnut boards (`--walnut-top`/`--walnut-bot`, the walnut texture as a still
 grain under the stain) with a thin brass edge (`--hud-brass`, a dark reveal and a fainter inner
 line), the words in lamp-glow cream (`--cream`, `--cream2`), brass the accent for "speaking" (the wing's lit tile). Two voices (§5): Young Serif for what is engraved
-or announced, Literata for what is said and read. The pieces: the **day plaque** (a sun or moon
+or announced, Literata for what is said and read. [2026-10-26: the faces are §5's and
+[typography.md](typography.md)'s; on 2026-10-16 EB Garamond took Young Serif's place
+(`frontend/src/stage/fonts.ts`).] The pieces: the **day plaque** (a sun or moon
 disc, "Day 3" large, the phase beneath; `TopStrip`), the **pane tabs** (File and Transcript as
 two tabs of one plaque split by a thin brass rule, the labels muted brass; File was greyed without
 the X-ray until 2026-10-04, when it began opening on the Record alone, the seats' tabs greyed
@@ -192,7 +194,8 @@ a small image; nothing moves.
 
 **The transcript (ruled 2026-09-29, pass 3a; beat sheet §11 "The drawer's look").** The drawer is
 a page, not a list of cards: a warm dark ground (`--ground-top`/`--ground-bot` on `.drawer`) with
-the HUD's brass edge, the chapters as Young Serif headings (the day large; the night in a cool
+the HUD's brass edge, the chapters as Young Serif headings [2026-10-26: EB Garamond since
+2026-10-16, §5] (the day large; the night in a cool
 pale blue-grey, `--night-ink`, never the serial killer's lavender), speeches as a small head, a
 brass-cream name and Literata words, the game master's reports as short sentences with the dead in
 terracotta (`--dead`), a run of passes as one italic line, and the vote as a tally of the voters'
@@ -265,6 +268,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/atmosphere/grain.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.
+  [2026-10-26: the list above is the first set. Since then `rooms/` also holds
+  `{sentinel,trailseer,sigilist,speculator,necromancer,fortune_teller}.webp` (2026-10-07, "The
+  night rooms" below), eleven rooms in all, and the characters add `kitsune mushroom lionCub
+  automaton` (2026-10-03, "The cast" below), fifteen in all.]
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
   static imports through `next/image`, content-hashed URLs, inferred dimensions). The manifest
   exports typed handles — `SPRITES.day[character][state]`, `SPRITES.car[hour]`, `SPRITES.rooms[room]`,
