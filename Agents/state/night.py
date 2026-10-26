@@ -105,6 +105,8 @@ class PackNightGraph(TypedDict, total=False):
     uses_left: dict[str, int]
     agent_strategies: Annotated[dict[str, str], merge_strategies]
     human_players: list[str]
+    game_id: str
+    """The game's id, copied from the run config by pack_night_phase, for the node-cache key."""
     current_day: int
     current_round: int
     """Chat round: 1..WOLF_CHAT_ROUNDS; the carrier's and skill turns run after."""

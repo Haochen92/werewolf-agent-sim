@@ -92,6 +92,7 @@ def _pack_payload(state: PackNightGraph, wolf: str) -> NightTurnState:
         "read_out_wills": state.get("read_out_wills", []),
         "cast_role_counts": state.get("cast_role_counts", {}),
         "lineup": state.get("lineup", []),
+        "game_id": state.get("game_id", ""),
         "night_actions": own_night_actions(state.get("night_actions", []), wolf, role),
         "wolf_channel": state["wolf_channel"],
         "surviving_villagers": state["surviving_villagers"],

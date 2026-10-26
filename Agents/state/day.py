@@ -53,6 +53,9 @@ class DayGraphState(TypedDict, total=False):
     a payload."""
     lineup: list[str]
     """The dealt roles, public."""
+    game_id: str
+    """The game's id, copied from the run config by day_phase, so every turn payload carries it
+    for the node-cache key (turn_cache_key)."""
     human_players: list[str]
     """player_ids of the human seats."""
     night_actions: list[NightActionRecord]

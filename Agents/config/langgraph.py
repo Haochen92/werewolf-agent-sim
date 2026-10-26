@@ -34,6 +34,11 @@ def turn_cache_key(payload: dict[str, Any]) -> bytes:
     pydantic entries carry a different ``__pydantic_fields_set__`` than the originals
     (same values, different bytes) — so the default key never hits exactly when the
     cache is needed (proven offline, 2026-08-19). Hash VALUES, not object state.
+
+    The payload must carry the game's id (``game_id``). LangGraph keys the cache by node and this
+    key alone, and one cache serves every game in the process, so without the id two games whose
+    turn payloads matched shared one answer: a day-1 opening at the same seat, role and lineup
+    (found 2026-10-26).
     """
     def jsonable(obj: Any) -> Any:
         if hasattr(obj, "model_dump"):
@@ -94,11 +99,20 @@ def child_runnable_config(
     when a caller passes one explicitly (the day phase derives a cap-based limit).
 
     Note: propagation of the checkpointer works via ambient contextvars too, so this helper's
-    correctness is pinned by tests/test_child_config_unit.py, NOT by the interrupt integration test.
+    correctness is pinned by tests/engine/test_child_config_unit.py, NOT by the interrupt integration test.
     """
     if recursion_limit is None:
         recursion_limit = (parent or {}).get("recursion_limit", DEFAULT_RECURSION_LIMIT)
     return patch_config(parent or {}, recursion_limit=recursion_limit)
+
+
+def game_id_from_runnable(config: dict[str, Any] | None) -> str:
+    """The game's id out of the runtime config, inside a graph node ("" when none was pinned).
+
+    The subgraph wrappers copy it into the subgraph's state so the turn payloads carry it: the
+    cache key reads only the payload (see turn_cache_key)."""
+    configurable = config.get("configurable", {}) if config else {}
+    return str(configurable.get("game_id") or "")
 
 
 def game_config_from_runnable(config: dict[str, Any] | None) -> GameConfig:

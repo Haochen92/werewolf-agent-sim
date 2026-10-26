@@ -191,6 +191,7 @@ def build_speaker_send(
         "player_role": role,
         "current_day": state["current_day"],
         "voting_available": voting_available,
+        "game_id": state.get("game_id", ""),
         # A sweep turn is the open floor (the prompt's rules block and the human's ask follow
         # day_round); a reactive turn is the discussion. The opening and closing rounds are
         # fanned out by fan_out_day (Phase 2).
@@ -248,6 +249,9 @@ def fan_out_day(
             # A vote turn reads a conditional about a player as its contrapositive (deduction
             # engine, fold rule 3: Agents/deduction/conditionals/).
             "vote_turn": phase == "vote",
+            # The node-cache key reads only the payload, and one cache serves every game in the
+            # process: the game's id keeps two games' identical turns apart (turn_cache_key).
+            "game_id": state.get("game_id", ""),
         }
 
     for player in surviving_players:
