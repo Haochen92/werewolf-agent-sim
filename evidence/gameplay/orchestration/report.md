@@ -515,8 +515,9 @@ not yet audited.
   restart can re-bill AI turns and change their answers. Keeping each voter's latest ballot addresses
   tally disagreement, but does not preserve the original choice.
 - **The October cache fix is not yet verified in served games.** It was committed on 2026-10-26
-  (`fd07c0f8`) and is not deployed as of that date. The tests check key isolation; the real-game
-  cache verification is from August.
+  (`fd07c0f8`) and deployed the same day (server image `2ecec0cc`: the live `dd985ebe` plus the fix),
+  after a pre-flight in the production image found two dealt games' opening keys apart; no game has
+  been served on it yet. The real-game cache verification is from August.
 - **The parent's recursion limit is the root default of 100**, not derived from the game's length.
 
 ## When to revisit the design
