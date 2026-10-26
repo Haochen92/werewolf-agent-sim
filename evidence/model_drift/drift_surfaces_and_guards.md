@@ -9,6 +9,13 @@ win between runs) and is suspected again during the nh town regression (adjudica
 in the runtime fingerprint). This note answers two recurring questions: *do we have to redo
 baselines every time?* and *does drift also hit the classifiers/dedupers?*
 
+> *Correction 2026-10-25.* "Observed once for sure" overstates it. The 67%→27% compares two 30-game
+> baselines as independent games, but 20 deals were in both; tested as pairs, the villagers' wins on those
+> deals fell from 12 to 7 (exact McNemar p = 0.18; `evaluation/experiments/june_baseline_shift_check.py`).
+> A shift in outcomes was seen; drift as its cause was never established. The interleave rule below stands,
+> since drift and chance could not be told apart. What each provider lets you pin is in
+> [`evaluation/experimental_controls/report.md`](../evaluation/experimental_controls/report.md) §1.
+
 ## Structural fix for experiments: INTERLEAVE arms, never compare to historical runs
 
 Drift only confounds when arm A is generated at time T and arm B at time T+Δ. If the runner

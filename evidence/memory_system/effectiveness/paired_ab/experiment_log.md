@@ -15,6 +15,12 @@ baseline in the current epoch (`ab_baseline_recovered.jsonl`, `recovered_ids.jso
 proxies at N=30. The original baseline + `seed_set.json` recovered winners are no longer
 used for the comparison.
 
+> *Re-tested as pairs, 2026-10-25.* The Fisher test above treats every game as independent, but 20 deals
+> were played in both baselines. On those 20, tested as pairs, the villagers won 12 the first time and 7
+> the second (7 deals from a win to a loss, 2 the other way; exact McNemar p = 0.18;
+> `evaluation/experiments/june_baseline_shift_check.py`). The outcomes moved, but the size and the cause
+> (alias drift or small-N variance, as written above) were never established.
+
 ### Can we pin or detect the drift? (investigation 2026-06-11)
 
 Probed whether `gemini-3.1-flash-lite` alias drift is preventable/detectable:
@@ -779,6 +785,14 @@ INVERSION (town worst→best). VARIANCE FLOOR (two same-epoch off runs, paired N
 mid-evening re-switch (both runs stably elevated). CEILING implication: memory's "helps town" case was
 measured on a model BAD at town that no longer exists; on the strong model town is already at 51-53% off.
 
+> *Correction 2026-10-25.* "Real model shift" overstates what was shown. The overnight change on
+> memory-off games was observed (villager wins 27% → 51%, town vote accuracy 0.560 → 0.699, about 2.5×
+> the same-epoch variance floor), and a change in the unpinnable `gemini-3.1-flash-lite` alias was
+> suspected, but it was not established: the comparison was never re-tested, and the records could not
+> show a change underneath the model name (the 2026-06-11 pinning investigation). It supports a large
+> overnight shift in outcomes, enough to rule out the cross-day reading; its cause stays open. Compare the
+> 2026-06-11 baseline shift, re-tested as pairs (note near the top of this log).
+
 ## ⭐⭐ Phase B MEMORY-CONTENT DESIGN — defusing the anti-aggression bias (2026-06-12; discuss next)
 
 The headline mechanism (above) is a *chain*; each link is a place to cut it. Stating the chain first so
@@ -844,6 +858,8 @@ is the honest outcome to record:
    off-baseline town_vote_accuracy 0.560 -> 0.699 (+0.14), villager WIN 27% -> 51% (faction-ranking
    inversion), confirmed real (≈2.5× the same-epoch variance floor; metric-definition artifact ruled out).
    So the -0.36/-0.22 "regression" was treatment + up-to-25h of drift, blended in unknown proportion.
+   *(Correction 2026-10-25: the drift was suspected, not established; see the note under the
+   2026-06-12 drift exhibit.)*
 2. **The clean same-epoch three-way was launched then DELIBERATELY STOPPED.** off (canary, done) +
    immediate-first raw_town + net-first nh_town, all 06-12, same 30 seeds. Stopped at 4/30 each by mutual
    decision once the decision-pipeline bugs surfaced: the numbers would be DOUBLE-superseded (measured on a

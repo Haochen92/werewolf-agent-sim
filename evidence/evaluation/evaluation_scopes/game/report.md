@@ -50,10 +50,12 @@ only that turn is rerun.
 
 Three practices follow:
 
-- **Run both arms at the same time.** A hosted model can change overnight with no code change. In June
-  a fresh no-memory baseline, on identical prompts, came back with villagers winning 10% of games
-  against 67% before (p=0.0028). Since then both arms always run in the same window, and an old
-  baseline is never reused.
+- **Run both arms at the same time.** A hosted model can change with no code change. In June a fresh
+  no-memory baseline, on identical prompts, came back with the villagers winning 1 of 10 deals against
+  20 of the original 30 (p=0.0028, games treated as independent); on the 20 deals played in both, tested
+  as pairs, the town's wins fell from 12 to 7 (exact McNemar p=0.18). Drift and chance could not be told
+  apart, so both arms now run in the same window and an old baseline is never reused
+  ([experimental controls](../../experimental_controls/report.md)).
 - **Score decisions, not only wins.** With 30 games a side, only a win gap of about 35 points would
   reliably show. So the verdict rests on decision scores computed from the game record (did the town
   vote out an evil player, did the healer save the real target), which were checked against winning
@@ -150,8 +152,9 @@ time (p=0.005), and town votes removed an enemy 47% → 64% (p=0.028), over 30 b
 27% → 43%, which was not significant (p=0.27). Wolves and the lone killer gained nothing. The
 frozen-turn screen pointed the same way on decisions.
 
-The harness also corrected itself. Its first baseline was thrown out when a fresh one drifted
-(villagers 67% → 10%, p=0.0028), which led to the same-window rule. And its own check showed that
+The harness also corrected itself. Its first baseline was thrown out when a fresh one came back
+different (above: 1 of 10 deals against 20 of 30; tested as pairs, p=0.18, cause not established),
+which led to the same-window rule. And its own check showed that
 pairing by deal adds almost no power, which changed what the design was understood to buy.
 
 **How far to trust it.** 🟡. The method is sound and the limits are its own findings: wins are too
