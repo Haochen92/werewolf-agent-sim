@@ -141,7 +141,7 @@ The campaigns above test memory as a whole. These reports own the stages it is b
 | [`retrieval/`](../retrieval/) | The read path and the May study of filtering, reranking and wider fetches | The plain read path is live; filtering and reranking are built and off. Area report being written |
 | [`store_curation/`](../store_curation/report.md) | How the stores grow, stay bounded and improve | Live as the two passes above; the report describes the nine-seat loop they came from. Tells are not served |
 | [`credit/`](../credit/report.md) | Grading a followed lesson by its decision, and the abstention blind spot | Live in the credit pass, with the fixed rule. The model judge for discussion ([discussion tagger](../credit/discussion_tagger/)) was retired on 2026-07-13 |
-| [`fine_tuning/`](../fine_tuning/) | Small trained models for dedup and reranking | Trained and evaluated, not wired: no code in the game or the server loads either cross-encoder. Report being written |
+| [`fine_tuning/`](../fine_tuning/report.md) | Small trained models for dedup and reranking | Trained and evaluated, not wired: no code in the game or the server loads either cross-encoder |
 | [`caching/`](../caching/report.md) | Paying less for input repeated across calls, including extraction's shared prefix | Live |
 
 *Rewritten 2026-10-26 from the June–October progression piece "Memory Store Progression", whose text
