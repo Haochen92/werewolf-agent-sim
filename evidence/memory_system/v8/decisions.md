@@ -336,3 +336,27 @@ would see almost no served games. The owner's ruling splits the rule by what eac
 Code: `Agents/memory/consolidation/credit_rules.py` (`_human_seats`, `_iter_game_records`,
 `iter_eval_cases`), `Agents/memory/consolidation/sources.py::games_from_db`; tests in
 `tests/memory/test_consolidation_graduation.py`.
+
+## 16. Served games feed the store; extraction stays a hand-run batch (owner, 2026-10-26, later)
+
+The same day, planning the pipeline's move to the database, the owner revised §15 and set how the
+pipeline runs:
+
+- **Games with a human seat may feed the store, the human's own moves included.** Few games will be
+  AI-only, so §15's AI-only extraction would leave the store almost nothing to learn from. Contamination
+  is a real risk but not an observed one; the ruling is to be revisited. It is reversible without new
+  code: every observation records its `game_id` and every lesson its `source_observations`. One gap: a
+  discarded duplicate observation only raises its survivor's count and records neither its key nor its
+  game.
+- **Extraction stays offline and run by the owner,** never automatic. The batch command reads served
+  games from the database and writes its results back; which games it takes (memory on or off, with or
+  without a human, a sample, or named games) is a setting chosen per run, not a fixed rule. Batch-run
+  games stay files.
+- **Credit runs automatically after each memory-on game,** pruning and evicting by its rules. Each removed
+  lesson's full record is kept in the pass's log so a wrong removal can be restored.
+- **Counters come from credit alone.** Served games stop bumping counters during play; the credit pass
+  recounts them from the game records, as publish already assumed (§15).
+- **The learning tick stays a command the owner runs,** with a status command that says when it is due;
+  automation waits until a few ticks have been read.
+- **Memory stays off by default** for players: its benefit on ten seats is untested, and testing it needs
+  new labelling and runs. Memory on is for demonstration.
