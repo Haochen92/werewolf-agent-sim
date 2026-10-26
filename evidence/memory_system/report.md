@@ -116,6 +116,10 @@ the decision. Finding the right lesson remained a limit too.
   level at which their model reasons, but no v8 game compares memory on with off.
 - **Small samples.** Each whole-game test used 30 boards. At that size the win rate can only detect a
   change of about 36 points, which is why the June test leaned on decision measures.
+- **The June baseline may have drawn low.** Town measures also improved in the arms where only the
+  wolves or the lone killer had memory, and memory-off games on the same seeds the next day played
+  near the level the town reached with memory; part of the June gain may reflect the baseline
+  ([effectiveness](effectiveness/report.md), "Was the baseline a low draw?").
 - **Suspected model drift.** A June memory-off baseline shifted between two runs with identical prompts
   and was discarded, and the one significant June win-rate arm ran later the same day than its
   baseline. Drift on the provider's side is suspected, not established: a paired re-test of the 20
