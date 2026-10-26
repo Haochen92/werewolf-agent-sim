@@ -242,7 +242,7 @@ beside the May value cached on `gemini-embedding-001`. Data: `data/cross_game_si
 | `evaluation/experiments/auto_dedup_labeler.py` | Labels auto-dedup cases via LLM for golden label creation |
 | `eval_sets/auto_dedup_v1.jsonl` | Same-game calibration dataset (192 cases) |
 | `eval_sets/auto_dedup_v1_cross_game.jsonl` | Cross-game calibration dataset (232 cases) |
-| `evidence/dedup/golden_eval/embedding_cache.json` | Cached embedding sims for 65 golden cases |
+| `evidence/dedup/embedding_prefilter/data/golden_embedding_cache.json` | Cached embedding sims for 65 golden cases |
 | `data/cross_game_embedding_cache.json` | Cached embedding sims for 232 cross-game cases |
 | `data/cross_game_golden_labels.json` | 232 golden labels from gemini-3.5-flash |
 | `data/cross_game_golden_labels_flash_lite.json` | 232 golden labels from gemini-3.1-flash-lite |

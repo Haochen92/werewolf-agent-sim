@@ -136,7 +136,7 @@ exists; it's simply never aimed at synthesis (which is currently outcome-only).
   (Runs 1-3), `../../extraction/post_game/model_comparison/` (May study) + `.../model_comparison/v7_refresh/`
   (v7 model-A/B generated obs on v6_1) + `../../v7_final/extraction_coverage_ab_spec.md` (v7 spec/tables), the
   player-ID verification txts;
-  `../../extraction/selection/experiment_log.md` (net_verdict halo);
+  `../../extraction/observation_quality/experiment_log.md` (net_verdict halo);
   `../../extraction/situation_dimensions/criticality_screen/experiment_log.md` and
   `../../memory_system/strategy_adoption/forced_schema_screen/experiment_log.md`. ⚠️ the evidence manifest's
   `dataset_path` is a stale absolute path; the report's `scripts/per_role_*` paths graduated to

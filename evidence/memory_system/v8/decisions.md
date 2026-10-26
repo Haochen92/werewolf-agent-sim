@@ -256,7 +256,7 @@ are dumped to a file (restorable with one `pg_restore`; the store is also on dis
 
 ## 13. The verdict halo measured; observations name their decision (owner, 2026-10-13)
 
-`evidence/extraction/selection/outcome_halo_case_study.md` (2026-07-26, then `case_studies/`) showed the extraction judge's
+`evidence/extraction/observation_quality/outcome_halo_case_study.md` (2026-07-26, then `case_studies/`) showed the extraction judge's
 `net_verdict` grading the result, not the decision, and named the test that would settle it: compare
 the judge's verdicts with deterministic grades on agent-only games. v8 kept the verdict and added the
 de-halo pass, which had only been spot-checked (one smoke game, four reader-flagged halos). With the

@@ -29,7 +29,7 @@ Pointers only, not yet checked against their sources. Verify each instance befor
   `separating_generation_from_checking.md`. Written 2026-10-14 (above).
 - **Grade the decision, not the result.** The de-lucked metrics, the credit grading rule (luck-dependent
   results graded on the choice), the extraction verdict halo. Sources: `metrics/`,
-  `memory_system/v8/decisions.md` §12–13, `extraction/selection/outcome_halo_case_study.md`.
+  `memory_system/v8/decisions.md` §12–13, `extraction/observation_quality/outcome_halo_case_study.md`.
 - **Check that the experiment that ran is the one you meant.** The v7 config slip (memory on for every
   faction) and the arm guard added after it; the paired-board join that merged five arms' games by
   game id. Sources: `v7_final/report.md`, `extraction/tell_extraction/experiment_log.md`.

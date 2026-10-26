@@ -799,7 +799,7 @@ the extraction model from the end of the game. It reaches synthesis (which weigh
 spread of its verdicts), dedup (two observations with different verdicts are never merged) and the
 replay page; never a seat, never credit. An *outcome halo* is a verdict that grades whether the side won
 rather than whether the decision was good. The July 2026 case study
-([`../../extraction/selection/outcome_halo_case_study.md`](../../extraction/selection/outcome_halo_case_study.md))
+([`../../extraction/observation_quality/outcome_halo_case_study.md`](../../extraction/observation_quality/outcome_halo_case_study.md))
 showed it on one human-seat game and named the test that would measure it. A *de-halo* pass, a second
 model call that revises verdicts, had been spot-checked on one smoke game only.
 

@@ -16,7 +16,7 @@ either too hard to build or too costly to verify — we **stop** (then freeze �
 > Reads alongside: the literature v7 report (external, literature-grounded — keep its synthesis, apply
 > the corrections below); `evidence/memory_system/effectiveness/v6_sp_ab/procedural_memory_experiment.md` (other agent's
 > overlapping design); `evidence/memory_system/effectiveness/decision_replay/` (the harness);
-> `evidence/generation_prompt/prompt_claims_audit/` + `evidence/extraction/selection/` (the prompt-audit and extraction-selection findings).
+> `evidence/generation_prompt/prompt_claims_audit/` + `evidence/extraction/observation_quality/` (the prompt-audit and extraction-selection findings).
 
 ---
 
@@ -130,7 +130,7 @@ measurement of whether credit has recoverable signal before consolidation is bui
   threat-brief). v7 doesn't re-mine a static store — the **loop rebuilds the store on-policy** on the
   de-capped substrate (observations extracted per game as it runs). Reframe: garbage-in
   root is one layer upstream — **prompt tactic → play → extraction → memory**.
-- **net_verdict = OUTCOME HALO** (`evidence/extraction/selection/`): extraction's hindsight verdict is
+- **net_verdict = OUTCOME HALO** (`evidence/extraction/observation_quality/`): extraction's hindsight verdict is
   strongly calibrated to `role_faction_won` (sep +0.84, every role) — so outcome-conditioning is real,
   but it's "did your side win?" stamped on every action, NOT "did THIS move matter?" Validates
   *labeling*, not pivotalness *selection*. → steer **selection** with a deterministic leverage anchor;

@@ -97,7 +97,7 @@ not the extra output: six calls still write six answers, so per-role stayed dear
 **2026-06-17 · The verdict halo, found.** *Catches:* the risk that the one-word verdict on each
 observation (did the move help?) only restated who won. On 932 nine-seat observations, 64% of the
 winning side's verdicts were positive and 65% of the losing side's negative, with few "unclear". The
-[selection study](../selection/) read this as the verdict mostly answering "did your side win?". A
+[selection study](../observation_quality/) read this as the verdict mostly answering "did your side win?". A
 later case on a game the project owner played (2026-07-26) showed it with known intent. *Decision:*
 named as an open problem; a fix was proposed and not built before the nine-seat research closed.
 

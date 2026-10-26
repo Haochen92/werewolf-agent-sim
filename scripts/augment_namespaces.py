@@ -176,7 +176,7 @@ def main() -> int:
                         "value": item.model_dump(mode="json"),
                     })
 
-    cand_dir = Path("evidence/memory_system/augmentation")
+    cand_dir = Path("evidence/extraction/augmentation")
     cand_dir.mkdir(parents=True, exist_ok=True)
     cand_path = cand_dir / "augment_candidates.jsonl"
     cand_path.write_text("\n".join(json.dumps(c) for c in candidates) + "\n")
@@ -234,7 +234,7 @@ def main() -> int:
         print("\n[measure-only] base store files untouched.")
 
     # Persist the machine-readable report next to the source for the record.
-    report_path = Path("evidence/memory_system/augmentation")
+    report_path = Path("evidence/extraction/augmentation")
     report_path.mkdir(parents=True, exist_ok=True)
     out_json = report_path / "augment_probe_report.json"
     out_json.write_text(json.dumps(report, indent=2))

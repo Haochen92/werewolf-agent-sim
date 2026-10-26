@@ -122,7 +122,7 @@ the record is, and how it would be shown:
   (won: 64% positive, 25% negative; lost: 21% and 65%; n=932). A de-halo pass (Claude Haiku 5.5)
   re-reads each verdict against the game record; over the 12 ten-seat seeding games it revised 146 of
   567 verdicts (26%), mostly to "unclear", a few over-corrected.
-- **Record:** `evidence/extraction/selection/netverdict_calibration.py`,
+- **Record:** `evidence/extraction/observation_quality/netverdict_calibration.py`,
   `evidence/memory_system/v8/experiment_log.md` (2026-10-11).
 - **Show:** content, perhaps one verdict before and after (export).
 

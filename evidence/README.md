@@ -45,13 +45,13 @@ Quality of what goes into the memory store and what queries are generated at ret
 | [situation_summary](extraction/situation_summary/report.md) | n=15 / 20 | May 24-27 | How it works today; model comparison + golden-label NDCG retrieval iteration (journey in [experiment_log.md](extraction/situation_summary/experiment_log.md)) |
 | [situation_dimensions](extraction/situation_dimensions/report.md) | 4 apparatus | May 24 – Jul 2 | Design + reliability arc of the state-descriptor dimension schema (prose → per-cell schema; retrieval + gating + criticality proxy); NDCG golden, criticality/forced screens, $0 accuracy audit (journey in [experiment_log.md](extraction/situation_dimensions/experiment_log.md)) |
 | [day_summary](extraction/day_summary/report.md) | — | — | How the end-of-day summary works today: a structured digest that bounds context and turns discussion into signal |
-| [selection/outcome_halo_case_study](extraction/selection/outcome_halo_case_study.md) | n=1 game, 2 entries | Jul 26 (note Oct 14) | The outcome-halo specimen with ground truth: the extraction judge grades the owner's own correct kill as a "fatal error"; the two mechanisms, and what the October measurement and rulings made of it |
+| [selection/outcome_halo_case_study](extraction/observation_quality/outcome_halo_case_study.md) | n=1 game, 2 entries | Jul 26 (note Oct 14) | The outcome-halo specimen with ground truth: the extraction judge grades the owner's own correct kill as a "fatal error"; the two mechanisms, and what the October measurement and rulings made of it |
 
-### [extraction/selection/](extraction/selection/) — Selecting Which Turns to Extract
+### [extraction/selection/](extraction/observation_quality/) — Selecting Which Turns to Extract
 
 | Experiment | Date | Notes |
 |---|---|---|
-| [experiment_log](extraction/selection/experiment_log.md) | Jun 17 | Does extraction infer turn pivotalness, and should we steer it? Diagnostic done (net_verdict calibration); steering recommendation = anchor-injection, gated by the memory-pipeline prompt freeze |
+| [experiment_log](extraction/observation_quality/experiment_log.md) | Jun 17 | Does extraction infer turn pivotalness, and should we steer it? Diagnostic done (net_verdict calibration); steering recommendation = anchor-injection, gated by the memory-pipeline prompt freeze |
 
 ### [caching/](caching/) — Prompt Caching
 
@@ -68,7 +68,7 @@ End-to-end measurements of whether and how episodic memory helps gameplay.
 | [effectiveness](memory_system/effectiveness/report.md) | n=30 games | May 24 | With/without memory; strongest evidence memory works |
 | [ablation](memory_system/ablation/report.md) | n=120 | May 24 | Observations vs strategy points vs both |
 | [strategy_adoption](memory_system/strategy_adoption/report.md) | n=120 | May 24 | Adoption tracking prompt v1-v3 |
-| [augmentation](memory_system/augmentation/experiment_log.md) | n=20 v5_seed | Jun 11 | Namespace-augmentation probe: deepen thin (role, phase) cells by re-mining source games |
+| [augmentation](extraction/augmentation/experiment_log.md) | n=20 v5_seed | Jun 11 | Namespace-augmentation probe: deepen thin (role, phase) cells by re-mining source games |
 
 ## Game Engine & Behavior
 

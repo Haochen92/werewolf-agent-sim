@@ -8,7 +8,7 @@ whole game).
 and the batch script have no uncommitted edits).
 **Companion docs:** [`experiment_log.md`](experiment_log.md) (the same work in date
 order) · [the v8 record](../../memory_system/v8/experiment_log.md) (the ten-seat extraction runs,
-2026-10-11 to 10-13) · [selection](../selection/) (the verdict halo, in full) ·
+2026-10-11 to 10-13) · [selection](../observation_quality/) (the verdict halo, in full) ·
 [the judge write-up](../../evaluation/llm_judge/extraction.md) · [credit](../../credit/report.md) (what
 happens to the lessons made from observations) · [caching](../../caching/report.md) §3.1, §3.6 and
 §4.6 (the shared prefix, batching, and the Sonnet run's cache writes in full).
@@ -203,7 +203,7 @@ What follows from this:
   compared.
 
 Record: [v8 decisions](../../memory_system/v8/decisions.md) §13; the earlier nine-seat finding is in
-[selection](../selection/).
+[selection](../observation_quality/).
 
 ### The automated judge, and why it is only a floor alarm
 

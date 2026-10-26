@@ -400,7 +400,7 @@ of a finding that is kept; detail moves, it is not deleted.
    stays if it played a key role in reaching today's design or shows a skill nothing else shows;
    redundant findings and dead ends that shaped nothing stay in git history.
 
-**Exemplar.** `evidence/extraction/selection/report.md` §4 before and after (the earlier version is
+**Exemplar.** `evidence/extraction/observation_quality/report.md` §4 before and after (the earlier version is
 in git history at `2382b34c`). Before: a regression fit, two coefficients, and a paragraph on how to
 read "per step of grade". After: three facts each observation carries, a 2×2 table of how often moves
 were called positive, the halo stated in one line, a "how sure we are" list, and the fit in a box. The

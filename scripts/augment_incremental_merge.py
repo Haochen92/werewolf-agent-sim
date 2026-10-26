@@ -127,7 +127,7 @@ def main() -> int:
                                   target_store=store)
         print(f"\n[--apply] merged store dumped to {out_dir} (rm to revert)")
 
-    out_json = Path("evidence/memory_system/augmentation/incremental_merge_report.json")
+    out_json = Path("evidence/extraction/augmentation/incremental_merge_report.json")
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(json.dumps(report, indent=2))
 
