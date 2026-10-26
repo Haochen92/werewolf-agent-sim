@@ -7,7 +7,7 @@
 > Sibling workstream: [`proxy_discovery_log.md`](proxy_discovery_log.md) (the metrics themselves).
 > Companion: the scheduler's own reference doc
 > ([`../../sequential_discussion/report.md`](../../sequential_discussion/report.md)) — read its
-> "reactive turns" section and Study 2 (the June open floor and novelty gate this log audits) before
+> "reactive turns" section and decision 12 (the June open floor and novelty judge this log audits) before
 > this log. *(Pointer updated 2026-10-26, when that report was rewritten.)*
 >
 > **Status: diagnostics A–C RAN 2026-07-02 (all $0, N=50).** §3 carries the results + the D-gate

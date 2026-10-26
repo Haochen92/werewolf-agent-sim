@@ -1,7 +1,7 @@
 # Discussion-quality gate — concurrent vs sequential (study record)
 
 > **The durable verdict** — *sequential clears the bar; Phase A #1 closes* — is carried destination-first
-> in [`../report.md`](../report.md), Study 1. **This file is the full study record behind it:** the method, the
+> in [`../report.md`](../report.md), decision 1. **This file is the full study record behind it:** the method, the
 > deterministic metrics, the dimension-by-dimension read, and the honest caveats.
 
 **Date:** 2026-06-05 · **Closes:** Phase A #1 (sequential day discussion)
