@@ -201,26 +201,36 @@ resolves.*
 [One agent turn, from input to action](agent_turn/agent_turn.md) explains the response contract,
 validation, retries and fallbacks.
 
-#### Letting a human join the same game
+#### Letting a human join the game
 
-A human taking one of the seats needs the same private information, opportunities to speak and legal
-actions as the AI player they replace. Their answer, however, may arrive minutes later or after they
-close the tab and reconnect.
+The same game can also let a person take one of the seats. They need the information their role is
+entitled to, opportunities to join the discussion, and the same legal choices as the AI players. The
+turn structure and rules should remain consistent regardless of who controls the seat.
 
-At a human table, the group can simply wait or agree to let someone else take over. A hosted agent
-game needs to represent that wait explicitly and retain enough progress to continue when an answer
-arrives. It must also account for decisions the other players have already made.
+The difference is how a decision arrives. For an AI player, the system requests a model response. A
+human reads the game through a browser and submits an answer when ready. They may take minutes,
+disconnect or return later, while other players have already completed their decisions. The game
+therefore needs to represent "waiting for this player" explicitly and preserve enough progress to
+continue.
 
-I pause execution at the human's decision and save a checkpoint—a record of game progress that can
-be loaded again. The submitted answer goes through the same validation as an AI reply. If resuming
-repeats an unfinished step, a separate cache lets completed AI turns return their earlier answers
-without another model call, while the human's turn accepts the new input.
+I handle that wait by pausing at the human's decision and saving a checkpoint, a record of game
+progress. When the answer arrives, execution resumes and the response passes through the same
+validation as an AI decision. This lets human and AI players share the turn pipeline without
+maintaining separate versions of the game's rules. If the human does not come back, the seat's AI
+agent takes the turn.
 
-Those mechanisms have different limits. The checkpoint survives a server restart, but cached AI
-answers live in server memory and expire. The game can resume after those entries are lost, though
-it may have to ask the affected agents again. [Adding a human in the loop](human_in_the_loop/human_in_the_loop.md)
-explains the pause, checkpoint and cache, along with how the web server hosts the game while players
-are waiting.
+Resuming also needs to account for work already completed. A human's vote may be pending while AI
+votes from the same round are already in. Because of how the game's steps are wired to keep each
+player's information separate, resuming repeats the whole interrupted step, and in my first test with
+two humans, the AI voters were asked again and some changed their votes. I cache completed AI turns so
+that a repeated step reuses their answers, while the human's turn accepts the submitted response.
+
+The saved progress and cached answers have different lifetimes. The checkpoint survives a server
+restart; the AI-answer cache does not and can also expire. The game can still resume when those
+entries are gone, but affected agents may need to decide again.
+
+[Adding a human in the loop](human_in_the_loop/human_in_the_loop.md) explains how the pause, checkpoint
+and cache work together, and how the web server keeps the game available while waiting for input.
 
 <!-- Authoring sources retained from the fuller draft (2026-10-26). Historical findings and
 experiment figures are no longer part of Level 1; the references below remain for deeper-page drafting.
