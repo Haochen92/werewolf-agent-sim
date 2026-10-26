@@ -3,8 +3,8 @@
 Level 1 page copy. The chapter's structure is in [`content_plan.md`](content_plan.md); each Level 2 page
 has its own folder here, with its Level 3 pages beside it; exhibits and where they come from are in
 [`exhibits/source_map.md`](exhibits/source_map.md). Only page 5 is drafted; links to pages 1–4 still point to planned paths.
-This revision integrates the Level 2 links into the chapter narrative; the content plan retains the
-earlier summary-based layout until this draft has been reviewed.
+This revision integrates the Level 2 links into the chapter narrative; the content plan records
+this structure (updated 2026-10-26).
 
 ---
 

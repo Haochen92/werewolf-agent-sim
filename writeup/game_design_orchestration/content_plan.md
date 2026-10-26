@@ -2,24 +2,22 @@
 
 Editorial assessment, 2026-10-26. This maps the gameplay and orchestration evidence onto portfolio pages.
 It is not page copy, and it does not claim that the pages exist. The model it follows is
-[`../evaluation/content_plan.md`](../evaluation/content_plan.md). The starting arrangement is chapter 1 of
-[`../structure_proposal.md`](../structure_proposal.md) (v2). The evidence is the map's blocks 102–139
-([`../map.md`](../map.md)), checked against the reports they cite. This pass keeps the five Level 2
-pages and the one Level 3 page, and moves four items between pages.
+[`../evaluation/content_plan.md`](../evaluation/content_plan.md). The starting arrangement was chapter 1
+of [`../structure_proposal.md`](../structure_proposal.md) (v2). The evidence is the map's blocks 102–139
+and 165 ([`../map.md`](../map.md)), checked against the reports they cite.
 
-**Revised 2026-10-26 after an external review, with the owner's agreement.** The chapter now runs
-game → requirements → design decisions → evidence. The chapter page opens with the game, then turns
-on one question: what changes when the players are model calls? A table of the game's requirements
-answers it, and each Level 2 page develops one or more rows. Each page opens from its gameplay
-requirement before any framework detail. The three question subheadings and the compact who-decides
-table on Level 1 are dropped; the who-decides table moves, in full, to page 4.
+**Revised 2026-10-26, after the owner reorganised the chapter page.** The chapter page is now one
+narrative: the game in plain words, then five sections, each a requirement the game places on a system
+whose players are model calls, each ending with a link to the page that develops it. The earlier
+requirements table, the five summaries with one finding each, and the question subheadings are
+dropped. The chapter page's draft (`game_design_orchestration.md`) is the reference for Level 1; this
+plan records its structure and the rules behind it.
 
 ## Reading structure
 
 **Level 1 is the chapter page: "Game design and orchestration: making ten agents play together".**
-It opens with a short explanation of the game, before any graph. It then states what the game requires
-of a system whose players are model calls, gives the chapter's one design rule and summarises each
-Level 2 subject. The project case-study page sits above it.
+It explains the game before any graph, then walks through what the game requires of the system, one
+section per requirement. The project case-study page sits above it.
 
 **Level 2 holds complete explanations of substantial subjects.** Each page has its own opening,
 subsections, featured story and exhibits. A visitor arriving directly should understand the question,
@@ -32,179 +30,84 @@ finding and its essential caveats.
 Repository links are provenance. A reader can follow every selected explanation without leaving the
 portfolio.
 
-## Recommendation: five Level 2 pages, each developing the game's requirements
+## The chapter's sections and their pages
 
-The proposal's five subjects survive the test against the blocks. Each holds several connected
-decisions with their own evidence, and none could be folded into another without losing its reader
-question. On the Level 1 page they appear as five summaries, in the order of the requirements table
-(see "Level 1 presentation"). No question subheadings, grouping page or navigation item sit between
-them.
-
-| Level 2 page | The game-level question it opens with | Why it deserves a page | Blocks |
+| Chapter page section | Level 2 page | Why it deserves a page | Blocks |
 |---|---|---|---|
-| **1. Designing evidence worth debating** | What must the roles give players, so that there is something to argue about and evil can contest it? | Diagnoses thin talk from one exact source that nobody contested. Then a cast design (partial observers; an engine that never reports a false result) and an evil contest through claims, with the chapter's strongest controlled result | 131–139 |
-| **2. Orchestrating the conversation** | Ten players share one day: who speaks, what gets said aloud, and when does the talk stop? | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
-| **3. Executing a day and night** | Conversation is in turn, but votes and night choices are made independently and must all be collected before anything resolves. How does the familiar cycle become execution? | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
-| **4. One agent turn, from input to action** | A role may act only on certain players, and only while uses remain. How does a model's answer become a move code can apply? | The output contract: one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, and a legal fallback on every path. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
-| **5. Adding a human in the loop** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116, 165 |
+| The game (opening) | **1. Designing evidence worth debating** | Diagnoses thin talk from one exact source that nobody contested. Then a cast design (partial observers; an engine that never reports a false result) and an evil contest through claims, with the chapter's strongest controlled result | 131–139 |
+| Keeping each player's information separate | Chapter 2 (information boundaries); until it exists, the agent boundaries report | Chapter 2 owns the implementation and the checks; this chapter states the requirement and the mechanism | 1–5, 47 |
+| Giving players opportunities to discuss and respond | **2. Orchestrating the conversation** | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
+| Running the game: coordinating phases and player decisions | **3. Executing a day and night** | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
+| One agent turn, from input to action | **4. One agent turn, from input to action** | The whole turn: permitted input, one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, validation, retries and a legal fallback. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
+| Letting a human join the game | **5. Adding a human in the loop** | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), limited uses across a pause | 105–106, 114–116, 165 (111 until it moves to chapter 7) |
 
 **Why the arrangement holds.**
-- **Pages 3 and 4 stay apart.** They answer different questions: how ten calls become one game, and
-  how a model's answer becomes something code can trust. Merging them would bury the structured-output
-  decisions under graph topology.
+- **Pages 3 and 4 stay apart.** Page 3 is how the whole game runs; page 4 follows one agent turn within
+  it. Merging them would bury the structured-output decisions under graph topology.
 - **Pages 2 and 3 meet at one decision**, parallel against sequential steps. Page 3 owns the execution
   pattern: `Send`, the barrier, and the round numbered at the collecting node. Page 2 owns the
   conversational evidence: near-identical lines from parallel talk.
-- **Page 5 is its own subject.** The orchestration topic opens with the cache bug (block 115), and the
-  topic-level hook "What does it take to seat a human at a table of AI agents?" belongs here.
+- **Page 5 is the engine's side of a human player.** The pause, checkpoint, re-run and cache work
+  without any web server: the command-line player uses the same pause. How a person reaches the game
+  (the browser, streaming, reconnection, the timeout that hands a seat to its agent, deploying
+  PostgreSQL) belongs to chapters 7 and 8, which link here.
 
 **Changes from the starting arrangement.**
-1. **The game's requirements table becomes the chapter page's organising thread.** "Who decides what"
-   (block 103's exhibit) stays whole on page 4, where the split between code and model is the subject.
-   Level 1 states the rule in one sentence; a second, overlapping table there would repeat the
-   requirements table.
-2. **The async host (block 111) goes on page 5, not page 3.** The graph runs identically in batch and
-   CLI play. The thread-pool choice exists because a served game streams to people, and the 64-thread
-   sizing came from a human wolf's prompt arriving late.
+1. **"Who decides what"** (block 103's exhibit) stays whole on page 4, where the split between code and
+   model is the subject. The chapter page states the design rule in its sections.
+2. **The async host (block 111) sits on page 5 for now, and moves to chapter 7** when that chapter is
+   planned, leaving a one-line link on page 5 (owner, 2026-10-26). It is a serving decision: it exists
+   because a hosted game streams to people, and the 64-thread sizing came from a human wolf's prompt
+   arriving late.
 3. **The shared records (block 107) go on page 3.** They are the agents' shared state. Chapter 3 owns
    the fixes to the records (summary, ledger, labels). Page 3 states only the mechanism: one error
    reaches all ten seats.
-4. **The voices (block 125) go on page 2 as a short closing subsection**, for now. They are in the
-   discussion report but are not listed in the proposal's chapter outline. Whether the voice-rewrite
-   study becomes a Level 3 page is open (see "Open questions").
+4. **The voices (block 125) go on page 2 as a short closing subsection**, for now. Whether the
+   voice-rewrite study becomes a Level 3 page is open (see "Open questions").
 
 The structure proposal's open question 1 (where balance sits) is settled here: **on page 1, as its own
-subsection**, beside the paired games whose three wolf wins it qualifies. The Level 1 summary repeats the
-untested-on-Haiku limit in its scope sentence.
+subsection**, beside the paired games whose three wolf wins it qualifies.
 
 **No "what went wrong" section on Level 1.** Each challenge stays on the page whose design caused it, as
-that page's case study. Each Level 1 summary already carries one revealing result or failure, so a
-separate list would repeat the summaries and turn the chapter into an overview followed by a bug
-catalogue.
+that page's case study.
 
 ## Level 1 presentation
 
-**Order.**
-1. The game and its central tension, in plain words.
-2. The turn: what changes when the players are model calls.
-3. The design rule, in one sentence.
-4. The requirements table.
-5. The five summaries, in the table's order.
+**The opening: the game in plain words** (the owner's own text). A typical Mafia game: two factions, what
+each knows and wants, the day and the night. Town of Salem as the inspiration. The four sides, what is
+public and what is private, what night abilities give players, and each side's objective. A link to page
+1, then the day-and-night loop figure (`exhibits/day_night_loop.svg`). No graph.
 
-No graph diagram appears before the game is explained.
+**Five sections, one per requirement.** Each runs: what the game needs → (where human play differs)
+how a human game handles it → why model calls cannot do the same, explained, not asserted → what I
+built → a link to the page that develops it.
 
-**1. The game, first (200–250 words in all, plus a small day-and-night loop figure).** One section covers
-the traditional game, the inspiration and this version together. No separate history of Town of Salem:
-it would invite a comparison the chapter does not need. The reader needs four things:
-- **Hidden roles, different objectives.** Players do not know each other's roles, and the sides want
-  different things.
-- **The central tension.** The town is the majority and must infer whom to trust from talk and votes. The
-  wolves know each other, coordinate privately at night and conceal themselves in public.
-- **The cycle.** Public discussion and a vote by day alternate with private actions by night.
-- **This version.** Name Town of Salem as the stated inspiration (the role sheet records the renames away
-  from its role names, for a 1920s setting). Most roles have a night ability, and a lone killer and a
-  neutral bring objectives of their own. The result is partial evidence and competing explanations.
+| Section | How human play enters | What it must convey | Figure |
+|---|---|---|---|
+| Keeping each player's information separate | Yes: face-down cards and the moderator's private results; Town of Salem's per-player screens and private night chat | The system holds everything and a model call knows only its input, so each turn's input is rebuilt from the permitted view: context isolation, enforced before the prompt is formatted, and checked | Isolation flowchart (Mermaid) |
+| Giving players opportunities to discuss and respond | Yes: a timer, anyone speaks whenever they like (Town of Salem's shared chat), people listen all the time | Why a model cannot (one snapshot, no listening) and the four obvious imitations that fail: all at once (the five identical openers), polling after every line, a clock, a fixed rotation. Then the scheduler as conversation habits turned into rules (owed replies, back-and-forth, several accusers answered together, the floor to the quiet), the rules against domination, the end of the day. "Code decides who speaks; the model decides what to say." | — |
+| Running the game: coordinating phases and player decisions | No: this is an orchestration decision, not a difference from human play | Tracking phase, survivors, who acts and the win checks in LangGraph; discussion in sequence, votes and night choices in parallel (independence comes from each player's permitted view, not from parallelism; the wolves agree on their kill first, by design); collecting every choice before one resolution step | — |
+| One agent turn, from input to action | No | The four-step path, the permitted input, the structured response and why, validation, retry and fallback, and the hand-off: speech published, a vote or night choice collected for the resolution | Turn flowchart (Mermaid) |
+| Letting a human join the game | No | The same seat and rules for a person; a decision that arrives outside the model calls; pause, checkpoint and the same validation; the seat's agent takes over if the human does not return; the repeated step (a consequence of how the steps are wired to keep information separate) and the first two-human test; cached AI answers; the two lifetimes | None on Level 1; the pause diagram is page 5's |
 
-Give the broad composition only: ten seats, four sides (town, two wolves, a lone killer, a neutral),
-eight seats dealt every game and two drawn, the lineup public. The twelve-role table waits for page 1.
-State that the ten-seat game has run since 2026-10-09, after a nine-seat version: many numbers below are
-nine-seat, and each says so.
+**Rules for the chapter page** (owner, 2026-10-26):
+- **Altitude.** Name LangGraph and a checkpoint; leave subgraphs, `Send`, node caches, cache keys and
+  prompt caching to the Level 2 pages.
+- **Evidence only where it pushed the design:** the five identical openers (they ended concurrent rounds)
+  and the first two-human test (it is why AI turns are cached). No other results on Level 1.
+- **No dates or scope clauses inside an explanation.**
 
-Two wording rules for this section:
-- **Victory.** Never "the game ends when only one side is left". Each side has its own win condition
-  (role sheet, "Win logic"): the town wins when no wolf and no lone killer remain; the wolves when the
-  lone killer is gone and they equal or outnumber the rest; the lone killer when at most one other player
-  is left. The neutrals win alongside another side: the Speculator with the side it picked, alive or dead,
-  and the Fortune Teller's bets are scored beside the winner without ending the game. A day-12 backstop
-  ends a game that runs long. The opening may compress this to "each side has its own win condition, and
-  the neutrals can win alongside another side".
-- **Engine results and claims are different things.** The engine applies every mechanic truthfully and
-  never reports a false result. What players *say* about their roles and results can be anything. Evil
-  contests the town through claims, not through false engine output. Never write "evil lies with true
-  facts".
-
-Town of Salem is designed for cooperation between factions; this record never observed it here (the
-neutral coordinating opening claims was not seen). Describe what the roles make possible, not what the
-agents did. The origin of Werewolf as a variant of Mafia, and Town of Salem's design aims, are general
-knowledge, not this record: keep them short and uncited.
-
-**2. The turn: what changes when the players are model calls.** One short paragraph, the chapter's
-transition. In the reviewer's words, roughly: *human players manage much of a Werewolf game's
-conversation themselves. With AI players, the system must explicitly decide who receives information,
-who gets a turn, which choices happen independently, and when those choices become game outcomes.*
-
-**3. The design rule (one sentence).** Code applies the rules and changes state; models interpret
-information and choose actions (block 102). The full who-decides table is on page 4.
-
-**4. The requirements table.** One table, the chapter's organising thread:
-
-| What the game requires | What the system must provide | Where |
-|---|---|---|
-| Hidden roles and private results | Separate information for each seat | Chapter 2 (page 3 states only that the hand-built payload is the boundary) |
-| Evidence that players can weigh and evil can contest | Roles that give partial, truthful evidence; claims as the only place to lie | Page 1 |
-| Discussion that responds to earlier speech | Turn scheduling and updated conversational context | Page 2 |
-| Votes and night choices made independently | Independent decisions, then collection, then one resolution | Page 3 |
-| Actions restricted by role and remaining uses | Validation and rule-based state updates | Page 4 |
-| A human who may take time to answer | A pause, durable state and a controlled resume | Page 5 |
-
-The private-information row establishes the requirement only; chapter 2 owns its implementation.
-"Votes made independently" is the accurate wording, not "secret votes": votes are cast at the same time
-and tallied, whether or not the ballots are shown afterwards. "Remaining uses" is literal: the Vigilante
-has two bullets, the Fortune Teller two self-bets, the Speculator one pick.
-
-**5. Summaries (90–130 words each, two short paragraphs).** Each runs: what the game needs → the
-engineering choice → one revealing result or failure, with its scope in the same sentence → what remains
-uncertain. A descriptive link closes each.
-1. *Designing evidence worth debating.*
-   - **Question:** why was the nine-seat talk thin? The one exact source was never contested.
-   - **Decision:** three partial observers instead of one exact investigator, and an engine that never
-     reports a false result, so evil contests through claims.
-   - **Finding:** card text alone moved evil from denying to claiming. Claims went from 13 to 33 and
-     denials from 21 to 3, on 41 frozen pressured turns, Claude Haiku 5.5, 82 samples per arm, one blind
-     model judge per line.
-   - **Scope:** balance was tuned on Gemini 3.5 Flash-Lite and held, never run on Haiku. Discussion
-     quality was not measured against the nine-seat game.
-2. *Orchestrating the conversation.*
-   - **Decision:** turn order is computed from the speakers' own tags.
-   - **Lead finding:** silence had three sources, and the largest was invisible. 367 of 517 passes were
-     a judge holding a line, in 28 nine-seat games on Flash-Lite.
-   - **Consequence:** speech by default with an echo gate after the line. As shipped, the gate held 10
-     of 29 restatements and none of 36 worthwhile lines. That is 65 open-floor lines, one model reader
-     each.
-3. *Executing a day and night.*
-   - **Need first:** choices made independently must all be collected before the night or the vote
-     resolves; conversation must happen in turn.
-   - **Decision:** the graph's shape follows flow, not role. Parallel steps are for a shared snapshot,
-     sequential steps for conversation.
-   - **Lead example:** a parallel open floor generated seven lines to keep two and was reverted
-     (2026-10-07). Alternative: the note-wipe bug as a caught-and-fixed episode.
-4. *One agent turn, from input to action.*
-   - **Decision:** one structured question per turn, with legal targets in the schema and a legal move
-     at the end of every path.
-   - **Finding:** on Haiku the schema is written as text and checked in code. Unenforced replies failed
-     1 time in 412 Haiku calls, and votes went from never reading the provider's cache to reading most
-     of it.
-   - **Why not a tool loop:** the owner's reasoning, not measured. The one measured part: a forced tool
-     call turns Haiku's thinking off.
-5. *Adding a human in the loop.*
-   - **Decision:** an interrupt in the same pipeline, so a human's answer takes the model's validation
-     path.
-   - **Finding:** a resume re-ran the step's AI votes, so the AI turns were cached and the human turns
-     were not. The verification game replayed 20 ballots from cache (one nine-seat game, 2026-08-19).
-   - **End on the cache key that crossed games:** fixed and deployed 2026-10-26, and checked with a before-and-after
-     control. Link to Level 3.
-
-**Hooks.** The map's "Can an AI lie well, and can the other AIs catch it?" is reworded for page 1 (or its
-summary) as "Can an AI lie convincingly when every fact the game reports is true?" The record answers
-that with the replay. It answers "can the other AIs catch it" only anecdotally: the town sided with the
-false claimant in two of the three wolf wins. "What does it take to seat a human at a table of AI
-agents?" opens page 5. Its other answers (the stage's wait on Haiku, the drafting
-helpers) belong to chapters 6 and 8 and are linked, not retold.
+**Hooks.** The map's "Can an AI lie well, and can the other AIs catch it?" is reworded for page 1 as
+"Can an AI lie convincingly when every fact the game reports is true?" The record answers that with the
+replay. It answers "can the other AIs catch it" only anecdotally: the town sided with the false
+claimant in two of the three wolf wins. "What does it take to seat a human at a table of AI agents?"
+opens page 5. Its other answers (the stage's wait on Haiku, the drafting helpers) belong to chapters 6
+and 8 and are linked, not retold.
 
 **Public tags on the chapter card:** multi-agent orchestration, human-in-the-loop systems, structured
 outputs and validation (`skills_inventory.md`). Supporting terms named on the pages where they are
 explained: LangGraph, fan-out/fan-in, checkpointing, cache-key design, event-driven scheduling,
-simulation environment design.
+simulation environment design, context isolation.
 
 ## Level 2 page briefs
 
@@ -502,7 +405,8 @@ can absorb page 5's "a human's answer takes the same path" paragraph rather than
 **Reader question:** what does it take to seat a human at a table of AI agents, when the game must stop
 for the human, wait, survive a restart and continue without changing what the AI players already did?
 
-**Promise:** interrupts, checkpoints, repeated execution, caching and the server host. The cross-game
+**Promise:** interrupts, checkpoints, repeated execution and caching (the server host until it moves
+to chapter 7). The cross-game
 cache incident remains optional deeper reading (Level 3).
 
 **Open with the game:** a person at the table may think for minutes, close the tab or come back after a
@@ -555,7 +459,8 @@ caught and fixed:
    - Deployed 2026-10-26: say what the fix does and how it was verified (the regression tests and the
      before-and-after control), and make no statement about served games since, either way.
    - The Level 3 link sits here.
-6. *Running the engine inside the web server* (111).
+6. *Running the engine inside the web server* (111). **Moves to chapter 7** when that chapter is
+   planned; page 5 then keeps a one-line link (owner, 2026-10-26).
    - Three options. **Exhibit:** three lines, each with why it was kept or rejected.
    - The toy parity check before migrating.
    - The executor sizing from a human wolf's late prompt: 8 threads, then 64.
@@ -670,7 +575,7 @@ Paths are relative to `evidence/` unless marked. Every source the task names is 
 | `frontend/docs/server_design_notes.md` | §5 → page 5, "Running the engine inside the web server" (and the possible Level 3) | The concurrency decision |
 | `frontend/docs/deploy_log.md` | The 2026-10-26 entry → Level 3 (deploy, pre-flight, served-game status) | Deploy state of the fix |
 | `gameplay/data/` study folders | Exhibit sources: `evil_cover_screen/`, `evil_cover_games/`, `phase3_balance*/`, `phase3_games/`, `silence_calibration/`, `voice_rewrite/`, `persona_line/`, `persona_voice_games/`, `phase2_step8_games/` | Each exhibit is lifted from these records |
-| `gameplay/deduction/` | Chapter 3. Page 1 links to the covers line; the Level 1 table's deduction row points there | Placement: the engine is chapter 3's |
+| `gameplay/deduction/` | Chapter 3. Page 1 links to the covers line; page 4's who-decides table labels the deduction row "→ chapter 3" | Placement: the engine is chapter 3's |
 
 ## Boundaries and drafting checks
 
@@ -679,7 +584,8 @@ Paths are relative to `evidence/` unless marked. Every source the task names is 
 - the node-cache bug: page 5 and Level 3, with chapter 7 holding the diagnosis and chapter 6 telling the
   caches apart;
 - output guardrails: page 4, with the echo gate and opening filter on page 2;
-- context isolation: chapter 2;
+- context isolation: chapter 2 owns the implementation and checks; chapter 1's page states the
+  requirement and the mechanism in one section, with the isolation flowchart;
 - field order: chapter 3.
 
 Cross-link instead of retelling.
@@ -759,13 +665,19 @@ investigator lynch, the cross-game key. State each as found, the change made and
 contest. It is not presented as "improving how agents play", which chapter 3 owns, and it makes no
 claim about better play.
 
-**Drafting order:** draft the Level 1 summaries and page 5 first. Page 5 has the strongest engineering
-story and the selected Level 3. Then draft pages 1, 2, 3 and 4, and only the Level 3 pages the owner
+**Drafting order:** the chapter page and page 5 are drafted (2026-10-26). Next, page 5's Level 3 page
+(the cache key that crossed games), then pages 1, 2, 3 and 4, and only the Level 3 pages the owner
 selects.
 
 ## Open questions (owner)
 
-Settled on 2026-10-26: the game → requirements → decisions → evidence arc; the requirements table in
+Settled on 2026-10-26, later: the owner's reorganised chapter page (the game, then one section per
+requirement, each linking to its page; no requirements table and no per-page summaries); human play
+compared only where it differs (sections 1 and 2); Level 1 at a higher altitude than LangGraph
+specifics; evidence only where it pushed the design; page 4 widened to one whole agent turn; page 5
+kept as the engine's side of a human player, with the async host moving to chapter 7.
+
+Settled earlier on 2026-10-26: the game → requirements → decisions → evidence arc; the requirements table in
 place of the question subheadings and the Level 1 who-decides table (which moves whole to page 4, its
 deduction row labelled "→ chapter 3"); the five page titles; no "what went wrong" section; the async
 host on page 5, the shared records on page 3, the voices closing page 2; the page 1 hook reworded.
