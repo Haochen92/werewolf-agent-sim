@@ -19,7 +19,9 @@ doesn't belong in this folder.**
 
 1. **[`review_map.md`](review_map.md)** — the map: every v7 design decision → what to read → the
    generating harness. Start here.
-2. **[`report.md`](report.md)** — the verdict-first write-up (what v7 concluded).
+2. **[`report.md`](report.md)** — the v7 report: how the compounding question was measured (the power
+   simulation, the signed pre-registration), what the July test found, and the June runs that forced
+   the method (merged with `execution_plan/report.md` on 2026-10-26).
 3. **[`experiment_log.md`](experiment_log.md)** — the chronological journey (why each choice, in order).
 4. **[`plan.md`](plan.md)** — the pre-registered plan (claim ladder, gates, spend gating).
 

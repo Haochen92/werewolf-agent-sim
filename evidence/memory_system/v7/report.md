@@ -1,143 +1,386 @@
-# A rigorously-measured cross-game-learning memory system for multi-agent Werewolf
+# v7: did a memory that rewrites its own lessons make the town play better?
 
-**Status:** v7 memory-research iteration · static-memory result solid · **compounding question OPEN** (the loop run that was meant to answer it was invalid — see §3/§5c)
-**Provenance:** repo `8bfd0ad` (`feature-dimension-schema`); loop run on `bdfe1fa..52e26b1`; run record + config in `evidence/memory_system/v7/runs/v2_full/` (`run_meta.json`, `loop_history.json`, `cost_report.json`, `v2_salvage.py`).
+This is the record of the v7 memory experiment (June and July 2026, the nine-seat game). It covers
+the learning loop as it ran then, how the question was measured so the answer could be trusted, and
+what the signed test found. The journey in date order is in two logs: the June loop runs in
+[`experiment_log.md`](experiment_log.md), and the July plan, build and test in
+[`execution_plan/experiment_log.md`](execution_plan/experiment_log.md). What runs today is in
+[What followed](#what-followed-and-what-runs-today); this page does not describe today's code
+except where it says so, with a date.
 
-> **One-line claim set (read this first, then the rest qualifies it):** Static episodic memory measurably improves town play (**paired same-epoch A/B, N=30 on the frozen v5_0 store: the town decision-quality basket is significant — correct-elim p=0.028, healer-save p=0.005, mislynch-rate p=0.036 — with a +17→+33pp win lift across arms; win-rate itself reaches p=0.013 only on the reranked arm, +33pp**) — more than market sims, which are stateless. The agents **demonstrably learn across games** (a self-consolidating credit→synthesize→prune loop that updates the store from outcomes). Whether that *compounding* further improves play is **still open**: the loop run built to test it accidentally enabled memory for *all* factions (not the intended town-only), confounding the town signal in an arms race — though it does, by accident, show a **tentative positive compounding signal for *wolf* memory**. The durable deliverable is the **eval instrument plus the rigor around it**: it caught **two** invalid runs (a distorted baseline, then a config slip) and a halo in my own first-pass analysis — honest negatives and retracted claims beat fragile positives.
+## In short
 
-> **Scope addendum (2026-10-04): the agents in these games did not reason.** Game turns ran on
-> `gemini-3.1-flash-lite` at thinking level "minimal", a 128-token budget on Vertex. A later probe found
-> that this model, asked for the game's structured output at that budget, reasons for 0 tokens. The
-> runtime fingerprints confirm "minimal" on every game record behind this report: the June static A/B
-> (398 records) and all v7 loop runs (222), and also the v7 endpoint run after it (60). Both arms always
-> ran at the same level, so each ON−OFF comparison is still fair. What changes is the scope. Every memory
-> result here, positive or negative, is a result for a player that does not reason, and none of these
-> runs says what memory does for one that does. We never considered this while designing the runs: the
-> fingerprint recorded the setting, and nobody checked whether it produced any reasoning. Detail, the
-> run-by-run table and the untested hypotheses are in `evidence/credit/blindspot_fix/experiment_log.md`
-> §⑦.
+- **Question.** A learning loop played games in rounds, graded every lesson by the decisions that
+  followed it, removed the bad ones and wrote new ones. Did the finished memory make the town decide
+  better than no memory at all?
+- **Test.** Four learning rounds (40 games with memory, 40 without, $25.74), then 30 deals each played
+  twice, with the finished memory and without (60 games). The measure, the size and how a negative
+  would be read were signed before any game was played (2026-07-16); one change was made after the
+  learning games and before any test game.
+- **Answer.** The town's decision score was 0.147 lower with memory, and lower on 19 of the 30 deals
+  (p ≈ 0.06, not significant). As committed in advance, this was reported as "no compounding
+  detected", with the estimate leaning toward harm. Every game ran with players that produced no
+  reasoning before answering.
+- **What followed.** The owner closed the memory research on 2026-07-21 without a further run. Closed
+  is not disproved. The loop's grading and lesson-writing later became the memory system's
+  consolidation code; in served games today memory is the player's switch and starts off.
 
----
+## Scope
 
-## 1. Motivation
+**The players did not reason.** Every game behind this report played its turns on
+`gemini-3.1-flash-lite` at thinking level "minimal", a 128-token budget on Vertex. A probe on
+2026-10-04 found that this model, asked for the game's structured output at that budget, reasons for 0
+tokens. The run fingerprints confirm "minimal" on all 222 game records of the June loop runs and all 60
+of the July test. Both sides of every comparison ran the same way, so each comparison is fair. Every
+result here, positive or negative, is a result for a player that answers without a reasoning step;
+none of them says what memory does for one that reasons. Detail and the run-by-run table:
+[`../../credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §⑦.
 
-Multi-agent game sims are almost all **stateless role-players**: each game starts from zero, nothing carries over. The premise here was the opposite — agents that **learn across games** via an episodic+procedural memory store. Two questions follow, and they are *not* the same: (a) *does having memory help?* and (b) *does memory that updates itself from outcomes — compounding across games — help more over time?* The gap we set out to close was measuring (b) honestly, because (a) was already evidenced and (b) is the actual frontier claim.
+**Dates.** The June loop runs: 2026-06-19 to 06-23. The July plan: 07-04. The power simulation: 07-05.
+Pre-registration signed: 07-16. Learning rounds: 07-17 to 07-19. Test games: 07-20. Closure: 07-21.
 
-## 2. Design and hypothesis
+## The question
 
-The system is two memory channels plus a learning loop:
+**The memory.** The agents keep two kinds of written memory from past games. An *observation* is a
+fact about a past game, recorded afterwards by a model that can see every hidden role. A *strategy
+point* (here, a *lesson*) is an instruction of the form "if this situation, then this action"; one the
+June loop kept told an investigator holding a definite result late in the game to reveal it and force
+the vote. Before each decision a player retrieves a few lessons for its role and the moment of the
+game, and reports which it followed.
 
-- **Episodic** (`observations`) — omniscient post-game facts, the substrate for inference (a villager reasoning from "who behaved how").
-- **Procedural** (`strategy_points`) — IF-situation→THEN-action directives, the substrate for execution.
-- **The compounding loop** — between batches of games: **de-lucked credit assignment** grades each *followed* directive by the decision's outcome *against a memory-off baseline* (not win/loss, which is luck-laden); then **synthesize / prune / decay** consolidate the store — keep what earns credit, drop what doesn't, distill new directives from accumulated observations.
+**The loop, as it ran in 2026.** The loop plays games in batches called *generations*. After each one
+it does three things:
 
-**Hypothesis:** if the credit signal is real, the store should *compound* — decision quality should slope **up** across generations versus a flat memory-off baseline.
+1. **Credit.** Every decision a player made while following a lesson is graded good, neutral or bad
+   against the hidden roles (the score below). A lesson's *lift* is the average grade of the
+   decisions that followed it minus the average grade of the same kind of decision in games without
+   memory. Grading against the roles rather than the game's result is called *de-lucked*: a lucky
+   win does not make a bad move look good.
+2. **Synthesise.** A model writes new lessons from the observations gathered so far and from the
+   existing lessons' track records.
+3. **Prune.** Lessons whose lift falls below −0.15 after at least 8 follows are removed (the July
+   settings), and lessons retrieved often but never followed can be evicted. Old observations
+   decay out after several generations.
 
-The deliberate design bet was to **measure the choice, not the outcome**: score each *decision* by a de-lucked proxy (was the vote/target correct against true roles, independent of whether the lynch/kill landed), because game win/loss is too noisy and too luck-laden to be the per-generation instrument. Tradeoff: the proxy is a stand-in for "good play," not ground truth — accepted because deterministic decision-quality scoring isn't feasible and the proxy is drift-immune where win-rate is not.
+**The hope** was that this makes the memory better generation after generation: lessons that lead to
+good decisions survive and bad ones are dropped. The project called this *compounding*. Having
+memory at all was a different question, tested separately (below).
 
-## 3. The iteration that mattered: making the instrument trustworthy
+**The June static test, for contrast.** A fixed memory, with no loop, was tested on 30 paired deals in
+June. It improved selected town decision measures: the healer saved the real target 37% → 60% (p =
+0.005), and town eliminations hit an enemy 47% → 64% (p = 0.028). The town win rate went from 27% to
+43%, not significant (p = 0.27). Wolves and the lone killer gained nothing. That test, its arms and
+its limits are told in [`../effectiveness/report.md`](../effectiveness/report.md).
 
-This is, honestly, a report about an **eval instrument** as much as a memory system — because the first attempt at measuring (b) was *invalid*, and catching that was the highest-leverage work.
+## The score
 
-A first loop run produced a plausible-looking slope. On audit it was **invalid**: the de-lucked baseline was sourced from a biased subset of decisions, so the *lift* — the signal that drives both credit and the slope — was distorted. The structural fixes (below) addressed that. **But the rerun was invalid too, for a different reason**, caught only on a later independent re-audit (§5c): it enabled memory for *every* faction instead of the intended town-only, so the town signal sits inside an arms race. **Two invalid runs, two distinct causes — and the second is the more instructive, because the run *looked* clean (paired, cost-capped, replicated) and a first-pass analysis even rationalized its null with a "null control" that didn't exist.** That is the honest core of this report: a stateful-agent eval is a minefield of silent confounds, and the value is the discipline to keep finding them. The structural fixes that *do* hold:
+**One number per game for how well the town decided.** Every decision a town player made after day 1
+(day votes and night actions) is graded against the hidden roles revealed at the end: +1 good (for
+example, voting for a wolf), 0 neutral, −1 bad (for example, voting out a villager). Day 1 is skipped
+because memory cannot have made a difference yet. The grades are averaged, so the score runs from −1
+(every decision bad) to +1 (every decision good).
 
-- **Paired arms** — the memory-on and memory-off arms play the **same boards** (matched `game_id` → identical role draw + scheduler seed), so memory is the *only* difference and board-draw variance cancels.
-- **Valid baseline** — the de-luck baseline comes from the dedicated, same-epoch off arm, not incidental off-policy decisions.
-- **Cold start** — the store builds from *zero* on the current substrate, rather than warm-seeding a store mined on an outdated one.
-- **Cost discipline** — every paid model pinned to the cheap tier on the driver's own process (not just subprocesses), plus in-run cost capture. First run ~$100; rerun **$15**.
-- **Arm guard (added after the slip)** — the driver now reads the ON arm's *actual* enabled-faction set and crashes generation-1 unless it matches a **declared** `--expect-factions`, recording it in `loop_history`. The config slip that wasted the rerun would have been a $0.50 crash instead of a $65 null.
+**A worked example.** A game with 12 graded town decisions, 7 good, 2 neutral and 3 bad, scores
+(7 − 3) ÷ 12 = +0.33. The score ignores who won.
 
-## 4. Evaluation setup
+**Games wobble.** The same setup gives very different scores from game to game, because each game is a
+different deal: who the wolves are, who holds which power role, how the talk goes. These are the 15
+memory-off games from the first town-only loop run:
 
-- **Generations:** 13 planned × 4 games/arm, paired ON/OFF, run in one capped pool; consolidation every generation. **Stopped at gen-6** by a pre-registered rule (below).
-- **Intended arm:** town-only memory (deceivers frozen, so town learning is isolated). **What actually ran:** `configs=all_enabled` — every faction had memory. This is the invalidating slip (§5c); the analysis below is therefore *per-faction* on the run as it actually executed.
-- **Metric:** per-decision de-lucked proxy, aggregated per faction, **ON − OFF per generation**. The slope across generations is the headline; gen-1 is the empty-seed bootstrap and is excluded.
-- **Pre-registered stopping rule (set before the run):** positive slope → memory compounds → freeze/ship. Flat → honest negative-with-mechanism → **stop, do not escalate N**. *Caveat in hindsight:* this rule only fires validly on a valid arm — applying it to the confounded town signal was a category error (§5c).
+> −0.15, −0.10, −0.04, +0.08, +0.13, +0.17, +0.27, +0.35, +0.35, +0.46, +0.46, +0.53, +0.68, +0.88, +0.93
 
-## 5. Results
+They average +0.33, but a single game can land anywhere from below zero to near +1, with no memory and
+nothing learning. A typical game sits about 0.33 away from the average. This spread, not a lack of
+labels or judges, was the obstacle.
 
-### 5a. Claim 1 — static memory helps (the validated positive)
+## Testing the test before paying for it
 
-In a prior **paired, same-epoch, pre-registered A/B** on the frozen v5_0 store, town with a static memory store beat town without it on **every arm — +17pp raw (p=0.267, NS), +33pp reranked (p=0.013), +23pp all-on (p=0.167), N=30 each**. Win-rate is underpowered at this N, so the load-bearing evidence is the *consistency across all three arms* plus the pre-registered town decision-quality basket, which is significant on the clean interleaved raw arm (healer-save +0.23 p=0.005, correct-elim +0.17 p=0.028, mislynch-rate −0.17 p=0.036, paired Wilcoxon) — **not** the single reranked win-rate cell. This is a *different experiment* from the loop — it measures *having* memory, not *compounding* it — and it stands on its own. **Takeaway:** the memory premise is real; stateless market sims leave this on the table.
+**The question: could the planned test see a realistic improvement at an affordable size?** No. At the
+size of the previous paid run it would have noticed one about 1 time in 9.
 
-> Confidence: direction is consistent across all three town arms and the pre-registered decision-quality basket is significant at the A/B's N; the win-rate alone is underpowered, reaching p<0.05 only on the reranked arm (which, unlike the raw arm, ran later the same day rather than interleaved with the baseline). The mechanism was defensive (memory mostly helped town *avoid* day-2 mislynches), which matters for how we frame the demo, not whether the effect exists.
+**The planned test.** Average the score for each generation, draw the best straight line through the
+averages, and check whether it slopes upward by more than chance would explain. The June runs had been
+read this way. Each generation gives only one average from a handful of games that wobble this much,
+so before paying for another run the plan (2026-07-04) checked, for free, whether this test could see
+a realistic improvement.
 
-### 5b. Claim 2 — the system demonstrably learns
+**The simulation.** Build pretend runs in which the right answer is known, then check whether the
+planned test finds it. Each pretend run took four steps:
 
-The loop is not a static index. Across the run the store **built from zero and self-consolidated from outcomes**: credit fired (hundreds of followed directives graded per generation), credit-aware synthesis engaged once track records accumulated, prune/decay culled. This is mechanism, not outcome — it holds regardless of the §5c confound, which is about *whether the consolidation improves play*, not *whether it happens*. **Takeaway:** "agents that learn across games" is true at the *mechanism* level — observable, and the natural thing to make *visible* in a demo. This is the differentiated capability regardless of the compounding verdict below.
+1. **Start from games where nothing improves:** the 15 memory-off scores above.
+2. **Build a pretend run from them.** For 4 games per generation over 6 generations (the size of the
+   previous paid run), draw 4 scores at random for each generation, putting each back after drawing it.
+   Nothing in this pretend run improves.
+3. **Plant an improvement:** add a known amount to every score, growing each generation, so the run ends
+   +0.15 higher than it started:
 
-### 5c. Claim 3 — does compounding improve *play*? UNRESOLVED — the run was confounded, and here is the honest post-mortem
+   | Generation | 1 | 2 | 3 | 4 | 5 | 6 |
+   |---|---|---|---|---|---|---|
+   | Added to each game's score | +0.00 | +0.03 | +0.06 | +0.09 | +0.12 | +0.15 |
 
-The headline I first wrote here was wrong, and the way it was wrong is the most useful thing in this report.
+4. **Run the planned test** on the 24 scores: does the line slope upward by more than chance would
+   explain? The usual bar is that, with no real improvement, a slope that steep would appear less than
+   5% of the time.
 
-**What I first claimed (RETRACTED):** "Town ON − OFF is a noisy weak-negative (mean −0.18); and wolf/SK — which *have no memory in either arm* — swing the same ±0.2-0.3, so that's the pure-noise floor; the town signal sits inside its own null control; therefore noise-limited, stop." It reads clean. It is false at the root.
+This was repeated 2,000 times with fresh draws. The *hit rate* is the share of repeats in which the test
+reported the planted improvement; statisticians call it *power*, and the usual target is 80%. Other run
+sizes were simulated the same way. No model was called, so it cost nothing.
 
-**The defect (found on independent re-audit of the raw records):** the run did **not** enable memory town-only. `run.log` and every ON record's `memory_config` show **`all_enabled`** — wolf and SK had full memory too (their SPs took *hundreds* of follows; ~3 retrieved per decision on 84-94% of decisions). So:
+**Why +0.15.** It is the middle of the plan's own estimate of a realistic improvement (+0.1 to +0.2).
+That estimate came from the largest memory effect ever measured on this score, about +0.2, from an
+earlier experiment with a fixed memory on older prompts. A learning memory was not expected to beat
+that by much, and the score had little room above the town's +0.33. The simulation also planted +0.05,
++0.10, +0.20 and +0.30, and +0.00 to check for false alarms.
 
-- **The "null control" does not exist.** Wolf/SK were a live *treatment* arm. Their non-zero swing isn't a noise floor — it's their own (real) memory effect plus noise. The argument that "proved" noise-limitation was circular.
-- **Wolf on−off actually *trends up*:** −0.14, −0.05, −0.11, +0.17, +0.10, **+0.28** (mean **+0.077**, OLS slope **+0.086** over gens 2-6) — the one monotone, compounding-shaped signal in the run, which I had dismissed as noise.
-- **The town number is confounded by an arms race.** The vote proxy scores a town vote `positive` only if the votee is genuinely evil; better-concealed (memory-improved) wolves make town mislynch more, *mechanically* depressing the town proxy regardless of town's own skill. De-luck removes outcome luck — **not opponent strength**. ON-arm town (facing memory-wolves) vs OFF-arm town (facing memoryless wolves) is not a clean contrast.
-- **The "+0.41 town / discussion +0.26-0.48" lift was a halo, retracted.** It was raw `(pos−neg)/follow` with the tagger baseline pinned to 0 — a *level*, never differenced against no-memory (positive verdicts occur with or without memory). Differenced properly via the free day-vote-endpoint floor, town discussion on−off is pure noise (mean ≈ −0.12); including discussion does **not** rescue the town number (−0.18 either way). A first re-score even got this wrong a second way — ON/OFF share `game_id` and tags cache per `game_id`, so it silently scored the OFF arm with ON-arm tags. Fixed.
+**The result: the test mostly missed it.**
 
-**Repositioned result — the run is a valid *all-memory-on* per-faction A/B** (paired by board; `v2_salvage.py`, $0 re-read):
+| Run size | Cost | How often the test noticed the planted +0.15 |
+|---|---|---|
+| 24 games (the size of the previous run) | $7 | about 1 time in 9 (11%) |
+| 200 games (the largest size tried) | $56 | about half the time (56%) |
 
-| faction | on−off mean (g2-6), vote+night | slope | read |
-|---|---|---|---|
-| **wolf** | **+0.077** | **+0.086 ↑** | tentative positive, compounding-shaped — the one real signal |
-| town | −0.189 | −0.027 | **confounded** (arms race) — *not* a verdict on town memory |
-| serial_killer | −0.142 | +0.027 | ≈ null |
+At the size the project could afford, a real improvement would come back as "no effect" nearly 9 times
+out of 10. The test was not broken: a planted +0.60 was caught 85% of the time even at 24 games. It
+failed at the size of effect the project expected to find.
 
-**Takeaways, honestly bounded:** (1) the **town compounding question is unanswered** — the run can't isolate it, and no post-hoc analysis repairs a board that already contained memory-wolves; (2) the run accidentally produced a **tentative positive for wolf memory** (underpowered at 4 games/gen, ±0.2-0.3 swings — directional, not significant); (3) the noise *is* large — that observation from the original write-up survives; what does not survive is using it to declare the question settled.
+**How sure we are.**
 
-> Why the variance is large (this part holds): per-game town de-luck swings **±0.9 even on matched boards**, because a stateful game diverges the moment memory flips one vote — so pairing decays after the first differing decision. More games/generation is the only lever, and it runs into model-epoch drift. That makes a *powered* compounding number genuinely expensive — but it does not excuse running (and reading) the wrong experiment.
+- **It agrees with a formula.** A standard textbook formula for the same test, computed separately, gave
+  almost the same hit rates.
+- **It does not cry wolf.** With nothing planted, the test raised a false alarm only 2–3% of the time.
+- **It corrected one assumption.** The plan expected a game's score to swing by about ±0.9, which is how
+  much one graded decision swings. A game averages several decisions, so it swings about three times
+  less (0.33 in the main set, 0.32 and 0.27 in two other sets checked). The test still missed.
+- **Its main limit flatters the test.** The simulation treats each generation as separate, while in a
+  real run every generation shares the same growing memory. That probably makes the test look better
+  than it is, so the real miss rate is likely worse.
 
-## 6. Decision and tradeoffs
+## The redesign: compare the same deals, finished memory against none
 
-**The memory architecture is NOT frozen on this evidence** — that was the original (premature) call, made on the confounded run. The correct status: **static memory helps (Claim 1, solid); the system learns (Claim 2, solid); whether compounding improves play is open.** The cheapest path to actually answering it is a single **town-only** rerun (now guarded by `--expect-factions`, so the slip can't recur) at the same N — *or* deciding the demo value (Claim 2, visible learning) is sufficient and the powered compounding number isn't worth the model-epoch-drift cost. **Tradeoff:** the noise analysis is real (a powered per-decision compounding number is expensive), but "expensive to measure" was wrongly conflated with "measured and null." Those are different, and only the first is true.
+**The trend test was dropped on 2026-07-05, before any paid run used it.** The compounding question was
+recorded as open, not answered.
 
-## 7. Lessons (transferable)
+**Why not just play more games?** Even 200 games missed the improvement half the time. A long run also
+risks the hosted model changing partway through, which would spoil any comparison across generations.
 
-- **A "null control" is only as good as the assumption that it's null — verify it from the data, not the intent.** I built a clean noise-floor argument on "wolf/SK have no memory," never checked the run's actual `memory_config`, and the records said otherwise. The most persuasive-looking argument in the first draft was the most wrong. Before trusting a control subgroup, assert it really received zero treatment.
-- **Make the experiment's identity a checked invariant, not a launch-time intent.** The run silently executed `all_enabled` instead of `town_only` because the driver defaulted to it and nobody asserted the arm. The fix is mechanical and cheap: read what *actually* ran (the per-role memory map), assert it equals a *declared* expectation, fail loud on generation-1. A $0.50 crash beats a $65 null. Two of two invalid runs were "the harness ran a different experiment than I thought" — guard that class explicitly.
-- **Pairing reduces variance only as far as the units stay paired.** Matched initial conditions cancel draw variance for a *single per-unit outcome* (win/loss). For a metric aggregated over a *trajectory that diverges*, the pairing decays after the first divergence — and at the aggregate level the paired estimator collapses to the unpaired one. Pair at the grain you measure, or know that you can't.
-- **A distorted baseline silently invalidates everything downstream, with no error thrown.** Lift feeds credit feeds synthesis feeds the slope; a biased baseline corrupts all of it while every number still *looks* plausible — as does a halo (a level reported as a gain because it was never differenced against the control).
-- **A trustworthy negative beats a fragile positive — but "expensive to measure" is not "measured and null."** The instrument is the asset; the verdict is a readout, and a readout from the wrong arm is not a verdict. Re-auditing your own clean-looking result is the job.
+**The replacement.** Let the loop learn for several generations without measuring anything. Then play a
+set of *boards* twice, once with the final memory and once without. A board is one fixed deal of roles
+and random seed, so both copies start with the same luck, and the difference between them comes from
+the memory. A finished memory carries its whole effect into every game at once, which is easier to see
+than a slow rise spread thin across generations.
 
-## 8. What's next
+**The tradeoff.** This design says whether the final memory makes a difference, not when or how fast it
+got there. The two copies of a board stop matching once memory changes a single move, so pairing
+removes the luck of the deal, not everything after it. The new design's power was never simulated; it
+rested on the reasoning above.
 
-Two honest options, not one:
+A standing rule came out of this: no paid compounding run without first simulating whether its test can
+detect the effect it is looking for.
 
-1. **Answer the compounding question** with a single **town-only** rerun (~$15, now guarded by `--expect-factions` so the slip can't recur). This is the clean experiment that was never actually run. Worth it if the compounding claim matters; skippable if Claim 2 (visible learning) carries the demo.
-2. **Ship the visibility, treat compounding as open.** A frontend **memory inspector** that shows the agent retrieving a specific past-game lesson and acting on it makes the differentiated capability — *agents that demonstrably learn across games* — tangible. Win-rate (+17→+33pp across arms) proves memory helps; the demo proves it learns; the compounding magnitude stays an open, honestly-labeled question.
+## The pre-registration
 
-Either way, two known gaps if the loop is revived: (a) SP adoption counters aren't merged back into the loop store, so the dead-weight eviction rule is currently inert (prune-by-lift still works); (b) the new-clusters-only synthesis gate is a no-op at `k=1` with small games/gen (every cell gets new obs every tick), so the SP-bloat control it was built for was never actually exercised.
+**The owner signed it on 2026-07-16, before any game of the run was played.** It fixed in writing:
 
-**One structural lever, unbuilt — tier the index by proof, don't just prune it.** The effective library is
-the *followed slice*, not the nominal count: per-SP follows are heavily right-skewed (median ~3, max 79), and
-the loop made it worse — run-1 bloated to **537 SPs with `follow_p50 → 1`** (`experiment_log.md` §12), so
-most SPs are retrieval-window ballast displacing a slot a followable SP could have used. Today's only hygiene
-is prune-by-lift (drops *harmful* SPs) plus the inert dead-weight evictor (gap (a) above) — neither reclaims
-budget from the never-followed tail. The cleaner fix is to **split the store: a proven working set owns the
-primary retrieval budget; an unproven reserve is retrieved rarely or not at all.** That reclaims the budget
-*and* preserves frozen-but-unproven SPs intact — dissolving the freeze-out tension (proven and unproven
-currently compete for the same top-k slots, so pruning dead weight and keeping frozen potential look like a
-forced choice; tiering buys both) and giving the dead-weight evictor a real job (demote-to-reserve, not
-delete). Pure retrieval-side, offline, no extra games — the cheapest unbuilt lever in this report. **Caveat
-that bounds it:** the *not-relevant* signal you'd tier on is itself an upper bound on waste — it merges
-genuine correct-declines (healthy breadth) with retrieval false positives, and the logs only partially
-separate them (`plan.md` §10b) — so tier on *follow track record*, not on the raw not-relevant rate.
+- **What is compared:** the same boards played with memory and without. Only the town received the
+  loop's lessons. A short list of *tells* (public behaviours that hint at a hidden role) was shown to
+  every seat in the memory games, wolves included, since it describes public behaviour. A check stops
+  the run if the memory setting that actually runs differs from the declared one, the slip that had
+  spoiled a June run (below).
+- **One main measure:** the town's decision score, compared board by board. Other measures were listed
+  in advance as secondary, never to be promoted to the main result.
+- **Size and budget:** 4 learning generations of 10 games with memory and 10 without, then 60 test
+  games, estimated at $77–98 within a $150 reserve.
+- **No stopping on results:** a fixed number of games; the run could halt only on an automatic validity
+  check. Partial generations from crashed attempts were set aside, not pooled.
+- **How a bad result would be read:** a null or negative result is reported as "no compounding
+  detected", not rerun with a different measure. No prompt edits during the run.
 
-**One validated instrument lead** (for *deceiver* play, which the vote proxy can't measure): the omniscient discussion-tagger's verdict predicts the wolf/SK win **beyond** the de-luck vote proxy (partial r ≈ +0.56/+0.60), and that signal **survives blinding the tagger to the game outcome and controlling for verbosity** — so it's real skill, not outcome-leak or wordiness (`tagger_skill_retest.py`). It's correlational at N=24, so it validates *a metric*, not a memory effect — but it's the natural instrument for a future measurement of *deceiver* memory, the gap the town-centric vote proxy left open. (En route, a 2×2 ablation also confirmed the tagger's outcome-leak is negligible, so the production tagger keeps its hindsight; details in `experiment_log.md` §12g.)
+This is why the outcome counts as a result. The measure, the size and the reading of a negative were
+fixed before any data existed, so there was no room to pick a friendlier measure afterwards.
 
-## 9. Artifacts
+**One change after signing, before any test game.** The signed design had three conditions on 20 boards
+each, with the main comparison between the final memory and the memory after the first generation. On
+2026-07-20, after the learning games but before any test game, the owner changed it to two conditions
+on 30 boards: final memory against no memory. The recorded reasons: the first-generation memory held no
+lessons yet, so that comparison would have needed a stand-in, and the freed games made the main
+comparison more precise (about 22% smaller standard error). The change was written into a file beside
+the data ([`PREREG_AMENDMENT.md`](execution_plan/data/v7_endpoint_ab/PREREG_AMENDMENT.md)). It changes
+the question: the test asks whether the finished memory beats no memory, not whether it improved from
+one generation to the next.
 
-| File | What |
+## What the signed run found
+
+**Did the finished memory make the town decide better than no memory? No improvement was detected;
+the estimate leaned toward harm.**
+
+The four learning generations finished on 2026-07-19 at a cost of $25.74, leaving a memory of 168
+lessons. The test ran on 2026-07-20: 30 boards, each played once with that memory and once without (60
+games).
+
+- **Main measure.** The town's decision score was 0.147 lower with memory than without, compared board
+  by board (p ≈ 0.06: a gap this size would appear about 6% of the time by chance). Memory did worse on
+  19 of the 30 boards. As committed, this was reported as "no compounding detected", with the estimate
+  leaning toward harm.
+- **A secondary measure was clearer.** In the same games, town players with memory voted for a real
+  threat about 15 percentage points less often (the rate without memory was near 50%) and abstained
+  more (31% of votes against about 23%). Counted vote by vote this gave p < .001, but votes within one
+  game are not independent, so that overstates its certainty, and it was not the main measure.
+
+**The explanation the record offers: the grading could not see the harm.** Cautious lessons told the
+investigator and healer to keep what they knew to themselves and told town players to abstain when
+unsure. The loop's grading scored every town abstain as neutral, and a lesson with no memory-off
+comparison was compared with zero, so a lesson telling the vigilante to abstain scored exactly 0.00 and
+was never pruned. That case, with its numbers and the fix, is told once in
+[the credit report](../../credit/report.md) §6.
+
+**How sure we are.**
+
+- **It rests on** 30 deals, each played both ways, under a design fixed in advance.
+- **It is not significant.** "No compounding detected" is the committed reading. The run did not show
+  that memory hurts, and it did not show that a self-improving memory cannot help.
+- **What the memory arm included.** Besides the town's lessons, the memory games showed a short list
+  of tells to every seat, wolves included, and the games without memory did not. The amendment names
+  the treatment as the matured store "SPs + tells" against no memory, so the test measures the two
+  together; the tells' own effect was never separated.
+- **What it does not cover.** Players that reason before answering; a longer run (counter-lessons
+  against caution had begun to appear but were outnumbered when the run ended); the loop with its
+  grading fixed, which was never played.
+- **What the comparison changed.** After the amendment the test compares the finished memory with no
+  memory. It cannot say whether the memory improved from one generation to the next.
+
+## The June loop runs: the history that forced the method
+
+**Why the July test was built the way it was.** Two June runs of the loop were both invalid, each for a
+different reason, and neither reason threw an error. The July design closes both, and adds the power
+check, because in June the run size had been chosen by budget rather than by what the test could
+detect.
+
+**The first run (2026-06-21): a distorted baseline.** A lesson's lift compares its decisions with the
+same kind of decision in games without memory, so that comparison has to be sound. In the first run it
+was not. At first it came from the few memory-off decisions inside the memory games (thin, and biased
+toward early boards where retrieval was skipped). Later it came from a separate memory-off arm, but one
+played on different deals, so each kind of decision was averaged over different situations. Either way
+the lift was wrong, and lift drives both the new lessons and the pruning, so the run's lessons and its
+slope could not be trusted. The run also caught a bug that had silently zeroed all credit from the
+second generation on; it was fixed mid-run, and the loop gained checks that stop a run when an input
+comes back empty instead of letting it produce a plausible wrong number. The completed ten-generation
+run cost $65.21; the record puts the first run's attempts at about $100 together. The town's gap
+(memory minus no memory) swung around zero: a mean of −0.101 over 10 generations, standard deviation
+0.156, 5 games per generation.
+
+**The fix.** Memory-off games on the same boards: each memory game is paired with a memory-off game on
+the same deal (the same role draw and scheduler seed), and the memory-off average comes from that arm.
+
+**The second run (2026-06-22): the wrong experiment.** The rerun started from an empty memory, paired its
+arms and was meant to give memory to the town only. It ran 4 games per arm per generation and stopped
+after 6 of 13 planned generations, under a stopping rule set before the run (a flat trend meant stop,
+not more games). It cost $15.00. Its first reading took wolves and the lone killer, assumed to have no memory, as
+a control for the noise. An audit of the raw records on 06-23 found that every faction had memory: the
+driver defaulted to "all factions" and the town-only setting was never passed. So:
+
+- **There was no control.** Wolves and the killer were receiving memory too; their swings were their
+  own memory effect plus noise.
+- **The town result is confounded.** A town vote scores well only if it lands on a real enemy. Wolves
+  improved by memory hide better, which lowers the town's score whatever the town's own skill. The town
+  with memory faced memory-using wolves; the town without faced plain ones.
+
+**The guard that came out of it.** The loop now reads which factions actually had memory in the first
+generation's games and crashes unless that matches a declared intent, recording the arm in the run's
+history. By the July run, a run also refused to start unless an intent was declared or the check was
+waived on purpose (`evaluation/src/loop/driver.py::run_loop`, `evaluation/src/loop/invariants.py::assert_arm_factions`).
+The July run declared "town only", and the test's log confirms the arm (healer, investigator,
+vigilante, villager) before reporting.
+
+**A by-product, tentative.** Read as what it actually was, a test of every faction with memory on paired
+boards, the second run showed one rising pattern (memory minus no memory, generations 2–6, vote and night
+decisions; `runs/v2_full/v2_salvage.py`):
+
+| Faction | Average gap | Trend per generation |
+|---|---|---|
+| Wolves | +0.077 (rising to +0.28 by generation 6) | +0.086 |
+| Town | −0.189 | −0.027 |
+| Lone killer | −0.142 | +0.027 |
+
+The wolves' gap rose across generations: −0.14, −0.05, −0.11, +0.17, +0.10, +0.28. This is 4 games per
+generation with swings of ±0.2–0.3, from a run invalid for its own question, so it is a direction worth
+noting, not an effect. It is not part of any verdict. The town row is not a verdict on town memory,
+because of the confound above.
+
+## What followed and what runs today
+
+**The closure (2026-07-21).** The owner declined a further run (about $25) and closed the memory
+research: no memory version was promoted, and live play shipped with memory off. The verdict across the
+memory experiments, in the wording the owner ruled (2026-10-26):
+
+> The June static-memory A/B reported improvements on selected town decision measures. A later A/B on a
+> different store, run against a higher no-memory baseline, found no town effect; it was not a
+> replication of the June test. Separately, the pre-registered v7 endpoint detected no compounding
+> benefit.
+
+The investigation is closed; the hypothesis was not disproved.
+
+**The grading was fixed after the run, and the fix was never played.** A town abstain on a day that
+ended with nobody voted out is now graded bad, and a lesson with no memory-off comparison is left
+unscored. Re-scoring the recorded games pruned the abstain lesson and kept three lessons chosen in
+advance as good ([credit report](../../credit/report.md) §6;
+[`../../credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md)).
+
+**The loop graduated into the memory system's consolidation code** (`Agents/memory/consolidation/`,
+ported to the ten-seat game on 2026-10-13). Checked against the code on 2026-10-26, it runs in two
+parts:
+
+- **The credit pass** (`tick.py::run_credit_pass`, no model call) grades every stored lesson from the
+  memory-on games in a window, with the fixed abstain rule built in, then prunes and evicts.
+- **The learning tick** (`tick.py::run_tick`, paid) folds in new observations from the offline
+  extraction job, writes new lessons and drops duplicate lessons (keep or discard, never rewritten). It
+  never prunes or evicts. Both passes are run by hand; no schedule is in the repository.
+
+**In served games today** (checked 2026-10-26), memory is the player's switch and starts off
+(`frontend/src/app/(site)/_components/ticket/TicketOffice.tsx`); whether a deployment offers it at all
+is a setting (`server/config.py`, `WW_MEMORY_ENABLED`). With it on, every AI seat retrieves strategy
+points only, never observations (`server/game/run_config.py::game_run_config`). Lessons are extracted
+offline after a game, never during it, and a served game is never mined into the live store. The
+ten-seat memory has not been tested against no memory; see [`../v8/`](../v8/).
+
+**One June gap, and what became of it.** In the second June run, the counts of how often each lesson
+was retrieved, overridden or judged not relevant were written in each game's own copy of the memory but
+never carried back into the loop's memory. Eviction needs those counts, so it never fired in any June
+generation (pruning by lift still worked). On 2026-07-15, before the July run, the credit step began
+recounting them from the game records. In the July run eviction then had candidates but removed none:
+6 and 7 never-followed lessons in the last two generations were kept. The rule evicts only a lesson
+players applied and overrode; one they mostly judged not relevant points at retrieval rather than the
+advice, and is spared. Today the credit pass recounts them
+the same way (`Agents/memory/consolidation/credit.py::credit_apply`), and the first ten-seat credit pass
+evicted 4 lessons ([`../v8/experiment_log.md`](../v8/experiment_log.md)).
+
+## Lessons
+
+- **Test the test before paying for it.** A score can measure the right thing and still be too noisy to
+  notice a realistic change at the number of games you can afford. Here the planned test would have
+  noticed a realistic improvement about 1 time in 9.
+- **When an effect builds slowly, compare the finished state with none on the same deals** instead of
+  looking for a trend across rounds.
+- **Make the experiment's identity a checked fact, not a launch-time intent.** Both June runs ran a
+  different experiment from the one intended, and neither raised an error. Reading what actually ran
+  and comparing it with a declared intent turns that failure into a crash in the first generation.
+- **Check that a control received no treatment before leaning on it.** The June "no-memory control"
+  was assumed from the plan, not read from the records, and the records said otherwise.
+
+## Provenance
+
+| What | Where |
 |---|---|
-| `evidence/memory_system/v7/runs/v2_full/loop_history.json` | per-generation scores (per-faction ON/OFF) + `arm_factions` |
-| `evidence/memory_system/v7/runs/v2_full/v2_salvage.py` | the repositioned all-memory-on per-faction A/B (the corrected §5c table) |
-| `evidence/memory_system/v7/runs/v2_full/run.log` | shows the actual arm: `all_enabled` (the slip) |
-| `evidence/memory_system/v7/runs/v2_full/cost_report.json` | realized cost ($15.00; games $13.43 + overhead $1.57), Langfuse-sourced |
-| `evidence/memory_system/v7/experiment_log.md` §11j, §12 (incl. **§12f correction**) | invalidity corrections + the repositioned analysis |
-| `evidence/memory_system/v7/consolidation_design.md` | the credit→consolidate design (incl. §11 dual-window souring spec, built-but-deferred) |
+| Power simulation | `evaluation/src/instrument_validation/power/mde_simulation.py`, seed 20260618, 2,000 repetitions per setting; its readout and the July planning documents are in git history at `24dfd3a7` (`evidence/execution_plan/power_analysis/mde_table.md`, 2026-07-05) |
+| Pre-registration | signed at `6ae7865`; amendment in [`execution_plan/data/v7_endpoint_ab/PREREG_AMENDMENT.md`](execution_plan/data/v7_endpoint_ab/PREREG_AMENDMENT.md) |
+| July learning run (4 generations) | [`execution_plan/data/v7_compound_town5/`](execution_plan/data/v7_compound_town5/): `config.json`, `loop_history.json`, `cost_report.json`, `run_meta.json` |
+| July test (30 boards × 2) | [`execution_plan/data/v7_endpoint_ab/`](execution_plan/data/v7_endpoint_ab/): `config.json`, `endpoint_result.json`, `run_meta.json`, the run log; both July runs at commit `a010dc6` |
+| June runs | [`runs/`](runs/): `town_only_run1/`, `town_only_run2/` (the first run and its restart), `v2_full/` (the second run, with `run.log` showing the arm that ran, `cost_report.json`, and `v2_salvage.py`); the loop run on `bdfe1fa..52e26b1` |
+| Loop design as built in June | [`consolidation_design.md`](consolidation_design.md) |
+| Replay screen used afterwards | console entry `eval-checkpoint-replay` |
 
-**Provenance:** repo `8bfd0ad`; run config — cold start, 13 gens planned (stopped gen-6), 4 games/arm, paired ON/OFF, `synth_every_k=1`, `window=8`, all models `gemini-3.1-flash-lite`. **Arm as INTENDED:** town-only. **Arm as RUN:** `all_enabled` (the invalidating slip; §5c).
+The per-game records of the July runs (190 MB and 123 MB) were not copied into `execution_plan/data/`;
+the [data README](execution_plan/data/README.md) lists what was. The committed `endpoint_result.json`
+holds pooled per-decision scores (town 0.039 with memory over 458 decisions, 0.247 without over 438).
+The board-paired figures above (−0.147, 19 of 30, p ≈ 0.06) are as recorded in the July log
+([`credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §①); no committed
+file or script reproduces them, and the record does not name the test behind p ≈ 0.06.
