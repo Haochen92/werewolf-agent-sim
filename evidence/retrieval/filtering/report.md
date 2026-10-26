@@ -1,3 +1,23 @@
+> **Superseded record (May 2026).** Written 2026-05-23 and kept as it was, with its 2026-10-14 addendum
+> at the end. The read path today, and this study beside the reranker and capacity studies, are in the
+> [retrieval report](../report.md), "The near-repeat filter". Code paths below are May's; current ones
+> are in the addendum.
+>
+> - **Question.** Does a filter after the search (a similarity gate for observations, MMR for strategy
+>   points, a cap of three per situation) make the retrieved set less repetitive without losing
+>   relevance?
+> - **Test.** Four runs on the nine-seat v4 store (522 items), 10 cases in the first run and 5 in each
+>   later one, one model judge per run (the judge changed between runs).
+> - **Answer.** A similarity line of 0.85 cut five of ten cases to a single observation; 0.92 kept the
+>   volume. On the final run (5 cases) the filtered sets scored relevance 4.20 for observations and 3.00
+>   for strategy points. On a deduplicated store the same filter lowered observation relevance from
+>   4.60 to 4.00 (5 cases).
+> - **What followed.** Filtering is built and off for every role and in served games; only the cap of
+>   three runs. The opposing-lessons example under *Threshold tuning* is a hypothesis: the first run
+>   kept that pair (see the addendum).
+
+---
+
 # Retrieval Pipeline: From Raw Similarity Search to Useful Memory
 
 ## The Problem

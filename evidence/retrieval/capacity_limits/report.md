@@ -1,3 +1,19 @@
+> **Superseded record (May 2026).** Written 2026-05-24 and kept as it was, with its 2026-10-14 addendum
+> at the end. The read path today, and this study beside the filter and reranker studies, are in the
+> [retrieval report](../report.md), "The wider fetch: how many observations to show".
+>
+> - **Question.** With observations alone in the prompt, do more of them per situation help a small
+>   model's decisions, or dilute them?
+> - **Test.** 120 frozen decisions replayed with 3, 5 and 7 observations per situation from the v4_deduped
+>   store (5.0, 7.6 and 9.8 a turn), each decision scored by one judge (Gemini 2.5 Flash).
+> - **Answer.** Five scored slightly highest: action quality 4.40 against 4.33 (three) and 4.26 (seven);
+>   strategy application 4.35 against 4.20 and 4.34. No significance test.
+> - **What followed.** The "Decision" below was built on 2026-06-11 as a fetch of five with the cap of
+>   three still after it, so live prompts kept about the three-per-situation condition (see the
+>   addendum). Served games retrieve no observations.
+
+---
+
 # Retrieval Capacity Limits: Optimal Observation Count
 
 ## Motivation
