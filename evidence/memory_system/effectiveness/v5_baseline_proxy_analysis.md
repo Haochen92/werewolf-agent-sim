@@ -1,5 +1,9 @@
 # v5 Baseline + Memory-On Proxy Signal (interim, 2026-06-11)
 
+> **Status (2026-10-26):** interim pilot read (2026-06-11), superseded. Its town-harm (−32pp) and wolf-lift
+> (+33pp) came from unpaired games on a growing store; the paired A/B on the frozen store found no town
+> collapse ([`report.md`](report.md), "Confounds and rejected readings").
+
 Aggregation of the per-game de-lucked proxies (`computed_metrics`) across the v5 seeding run.
 **Directional / hypothesis-generating only** — the memory-ON arm is the v5_1 *build* games
 (`all_enabled`, unpaired, growing store, rerank/filter OFF = raw top_k=3), NOT the clean paired A/B.

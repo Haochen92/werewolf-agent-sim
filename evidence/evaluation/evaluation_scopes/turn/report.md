@@ -209,7 +209,7 @@ sizes without a noise floor, and they cannot show what happens later in the day.
 
 | Screen | Code | Record |
 |---|---|---|
-| Decision replay | `evaluation/src/studies/decision_replay.py`; engine `evaluation/src/replay/decision_screen/`; lenses in `Agents/memory/consolidation/decision_scoring.py` | [`decision_replay/report_screening_layer.md`](../../../memory_system/effectiveness/decision_replay/report_screening_layer.md), [`experiment_log.md`](../../../memory_system/effectiveness/decision_replay/experiment_log.md); [log](experiment_log.md), Memory replays |
+| Decision replay | `evaluation/src/studies/decision_replay.py`; engine `evaluation/src/replay/decision_screen/`; lenses in `Agents/memory/consolidation/decision_scoring.py` | [effectiveness report, "Screening layer"](../../../memory_system/effectiveness/report.md#screening-layer-per-decision-replays), [`experiment_log.md`](../../../memory_system/effectiveness/decision_replay/experiment_log.md); [log](experiment_log.md), Memory replays |
 | Checkpoint replay | `evaluation/src/replay/decision_screen/checkpoint_replay.py` (`eval-checkpoint-replay`) | [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md) ④–④d |
 | Tell-book screen | `evaluation/src/replay/decision_screen/tell_book_screen.py` | [`tell_extraction/experiment_log.md`](../../../extraction/tell_extraction/experiment_log.md) ⑫ |
 | Stage-filter replay | `evaluation/experiments/v8_stage_filter_replay.py` | [`memory_system/v8/experiment_log.md`](../../../memory_system/v8/experiment_log.md); `data/gate/stage_filter{,_40games}/` |

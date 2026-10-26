@@ -1,5 +1,7 @@
 # Town echo read — (a) ignored vs (b) followed-but-worse
 
+*Generated readout: written by `town_echo_read.py` (2026-06-12) on the first 12 net-first town games; outcome-blind. Context in `experiment_log.md`, "Town collapse — (a)-vs-(b) echo read".*
+
 Paired at game level on the 12 games nh_town has completed so far.
 echo = fraction of a town agent's updated_strategy words drawn from its retrieved memory.
 (a) ignored => nh echo << raw echo ;  (b) followed-but-worse => nh echo ~= raw echo.

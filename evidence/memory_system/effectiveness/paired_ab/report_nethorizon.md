@@ -1,5 +1,7 @@
 # Net-horizon arms — scored vs pre-registration
 
+*Generated readout: written by `analyze_nethorizon.py` (2026-06-12) and frozen mid-run (town arm N = 0); the net-first town arm was stopped at 4 of 30 (see `experiment_log.md`, "Phase A town-regression — conclusion").*
+
 * = Wilcoxon p<0.05 (uncorrected). PRIMARY wolf proxy = unconditioned_blending; the decisive
 contrast is nethorizon vs the v5_0 RAW arm (same retrieval → isolates framing).
 
