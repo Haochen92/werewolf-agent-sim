@@ -204,11 +204,16 @@ def _observations(result, phase: str) -> list:
 
 
 def extract_cases(cases: list, model: str, thinking_level: str | None = None,
-                  warm: bool = True, workers: int = 8) -> dict[str, dict]:
-    """Extract each case's observations; by game id: {"observations", "missing", "model_used"}."""
+                  warm: bool = True, workers: int = 8, journal=None) -> dict[str, dict]:
+    """Extract each case's observations; by game id: {"observations", "missing", "model_used"}.
+    ``journal`` (a ``RunJournal``) lets a stopped run resume: the direct calls it already made are not
+    made again, and its batches are collected instead of sent again."""
     from concurrent.futures import ThreadPoolExecutor
 
     from Agents.llm_factory.providers.anthropic import batch_parse, parse_with_claude
+    from Agents.memory.extraction.run_journal import RunJournal
+
+    journal = journal or RunJournal()
 
     games = {case.game_id: cell_calls(case) for case in cases}
     keyed: dict[str, tuple[str, str, str, str, type, str]] = {}
@@ -226,16 +231,26 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
             logger.warning("Direct extraction call %s failed: %s", key, e)
             return None
 
+    def warm_call(key: str):
+        saved = journal.warm_answer(key, keyed[key][4])
+        if saved is not None:
+            return saved
+        answer = direct(key)
+        journal.save_warm_answer(key, answer)
+        return answer
+
     leads = [next(k for k in keyed if keyed[k][0] == g) for g in games] if warm else []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        parsed = dict(zip(leads, pool.map(direct, leads)))
+        parsed = dict(zip(leads, pool.map(warm_call, leads)))
     rest = {k: (v[3], v[4], v[5]) for k, v in keyed.items() if k not in parsed}
     if rest:
-        parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h", schema_in_prompt=True))
+        parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h", schema_in_prompt=True,
+                                  batch_id=journal.batch_id("extract"), on_submit=journal.on_submit("extract")))
     again = {k: (keyed[k][3], keyed[k][4], keyed[k][5]) for k, v in parsed.items() if v is None}
     if again:
         logger.info("%d calls lost or unvalidated; a second batch", len(again))
-        parsed.update(batch_parse(again, model, thinking_level, cache_ttl="1h", schema_in_prompt=True))
+        parsed.update(batch_parse(again, model, thinking_level, cache_ttl="1h", schema_in_prompt=True,
+                                  batch_id=journal.batch_id("retry"), on_submit=journal.on_submit("retry")))
     lost = [k for k, v in parsed.items() if v is None]
     with ThreadPoolExecutor(max_workers=workers) as pool:
         parsed.update(zip(lost, pool.map(lambda k: direct(k, schema_in_prompt=False), lost)))
@@ -275,10 +290,13 @@ def extract_cases_gemini(cases: list) -> tuple[dict[str, dict], dict]:
     return out, dict(cb.usage_metadata)
 
 
-def dehalo_cases(cases: list, extracted: dict[str, dict], config) -> dict[str, dict]:
+def dehalo_cases(cases: list, extracted: dict[str, dict], config, journal=None) -> dict[str, dict]:
     """The de-halo pass over each game's observations as one batch (``config``: DehaloConfig), the
-    verdicts rewritten in place; by game id, the de-halo record."""
+    verdicts rewritten in place; by game id, the de-halo record. ``journal`` as in ``extract_cases``."""
     from Agents.llm_factory.providers.anthropic import batch_parse, parse_with_claude
+    from Agents.memory.extraction.run_journal import RunJournal
+
+    journal = journal or RunJournal()
     from Agents.memory.extraction.dehalo import apply_judgments, dehalo_prompt
     from Agents.memory.extraction.inputs import extraction_inputs_from_frozen_case
     from Agents.schemas.dehalo import Judgments
@@ -288,7 +306,8 @@ def dehalo_cases(cases: list, extracted: dict[str, dict], config) -> dict[str, d
     prompts = {f"g{i}": (case.game_id, dehalo_prompt(extracted[case.game_id]["observations"],
                                                      extraction_inputs_from_frozen_case(case.model_dump())))
                for i, case in enumerate(cases) if extracted[case.game_id]["observations"]}
-    judged = batch_parse({k: (p, Judgments) for k, (_g, p) in prompts.items()}, config.model, config.thinking_level)
+    judged = batch_parse({k: (p, Judgments) for k, (_g, p) in prompts.items()}, config.model, config.thinking_level,
+                         batch_id=journal.batch_id("dehalo"), on_submit=journal.on_submit("dehalo"))
     records = {}
     for key, (game_id, prompt) in prompts.items():
         result = judged.get(key)

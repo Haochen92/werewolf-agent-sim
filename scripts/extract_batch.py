@@ -4,7 +4,9 @@ Reads extraction inputs (the post-game node's ``extraction_input`` records in a 
 a backfill file), extracts every dealt role's discussion, vote and night as one batch (each game's
 first call direct, to write its prefix to the cache), runs the de-halo pass as a second batch, and
 writes ``extracted.jsonl`` (extraction cases, the eval-case format), ``dehalo.jsonl`` and
-``summary.json`` (counts, tokens and cost at the catalogue's batch prices). A ``gemini-*`` model runs
+``summary.json`` (counts, tokens and cost at the catalogue's batch prices). A stopped run is resumed by
+running it again with the same ``--name``: its journal (``batches.json``) holds the games it took and
+the batches it paid for, which are collected rather than sent again. A ``gemini-*`` model runs
 the per-cell extractor's online path instead, online, with its explicit prefix cache (Gemini batch is not
 built). Writing the lessons into a store or a served game's replay is a separate step.
 
@@ -28,6 +30,7 @@ from Agents.memory.extraction.offline import (
     extract_cases_gemini,
     load_inputs,
 )
+from Agents.memory.extraction.run_journal import RunJournal
 from Agents.memory.persistence.config import DehaloConfig
 
 OUT = Path("batch_results/extraction_runs")
@@ -36,6 +39,21 @@ OUT = Path("batch_results/extraction_runs")
 def _record(metadata: dict, case, kind: str = "postgame_extraction") -> dict:
     return {"kind": kind, "id": "", "name": case.span_name, "trace_id": "", "parent_observation_id": None,
             "metadata": metadata, "input": None, "output": {"extraction_case": case.model_dump(mode="json")}}
+
+
+def _resumed(loaded: list, journal: RunJournal) -> list:
+    """The inputs a resumed run took, in its order (its batches' request ids are positional); a new
+    run's inputs unchanged. A resumed run whose games can no longer all be found stops."""
+    taken = journal.games()
+    if taken is None:
+        return loaded
+    by_id = {c.game_id: (m, c) for m, c in loaded}
+    missing = [g for g in taken if g not in by_id]
+    if missing:
+        raise SystemExit(f"Resuming {journal.path.parent.name}: {len(missing)} of its games are not in the "
+                         f"inputs ({', '.join(g[:8] for g in missing[:5])}); pass the same inputs, or a new --name")
+    print(f"Resuming {journal.path.parent.name}: the {len(taken)} games it took")
+    return [by_id[g] for g in taken]
 
 
 def main() -> None:
@@ -55,6 +73,7 @@ def main() -> None:
     loaded = [(m, c) for m, c in load_inputs(args.inputs)
               if (not args.games or any(c.game_id.startswith(g) for g in args.games))
               and (not args.sources or any(src in m.get("source", "") for src in args.sources))]
+    loaded = _resumed(loaded, RunJournal(OUT / args.name / "batches.json"))
     cases = [c for _m, c in loaded]
     calls = {c.game_id: cell_calls(c) for c in cases}
     n_calls = sum(len(v[1]) for v in calls.values())
@@ -64,6 +83,10 @@ def main() -> None:
           f"and {tail_tokens:,} uncached tail tokens")
     if args.dry_run:
         return
+    out = OUT / args.name
+    journal = RunJournal(out / "batches.json")
+    journal.record_games([c.game_id for c in cases])
+    print(f"Journal: {journal.path} (if stopped, rerun with --name {args.name} to collect what was paid for)")
 
     started = time.time()
     gemini_usage = None
@@ -72,11 +95,10 @@ def main() -> None:
         os.environ["GOOGLE_GENAI_PRO_MODEL"] = args.model
         extracted, gemini_usage = extract_cases_gemini(cases)
     else:
-        extracted = extract_cases(cases, args.model, args.thinking, warm=not args.no_warm)
+        extracted = extract_cases(cases, args.model, args.thinking, warm=not args.no_warm, journal=journal)
     dehalo_config = DehaloConfig(enabled=not args.no_dehalo)
-    dehalo = dehalo_cases(cases, extracted, dehalo_config)
+    dehalo = dehalo_cases(cases, extracted, dehalo_config, journal=journal)
 
-    out = OUT / args.name
     out.mkdir(parents=True, exist_ok=True)
     rows, dehalo_rows = [], []
     for metadata, case in loaded:
