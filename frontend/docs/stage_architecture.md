@@ -1050,6 +1050,17 @@ src/stage/
 ├── beats/                   # beatsFor(events, {xray}) → SceneBeat[]; types; fixture goldens
 ├── containers/              # ReplayTheatre (transport, chapters, slot) · LiveTheatre (queue, dock,
 │                            #   the platform and its hand-off to the deal)
+│                            # [2026-10-26: beside the two theatres, the pure files that make
+│                            #   the stage testable without timers:]
+│                            #   live-state.ts: the live stage's reducer, which beat is on and
+│                            #     the open turn; a test feeds a game one event at a time
+│                            #   replay-state.ts: the replay's reducer (cursor, play, speed,
+│                            #     the X-ray, the slot)
+│                            #   live-queue.ts: live pacing, every beat at its normal hold
+│                            #   transport.ts: where the replay's cursor lands, and each hold
+│                            #   fold-cache.ts: the log folded per beat, remembered (96 kept)
+│                            #   warm-reel.ts: a preview's pictures fetched and decoded before
+│                            #     it plays (2026-10-22)
 └── workbench/               # registry, ControlStrip, fixture loader
 app/workbench/[scene]/       # the route
 e2e/                         # Playwright
@@ -1094,7 +1105,7 @@ Verified against the server before ruling; the handoff's bundled schema is byte-
 
 | Handoff says | The build does | Why |
 |---|---|---|
-| "names or seat numbers: open" | seat numbers | the wire's seats are `player_1..player_9`; there are no names |
+| "names or seat numbers: open" | seat numbers | the wire's seats are `player_1..player_9`; there are no names. [2026-10-26: nine or ten since the ten-seat pass, committed 2026-10-11 (`b73abbc5`): the stage lays out the seats from the game's roster, never a constant (`ten_seat_pass.md` §1).] |
 | the translator should buffer `wolf_vote` | nothing | it already does (`server/game/translate.py`, `_buffer_wolf_votes`) |
 | "your turn": Say it, Pass | + **Draft** from instructions to your agent, or its own line with none (three per turn, the wait credited back); **Send**, **Pass**; no hand-over on this turn (HUD pass 3b) | `POST /games/{id}/draft` landed 2026-09-17 (ux_journeys D25) |
 | `day_summary` "hidden from the live client until X-ray unlocks" | the live stage has no beat for it | it is public tier; the client never gates. Same picture, right words |
@@ -1118,6 +1129,8 @@ and `GameClient.tsx`. `SeatChip`, `RoleIcon`, `ReplayCard`, `Lobby*`, the forms 
 Done 2026-09-25 (step 7): all deleted, with the v1 scrubber's `useFilterState`; `WinnerChip` now lives in `ReplayCard.tsx`.
 
 ## 11. Order of work
+
+Done 2026-09-25 (the v1 theatre deleted in `4a0f6101`, §10); kept as the record of who built what.
 
 | # | Step | Who |
 |---|---|---|

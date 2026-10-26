@@ -14,6 +14,25 @@ them can tell you. Commands run from `frontend/`.
 | Diagnostics | Scripts, not pass/fail | Measurements taken while working on performance (below). | As needed |
 | The real phone | The owner's iPhone, Safari's Web Inspector over a cable | Memory crashes, frame rate, touch, sound. | By hand |
 
+## What the goldens pin
+
+A golden is a saved output that a test compares the new output with, whole. There are two kinds.
+
+- **Beat goldens** (`src/stage/beats/__goldens__/`): the whole beat list that `beatsFor` cuts from
+  a game, one line per beat, written by `toMatchFileSnapshot` in `src/stage/beats/beatsFor.test.ts`.
+  Four files: the public cut and the X-ray cut of two games, the nine-seat fixture `9369a5c1` and
+  the Phase 2 game. They hold the cutter to `beat_sheet.md`: change the sheet, change the cutter,
+  regenerate (`npx vitest run -u`), and read the diff. The two ten-seat games
+  (`replay-phase3.json`, `replay-phase3-necro.json`) have no whole golden; targeted assertions in
+  the same file hold their beats.
+- **Screenshot goldens** (`e2e/__screenshots__/`): pictures of the page, under "The browser suite"
+  below.
+
+The fixtures are real games, not hand-written ones: archived games in `src/stage/fixtures/`, the
+593-event seed game in `src/game/__fixtures__/`, and the ten-seat game wrapped from the server's
+translator golden (`ten_seat_pass.md` §4). So a golden pins what the stage does with games that
+happened, and nothing about a shape of game no fixture holds.
+
 ## The browser suite
 
 The browser suite is configured in `playwright.config.ts`, with its specs in `e2e/`.
@@ -96,6 +115,12 @@ one sitting (`frontend_lessons.md` 25).
 - **WebKit at all.** The suite runs in Chromium only.
 - **The real server.** The API is mocked, so a contract change on the server shows up only
   in a real game. `npm run generate-api-types` keeps the types in step.
+- **The server's tiers.** `e2e/live.spec.ts` decides what seat 7 receives from its own copy of
+  the server's entitlement (its `OBSERVER`, `FACTION` and `SEAT` sets, copied from
+  `server/game/entitlement.py::entitled` and `server/schemas/events.py::EVENT_TIERS`). A change to
+  the server's tiers passes the browser suite unchanged. On 2026-10-26 the copy already lacks two
+  seat-tier types, `uses_remaining` and `night_record`, which the nine-seat game it streams never
+  carries.
 - **Sound.** The music's cue logic is unit-tested, but the browser suite never plays audio.
 
 ## Who runs the browser tests

@@ -1,5 +1,14 @@
 # UX journeys — the screen-by-screen derivation (v1)
 
+Status (2026-10-26): §0 is binding and current. D23 (interruptions, as built 2026-10-11) and D25
+(the draft, as built 2026-09-29) are current. D1 to D5 describe the site pages, now told in
+[`site_architecture.md`](site_architecture.md); D6 and D7, the lobby, became the platform on the
+stage on 2026-09-26. D8 to D22, D24 and §9 describe the v1 theatre, replaced on 2026-09-25: what the
+stage shows is [`beat_sheet.md`](beat_sheet.md), and its code is
+[`stage_architecture.md`](stage_architecture.md). §8 is the nine-seat wire of 2026-08-21 (dated note
+there). The two cross-references in §0 were corrected on 2026-10-26 (D20 to D22, D22 to D23). The
+status below was true on 2026-08-21.
+
 > Status: **PROVISIONAL DEFAULTS — build on these (ruled 2026-08-21).** §0's ground rules
 > are BINDING (one is store-architectural); D1–D24 are the working spec for the v1 build —
 > the builder follows them instead of inventing, and the owner adjusts them against the
@@ -22,14 +31,14 @@
   data. A wolf's screen differs from a villager's only in which sections have content —
   never in bespoke layouts.
 - **Two earned takeovers, no more.** Full-screen moments are reserved for the two dramatic
-  beats the genre owns: the role reveal (D8) and the game-over banner (D20). Everything
+  beats the genre owns: the role reveal (D8) and the game-over banner (D22). Everything
   else — deaths included — lives in the transcript flow. (Overlay inflation is how game
   UIs get noisy.)
 - **Beats fire on live arrival only.** During any catch-up fold (refresh, reconnect,
   replay scrub), events render instantly in their settled form — no takeovers, no
   animations, no notification sounds mid-fold. The reducer doesn't know the difference;
   the *store* flags live-arrived seqs vs folded history and the beat layer keys off that.
-  This single rule is what makes refresh-mid-game safe (D22).
+  This single rule is what makes refresh-mid-game safe (D23).
 - **The viewer kinds** (the columns of every decision): seated-alive (by role), seated-dead,
   live spectator, replay viewer (X-ray off/on), lobby host, lobby joiner.
 
@@ -388,6 +397,12 @@ timing = a later slice). Spectator link is offered at the lobby (D6) and on room
 `action_kind` coverage: all 8 in D17 (two shapes). `GameStatus.state` coverage: waiting =
 D6/D7 · running = §4–§7 · finished = D22. Orthogonal `error` = D23. Non-event endpoints the
 dock calls: `POST /turns` (D17) · `POST /draft` (D25, built in the day dock).
+
+[2026-10-26: this table is the nine-seat wire of 2026-08-21. The wire now carries 33 durable event
+types (`server/schemas/events.py::EVENT_TIERS`), among them `round_opened`, `night_record`,
+`uses_remaining`, `player_reads` and the two memory events, and 17 action kinds
+(`server/schemas/events.py::InputRequest`, `action_kind`; [`ten_seat_pass.md`](ten_seat_pass.md)
+§2). What the stage shows for each is in [`beat_sheet.md`](beat_sheet.md).]
 
 ## 9. Component-inventory delta (extends ux_baseline §5 once ruled)
 

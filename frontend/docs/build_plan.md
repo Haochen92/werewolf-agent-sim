@@ -1,5 +1,13 @@
 # Frontend build plan — `frontend/`
 
+Status (2026-10-26): Plan ruled 2026-08-20. P0 to P3 were built by 2026-08-21 and deployed at
+wolf.liuhaochen.com that day; every deploy since is in [`deploy_log.md`](deploy_log.md). The v1
+theatre this plan laid out was replaced on 2026-09-25 by the stage
+([`stage_architecture.md`](stage_architecture.md), [`beat_sheet.md`](beat_sheet.md)). §4 and §5 are
+the client's design rulings and hold, with dated notes below where the build departed; the
+browser's current account is [`client_design/client_design.md`](client_design/client_design.md).
+§9 is superseded by [`testing.md`](testing.md). The rest is the plan as ruled.
+
 > Decision record + implementation plan, ruled 2026-08-20. Supersedes the stale
 > `BUILD_BRIEF.md` (2026-07-17, lived in the abandoned `ww-frontend-app` worktree) — that brief
 > assumed "build against mocks, backend staged last"; the backend has since been fully built and
@@ -107,6 +115,12 @@ frontend/
     └── styles/                             # shared design-layer CSS module (styling pass)
 ```
 
+[2026-10-26: the routes as built differ. The site pages sit in a `(site)` route group
+(`site_architecture.md` "Routes"), with `/guide` added; the room door is `/play/room` since
+2026-10-18, and `/rooms/new` redirects to it (`frontend/next.config.mjs`); a `workbench` route
+draws single scenes (`stage_architecture.md` §7). `useFilterState` was deleted with the v1 theatre
+on 2026-09-25 (`stage_architecture.md` §10).]
+
 Conventions (dota2pred, kept): route-private components in `_components/`; server `page.tsx` =
 metadata + `<Suspense fallback={<Skeleton/>}>` + `<XClient/>`; container/presenter split
 (`XClient` fetches → typed props → pure `XView`); skeletons are first-class; `kebab-case.ts`
@@ -116,6 +130,9 @@ non-components, `PascalCase.tsx` components; responsive via `visibleFrom`/`hidde
 Type codegen: `"generate-api-types": "openapi-typescript http://localhost:8000/openapi.json -o src/types/contracts/api.ts"`
 — committed output; the façade `contracts/index.ts` renames generated types so app code never
 imports `api.ts` directly (regeneration can't ripple).
+[2026-10-26: since 2026-09-15 the script needs no running server. `generate-api-types` in
+`frontend/package.json` runs `python -m server.openapi` into a committed
+`src/types/contracts/openapi.json`, then `openapi-typescript` on that file. The façade holds.]
 
 **Image assets (ruled 2026-08-21; direction = `ux_baseline.md` §1).** Art ships via static
 imports + `next/image` — content-hashed URLs (regenerated art can never get stuck behind a
@@ -166,6 +183,13 @@ Three state planes, three tools, no overlap:
    pattern): replay-list pagination, replay-theater scrubber position (`?day=3&seq=214`) —
    shareable deep links ("play of the game" wants this later).
 
+[2026-10-26: plane 3 was not built for the scrubber: the stage replaced it on 2026-09-25, and the
+replay page reads only `from` and `still` from its URL
+(`app/replays/[gameId]/_components/TheaterClient.tsx`). Plane 2 is one module-level store,
+`src/game/store.ts::useGameSession`, hydrated and reset per game, rather than one store per game;
+its design (append-only log, folded view, live seqs, monotonic pacing, per-slice selectors)
+holds.]
+
 **`foldEvents` is the heart of the app**: one pure function folding `DurableGameEvent[]` into
 `GameView`. Replay = fetch `/replays/{id}.events` → fold once. Live = SSE → fold incrementally.
 Post-game R7 flush = the same fold absorbing the withheld observer backlog. The play UI is the
@@ -195,6 +219,14 @@ was shaped for (`ReplayGame.events` is the same durable log the SSE stream carri
 }
 ```
 
+[2026-10-26: the sketch was refined as it said it would be. The view as built is
+`src/game/types.ts::GameView`: `days` (each day's slots, votes and night) in place of
+`transcript`, `votes` and `nights`; `timeline`, `over`, `lineup`, `neutralResult` and `thinking`
+added; and `xray.available` in place of `xrayUnlocked`, a flag that the observer events have
+arrived, not a permission (`src/game/foldEvents.ts`, head comment). The rule below holds except
+its last sentence: `day_summary_structured` fires, public since 2026-10-04
+(`src/game/types.ts::DayView`, `summaryStructured`).]
+
 Tier filtering is server-side — the client folds whatever arrives and renders what exists;
 `xrayUnlocked` flips on `game_over`. Never gate client-side on information the server withheld
 (there is nothing to gate — it never arrives pre-unlock). `day_summary_structured` never fires
@@ -221,6 +253,13 @@ not configured.
    (server honors it over the fossil query cursor). Two event names: `game` (durable, fold it)
    and `pacing` (ephemeral snapshot, monotonic-max into the store).
 3. `onerror`: ignore when `document.hidden`; log on `CONNECTING`; close + surface otherwise.
+   [2026-10-26: superseded. Since 2026-10-11 the page reopens the stream itself on
+   `visibilitychange` and `online`, from the newest seq folded. Since 2026-10-15 a watch reopens
+   a stream silent past 40 s (the server pings every 15 s) and retries one the browser closed for
+   good every 10 s, never while hidden; catch-up frames that arrive together are folded as one
+   block. Since 2026-10-17 a drop under 20 s plays as news, not history. In
+   `src/hooks/catch-up-boundary.ts` (`streamStalled`, `catchUpBatch`, `briefDrop`) and
+   `src/hooks/useGameStream.ts`; the account is `client_design/client_design.md` §3.]
 4. **Status poll fallback** (~10–15 s, TanStack `refetchInterval` while state === 'running'):
    a dead game task emits NO stream signal (heartbeats keep flowing, `state` stays `"running"`,
    only `GameStatus.error` fills) — the poll is the only detector. It also refreshes
@@ -245,6 +284,16 @@ never reads any of it; one `lib/storage.ts` module owns the key names):
 | `depart_{gameId}` (**sessionStorage**) | a game for one's departure: the ticket's puppet and when it was bought | the ticket office's solo create | once its train has left (the curtain falls); not read after 60 s; with the tab |
 | `told_{gameId}_{seat}` (**sessionStorage**) | the seat has been told of its own death that came in while the page was away, or watched it live | the live theatre's "While you were away" notice, dismissed; a live `night_result`/`lynch_result` naming the seat (2026-10-11) | with the tab |
 
+[2026-10-26: the table is stale in four places; the code is the truth (`src/lib/storage.ts::KEYS`),
+mirrored once in [`client_design/client_design.md`](client_design/client_design.md) §6. `byok_key`
+is one key per company, `byok_key:{provider}`, since 2026-10-21, the old slot migrated.
+`told_{gameId}_{seat}` is gone: the death notice was folded into "You're back" on 2026-10-11,
+whose two sessionStorage keys, `live_{gameId}` (`liveSeen`) and `away_{gameId}` (`awayTold`), are
+missing here. The seat token is not cleared when a game finishes, only on leaving a room, the
+host closing it, or a refusal, so the device can list the games it played. Two keys live outside
+`lib/storage.ts`: `ninth-express:home-screen-tip` (`src/stage/HomeScreenTip.tsx`) and
+`music-bench-keep` (the music workbench).]
+
 BYOK-remember explicitly needs ZERO additional server support: the key's only wire appearance
 is the create-request body; the server retains it only in the live game object's memory, while
 remember/mask/clear are local operations (ruled 2026-08-20). Restart recovery by resubmitting a
@@ -266,6 +315,9 @@ the client never re-routes across the transition.
 through `/turns` like any typed line. Three drafts per turn, server-enforced; the wait is
 credited back to the seat's clock and the returned `deadline` is the new countdown. 409 =
 no turn / no drafts left; 503 = model failure, "type it instead".
+[2026-10-26: the UI was built on 2026-09-29 and reworked the same day into a preview of the seat's
+own agent's turn, with an optional steer; its home is [`ux_journeys.md`](ux_journeys.md) D25, "As
+built".]
 
 ## 6. Server tweaks shipping with P0 (ruling 5) — ⭐BOTH LANDED 2026-08-21
 
@@ -347,6 +399,9 @@ Three things the deploy surfaced that no amount of local testing would have:
 3. **`memory_stores/` must be mounted.** A served game runs with `dump_enabled: false`, but
    the engine still SEEDS retrieval from `memory_stores/v6_1` at game creation, so a missing
    store is a 500 on `POST /games`. It is 37 MB and not in git, hence a mount, not a COPY.
+   [2026-10-26: superseded 2026-10-14. The server reads lessons from LangGraph's Postgres store;
+   nothing is seeded into the process, and the `memory_stores` mount is gone
+   ([`deploy_log.md`](deploy_log.md), 2026-10-14, `344b9e58`).]
 
 Caddy lives in `~/projects/caddy` (its own compose, owns `shared-caddy-network`, holds the
 Cloudflare origin certs) and fronts six other domains — validate before every reload.
@@ -387,9 +442,20 @@ server — schedule as its own slice when the memory-showcase mode is taken up.
 | Ghost guesses (§9), daily puzzle (§7), MVP score (§6.4), accounts (§6.1) | ❌ none | localStorage ghost v1 now; rest = "later" list |
 | Session durability | ✅ full (2026-08-20, normalized 2026-08-22) | Postgres checkpointer + unified games/events tables + boot recovery; a server restart re-parks pending turns and games resume (restart smoke passed). Completed `GameRow`s and their existing `EventRow`s are the replay—there is no copied replay blob. BYOK games are the one exception: the key dies with the process, so they become dropped with a clear `GameStatus.error`. Unset `WW_POSTGRES_DSN` degrades gracefully to RAM-only. |
 
+[2026-10-26: two rows are stale. Memory: live games are no longer memory-off by rule. Memory is a
+per-game switch on both doors since 2026-09-17 (`6ded53c8`, `7745fd0f`, which also put memory in
+the X-ray), off by default, and available on the ten-seat cast since 2026-10-14 (the Postgres
+store). Draft: the UI was built on 2026-09-29 (ux_journeys D25).]
+
 ## 9. Testing & quality line (ruling 8)
 
 Vitest on `src/game/` only (fold correctness: full-game fixture folds, R7-unlock fold,
 pacing monotonic-max, tier-absent robustness). Prettier everywhere. ESLint = `next/core-web-vitals`
 flat config. No component tests, no E2E for now. All-TS — zero `.js` files, no `any` at view-prop
 boundaries (dota2pred's `historyData: any[]` mistake is the named anti-pattern).
+
+[2026-10-26: superseded by [`testing.md`](testing.md). Playwright came in on 2026-09-25
+(`stage_architecture.md` §1 ruling 1) and now holds eight spec files in `frontend/e2e/`; the unit
+tests cover the stage, the hooks and `lib/` as well as `src/game/`, including server-rendered
+component tests of who sees private data. There is no CI: a check runs when a person or an agent
+runs it.]

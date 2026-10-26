@@ -1,5 +1,27 @@
 # Frontend v1 — build log: decisions, failures, and what they cost
 
+Status (2026-10-26): a journey log, kept whole. Its "I" is the AI builder that built the client to
+the owner's specs (the owner wrote the event schema and co-wrote the beat sheet), not the owner. The
+amendments the header below calls uncommitted (§3.8 to §3.12) are in today's code. The browser's
+current account is [`client_design/client_design.md`](client_design/client_design.md); deploys are in
+[`deploy_log.md`](deploy_log.md).
+
+| Section | What it covers | Date | Told now in |
+|---|---|---|---|
+| §1.1 to §1.7 | Deploy and environment: the wrong service on port 8000, eager credentials, the missing store mount, Cloudflare buffering the stream, the compose file, the database outside compose, tooling friction | 2026-08-21 | §1.4's header scope: `frontend_lessons.md` 31 |
+| §2.1 to §2.6 | The wire against the docs, read off a real 593-event game: a day is slots, nights belong to the day before, phases can be absent, no `can_pass`, an untyped turn endpoint, small contract facts | 2026-08-21 | client_design §1, §7 |
+| §3.1 to §3.7 | Client bugs: seat recovery that never fired, a refresh replaying the drama, a useful wrong test, the health check on IPv6, a white flash, an invisible night tint, small slips | 2026-08-21 | client_design §3, §5 |
+| §3.8 to §3.12 | The independent review's cross-layer finds: the R7 backlog dropped, a stale turn dock, the private data the UI hid, rejoin without the stream, smaller finds | 2026-08-21 | client_design §3, §4 |
+| §3.13 | Coming back to your own room made a second passenger | 2026-09-27 | client_design §5 |
+| §3.14 | The carriage's sides on a phone | 2026-09-27 | |
+| §3.15 | The ballot opened among the day's passes | 2026-10-12 | `beat_sheet.md` §12 |
+| §4.1 to §4.6 | Judgement calls: the reducer knows no time, "who am I" passed in, the X-ray is arrangement, two takeovers, deviations, missed scope | 2026-08-21 | client_design §1, §4 |
+| §5.1 | Portrait generation blocked, then landed | 2026-08-21 | superseded: the portraits went on 2026-10-17; the seats are the cast puppets |
+| §6 | What verification caught, by method | 2026-08-21 | [`testing.md`](testing.md) |
+| §6.1 to §6.3 | Server refactors: one game table, the durability split, the router split | 2026-08-22 | kept here; they are server work done by the same builder |
+| §7 | Handoff notes | 2026-08-21 | |
+| §8 | The stage on a phone | from 2026-10-01 | |
+
 > Written 2026-08-21, at the end of the P0→P3 build (branch `feature-frontend-v1`, 24 commits,
 > tag `frontend-v1-headless` at the pre-visual fork point). Deployed at
 > **wolf.liuhaochen.com**.
@@ -140,6 +162,12 @@ indicated a fault.
 **Generalises to:** streaming responses have a *path*, not just an endpoint. Every hop can
 buffer. Test through the real public URL, never only against the origin — and when it fails,
 bisect the path rather than guessing at the code.
+
+[2026-10-26: since 2026-10-15 the header is set on the stream's route only
+(`/api/games/{id}/events`), because on the whole `/api` block it also stopped Cloudflare
+compressing every JSON response. The mechanism is unproven: another stream behind the same
+Cloudflare flows without `no-transform`, so "transforming is what its buffering hangs off" is a
+guess. The header stays on the stream. See `frontend_lessons.md` 31.]
 
 ### 1.5 🟡 The project's compose file did not contain the deployment
 
@@ -449,6 +477,11 @@ fresh snapshot boundary, and a new credentialled source catches up. A 403 from t
 also performs the promised one-time local-token rejoin and retries the unchanged payload once;
 failed tokens are cleared. Waiting lobbies no longer open an events endpoint that can only 409.
 
+[2026-10-26: since 2026-10-15 a token is cleared only when the server refuses it (403, 404 or
+410; `src/lib/request.ts::ApiError.refusesToken`), never on a network failure. The rest holds:
+`useGameStream`'s connect effect depends on `status?.you`, so a seat appearing closes the
+anonymous source.]
+
 ### 3.12 🟠 The smaller review findings, closed together
 
 - **Status fetch failures were invisible.** `useGameStream` discarded the query error, leaving
@@ -747,6 +780,10 @@ pages.** Layout, spacing, contrast and the story/machine-world separation are un
 eye. Component *structure* is verified; component *appearance* is not. That review is
 outstanding, and `ux_journeys` §0 reserves it for the owner against the running app anyway.
 
+[2026-10-26: closed from 2026-09-25, when Playwright came in and an agent could see the pages as
+a browser draws them, and by the owner's checks on the running app, on the phone and the desktop.
+See [`testing.md`](testing.md).]
+
 ---
 
 ## 7. If someone picks this up next
@@ -762,6 +799,8 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
 4. **`can_pass` on the wire** would remove the one place the client cannot pre-validate.
 5. **Portraits are landed.** The twelve-asset WebP set is wired through the manifest; future
    replacement remains an asset-only swap at that import boundary.
+   [2026-10-26: the portraits were removed on 2026-10-17 (`ba1c7e7c`); the seats are the cast
+   puppets.]
 6. **Absence, disconnection and recovery have one map:** [`seat_continuity.md`](seat_continuity.md)
    (2026-09-09). Read it before touching the AFK timer, rejoin, or recovery.
 

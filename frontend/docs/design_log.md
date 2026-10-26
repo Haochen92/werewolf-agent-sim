@@ -4,6 +4,21 @@ Status (2026-10-26): The June 2026 paper design. §8 became the shipped transpor
 became build_plan's phases; most of §7, §9, §10 and §11 stayed ideas. The status below was true
 on 2026-06-06.
 
+| Section | Content | What became of it |
+|---|---|---|
+| §1 | Identity: "watch AIs deceive each other, and see exactly why" | the landing's line; the X-ray as the product |
+| §2, §6 | Feature tiers; the owner's MVP cut | `build_plan.md` P1 to P3 |
+| §3, §7 | Séance noir; pixel art | `ux_baseline.md` §1, then replaced by the Playhouse |
+| §4 | The one artifact if only one is built | the replay theatre first (`build_plan.md` P1) |
+| §5 | Competitive landscape | nothing |
+| §8 | Events not tokens, the log as the replay, SSE + POST, web not native, one process | the shipped transport, [`server_client_transport.md`](server_client_transport.md) |
+| §9 | Human play as a model signal | not built |
+| §10 | Daily puzzle; cost and scale posture | the puzzle not built; the cost posture became the daily cap on house-funded games (`server/house.py`) and BYOK |
+| §11 | Rigor boundary; ghost mode | ghost guesses (`build_plan.md` ruling 7) |
+| §12 | Phasing and effort estimate | superseded by `build_plan.md` §7 |
+| §13 | Multi-human tables | `build_plan.md` P3, the rooms |
+| §14 | Backend touchpoints | nothing |
+
 Ideas log for a frontend to the werewolf agent sim. Status: **ideas only — nothing here is
 implemented or scheduled.** Captured 2026-06-06 from a design discussion; this folder is for
 frontend concerns only (the `Agents/` package stays backend-only).
@@ -206,6 +221,11 @@ HD-2D), not retro-authentic.
   stream; (c) fiction break — players post whole messages, assistants stream tokens; streaming
   reads as "chatbot", typing-indicator-then-message reads as "player". Latency masking job goes
   to staged pacing (above).
+  [2026-10-26: reason (a) now rests on the echo gate. The novelty gate was removed on 2026-10-07
+  (`b66ce7b4`); the same day the echo gate took its place (`1244415f`,
+  `Agents/turn/echo_gate.py`, bar re-ruled 2026-10-18): an agent's sweep line that adds nothing
+  to the day is held after it is generated and recorded as a pass marker. So a token-streamed line
+  could still be shown and then withdrawn.]
 - **Game = append-only event log** (speech_posted, vote_cast, phase_changed, typing_on/off,
   death, reveal), client holds a cursor. This buys: trivial reconnect (replay since cursor),
   spectator = same stream, and **the event log IS the replay artifact** — replay theater reads

@@ -2,6 +2,11 @@
 
 Status (2026-10-26): Living spec for the site pages, current to 2026-10-18.
 
+Where a game's puppets come from (the `characters` and `game_cast` tables, the picker on the
+boarding pass and the solo ticket, `src/stage/cast/castForGame.ts::resolveCast`) is recorded in
+[`cast_expansion_brief.md`, "The cast record"](cast_expansion_brief.md#the-cast-record-built-2026-10-03-commits-9f531ebe9c82b0)
+(built 2026-10-03).
+
 The app has two halves with two toolkits. The **site** is the pages you move between: `/`, `/play`,
 `/rooms`, `/play/room` and `/replays`. It is built from Mantine components themed from the page
 mockups (`claude_artifacts/design/pages/*.html`, with `landing.html` as the style source). The
