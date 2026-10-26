@@ -18,10 +18,17 @@ underneath can fake a result. Many things can change without anyone touching the
 the embedding model behind an alias, a prompt edited for another reason, a side configured differently from
 what was declared.
 
-**The case that set the rules.** On 2026-06-11, ten fresh games came back with the villagers winning 10%,
-against 67% in the original batch of the same setup (Fisher p = 0.0028), with byte-identical prompts and no
-code change. Something in the model service had moved. From then on both sides of a comparison run in the
-same time window, and results are never compared with historical runs.
+**The case that set the rules.** On 2026-06-11, a fresh no-memory baseline came back with the villagers
+winning far less often than the original baseline of the same setup, on byte-identical prompts with no code
+change (nine-seat). Two readings were recorded, both treating every game as independent: ten fresh deals
+gave the villagers 1 win in 10 against 20 in the original 30 (Fisher p = 0.0028), and the 30 games of the
+new period gave 27% against 67%. But 20 deals were played in both baselines, so they are pairs. Tested as
+pairs, the town won 12 of those 20 deals the first time and 7 the second: 7 deals turned from a win to a
+loss and 2 the other way (exact McNemar p = 0.18; `evaluation/experiments/june_baseline_shift_check.py`,
+2026-10-25). The outcomes moved, but neither the size nor the cause is established. The record favoured
+drift on the `gemini-3.1-flash-lite` alias, which could not be pinned; chance at this size is not ruled
+out. Because the two could not be told apart, the rule followed: both sides of a comparison run in the same
+time window, and results are never compared with historical runs.
 
 ## The comparisons the project runs
 
@@ -30,6 +37,27 @@ same time window, and results are never compared with historical runs.
 | **Whole games** | Two versions play full games, on the same deals | Memory on against off (the v6 paired A/B; the July endpoint, 30 boards); the discussion redesign's games before and after; a stronger player model over six games | 30 games a side, or fewer |
 | **Frozen-turn replays** | The same saved turns, replayed many times under each version | Prompt changes on the factual-error test set (the July ship test; the October fixes; the record-citation rule); the thinking budget (16 vote cases); the deduction block's placement; the day summary on Haiku or Sonnet | A few dozen turns, 5–20 samples each |
 | **Model admission** | A candidate model's replays on the test set against the default model's | Every model added to the menu ([model_admission](../model_admission/report.md)) | About 70 samples an arm |
+
+## When does a comparison need a fresh baseline?
+
+"Pairwise" can mean three different things, and only the first is a question of when to run:
+- **A fresh baseline:** the old version run again, in the same time window as the new one.
+- **A paired design:** both versions on the same deals or the same frozen turns.
+- **A paired test:** the statistics that compare each pair ([scoring](../scoring/report.md), layer 3).
+
+**Two kinds of variability spoil a comparison, and they need different tools.** A difference between the
+sides (a moved model, other code, another judge, a side set up differently) fakes an effect; the controls on
+this page remove it. Randomness within each side (sampling at temperature 1.0, games that drift apart after
+the first different move) hides a real effect; only sample size and a measured noise floor deal with it. A
+fresh baseline answers the first and does nothing for the second.
+
+| What is being asked | Fresh baseline? | What still has to hold |
+|---|---|---|
+| **Does it work well enough?** Checked against a bar fixed in advance: a regression case that must not recur, an admission pass criterion | No: there is no second side to drift apart | The bar is fixed before the run, and the sample can clear it beyond noise. A bar defined as "as good as the current version" (admission's vote gap against the default model) is a comparison, and falls in the rows below |
+| **Is A better than B, run the same day?** | Not necessarily, when nothing else changed between the two runs | Interleave the sides where possible, and read the difference against a measured noise floor: a short gap shrinks drift, not noise (one vote prompt went to the right player 8 of 10 times on one run and 1 of 10 on the next). For a frozen-turn replay the baseline costs cents, so it is re-run by default |
+| **Is A better than B, run on different days?** | Yes: run both together, or interleave them | The June case above is why. A pinned model (§1) makes this safer, not safe |
+
+The controls in §1–§5 apply in every row: the same inputs, the same set-up, the same judge.
 
 ## Which controls apply to which comparison
 
@@ -105,14 +133,29 @@ same time window, and results are never compared with historical runs.
 - **Never compare with historical runs** ([model_drift](../../model_drift/drift_surfaces_and_guards.md)).
   Two backends for the same model (Google AI and Vertex) give different scores even at temperature 0, so
   the backend is part of what must match.
+- **Pin the model where the provider allows it, and know what pinning covers** (providers' pages checked
+  2026-10-25). Pinning removes one source of drift, a model swapped under the same name; it does not fix the
+  outputs.
+  - **Claude:** every model ID is a pinned snapshot, the dateless IDs from the 4.6 generation on included, so
+    `claude-haiku-5-5` is pinned already. Anthropic fixes the weights and configuration of an ID, but the
+    serving infrastructure around it (the router, safety classifiers, sampling logic) can change, and it says
+    such updates occasionally change observable behaviour.
+  - **Gemini flash-lite:** neither `gemini-3.1-flash-lite` nor `gemini-3.5-flash-lite` has a numbered
+    version to pin to (checked for 3.1 on 2026-06-11; Google's version list shows neither with a suffix).
+    Google says stable names "usually don't change".
+  - **DeepSeek:** the names move. `deepseek-v4-flash` was repointed to a new checkpoint on 2026-07-31 and
+    routed to V4.1 Flash from 2026-09-10, so results under that name before and after are different models.
+  - **GPT-6 Luna:** `gpt-6-luna` is listed as its own default snapshot, with no dated version; whether it
+    stays fixed is not stated.
 - **The embedding check at batch start** (memory runs; `evaluation/src/audits/embedding_canary.py`). The
   embedding service exposes only an alias, so a change of model behind it cannot be seen in the record.
   Twelve fixed pairs of game texts are re-embedded at the start of every batch; if any pair's similarity moves
   by more than 0.02 from its pinned value, the batch stops before spending anything. It runs by default; a
   missing pin file only warns. There is no record of it firing.
 - **Manual steps.** Results from different *epochs* (stretches of fixed prompts) are never compared, and
-  before a cross-day reading, ten baseline games are played on fixed seeds as a check (about $3). Both depend
-  on a person remembering. 🟡
+  before a cross-day reading, ten baseline games are played on fixed seeds as a check (about $3). The check
+  can show that something moved; a clean result does not prove that nothing did. Both depend on a person
+  remembering. 🟡
 
 ## 2. Both sides are measured the same way
 
@@ -186,7 +229,8 @@ loop, and checking that a setting did what it names.
 | Paired statistics | `evaluation/src/core/stats.py` (`mcnemar_exact`, `wilcoxon_paired`); [scoring](../scoring/report.md), layer 3 |
 | Provenance manifests | `evaluation/src/core/manifest.py` |
 | Embedding check | `evaluation/src/audits/embedding_canary.py`, `embedding_canary_pins.json`; call site `scripts/run_batch.py`; build record [`../hardening_pass/experiment_log.md`](../hardening_pass/experiment_log.md) §4.9 |
-| June drift catch, seed effect, detectable effect sizes | `../../memory_system/effectiveness/paired_ab/experiment_log.md`; `../../model_drift/drift_surfaces_and_guards.md` |
+| June drift catch, seed effect, detectable effect sizes | `../../memory_system/effectiveness/paired_ab/experiment_log.md`; `../../model_drift/drift_surfaces_and_guards.md`; the paired re-test `evaluation/experiments/june_baseline_shift_check.py` (2026-10-25, no model calls) |
+| What pinning covers, per provider | Checked 2026-10-25: Anthropic, "Model IDs and versioning" (platform.claude.com/docs/en/about-claude/models/model-ids-and-versions); Google, Gemini API models page and Google Cloud "Model versions and lifecycle"; OpenAI, the GPT-6 Luna model page; DeepSeek, api-docs.deepseek.com/updates |
 | Power gate | `evaluation/src/instrument_validation/power/mde_simulation.py`; readout [`../../execution_plan/report.md`](../../execution_plan/report.md) §2 (full table at `24dfd3a7`) |
 | Seedability | `Agents/nodes/orchestrator.py` (`initialize_game`); `tests/engine/test_seedability.py` |
 | Prompt golden | `tests/fixtures/day_discuss_prompt_golden.{py,json}`; `tests/engine/test_draft_preview.py` |
@@ -195,6 +239,7 @@ loop, and checking that a setting did what it names.
 | Noise floor; run-to-run spread | [factual_errors](../factual_errors/report.md), step 4; [model_admission](../model_admission/report.md) |
 
 *Rewritten 2026-10-23 and checked against the code of that date; reorganised on 2026-10-24 around the
-comparisons and what can go wrong in them, so it reads as the method for every A/B, not only memory's. The
-folder was `evaluation/methodology/` until 2026-10-24. The tests named here are cited for what they pin; the
+comparisons and what can go wrong in them, so it reads as the method for every A/B, not only memory's.
+Revised 2026-10-25: when a comparison needs a fresh baseline, what pinning covers per provider, and the June
+case re-tested as pairs (the earlier text called it a model-service change). The folder was `evaluation/methodology/` until 2026-10-24. The tests named here are cited for what they pin; the
 test suite is largely AI-written and unaudited, so no test count is offered as evidence.*

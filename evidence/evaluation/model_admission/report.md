@@ -41,8 +41,10 @@ used for quality is described in [factual_errors](../factual_errors/report.md); 
 - **Since 2026-10-24 the checks run as one command per candidate** (§6), with pass criteria written into
   its config before the run and a verdict of admit, reject or incomplete. It has not yet been run on a
   candidate.
-- **Not done, against common practice:** a shadow or canary rollout, a check that a model will play a
-  lying role, and pinned model snapshots.
+- **Not done, against common practice:** a shadow or canary rollout, and a check that a model will play a
+  lying role. Pinning was done only where it was available: Claude model IDs are pinned snapshots by the
+  provider; the Gemini flash-lite models and DeepSeek offered nothing to pin to, and Luna's page does not
+  say.
 
 ## Quick view
 
@@ -291,7 +293,8 @@ built:
   Before, only Gemini had the budget: DeepSeek waited 600 seconds three times before the rescue was asked.
 - **A backup key from a second company** (`9f350ea5`): a same-company rescue fails when its company does, so
   a player may give a second company's key, whose fixed backup model (Haiku, Luna, Gemini 3.6 Flash or
-  DeepSeek V4 Flash) takes the rescue.
+  DeepSeek V4 Flash) takes the rescue. The DeepSeek name is not fixed: DeepSeek routes `deepseek-v4-flash`
+  to V4.1 Flash since 2026-09-10.
 
 How often it matters: in one flash-lite game, 36 of 115 calls went to the rescue model. A preview model
 (`gemini-3-flash-preview`) stalled for about 45 minutes in one replay and is no longer used for evaluation.
@@ -381,7 +384,7 @@ game day, so its reference numbers will differ from 65 of 160. The code is pinne
 | **Pass criteria fixed before a run** ("no more than N points worse than the current model") | Without them, a gate is judged after its result is known | Each past run was read afterwards; criteria now live in the admission config (§6), not yet used on a candidate |
 | **Shadow or canary rollout:** the new model on a share of live games, watched before everyone gets it | Games show failures the replay cannot | Switches went straight to the catalogue |
 | **A check that the model will play a lying role** | A wolf that refuses or softens a lie breaks the game | Not seen in the records |
-| **Pinned model snapshots, deprecation dates, tokenizer and context changes** | A new tokenizer changes prompt length and cache floors; an alias can move | Models named by alias; drift guarded by the fingerprint after the fact |
+| **Pinned model snapshots, deprecation dates, tokenizer and context changes** | A new tokenizer changes prompt length and cache floors; an alias can move | Pinned where the provider allows it (checked 2026-10-25): `claude-haiku-5-5` is a pinned snapshot, though Anthropic's serving infrastructure can still change; `gemini-3.1-flash-lite` and `gemini-3.5-flash-lite` have no numbered version; DeepSeek's names move (`deepseek-v4-flash` routes to V4.1 Flash since 2026-09-10); `gpt-6-luna` is its own default snapshot, with no dated version. What each pin covers is in [experimental controls](../experimental_controls/report.md), §1. Drift is guarded by the fingerprint after the fact |
 | **Tail latency** (the slowest 5% of calls) | It is the wait a live player feels | Measured per graph node from served games' traces (§3); the §6 gate computes it per case set |
 | **Recalibrating the judges after any model change** | A judge is a model too | No labelled set for the judges |
 
