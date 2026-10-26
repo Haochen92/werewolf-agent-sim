@@ -11,13 +11,13 @@ link to planned paths. Lines marked **Exhibit** and **Link** are specs for the p
 
 ### Game design and orchestration: making ten agents play together
 
-The Ninth Express is a variant of the Mafia-Style game played with AI agents. It is a social deduction game where players have secret roles and competing objectives. In a typical game of Mafia, there is usually two factions. A majority faction e.g. town that has the numbers but does not know the true role of other players. A minority faction whom members knows one another and try to pass as townspeople. A faction win by eliminating the other, usually through 2 basic mechanisms. A Day phase where players from majority faction tries to reason and deduce who is from the other faction and vote them out. And a night phase where the minority faction gets to remove someone from the majority faction. 
+The Ninth Express is a variant of the Mafia-style game, played with AI agents. It is a social deduction game where players have secret roles and competing objectives. A typical game of Mafia has two factions. A majority faction, e.g. the town, has the numbers but does not know the true roles of the other players. A minority faction, whose members know one another, tries to pass as townspeople. A faction wins by eliminating the other, usually through two basic mechanisms: a day phase, where players from the majority faction try to reason out who is from the other faction and vote them out, and a night phase, where the minority faction gets to remove someone from the majority faction.
 
-My version takes inspiration from an advanced variant known as Town of Salem which includes additional features beyond the basic mafia game, such as giving unique skills to each players and adding more factions.
+My version takes inspiration from an advanced variant known as Town of Salem, which adds features beyond the basic Mafia game, such as giving each player a unique skill and adding more factions.
 
-The game has Ten players from 4 different factions: six town roles, two wolves, a lone killer and a neutral. The lineup is public; who holds each
-role is secret. Each side has its own win condition to fulfil, either being the only faction remaining or satisfy their unique win conditions in the case of neutrals.
-Three town roles gather different pieces of evidence to facilitate deductions and discussion for voting out a evil in the day.
+The game has ten players from four different factions: six town roles, two wolves, a lone killer and a neutral. The lineup is public; who holds each
+role is secret. Each side has its own win condition to fulfil: either being the only faction remaining or, for the neutral roles, satisfying their own unique win conditions.
+Three town roles gather different pieces of evidence to feed the deductions and discussion behind voting out an evil player in the day.
 
 The engine reports truthful results. Players can lie about what those results were, or which role
 they hold. That distinction creates the central design problem: give players enough evidence to reason

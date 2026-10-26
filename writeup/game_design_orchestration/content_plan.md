@@ -715,6 +715,16 @@ A limit that changes how to read a result always stays (the map's "Handle with c
 **Caught and fixed, not dramatised:** the vote tally, the never-hitting key, the note wipe, the
 investigator lynch, the cross-game key. State each as found, the change made and its scope.
 
+**Voice** (the owner's own pass on the chapter page's opening, 2026-10-26; imitate it on every page):
+- Name the thing first, in one plain sentence.
+- Build from the familiar outward, one layer at a time: the game need before the framework term.
+- Define a design by the tension it resolves: who knows what, who wants what.
+- Give the frame, then the parts ("two mechanisms: …").
+- No dates, scope clauses or caveats inside an explanation; each caveat goes once, beside the claim it
+  limits.
+- Avoid abstract nominalisations ("that distinction creates the central design problem"), defensive
+  negations ("it was not a comparison of …") and trade-off jargon.
+
 **Game wording** (from the 2026-10-26 review; details in "Level 1 presentation"):
 - Never "the last side standing wins": each side has its own win condition, and the neutrals can win
   alongside another side.
