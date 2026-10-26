@@ -1,5 +1,10 @@
 # Server ↔ Client Transport & Event Schema — Design Record
 
+Status (2026-10-26): Design record. Ruled 2026-07-28; the server was built 2026-08-18 to
+2026-08-20 and the frontend after it. Sections §6b and §6c (2026-08-20), §6d (2026-09-09) and §8b
+(2026-10-06, extended 2026-10-17) were added later. The mechanisms hold as ruled; dated notes mark
+the places where the build departed. The status in the box below was true on 2026-07-28.
+
 > **What this is:** the decision record for how the game backend talks to the frontend — the
 > transport (SSE + POST), the wire pattern (an event log the client folds), the event schema
 > (one discriminated union with audience filtering), and the relationship to LangGraph's own
@@ -22,6 +27,13 @@ Three kinds of traffic cross the server↔client boundary, and only three:
 | 1 | **GameConfig** | client → server | plain POST `/games` | once, at game start |
 | 2 | **GameEvent stream** | server → client | SSE `/games/{id}/stream` | continuously, as the game runs |
 | 3 | **input_request / HumanTurnResponse** | server → client / client → server | SSE event / plain POST `/games/{id}/action` | each human turn |
+
+[2026-10-26: as built (2026-08-18) the stream is `GET /games/{id}/events` and a turn is
+`POST /games/{id}/turns` (`server/routes/games.py::event_stream`, `::submit_turn`). Later routes
+sit beside them: `POST /games/{id}/key` and `/draft`, `GET /games/{id}/ledger`, and the room doors
+in `server/routes/rooms.py` (join, rejoin, leave, close, lock, start, character). The two rules
+below still hold: everything the client sends is a plain request, and SSE only carries server to
+client.]
 
 Two rules fall out of this table and never bend:
 
@@ -94,6 +106,11 @@ connections (consumers) share one event loop. The in-process equivalent is trivi
 We wrap this in a small `EventBus` class so that *if* the server ever splits into multiple
 processes, the swap to Redis is one class, not a rewrite. That's insurance, not speculation —
 we don't build the Redis path until a second process exists.
+
+[2026-10-26: no `EventBus` class was built. `server/game/game_session.py::GameSession._deliver`
+puts each event into every subscriber's `asyncio.Queue` directly, and the log is
+`GameSession.log`; `::subscribe` and `::unsubscribe` manage the queues. The single-process
+argument holds; those three methods are what a broker would replace.]
 
 ---
 
@@ -232,6 +249,10 @@ for `new_versions`).
 - **The real mitigation is retention, not channel format:** resume needs only the latest
   checkpoint, and the checkpoint's authority ends when the game does (see the truth table
   above). M2 rule: *finished game → event log persisted → checkpoint thread deleted.*
+  [2026-10-26: the deletion half of the M2 rule was never built. Finished games keep their
+  checkpoint threads: nothing in `server/` deletes one, and design notes §8 records deletion as a
+  retention policy not yet ruled. Retention as built is `seat_continuity.md` §7: the sweeper
+  marks abandoned games dropped and deletes nothing.]
 - **Upgrade path if the live service ever cares:** `langgraph 1.2` introduced
   `DeltaChannel` (`langgraph.channels.delta`) — per-step delta blobs + a full snapshot
   every `snapshot_frequency` steps (default 50), turning storage O(n²) → O(n) with resume
@@ -353,6 +374,12 @@ it, so the state never says it. `translate()` therefore keys on node names as we
 contents: `INITIALIZE_GAME` commits → `phase_change(day=1)`; `START_VOTING` →
 `phase_change("voting")`; `DAY_RESOLUTION` → `phase_change("night")`; `ONE_MORE_DAY` → dawn.
 
+[2026-10-26: the night's source changed before the build. On 2026-08-08 the owner ruled a
+`NIGHT_START` marker node (design notes §4), built 2026-08-18: it runs only when the day did not
+end the game, and its entry in `server/game/translate.py` emits `phase_change("night")`. So
+`DAY_RESOLUTION` announces nothing, and the conditional-edge rule in §8 is history. The point of
+this section holds: phase lives in graph position, and the wire must make it data.]
+
 The general statement: some facts live in **data**, some live in **where the program counter
 is** — and a wire contract must externalize both, because the client has no program counter.
 
@@ -404,6 +431,14 @@ chain-of-thought, which is never state and never logged.
 class. Fine at ~12–20 variants; would want namespacing at hundreds, which a fixed rulebook
 game will never reach.
 
+[2026-10-26: the union now holds 33 durable event types, each with a tier in
+`server/schemas/events.py::EVENT_TIERS`, plus one ephemeral type, `PhaseProgress`, which has no
+`seq` and is never stored. It is still flat and unnamespaced. Several names in this section's
+examples are July's (`strategy_note`, `wolf_speech`, `shot_result`); the current names and tiers
+are `EVENT_TIERS`, and `event_derivation.md` gives each node's events. The audience check is an
+import-time assertion in the same file rather than a test: a type without a tier stops the server
+from starting.]
+
 ---
 
 ## 6. The security model: the wire is the boundary
@@ -425,6 +460,15 @@ Consequences, all following from that one sentence:
   `tests/leak_test.py` `check_*` family, asserting per-seat streams contain no
   out-of-clearance events. Same principle as the prompt-payload leak tests — there the
   boundary is what enters the model's prompt; here it's what crosses the wire.
+  [2026-10-26: `check_event_stream_isolation` was never written. The boundary is pinned by
+  `tests/server/test_game_session.py::test_faction_reaches_wolves_only`,
+  `::test_seat_reaches_the_named_recipient_only` and
+  `::test_observer_reaches_nobody_live_and_everybody_after_game_over`, by
+  `tests/server/test_translator.py::test_every_emitted_type_is_tier_registered`, and by the
+  import-time tier check in `server/schemas/events.py`. The rule they test is
+  `server/game/entitlement.py::entitled`. The multiplayer audit (2026-10-15, findings 1 and 2)
+  found two side channels these event-level tests could not see, the status's `last_seq` and a
+  turn's refusal message; both were fixed then.]
 
 ---
 
@@ -466,6 +510,10 @@ attaches automatically.
 Cookie shape: named per game (`seat_<game_id>`) so one browser can hold seats in several
 games; `Path=/games/<id>` so it only rides requests to its own game; `Max-Age` 24h
 (comfortably outlives any in-memory game); `SameSite=Lax`.
+[2026-10-26: since 2026-08-24 the path carries the browser-visible prefix, `Path=/api/games/<id>`
+in production, because the proxy strips `/api` before FastAPI sees the request
+(`server/routes/_shared.py::set_seat_cookie`, `server/config.py::ServerSettings.SEAT_COOKIE_PATH_PREFIX`;
+`server_encountered_challenges.md` §7).]
 
 **The accepted constraint:** `SameSite=Lax` requires the frontend and API to be
 **same-site** — localhost ports in dev, sibling subdomains deployed — and the client must
@@ -489,11 +537,23 @@ really you," so recovery is a **reclaim door, not re-verification**:
    stall for it — an orphaned seat and an AFK player are the *same failure mode*, and the
    AFK timer's deterministic defaults (slice 4) keep the game moving either way. That
    convergence is why accounts aren't needed for the demo.
+   [2026-10-26: the remedy as built is the delegate, not scripted defaults: an orphaned seat's
+   turns are played by its own agent (design notes §7, ruled the same day), and since 2026-10-15
+   a seat whose agent has played two turns in a row while it was away has its turns delegated
+   at once (`seat_continuity.md` §4). A solo game with an orphaned seat suspends instead, and the
+   sweeper drops it after an hour (`seat_continuity.md` §5b, §7).]
 
 **403 is loud on purpose.** A presented-but-unknown token is rejected everywhere — turns,
 events, status — never silently downgraded to spectator ("I can't see my role" is a
 confusing bug; a 403 is an instruction). Status doubles as the auth probe: the client's
 poll hitting 403 is exactly the trigger for its rejoin UX.
+[2026-10-26: as built the page reclaims on either of two signals: a 403 (a cookie the server does
+not know), or, the commoner case, a status that names nobody while the device holds a token for
+the game, because a lost cookie makes `GET /games/{id}` answer as for a spectator rather than fail
+(`frontend/src/app/games/[gameId]/_components/GameClient.tsx::GameClient`; `seat_continuity.md`
+§2). Since 2026-10-15 the stored copy is cleared only when the server definitely refuses the
+token, a 403, 404 or 410 (`frontend/src/lib/request.ts::ApiError.refusesToken`; multiplayer
+audit, finding 11).]
 
 ### What reconnect costs under this scheme: nothing
 
@@ -528,6 +588,11 @@ features with it, because each replaces something the invite link used to do for
   `ROOM_LIST_TTL_SECONDS` (default 2 h). Deliberately a *browse filter, not expiry*:
   the direct room URL keeps working past the cutoff, so a slow-gathering friend group
   loses nothing — their room just stops advertising itself to strangers.
+  [2026-10-26: since 2026-09-27 the TTL also expires rooms: the sweeper closes a room that has
+  not departed within `ROOM_LIST_TTL_SECONDS`, and its URL then answers 410 with the reason
+  (`server/game/live_game_registry.py::LiveGameRegistry.expire_rooms`, `::closed_reason`). A
+  guest can leave and the host can close the room (`::leave`, `::close`). Rooms are not
+  persisted since 2026-09-12 (design notes §12), so a restart closes them too.]
 
 **What was deliberately left out: kicking a seated player** (deferred ruling
 2026-08-20). Pre-start, the lock already covers the griefing case at a fraction of the
@@ -551,6 +616,14 @@ event id. On a dropped connection, `EventSource` auto-reconnects and sends `Last
 the server replies with only the **missed suffix** of that seat's filtered log. A fresh
 connect (page load) replays the filtered log from `seq` 1. Either way, the client runs the
 *same reducer* over the backlog as over live events — reconnect is not a special case.
+
+[2026-10-26: two rulings of 2026-08-18 complete this section; their dated originals are design
+notes §6. The cursor travels in two channels: `Last-Event-ID` heals a dropped connection, and
+`?last_seq=` tells a fresh EventSource where to start; the header wins when both are present
+(`server/routes/games.py::event_stream`). And the cursor is tier-aware: an event at or below it is
+skipped only if the viewer was entitled to it live, so the observer backlog still arrives after
+game over (`server/routes/games.py::_sse`, its `cursor_skips`). The client's half of catch-up is
+in [`client_design/client_design.md`](client_design/client_design.md).]
 
 **Why not send current state (the checkpoint) instead?** Three reasons, in order:
 
@@ -589,6 +662,11 @@ by construction — a retried call or gated speech never touches state, so it ne
 player-visible event. (The gated *candidate* does surface — as an observer-tier event, which
 is exactly the said-vs-thought X-ray material.)
 
+[2026-10-26: the novelty gate was removed on 2026-10-07 with the day's Phase 2. The vetoes now
+come from the echo gate on sweep turns (`Agents/turn/echo_gate.py`) and the opening round's filter
+(`Agents/turn/round_filter.py`). The argument holds for both: a held line becomes an
+observer-tier `pass_marker` carrying `gated_candidate`.]
+
 ### Keeping the wire schema honest against the graph schema
 
 Wire events are hand-translated from internal records
@@ -601,6 +679,8 @@ contract. The coupling is confined to one function plus one alarm:
 - **An exhaustiveness test** — `assert set(state_keys) == MAPPED | IGNORED`: every state key
   is either explicitly translated or explicitly ignored. Add a state field and forget to
   decide → red test, not silent drift.
+  [2026-10-26: built as declared writes per node plus `tests/server/test_engine_sync.py`, not
+  this assertion; see the note at the end of the marker table below.]
 
 ### Phase events: the marker table (deliberate hardcoding, alarmed)
 
@@ -627,6 +707,15 @@ Two rules keep it honest:
 - **The node-axis exhaustiveness alarm** — the marker table's twin of the state-key test:
   `assert graph_node_names == PHASE_MARKERS.keys() | PHASE_IGNORED`. Add a node and forget
   to decide its phase consequence → red test, not silent drift.
+
+[2026-10-26: as built, the night comes from the `NIGHT_START` node (see the note in §5, "Where
+events come from"), so the first rule has nothing left to disambiguate. The two alarms were built
+as one runtime check and one test. Each translator entry declares the fields its node writes
+(`server/game/translate.py::node`, `::silent_node`); the first chunk from an unregistered node, or
+carrying an undeclared field, raises `TranslationError`. `tests/server/test_engine_sync.py`
+compares the declared fields with the engine's state schemas; no test covers the node axis, so a
+new node is caught by the first live game. The as-built table is `server/README.md`, "When the
+engine changes". The policy in the next paragraph holds.]
 
 Net effect: `translate()` is not a pure per-chunk function but a small **state machine over
 the chunk stream** — per-chunk mapping + the topology table. The general coupling policy
@@ -726,6 +815,12 @@ seats see "X is thinking" while the human deliberates); note the interrupt-resum
 re-runs the node top, so human turns double-fire it — the client treats the typing indicator
 idempotently (or the translator dedupes).
 
+[2026-10-26: built from the routing edge instead, on 2026-07-29: `turn_started` is written in
+`Agents/nodes/day/flow.py::route_speaker`, which a resume after `interrupt()` does not re-run, so
+it cannot double-fire and nothing has to dedupe it (`event_derivation.md`, the `route_speaker`
+entry). It is still written through `get_stream_writer()` and still carries only `player` and
+`day`. §8b's announcements later took the same route for the same reason.]
+
 ### Night pacing: there is deliberately no `night_progress` event
 
 At night, seats without an action (villagers) or whose action resolved early would otherwise
@@ -742,6 +837,11 @@ role-aliveness that the dead roster hasn't announced. Night's inner structure ma
 nothing public; wolf-faction sees its own activity (`wolf_turn_started`); each acting seat
 sees its own `input_request`. Public gets exactly two truths: `phase_change("night")` and
 dawn's deaths.
+
+[2026-10-26: a night progress bar was added on 2026-07-31 as the ephemeral `phase_progress`
+(`server/schemas/events.py::PhaseProgress`, `server/game/pacing.py`). It counts from public
+knowledge only, one padded unit per living seat since 2026-10-11, so the ban above on progress
+read from the engine stands (`event_derivation.md`, "Ephemeral pacing channel").]
 
 This is the general division of labor at its sharpest: **the wire promises truth and order;
 pacing and drama are the client's job** — the dawn-reveal beat (client may hold rendering
@@ -774,6 +874,10 @@ frontend reducer          (switch on `type`; compiler-enforced exhaustive)
 - **SSE blind spot, fixed:** OpenAPI doesn't describe SSE payloads, so the union is
   registered in the spec via the replay route
   (`GET /games/{id}/events -> list[GameEvent]`) — a route we want anyway.
+  [2026-10-26: `GET /games/{id}/events` became the SSE route itself, so the union enters the
+  OpenAPI document through the replay route, `GET /replays/{game_id}`, whose
+  `server/schemas/replays.py::ReplayGame` carries it as `events`. The saved document is
+  `frontend/src/types/contracts/openapi.json`, not `server/openapi.json`.]
 - **Every client build contains the full union** — a villager's client *knows the shape of*
   `wolf_speech`; it just never receives one. Privacy is which events the server put on your
   connection (§6), never which types your client was compiled with.

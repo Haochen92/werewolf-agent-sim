@@ -29,24 +29,30 @@ still move; an ended game is answered by its database row, and a finished one by
 | `resources.py` | builds the resource tree once, closes it in reverse | design notes §9 |
 | `dependencies.py` | request → resource providers; the fall-through from the live registry to the row for ended games; the one 404 | design notes §9, §11 |
 | `openapi.py` | the API contract as a document: `python -m server.openapi` prints it for the frontend's type generator; `test_openapi_snapshot` fails when the saved copy drifts | "When the engine changes" below |
-| `routes/` | HTTP translation only: `system` (health, models + the purse), `games` (doors, status, turns, draft-a-line, SSE, key), `rooms` (lobby), `replays`, `admin` (the live knobs, behind `ADMIN_TOKEN`) | transport §2, §7, §9; design notes §13; `frontend/docs/ux_journeys.md` D25 (draft) |
+| `error_reporting.py` | crash reports to Sentry, off unless `SENTRY_DSN` is set; keys, bodies and model text never leave | its docstring |
+| `routes/` | HTTP translation only: `system` (health, models + the purse), `games` (doors, status, turns, draft-a-line, SSE, key, ledger), `rooms` (lobby: join, rejoin, leave, close, lock, start, character), `replays`, `characters` (the puppet catalogue), `admin` (the live knobs, behind `ADMIN_TOKEN`) | transport §2, §7, §9; design notes §12, §13; `frontend/docs/ux_journeys.md` D25 (draft) |
 | `schemas/` | the wire: `events` (the durable union + tiers), `requests` (bodies/DTOs), `replays` | transport §5, §10 |
-| `database_models/` | SQLModel mappings for `games`, `events` and `settings` | design notes §8, §13 |
+| `database_models/` | SQLModel mappings for `games`, `events`, `settings`, `prompt_captures`, `models` and `model_prices` (the model catalogue), `characters` and `game_cast` | design notes §8, §13 |
 | `game/live_game_registry.py` | **the middle lifecycle**: `LiveGameRegistry`, the table of every game that can still move and every transition that originates outside a game | design notes §10, §11 |
-| `game/lobby.py` | the waiting stage: seats, host key, lock, listing TTL; memory only, no row until start, closes on restart | transport §6b, §6c; design notes §12 |
-| `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns) | transport §3, §6, §8; design notes §5 |
+| `game/lobby.py` | the waiting stage: seats, host key, lock, listing TTL, leave and close; memory only, no row until start, closes on restart or when the sweeper expires it | transport §6b, §6c; design notes §12 |
+| `game/game_session.py` | the running stage: `GameSession` (task, log, viewers, human turns); a solo game suspends while its player is away | transport §3, §6, §8; design notes §5; seat_continuity §5b |
 | `game/entitlement.py` | `entitled()`: may this viewer see this event, by tier and seat; observer tier unlocks at game over | transport §6, §8 |
 | `game/seat_clocks.py` | when an unanswered human turn is delegated or the table parks | `frontend/docs/seat_continuity.md` |
 | `game/pacing.py` | progress bars from public knowledge only | transport §9 |
 | `game/translate.py` | stream chunks → tier-ready durable events, one instance per game; the per-node table is `frontend/docs/event_derivation.md` | transport §5, §8; design notes §1–§3 |
-| `game/model_catalog.py` | which models may be played, their rescue, whether the house *can* pay (whether it *will* is `house.py`) | design notes §13 |
-| `game/key_check.py` | one trivial provider call to try a player's key before a game resumes on it | design notes §13 |
+| `game/model_catalog.py` | which models may be played, their rescue, a backup key's model, whether the house *can* pay (whether it *will* is `house.py`); the menu itself is rows in the database | design notes §13 |
+| `game/key_check.py` | one trivial provider call to try a player's key before a game opens or resumes on it | design notes §13 |
+| `game/run_config.py` | the one place a served game's engine config is built, for all three doors | its docstring |
+| `game/cast.py` | the puppet cast: which character stands at each seat, dealt apart from roles | its docstring |
+| `game/ledger.py` | the claim ledger as the agents read it, rebuilt from the event log for `GET /games/{id}/ledger` | its docstring |
+| `game/usage.py` | tokens and call time per model and UTC hour, saved on the game's row | its docstring |
 | `storage/game_repository.py` | write side + recovery reads of the game lifecycle | design notes §8 |
 | `storage/replay_service.py` | the public read side (the feature is `routes/replays.py`) | design notes §9 |
 | `storage/settings_repository.py` | the settings table: knobs an operator changes without a restart | design notes §13 |
 | `storage/prompt_captures.py` | a finished game's prompts, private reads and final state, gzip-packed into `prompt_captures` for the leak audit; the audit's reads and verdicts | `evidence/agent_boundaries/report.md` §3, §5 |
 | `housekeeping/recovery.py` | boot: hand every running row to `registry.revive` (a key-funded one waits for its key) | design notes §5c, §13; seat_continuity §6 |
-| `housekeeping/sweeper.py` | timer: drop parked games nobody is watching | seat_continuity §7 |
+| `housekeeping/sweeper.py` | timer: drop parked or suspended games nobody is watching; close rooms nobody departed | seat_continuity §7 |
+| `housekeeping/catalog_refresh.py` | timer: re-read the model catalogue from the database every few seconds | design notes §13 |
 | `housekeeping/leak_audit.py` | nightly, out of process (cron on the host): the batch runner's leak checks over each finished game's saved prompts | `evidence/agent_boundaries/report.md` §3, §5 |
 
 Decision records live in `frontend/docs/`: `server_client_transport.md` (the wire),
@@ -101,7 +107,7 @@ diff of the golden file is then the review of that change.
 
 ```
 poetry run uvicorn server.app:app --port 8001     # 8000 belongs to another project on this host
-poetry run pytest tests/server -q                 # ~170 tests, no network, no LLM
+poetry run pytest tests/server -q                 # no network, no LLM
 poetry run alembic upgrade head                   # WW_POSTGRES_DSN from .env
 curl -H "X-Admin-Token: $ADMIN_TOKEN" -X PUT localhost:8001/admin/house \
      -H 'content-type: application/json' -d '{"games_per_day": 5}'   # live, no restart
@@ -109,7 +115,9 @@ poetry run python -m server.housekeeping.leak_audit   # leak-check every game no
 ```
 
 The leak audit runs on the host, from this checkout (its checks live in `tests/leak_test.py`,
-which the image leaves out). Nightly, from `crontab -e`; it exits 1 when a game leaked:
+which the image leaves out). It is meant to run nightly from `crontab -e`, and exits 1 when a
+game leaked. [2026-10-26: the cron is not installed: checked 2026-10-23, no crontab entry and no
+log, so the audit runs only when someone runs it by hand.] The line to install:
 
 ```
 15 4 * * * cd /home/ubuntu/projects/werewolf-agent-sim && /home/ubuntu/.local/bin/poetry run python -m server.housekeeping.leak_audit >> /home/ubuntu/leak_audit.log 2>&1

@@ -39,7 +39,10 @@ banner, printed on every call, and this project registers no tool functions.
   `GAME_LLM_ATTEMPTS` (2) times in all, then fails; the day summary waits
   `GAME_SUMMARY_TIMEOUT_S` (90 s), because its failure path is the raw transcript. Post-game
   extraction is untouched. The worst honest turn measured before the change was 11 s, so 30 s
-  loses nothing (ruled with the owner, who first asked whether 60 s was safer).
+  loses nothing (ruled with the owner, who first asked whether 60 s was safer). [2026-10-26: the
+  games or turns behind the 11 s were not recorded, here or in the commits, so its N is unknown.
+  The measured figures since are the 13 served games of `frontend/docs/stage_fit/` (Haiku 5.5,
+  slowest 5% of discussion calls 10.8 s).]
 - *A stall hands the turn over at once.* A timeout, a 429 or a 5xx is classified as a stall
   (`is_transient_provider_error`); the primary is not asked again that turn, and the rescue
   model takes it. The rescue for `gemini-3.6-flash` is `gemini-3.5-flash`: a different family
@@ -54,7 +57,8 @@ Commits `c67d47c` (the budget) and `c74284c` (the stall count). Code:
 `Agents/llm_factory/health.py` (`ModelHealth`), `Agents/llm_factory/embeddings.py`
 (`is_transient_provider_error`), `Agents/turn/agent_player.py` (`_STALLED`, `run_agent`); tests in
 `tests/engine/test_model_fallback.py`. Design note: `frontend/docs/server_design_notes.md`
-§13 "Stalls".
+§13 "Stalls". [2026-10-26: the design note is §6, "Stalls", and since 2026-10-26 it is a short
+summary pointing here; this entry is the one home for the stall rescue.]
 
 **What to know.** The Developer-API pool was considered as an alternative to Vertex and not
 adopted (unclear whether the free-trial credits cover it). The viewer is not told when a turn ran
@@ -85,6 +89,14 @@ Commit `b7517ec`; frontend `8b5775a`.
 (`30728693`, `MAX_LINE_CHARS` and the frontend's `LINE_MAX`).*
 
 ## 3) Where no human turn sets the tempo, the stage plays at agent speed (2026-10-01) — OPEN
+
+*Status 2026-10-26: partly built. The timing sheet was written on 2026-10-01
+([`frontend/docs/live_timing_sheet.md`](../frontend/docs/live_timing_sheet.md), the ruling at its
+head, which is now the ruling's home). The jump was built for one case only, on 2026-10-15: a
+stage more than 30 s of reading behind the seat's own timed turn lands still just before it
+(`frontend/src/stage/containers/live-state.ts::TURN_JUMP_MS`; multiplayer audit, finding 10). The
+general jump below (about 45 s of queued holds, the strip notice, the drawer) is not built, nor
+is the server-side metered release.*
 
 **What happened.** The live stage was changed to play every beat at its full hold, however
 many are queued (until then a backlog of three or more drained at half speed, which made a
@@ -142,7 +154,7 @@ queue has two honest answers, and the sheet says which applies where:
   rather than a fixed 20–30 s window) matters only if a shared live moment is wanted, e.g.
   four friends on their phones at a table. Not built until a real multiplayer game asks.
 
-**Next.** Before code, a *live timing sheet* (`frontend/docs/live_timing_sheet.md`, the
+**Next.** [2026-10-26: done 2026-10-01; see the status at the head of this entry.] Before code, a *live timing sheet* (`frontend/docs/live_timing_sheet.md`, the
 companion of the entitlement sheet that produced the clean SSE tiers): one row per event the
 graph emits, its tier, the server's emit time with representative durations from a real
 trace, what each viewer's stage does with it and for how long (villager, wolf, investigator,
