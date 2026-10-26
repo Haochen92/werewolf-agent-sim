@@ -449,7 +449,8 @@ could retrieve the same answer—even when the games used different models.
 Vote payloads include the game's transcript, which makes identical payloads less likely. The
 opening round adopted the same caching pattern on 2026-10-07 (`b66ce7b4`), exposing a simpler
 collision: a day-1 opening can contain no information unique to its game. In an offline check,
-**8 of 66 pairs among 12 freshly dealt games** had at least one seat with identical opening keys.
+**7 of the 66 pairs among 12 freshly dealt games** had at least one seat with identical opening keys
+(8 seats in all).
 That establishes reachable key collisions, not how often served games reused an answer.
 
 **Recorded incident.** In game `14926d10` (2026-10-17 07:44, Claude Haiku 5.5), every model call
