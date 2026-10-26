@@ -258,7 +258,7 @@ that writes a line never judges it, so generator and verifier stay separate.
 **The calibration.** The obvious fix for a quiet open floor was to tune the rule that tells a player
 when to pass. To test whether any wording could separate useful lines from restatements, 162 turns
 were drawn from 16 ten-seat Claude Haiku 5.5 games (2026-10-18), and each sampled pass was replayed
-once with "do not pass this time" added; 156 replays succeeded. Four blind Claude Sonnet readers, one
+once with "do not pass this time" added; 6 of the 80 replays failed, leaving 156 judged lines in all. Four blind Claude Sonnet readers, one
 per line, sorted each line as a new fact, reading or question, or as restatement or filler, without
 knowing whether it had been posted, held back or forced. On the open floor, lines players had held back
 were worth hearing 23 times in 40 (57%), and lines they posted 13 in 25 (52%): the choice to speak did
@@ -298,8 +298,8 @@ rules came from test games: held lines' tags once counted toward the closing, so
 four accusers of six whose lines nobody had heard; and a second sweep re-asked two held players, who
 both repeated themselves.
 
-<!-- Level 3 link (possible; owner to decide): "Silence calibration: a volume knob, not a filter",
-proposed file conversation/silence_calibration.md. Not drafted, so no link is published. -->
+**Explore the method:** how passes were replayed and judged, the four prompt changes and the gate's
+bars → [Silence calibration: a volume knob, not a filter](silence_calibration.md).
 
 ### A last word for the most-accused
 

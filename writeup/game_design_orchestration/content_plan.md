@@ -496,8 +496,8 @@ Level 3 page". Each candidate is anchored in a Level 2 subsection that covers th
 
 | Level 3 page | Anchoring subsection |
 |---|---|
-| The cache key that crossed games | Page 5, "A cache key must name its scope" |
-| Silence calibration (possible) | Page 2, "Speak by default, filter after the line" |
+| The cache key that crossed games | Page 5, "A stable cache key also needs a game boundary" |
+| Silence calibration (drafted 2026-10-26, owner's ruling) | Page 2, "Speak by default, filter after the line" |
 | The voice rewrite (possible) | Page 2, "How players sound" (or chapter 3, if the voices move) |
 | Hosting a sync graph in an async server (possible) | Page 5, "Running the engine inside the web server" |
 

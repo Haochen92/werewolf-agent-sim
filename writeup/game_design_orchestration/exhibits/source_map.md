@@ -92,3 +92,14 @@ Paths are from the repository root.
 | CK-collisions | 7 of 66 pairs among 12 freshly dealt games, 8 seats; unit stated | content | orchestration report decision 12; test `tests/engine/test_turn_cache_key.py::test_two_games_never_share_a_day_one_opening_key` | drafted |
 | CK-control | The scripted-model control: before the fix 5, after 0; plus the two Haiku games on the fixed code (all ten opening calls each) | content (two-row table + sentence) | orchestration report "What is not established" bullet 5; `evidence/gameplay/report.md` "Execution reliability" | drafted |
 
+## Level 3: [Silence calibration: a volume knob, not a filter](../conversation/silence_calibration.md)
+
+| Id | Exhibit | Form | Source | State |
+|---|---|---|---|---|
+| SC-1 | A pass that hid a question: one forced line (day 4, empty floor), its reader's kind | content | `evidence/gameplay/data/silence_calibration/items.jsonl` turn `voices-08.off:4:player_5:1`; verdict in `verdicts_*.jsonl` via `blind_key.json` | drafted |
+| SC-2 | Open-floor lines by kind: held back (forced) against posted, 40 and 25 lines | content (table) | README step 1 "Results"; re-tallied from `blind_key.json` + `verdicts_1..4.jsonl` | drafted |
+| SC-3 | Four prompt changes: worthwhile and restating turns spoken, before → after | content (table) | README steps 2–3; `variant_scores.json`, `lever_scores.json` | drafted |
+| SC-4 | Gate bars on the 65 judged lines: restatements and worthwhile lines held | content (table) | README step 4; `gate_check_scores.json`, `gate_check_judge_low_scores.json`, `gate_check_ported.jsonl` | drafted |
+| SC-5 | A line the gate catches: player_5's line and player_7's forced line, held as a repeat | content (quoted exchange) | `items.jsonl` turn `voices-07.on:2:player_7:1` (its `context.today`); `gate_check_ported.jsonl` (`held: "player_5"`) | drafted |
+| SC-6 | Four whole games on the same deals: open-floor turns published, held, passed | content (table) | README step 5; `games_scores.json` | drafted |
+| SC-7 | The study's pipeline (diagram below) | diagram | README steps 1–5 | optional |
