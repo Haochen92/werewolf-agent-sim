@@ -599,3 +599,12 @@ no distinct entry but caught 8 of 20 duplicates; the other 12 it kept or propose
 triage-only mode), which leaves recoverable copies. With the project's lean (a wrong discard is
 permanent, a wrong keep is not), Sonnet is the safer batch judge on this set. One run each, 111 entries,
 nine-seat May content.
+
+**Where the wrong discards fell, and what they cost (same day).** All seven of Haiku's wrong discards
+were in lesson clusters (21, 25, 28); on the observation clusters it made none. So the fold, which judges
+observations, showed no unsafe discard. The lesson dedup is where the risk sits, and it is smaller than
+"permanent" suggests: in production it discards only a newly synthesised lesson into an older one
+(freeze-old), the observations the lesson came from stay in the store for synthesis to use again, and a
+lesson from another game stage is never discarded (a rule this replay does not apply, so some of the
+seven might not occur in production). Owner, 2026-10-26: the judge stays Haiku 5.5 for now; Sonnet 5.5
+for the lesson dedup alone is the option if it needs tightening.
