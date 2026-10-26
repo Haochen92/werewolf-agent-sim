@@ -486,3 +486,18 @@ Deterministic prehistory: [../metrics/design/discussion_scoring_plan.md](../../m
 [../../../evaluation/src/loop/discussion_tagger.py](../../../evaluation/src/loop/discussion_tagger.py). Written
 2026-07-04; restructured 2026-07-08 (per owner review: lead with the existing credit system and the
 deterministic attempts before the structural argument; de-compress for a reader new to the pipeline).*
+
+---
+
+## 9 · Retirement from credit (2026-07-11 → 07-15)
+
+The read/tactic credit redesign (`../read_tactic_credit_redesign.md`, 2026-07-11) proposed taking the
+tagger out of credit, and the owner ruled it on 2026-07-13. Reasons recorded there: a verdict that
+correlates with winning in one 24-game, single-epoch study supports a diagnostic, not curating memory by
+it; the night read-quality override had no independent accuracy check; and one end-of-day judgement
+cannot separate a wrong belief from a wrong action. Day-discussion credit became the day-vote floor
+(§1) plus a move-grain refinement when the speaker's own accusation is where the lynch landed, and a
+guarded concealment floor for deceivers' concealment strategy points; night credit returned to the
+deterministic scorer with a read partition. Commit `05fcad20` (2026-07-15) removed `_tagger_ledger` and
+`discussion_mode`. The July v7 run, signed 2026-07-16, used only these rules. The tagger stays as a
+post-hoc diagnostic (`tag_game`, `eval-tagger`); it feeds no credit and runs in no game.

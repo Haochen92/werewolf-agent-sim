@@ -1,222 +1,126 @@
-# Discussion Tagger — how it works today
+# The discussion tagger: an LLM judge for discussion credit, retired
 
-**Orientation.** The discussion tagger is one omniscient, end-of-day LLM pass that reads each player's day
-discussion **and** night action and emits a per-player, de-lucked **merit verdict** — the piece of play that
-no deterministic proxy can score. Despite the name it covers both channels; "discussion" is where it is
-*irreplaceable*, because a vote-based proxy can already score night and town play. Its verdicts are consumed by
-the v7 compounding loop's **credit** step — the only reason the loop can reward a wolf for talking its way out
-of a corner even in a game the wolf lost. The tagger is **not a separate upstream stage**: the credit step
-*invokes* it on demand (per game, cached) and then folds what it returns into the strategy-point ledger.
+A decision record from the v7 memory loop of June and July 2026 (the nine-seat game). The loop's
+**credit** step scored each lesson a player had chosen to follow by whether the decisions it led to were
+good. Votes and night actions could be scored by rules; day discussion could not. The tagger was a
+language-model judge built to fill that gap. It was used for credit from 2026-06-20 and retired on
+2026-07-13. The full path, with every number, is in the [experiment log](experiment_log.md); how far the
+tagger can be trusted is in the [LLM-judge note](../../evaluation/llm_judge/discussion_tagger.md).
 
-```
-loop generation
-    └─▶ credit step:  credit_apply ─▶ _tagger_ledger ─┐
-                                                      │  (1) invokes the tagger per game (cached)
-                                                      ▼
-                         per-day tagger pass ─▶ {discussion verdict, night verdict} per player
-                         (omniscient, one flash-lite call/day)
-                                                      │  (2) _tagger_ledger folds the verdicts in
-                                                      ▼
-                         per-strategy-point de-luck ledger ─▶ consolidation
-```
+## In short
 
-This is the write-up of the **current shipped mechanism and its design lineage**; the path that got here is
-[experiment_log.md](experiment_log.md). How far the instrument is *trusted* — the validation apparatus and its
-bounds — is owned by the companion apparatus report
-[../../evaluation/llm_judge/discussion_tagger.md](../../evaluation/llm_judge/discussion_tagger.md); this doc points
-at it rather than repeating it.
+- **Question:** could a model judge give memory credit for day discussion, where rule-based checks could
+  not?
+- **Test:** the tagger was built on 2026-06-19. It was checked on 8 games for whether it only copied the
+  free vote-based signal, and on 24 games for whether its verdict predicts the deceivers' win beyond the
+  vote record, with the outcome hidden from it.
+- **Answer:** it measures something real about how wolves and the serial killer talk. That was never shown
+  to make memory better: no test ran with wolf memory on against off. A town gain once read off its credit
+  was retracted.
+- **What followed:** on 2026-07-13 the owner retired it from credit in favour of rules. It survives as a
+  diagnostic that can be run on stored games. It feeds no credit and runs in no game.
 
-## What it produces (current schema)
+## Why it was built
 
-One `DayTags` object per (game, day), each holding two lists
-([discussion_tagger.py:51-80](../../../evaluation/src/loop/discussion_tagger.py#L51-L80)). The schema is
-**all-required** — flash-lite silently drops optional/nullable fields, so every field is mandatory by design.
+**Credit had no signal for talk.** Credit is *de-lucked*: a decision is scored against the true roles
+the engine knows, not against who won, because a sound vote can sit in a lost game. A vote can be scored
+this way: it lands on a real wolf or it does not. A night action can too. A speech has no single board
+action to hold against the truth, so a wolf's lessons could be rewarded for its votes and kills but never
+for its deception.
 
-- **`TurnTag`** (one per player who spoke that day): a holistic **`verdict`** ∈ {positive, neutral, negative}
-  — "weighing framing, credibility and any role-reveal, did this player's discussion *advance their own
-  faction's win condition*, judged omnisciently and **independent of whether the vote or the game went their
-  way**" — plus the detection lens the verdict weighs: **`framing`** ∈ {none, legitimate, manipulative},
-  **`credibility`** ∈ {low, medium, high}, **`role_reveal`** ∈ {none, own_role_claim, challenge_claim}, and a
-  one-line `why`.
-- **`NightTag`** (one per player who acted that night): a **`verdict`** scoring the **read quality** of the
-  target choice given the day's discussion — "a *skilled read* the discussion justified vs a *blind/lucky
-  pick*" — plus **`read_quality`** ∈ {skilled, reasonable, blind_or_lucky, misread} and a `why`.
+**Two free attempts failed first (2026-06-18 to 06-19).** Both used the stance tags (accusation, defence,
+agreement) that every message already carries.
 
-**Tag-fine, credit-coarse.** The `framing` / `credibility` / `role_reveal` / `read_quality` sub-tags are a
-**detection lens**, consumed only by the offline validation runner. **Credit reads only the coarse `verdict`.**
-This is deliberate: a per-dimension credit signal would spread thin and drift toward the halo the design fought
-to avoid; one holistic verdict per turn keeps the reward legible.
+- *Did wolves lead the town onto the wrong player?* Over 180 existing games, a wolf's "lead score" (how
+  early it accused the town player who was then voted out) did not track wolf wins (r = −0.09, p = 0.51,
+  53 games). It also barely happened: in 127 of 180 games no wolf ever accused that player.
+- *Score an accusation as a vote.* After requiring at least 3 accusing turns per lesson, only 41 lessons
+  could be scored, too few to test, and what they measured repeated the vote score.
 
-## The signal inventory — what's emitted, who consumes it, how far it's trusted
+The best free signal was cruder: credit every speech by whether that day's vote went the speaker's side's
+way. It covered 100 lessons and predicted held-out game outcomes almost as well as the board measures
+(Pearson +0.51 with n = 51, against +0.54). It became the free floor the tagger had to beat. It
+is blind to one thing deceivers do: they often kill a power role at night without having drawn any
+suspicion onto it in the day (the record gives 71% for wolves, 62% for the serial killer).
 
-Every LLM-tagged signal the tagger produces, its consumer, and how far it is trusted. Only the two coarse
-**verdicts** are credited; the four sub-tags below them are the detection lens the offline validation runner
-reads. Trust markers are lifted from the Verification section below and the apparatus report
-[`../../evaluation/llm_judge/discussion_tagger.md`](../../evaluation/llm_judge/discussion_tagger.md); nothing is
-re-derived.
+**Why no rule could do the deceivers' half.** Most town talk pays off in votes, which rules score. A
+deceiver's skill is concealment and being believed. The obvious concealment score, how many votes a
+serial killer drew, just restates whether it was caught: a score that secretly tracks who won (the log
+calls this a *halo*). Whether a story was believed leaves no trace on the board at all.
 
-| Tagged signal | Schema field | Consumer (credit channel) | Trust |
-|---|---|---|---|
-| Discussion merit **verdict** | `TurnTag.verdict` (pos/neu/neg) | **credited** — `credit.py::_tagger_ledger` grades every followed `<role>/day_discussion` SP by this verdict under tagger mode (`is_tagger_graded`) | ✅ validated metric — partial *r* with faction **won** = +0.56 wolf / +0.60 SK / +0.02 town (N=24, blinded + verbosity-controlled; see Verification). Correlational, single-epoch. |
-| Night read-quality **verdict** | `NightTag.verdict` (pos/neu/neg) | **credited** — `_tagger_ledger` grades followed `<role>/night_action` SPs for the four `NIGHT_CREDIT_ROLES` (investigator / vigilante / wolf / serial_killer), **overriding** the deterministic `_night_credit` | 🟡 reassigns ~31% of night actions vs the outcome-only credit (N=8). No correlation-with-win figure on record; residual night-leak untested (gap 4). |
-| Framing lens | `TurnTag.framing` (none/legitimate/manipulative) | diagnostic-only — **never credited**; read by the offline validation runner | ⚠️ distributionally sane by faction (`manipulative`: town 7% / wolf 85% / SK 88%, N=8); no per-field accuracy on record, no human golden — uncalibrated (gap 2). |
-| Credibility lens | `TurnTag.credibility` (low/medium/high) | diagnostic-only — never credited | ⚠️ distribution non-degenerate (N=8); no accuracy number, no human golden — uncalibrated (gap 2). |
-| Role-reveal lens | `TurnTag.role_reveal` (none/own_role_claim/challenge_claim) | diagnostic-only — never credited | ⚠️ cross-checked against a deterministic self-claim detector, no persisted accuracy number, no golden; the `role_claims` anchor is empty on the pre-A4 v6ab epoch, so it fell back to raw-message judging there. |
-| Read-quality lens | `NightTag.read_quality` (skilled/reasonable/blind_or_lucky/misread) | diagnostic-only — never credited | ⚠️ **unvalidated** — no trust record for the sub-tag itself; the coarse night verdict it feeds is validated by the ~31% reassignment, but this field carries no distribution check or golden. |
+## What it was
 
-**Two honest caveats the records carry.** (1) The validation is **small-N and single-epoch** — N=24 for the
-discussion verdict, N=8 for the night reassignment and the per-field distributions — so read every figure as
-directionally trustworthy, not yet robust (gaps 2–3). Converting the tentative wolf/SK signal from a
-validated *metric* into a memory *verdict* needs a direct wolf SP/obs A/B, which has never been run (gap 1).
-(2) A "+0.556 discussion gain" once read off the credited town `villager/day_discussion` cell was
-**retracted as a halo** — it was an undifferenced credit *level* (raw `(positive − negative)/follow`, tagger
-base pinned at 0), never differenced against the memory-off arm, and is **not** re-cited as a result. The
-validated +0.56/+0.60 above is a different quantity (a partial correlation with the faction win, on wolf/SK,
-not town); the numeric adjacency is a naming trap, not a second citation of the same number (the retraction
-and the naming-trap table are in [experiment_log.md](experiment_log.md) §6).
+At the end of each game day, one call to a cheap model (`gemini-3.1-flash-lite`, temperature 1.0) read the day's talk with
+every player's true role, that day's vote and the night's deaths. For each player it returned:
 
-**Boundary.** The rule that governs *why* these signals never enter the deterministic A/B basket — an LLM
-instrument can drift between epochs and carry a bias no N averages away, while the basket returns the same
-answer forever — lives in [`../../metrics/report.md`](../../metrics/report.md) §5. The credit mechanics that consume the two
-verdicts (the tagger ledger, the same-instrument baseline) live in [`../../metrics/report.md`](../../metrics/report.md) §7.
+- a **discussion verdict** (positive, neutral or negative): did this player's talk help their own side,
+  judged apart from how the vote or game went;
+- a **night verdict**: was their night action a read the day's talk justified, or a blind or lucky pick;
+- **detail tags** (framing, believability, role claims), the evidence the discussion verdict weighs.
 
-## Guarantee / contract (present-tense)
+Only the two verdicts were credited, and never the win: a positive verdict counted as positive even in a
+lost game. Each player's private reasoning was shown to the tagger only to work out what a decision was
+based on, never to grade it; the prompt enforced this, not code. The design record is
+[`discussion_credit_design.md`](../../memory_system/v7/discussion_credit_design.md).
 
-- **Valence comes only from observable behavior + true roles; the agent's own reasoning is attribution-only.**
-  Each agent's `updated_strategy` (its private in-game thinking) is fed in **only** to de-confound a night
-  target (a discussion-driven read vs an obvious known-power-role removal), surface a read that was *formed but
-  never voiced*, and trace influence — never to set merit, because LLMs confabulate self-serving accounts. This
-  split is **enforced by the prompt, not by code** ([discussion_tagger.py:113-118](../../../evaluation/src/loop/discussion_tagger.py#L113-L118));
-  it is a trust boundary, not a mechanical guard.
-- **Only the holistic `verdict` feeds credit, at base 0.** `credit.py::_tagger_ledger` credits each followed
-  strategy point by `verdict` alone, with a **base reward of 0** — the tagger is a *de-luck* signal, so a
-  positive verdict is worth `+1 − base_rate`, never the game's win/loss
-  ([credit.py:102-106](../../../evaluation/src/loop/credit.py#L102-L106)). The reward is *never* the game
-  outcome (that is the halo).
-- **Winner-blind on reasoning quality.** The tagger judges one day at a time on the information visible *at the
-  time*: true roles let it *check* a read's conclusion, but a baseless accusation that merely lands on a real
-  threat earns no credit, and a well-justified read that turns out wrong is still good reasoning
-  ([discussion_tagger.py:96-102](../../../evaluation/src/loop/discussion_tagger.py#L96-L102)).
-- **Role-reveal is anchored on structured extraction, not re-judged from chat.** `role_reveal` and the
-  credibility of a claim key on the persisted day-summary `role_claims` (a claim whose declared role ≠ true
-  role is a deception tell); a raw-message fallback covers pre-A4 records that lack the structured field.
-- **Fails loud, not silent** (2026-07-02 hardening). A per-day LLM failure is collected and surfaced as an
-  end-of-game `logger.error` counting degraded days (with a `strict` mode that re-raises); a missing
-  eval-cases sidecar — which would silently empty `role_claims`/`private_reads` — warns once per game; and the
-  per-game tag cache folds a **session/trace provenance slug** into its key and asserts it on read, re-tagging
-  fresh on mismatch (this closed a real cross-arm collision that helped invalidate a paired run).
-- **What is NOT guaranteed.** Per-field calibration (there is no human golden behind `framing`/`credibility`/
-  `role_reveal`); a *memory* verdict (the validation is correlational, N=24, single-epoch — it validates the
-  metric, not that wolf/SK memory compounds); the night verdict's residual outcome-leak (untested — see gaps);
-  and the "flash-lite" property, which is **caller-injected, not intrinsic** (the tagger calls `get_llm_pro()`,
-  whose bare default is `gemini-2.5-pro`; the loop env-pins it to flash-lite).
+## What was learned
 
-## The mechanism / model
+**1. The first version copied the free signal (2026-06-19, 8 games).** Judging discussion merit alone, its
+verdict correlated +0.55 with the free floor and +0.21 with who won. Making the verdict weigh the detail
+tags cut those to +0.34 and +0.11. The night verdict re-scored about 31% of night actions against the
+outcome-only rule: 30 justified misses credited, 12 lucky hits demoted. With that, discussion credit
+switched from the floor to the tagger on 2026-06-20.
 
-- **Live entry point, and who calls whom.** `tag_game` / `tag_game_cached`
-  ([discussion_tagger.py:228-351](../../../evaluation/src/loop/discussion_tagger.py#L228-L351)) is **invoked by
-  its consumer**, not scheduled ahead of it: the credit step `credit.py::_tagger_ledger` lazy-imports and calls
-  `tag_game_cached` per game ([credit.py:73-84](../../../evaluation/src/loop/credit.py#L73-L84)), so the tagger
-  runs *inside* the credit stage, on demand and cached. `_tagger_ledger` is in turn called by `credit_apply`,
-  which the loop driver runs once per generation as step 2 of 4 (generate → **credit** → consolidate → score;
-  [driver.py:280-282](../../../evaluation/src/loop/driver.py#L280-L282)). So `_tagger_ledger` is downstream of
-  the tagger's *verdicts* but upstream of it in *call order* — it both triggers the pass and folds the result.
-- **Inputs assembled per day.** True roles + that day's public discussion (grouped from `day_channel`) are the
-  **valence** inputs; the persisted `role_claims` anchor `role_reveal`; each agent's `updated_strategy` (as
-  "private reads") and the night-target rationales are **attribution-only**; the day's vote result and night
-  deaths are appended as an optional `outcome_block`.
-- **Model + execution.** `get_llm_pro()`, env-pinned to `gemini-3.1-flash-lite` by the loop
-  ([config.py:110-118](../../../evaluation/src/loop/config.py#L110-L118)); one LLM call per day, run in parallel
-  across a game's days (`ThreadPoolExecutor`, `max_workers=8`); `.with_structured_output(DayTags)`. Tags are
-  **cached immutably per `game_id`** with a versioned, provenance-slugged key (`version="v2"`), so the driver's
-  rolling-window recompute re-reads tags rather than re-paying for them.
-- **Two credit tiers, selected by `discussion_mode`.** This is the load-bearing wiring:
+**2. A town gain was retracted (2026-06-23).** A "+0.556 discussion gain" for the villager's discussion
+lessons was read off the credited store after the loop's second run. It was a raw credit level, never
+compared with the games played without memory. The tagger gives positive verdicts with or without memory,
+so the level says nothing about what memory added. A cache bug made it worse: games with and without
+memory shared game ids, so the no-memory games were scored with the memory games' tags. Compared properly
+through the free floor, the villager's discussion difference was noise (mean about −0.12 over six
+generations).
 
-  | Tier | `discussion_mode` | Discussion credit | Night credit | Cost |
-  |---|---|---|---|---|
-  | **Free ("floor")** | `floor` | day-vote **endpoint** (`_discussion_ledger` → `_vote_credit`, faction-relative lynch outcome) | deterministic `_night_credit` (outcome-luck) | $0, no LLM |
-  | **Paid ("tagger")** | `tagger` *(default)* | tagger **holistic verdict** (`_tagger_ledger`) | tagger **read-quality verdict** — *overrides* the deterministic night credit | flash-lite, 1 call/day |
+**3. The verdict does measure deceiver talk.** On the 24 memory-on games of that run, with the outcome
+hidden from the tagger and message length removed, its discussion verdict predicted the win beyond the
+vote record for wolves (+0.56) and the serial killer (+0.60), not for town (+0.02), as a partial
+correlation. The leak test and the limits are in the
+[LLM-judge note](../../evaluation/llm_judge/discussion_tagger.md). The +0.56 is a different quantity from
+the retracted +0.556: a correlation with winning for wolves, against a credit level for town.
 
-  Under `tagger` mode the night ledger **overrides** the deterministic night credit (a de-lucked read beats
-  outcome-luck) and the discussion ledger **adds** the day-discussion channel that the deterministic substrate
-  leaves blank ([credit.py:124-128](../../../evaluation/src/loop/credit.py#L124-L128)). The free floor exists
-  because discussion has no *clean per-decision* deterministic proxy — the vote endpoint is the best zero-cost
-  approximation, and the paid tagger must **beat** it to earn its keep.
+**4. Three silent failures were closed (2026-07-02).** A failed day now logs an error (or raises in strict
+mode); a missing input file warns; and the tag cache key now carries the run's identity, so one set of
+games can no longer be scored with another's tags.
 
-## Config / defaults
+**How sure we are.**
+- Every result comes from the nine-seat game played by `gemini-3.1-flash-lite` at zero reasoning tokens,
+  with one tagger prompt version.
+- The correlations rest on one run of 24 games and show a measure, not a memory effect. The run itself gave
+  every faction memory by mistake, so it could not answer whether town memory helps.
+- The detail tags were never checked against people's labels and no per-tag accuracy number was saved;
+  the night verdict's own read-quality tag had no check of any kind. The night verdict still sees the
+  death its own kill caused; that leak was never tested.
+- The 24-game and leak results were printed, never saved to a file; the durable record is the v7 log,
+  section "12g. TAGGER LEAK/VALIDITY INVESTIGATION" ([log](../../memory_system/v7/experiment_log.md)).
 
-| Setting | Value | Where |
-|---|---|---|
-| discussion credit on | `discussion_credit = True` | config.py:101 |
-| credit source | `discussion_mode = "tagger"` (paid); `"floor"` = free vote-endpoint fallback | config.py:108 |
-| tagger model | `get_llm_pro()` env-pinned to `gemini-3.1-flash-lite` (temp 1.0, **not** 0) | config.py:110-118 |
-| show outcome to tagger | `show_outcome = True` (vote result + deaths shown; leak measured negligible) | discussion_tagger.py:204 |
-| skip silent players | `speakers_only = True` | discussion_tagger.py:205 |
-| tag cache version | `v2` (bump on prompt change); keyed per `game_id` + provenance slug | discussion_tagger.py:318 |
-| credit window | rolling `window_generations = 3` | config.py |
+## The retirement (2026-07-13)
 
-The blinded path (`show_outcome=False`, the `_CLAUSE_NO_OUTCOME` prompt variant) is **research-only** — the
-live loop never blinds; only the validation runner's `skill`/`deleak` modes exercise it.
+The [credit redesign](../read_tactic_credit_redesign.md) of 2026-07-11 proposed it and the owner ruled on
+2026-07-13. Its reasons: a verdict that correlates with winning in one 24-game study supports a diagnostic,
+not using that verdict to decide which lessons survive; the night override had no independent accuracy
+check; and one end-of-day judgement cannot say whether a player's belief or their action was wrong.
 
-## Verification
+Discussion credit became rules: the day-vote floor, refined when a player's own accusation is where the
+vote landed, plus a guarded concealment score for deceivers' concealment lessons. Night credit went back
+to the rule-based scorer. The redesign's section "Discussion: use an observable endpoint, retain influence
+as a diagnostic" gives the details. The code change landed on 2026-07-15 (commit `05fcad20`), removing the
+tagger's credit ledger and the switch between floor and tagger. The owner signed the July v7 run's rules
+on 2026-07-16, before any of its games, so no v7 result rests on tagger credit.
 
-**Verdict: 🟡 a validated deceiver-skill *metric*, not a memory *verdict*.** The instrument measures what it
-claims — a de-lucked discussion merit signal the vote proxy is blind to — and survived an adversarial review
-that shrank its claim three times. But it is correlational, single-epoch (N=24), and uncalibrated at the
-per-field level. The full L1/L2 write-up is
-[../../evaluation/llm_judge/discussion_tagger.md](../../evaluation/llm_judge/discussion_tagger.md); the load-bearing
-results:
+## Where it stands today
 
-- **The holistic verdict predicts the win *beyond* the vote proxy, and it is real skill — not leak, not
-  wordiness.** Partial *r*(discussion verdict, faction **won** | de-luck proxy, message verbosity) = **+0.56
-  wolf / +0.60 SK / +0.02 town**, N=24, with the tagger **blinded to the outcome** and verbosity partialled
-  out ([../../memory_system/v7/runs/v2_full/tagger_skill_retest.py](../../memory_system/v7/runs/v2_full/tagger_skill_retest.py)). The
-  town row (+0.02) is the negative control: town discussion merit is already captured by its vote endpoint, so
-  the tagger adds nothing there — exactly as intended.
-- **Outcome-leak is negligible.** A 2×2 ablation (outcome shown/withheld × all/speakers-only, N=6) moved the
-  discussion-verdict coupling by **+0.07 town / ~0 wolf-SK** when the vote result and deaths were withheld —
-  within noise ([../../memory_system/v7/runs/v2_full/tagger_deleak_ablation.py](../../memory_system/v7/runs/v2_full/tagger_deleak_ablation.py)).
-  So the tagger keeps *showing* the outcome by default; blinding bought a within-noise gain at the cost of the
-  night verdict's legitimate lynch context.
-- **The night verdict reassigns luck to skill.** On the effectiveness check it re-scored ~31% of night actions
-  vs the outcome-only deterministic credit — crediting skilled misses and demoting lucky hits — which no free
-  signal can do ([../../evaluation/src/instrument_validation/tagger/tagger_effectiveness.py](../../../evaluation/src/instrument_validation/tagger/tagger_effectiveness.py)).
-- **Per-field distributions pass a sanity check, but no accuracy number is on record.** `framing=manipulative`
-  skews as expected by faction (town 7% / wolf 85% / SK 88% against true roles), and `role_reveal` was
-  cross-checked against a deterministic self-claim detector — but the accuracy script prints to stdout only, so
-  no persisted per-field accuracy figure exists ([../../memory_system/v7/discussion_credit/tagger_accuracy.py](../../memory_system/v7/discussion_credit/tagger_accuracy.py)).
-
-**What it can't do.** Flag a bad verdict distribution, yes; certify a correct per-turn verdict, no. And a
-*metric* that correlates with the win is not a *demonstration* that wolf/SK memory compounds — that needs a
-direct wolf SP/obs A/B, which has never been run.
-
-## Known gaps (freshness: 2026-07-04)
-
-Ordered by how misleading each is to a reader; severity = likelihood × impact × detectability.
-
-| # | Gap | State | Severity |
-|---|---|---|---|
-| 1 | **Metric, not a memory verdict** | The +0.56/+0.60 validates that the tagger *sees* deceiver discussion skill; it does **not** show wolf/SK memory helps. That requires a direct wolf SP/obs A/B (never run — the v2 loop mis-configured to all-factions-on, confounding the town question and never isolating wolf). The tagger is the *instrument* that A/B would use. | **Med-High** |
-| 2 | **Uncalibrated per-field** | No human golden sits behind `framing`/`credibility`/`role_reveal`; they are face-valid + distributionally sane, never label-validated. The holistic `verdict` (the only credited field) is validated correlationally; the sub-tags are not. | **Med** |
-| 3 | **Single-epoch, N=24** | The load-bearing correlation rests on one epoch of 24 ON games; it would piggyback on a held town-only rerun to gain power and a fresh epoch. Directionally trustworthy now; not yet robust. | **Med** |
-| 4 | **Night-verdict residual leak untested** | The night verdict still sees its own kill's death (the night analogue of the day leak the ablation cleared). A two-prompt split would fix it if a clean deceiver *night* metric is ever needed; the discussion verdict is the load-bearing signal and night has a deterministic de-luck proxy underneath it. | **Low** |
-| 5 | **Not promoted to the standing scorecard basket** | The tagger is wired into the loop's **credit** ledger and its own validation apparatus, but has not been promoted as a standing de-lucked proxy in the metrics basket (the "Phase-2 LLM tagger" the discussion-scoring plan deferred — see [../evaluation/metrics/report.md](../../evaluation/metrics/report.md)). Its numbers live in the credit loop, not the frozen scorecard. | **Low** |
-| 6 | **"flash-lite" is caller-pinned** | The tagger calls `get_llm_pro()`, whose bare default is `gemini-2.5-pro`; flash-lite holds only because the loop env-pins it. A standalone `tag_game` call with unset env would silently run pro-2.5. Documented, not a live hole (the driver always pins). | **Low** |
-| 7 | **Durable artifacts pending** | The retest/ablation scripts now *also* write `*_results.json`, but only on their next (paid) run — the JSON files are not yet on disk; the durable numbers still live in [../../memory_system/v7/experiment_log.md](../../memory_system/v7/experiment_log.md) §12g. | **Low** |
-
-**Open work.** The one upgrade that would move the verdict from 🟡 to green is the direct wolf A/B (gap 1),
-using the tagger as its discussion-merit ruler on a fresh, correctly-configured epoch (gaps 1+3 close
-together). Per-field calibration (gap 2) is the cheapest independent add. Neither is a priority while the
-binding open question is whether wolf/SK memory compounds at all — the science the tagger was built to help
-measure, which belongs to the loop spoke and chapter 3.
-
----
-
-*Companion journey: [experiment_log.md](experiment_log.md) · Trust/reliability apparatus:
-[../../evaluation/llm_judge/discussion_tagger.md](../../evaluation/llm_judge/discussion_tagger.md) · Design record +
-run artifacts: [../../memory_system/v7/discussion_credit_design.md](../../memory_system/v7/discussion_credit_design.md),
-[../../memory_system/v7/experiment_log.md](../../memory_system/v7/experiment_log.md) §12g. Live code:
-[../../../evaluation/src/loop/discussion_tagger.py](../../../evaluation/src/loop/discussion_tagger.py),
-[../../evaluation/src/loop/credit.py](../../../evaluation/src/loop/credit.py) (consumer),
-[../../../evaluation/src/cli_runner/discussion_tagger_eval.py](../../../evaluation/src/cli_runner/discussion_tagger_eval.py)
-(`eval-tagger`, validation). Written 2026-07-04.*
+- **Code:** `evaluation/src/loop/discussion_tagger.py::tag_game` (with `tag_game_cached`), run through the
+  validation runner `evaluation/src/cli_runner/discussion_tagger_eval.py` (`eval-tagger`). Nothing in the
+  game, the server or today's ten-seat credit (`Agents/memory/consolidation/`) calls it.
+- **Model:** the runner pins `gemini-3.1-flash-lite` by default. Called directly with nothing pinned, the
+  tagger would now run Claude Sonnet 5.5, the default of `Agents/llm_factory/accessors.py::get_llm_pro`.
+- **Never done:** a test with wolf memory on against off, which is what turning the measure into a memory
+  result would need.
