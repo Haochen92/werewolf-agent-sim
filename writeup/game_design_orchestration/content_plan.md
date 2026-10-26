@@ -46,7 +46,7 @@ them.
 | **2. Orchestrating the conversation** | Ten players share one day: who speaks, what gets said aloud, and when does the talk stop? | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
 | **3. Executing a day and night** | Conversation is in turn, but votes and night choices are made independently and must all be collected before anything resolves. How does the familiar cycle become execution? | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
 | **4. Turning an answer into a legal action** | A role may act only on certain players, and only while uses remain. How does a model's answer become a move code can apply? | The output contract: one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, and a legal fallback on every path. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
-| **5. Pausing the game for a human** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116 |
+| **5. Pausing the game for a human** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116, 165 |
 
 **Why the arrangement holds.**
 - **Pages 3 and 4 stay apart.** They answer different questions: how ten calls become one game, and
@@ -564,18 +564,14 @@ caught and fixed:
      - the event log can lead the checkpoint by one step (accepted, and it needs a hard crash);
      - how many served games crossed before the fix is unknown.
 
-**Candidate addition (not yet a map block): limited uses and a resume.** Two claims, kept apart:
-- **Established:** uses are deducted only in the night resolution, never in a turn node, and the
-  resolution computes the new counts from the night's starting state. Running the resolution twice on
-  the same night gives the same counts: the test
-  `test_uses_are_spent_in_the_resolution_once_per_night_and_a_decline_spends_nothing` calls it twice
-  and checks both results. Sources: `Agents/nodes/night/resolution.py::_spent`, the wiring census
-  decisions (`roles/phase3_wiring_census.md`, line 20).
-- **Not established:** that a real pause and resume can never spend a use twice. That needs a test that
-  pauses a human seat during a night where a limited use is spent, resumes from the checkpoint and checks
-  the counts. No such test was found (2026-10-26).
-
-The page may state the first claim. The second needs that test first (see "Open questions").
+**Limited uses across a pause (block 165, filed 2026-10-26).** A use is deducted only in the night
+resolution, the barrier after every night turn, and the counts are computed from the night's starting
+state. A human's pause happens inside a turn, so it always comes before the resolution, and a resume
+cannot spend a use twice. Both halves are tested: the resolution run twice gives the same counts, and a
+scripted game with a human Vigilante, paused at its night turn and resumed with a shot, ends with one
+bullet left (the test fails if a shot is spent twice). One or two sentences in subsection 3, as an
+idempotence point. Scope: the scripted model, one lineup, one seed; it shows the count is right, not
+exactly-once execution of the step.
 
 **Tags:** human-in-the-loop systems, checkpointing, cache-key design, asynchronous programming. Name
 reliability (execution mechanics) without claiming exactly-once execution.
@@ -758,5 +754,3 @@ Still open:
    - *The voice rewrite:* kept as a candidate. Its question (can a rewrite change style without changing
      meaning?) could justify depth. Draft page 2's subsection first, then decide.
    - *The silence calibration:* draft now as a complete study; update it when the owner's labels arrive.
-2. **Limited uses across a resume.** The resolution's re-run is tested; a real pause-and-resume over a
-   night that spends a use is not. Write that test, or file the block with the first claim only.
