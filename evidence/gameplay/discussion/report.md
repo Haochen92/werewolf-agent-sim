@@ -136,9 +136,9 @@ own with its reason (even against the table), and a question or test nobody has 
 judge, exempts two cases: a line answering a player who named the speaker, and a human's line. The
 gate fails open.
 
-A held line is not published. It becomes a pass marker that keeps the text for its author, whose next
-prompt shows that it was never said. A held line opens no debt and counts for nothing in the closing,
-and its author is not asked again that day.
+A held line is not published, and no prompt shows it, its author's included; the strategy note
+written with it is dropped, so the author does not go on believing the table heard it. A held line
+opens no debt and counts for nothing in the closing, and its author is not asked again that day.
 
 On a voting day, a town player who would vote for someone and has not said why is told to say it
 rather than pass. Evil players are not told this: for them silence can be the better play.
@@ -199,7 +199,7 @@ strength varies: a rule can be tested deterministically while its effect on disc
 |---|---|---|
 | Who gets the floor? | [1–7](#decision-1): sequential turns, reactive priority, sweeps, transcript-derived state | Explicit routing rules; small comparative studies; order effects unmeasured |
 | How are response obligations represented? | [8–11](#decision-8): tags, discharge, freshness, pair limits | Format tests and judge agreement; semantic misses and hand-set limits remain |
-| Who speaks, and what gets published? | [12–15](#decision-12): separate novelty judge, default speech, held-line markers | Frozen-line and game studies; suppression risk remains |
+| Who speaks, and what gets published? | [12–15](#decision-12): separate novelty judge, default speech, what happens to a held line | Frozen-line and game studies; suppression risk remains |
 | What frames the discussion? | [16–18](#decision-16): opening, night-1 target fix, closing defence | Small game samples; closing effect unmeasured |
 | When does discussion stop? | [19–20](#decision-19): bounded drain and sweeps | Implementation checks; thresholds not swept |
 | How do players sound? | [21](#decision-21): voice in the player's own prompt | Preference and gameplay studies; behavioural equivalence unestablished |
@@ -437,7 +437,7 @@ strength varies: a rule can be tested deterministically while its effect on disc
 - *What it cost, found in October:* that judge was the main source of silence. Of 517 passes in 28
   June games, 367 were the judge holding a line, and nobody at the table could tell
   (discussion_evidence §2.4). Today's echo gate is its descendant, with a narrower scope (sweep lines
-  only) and a marker its author can see.
+  only).
 
 <a id="decision-13"></a>
 
@@ -472,9 +472,13 @@ strength varies: a rule can be tested deterministically while its effect on disc
 
 #### 14. What happens to a held line.
 
-- *Its author is told.* A held line stays on the transcript as a marker its author sees. The October
-  fidelity audit named the risk this removes: a suppressed line surviving as the author's private
-  belief that it was said.
+- *Nobody sees it, and the note written with it is dropped (2026-10-14).* The October fidelity audit
+  named the risk: a suppressed line surviving as the author's private belief that it was said. The
+  first answer showed the author its held line as a marked draft. Since the shared-prefix layout of
+  2026-10-14, every seat reads the same published transcript, so a held line reaches no prompt, and
+  the strategy note its author wrote with it is discarded, which removes the false belief at its source
+  (`Agents/prompts/prompt_formatters.py::format_day_channel`; `Agents/nodes/day/actors.py::discuss`;
+  [caching log](../../caching/experiment_log.md) §15).
 
 - *It opens no debt,* so nobody is asked to answer a line the table never saw.
 
@@ -763,4 +767,5 @@ before its turn, for up to three rounds (`Agents/nodes/night/pack.py`); it is no
 and revision criteria, and corrected the interpretation of lexical
 echoes, tag-error denominators, closing outcomes and voice comparisons. Historical measurements are
 retained; the narrower conclusions above supersede stronger wording in the linked study summaries.
-This editorial pass did not rerun the experiments or implementation tests.*
+This editorial pass did not rerun the experiments or implementation tests. Corrected the same day: a
+held line reaches no prompt, its author's included (the report had said the author sees it).*

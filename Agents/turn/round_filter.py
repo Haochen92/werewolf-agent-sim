@@ -7,8 +7,8 @@ everything else is held, as is a repeat of an earlier opening that is not a clai
 claiming the same role is the contest the opening is for). The label is kept on the entry for
 analysis.
 
-A held line becomes a pass marker that keeps the text, so its author sees on the next turn that it
-was never said (format_day_channel marks it). The call judges only the kind of a statement, never
+A held line becomes a pass marker that keeps the text for the record only: no prompt shows it, its
+author's included, and the note written with it is dropped (format_day_channel; collect_round). The call judges only the kind of a statement, never
 its truth, so a false claim is kept. It fails open: any error, or a missing verdict, keeps the
 line. A human's line is never held (collect_round undoes a verdict against one; the entry itself
 does not know the seat). The sweep turns' echo gate, which judges one line against the day so far,

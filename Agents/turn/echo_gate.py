@@ -2,8 +2,9 @@
 
 When the scheduler gives the floor to a player who has not spoken (a proactive sweep turn), the
 line it gets back is judged against the day's spoken lines before it is published: if it adds
-nothing, the turn becomes a pass marker that keeps the text, so its author sees on the next turn
-that it was never said (format_day_channel marks it) and the table hears each point once. Reactive turns are never gated (an answer is owed even if it repeats), nor is a human
+nothing, the turn becomes a pass marker that keeps the text for the record only: no prompt shows it,
+its author's included, and the strategy note written with it is dropped (format_day_channel;
+actors.discuss), so the table hears each point once and the author holds no belief it was said. Reactive turns are never gated (an answer is owed even if it repeats), nor is a human
 seat (resolve_decision checks both before calling here).
 
 The bar (owner, 2026-10-18, replacing Phase 2 step 4b's "the same point"): the open floor no longer
