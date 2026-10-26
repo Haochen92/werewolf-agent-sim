@@ -135,7 +135,7 @@ Three seats: one killer acting on suspicion, one on prediction, and one protecto
 
 | Role | Status | Acts | Uses | What it does |
 |---|---|---|---|---|
-| Vigilante | Built | Night | As built (2 bullets, misfire penalty as built) | Shoots one player |
+| Vigilante | Built | Night | As built (2 bullets; no misfire penalty) | Shoots one player |
 | Sigilist | New, level 1 | Night | 2 sigils | Places a sigil on one player. If they attack anyone tonight, the Sigilist kills them afterwards. The victim still dies. |
 | Healer | Built | Night | Every night | Protects one other player from attacks |
 
@@ -283,7 +283,7 @@ node.
 | Two attackers | `X was attacked by the wolves and the serial killer last night. They were a {role}.` |
 | Save | `X was attacked by {attackers} but was saved by the healer!` |
 | Self-bet save | `X was attacked by {attackers} but survived: the fortune teller's self-bet saved them.` (owner, 2026-10-17; a self-bet with no attack on it: nothing) |
-| Attack on an immune player | nothing (the Serial Killer, and the Necromancer on night 1) |
+| Attack on an immune player | nothing (the Serial Killer, and the Necromancer on nights 1 and 2) |
 | Concealed body | `X was killed by the wolves last night. Their role is hidden by an illusionist.` |
 | The will | `The record of X, the {role}: night 1, protected Y; no attack on them was announced; night 2, checked Z: they were a villager.` (one clause per earlier night) |
 | No deaths | `No one died last night.` |
@@ -297,7 +297,7 @@ node.
 | Protect, a self-bet save | `Y was attacked by {attackers} and survived: the fortune teller's self-bet saved them, not your protection.` (result `self_bet_saved`; owner, 2026-10-17) |
 | Kill or shoot, landed | `Y died. They were a {role}.` (concealed: `Y died. Their role was concealed.`) |
 | Kill or shoot, saved | `Y survived: the healer saved them.` |
-| Kill or shoot, immune | `Y was unharmed: immune to night kills tonight. The public was told nothing about this attack.` (which roles can be immune on which nights is in the rules; the string names none, since the Necromancer on night 1 is immune too; a self-betting Fortune Teller is the next row since 2026-10-17) |
+| Kill or shoot, immune | `Y was unharmed: immune to night kills tonight. The public was told nothing about this attack.` (which roles can be immune on which nights is in the rules; the string names none, since the Necromancer on nights 1 and 2 is immune too; a self-betting Fortune Teller is the next row since 2026-10-17) |
 | Kill or shoot, a self-bet | `Y survived: the fortune teller's self-bet saved them.` (result `self_bet_saved`; owner, 2026-10-17) |
 | Hold fire | `You held your fire.` |
 | Watch | `Tonight Y was visited by A and B.` / `No one visited Y tonight.` |
@@ -435,3 +435,31 @@ and how often the Illusionist conceals an info role.
   self-bets are public use counts. The shared rules, the Fortune Teller's and the Healer's cards say
   so: a prompt change, so games before it are a different epoch. On the wire a save carries
   `self_bet`.
+- **2026-10-18 (owner, R11 in evidence/gameplay/deduction/deduction_catalogue.md; reverses the
+  2026-10-09 discussion-quality entry's "unclaimed is a valid cover"):** evil seats claim and never
+  deny a sighting ("denying is always going to get lynched in this game"). The wolves' shared
+  discussion words, the Serial Killer's card and the Necromancer's card lose "Unclaimed is a fine
+  cover; do not invent a role until you need one" and "or deny it". A seen visit is explained by a
+  claimed role whose action fits it ("Never deny it either: a denied sighting reads as a lie and gets
+  you voted out"), and a cover is planned before it is needed, chosen from the roles the seat can claim
+  and what only it knows (a hidden body's role). The strategy note's cover gains a fourth part,
+  "Planned cover", beside "Public cover", "Public account" and "Do not disclose". The one exception
+  the cards name: rarely, revealing the true role to bargain with a neutral. The engine's evil-seat
+  lines stay facts; the advice is the cards'. A prompt change, so games before it are a different
+  epoch. Screened on 41 turns and played in 8 paired games (data/evil_cover_screen/,
+  data/evil_cover_games/; the account is in roles/report.md, "The evil contest").
+- **2026-10-19 (cover risk, after the served game `e79f21d7`; `../deduction/live_e79f21d7/review.md`):**
+  the Necromancer claimed the Vigilante, and the real Vigilante, knowing the claim was false, shot it.
+  The evil cards gain a paragraph on cover risk (`Agents/prompts/common.py::EVIL_COVER_RISK`): a cover
+  that fits the record is not necessarily safe, an unclaimed role may still have a living holder, and
+  claiming the only copy of a killing role tells its holder you are lying; "If no safe cover remains,
+  claiming a role is not automatically better than staying unclaimed." Checked by prompt tests only. A
+  prompt change, so games before it are a different epoch.
+- **2026-10-21 (owner):** the Necromancer is immune to night attacks on Nights 1 and 2 (was Night 1
+  only), since it acts from Night 2 and could die before a body was there to use; the Vigilante can
+  kill it from Night 3. So a silent "unharmed" (R10, 2026-10-17) now means the Serial Killer, or the
+  Necromancer on Nights 1 and 2.
+- **2026-10-26 (corrections, no rule change):** the sheet had drifted from the game in three places,
+  now matched to the code: the Vigilante has no misfire penalty (the "Town killing" table had said "misfire
+  penalty as built"; none is built); "What players see" gave the Necromancer's immunity as night 1 only
+  in two rows; and the 2026-10-19 and 2026-10-21 entries above were missing.

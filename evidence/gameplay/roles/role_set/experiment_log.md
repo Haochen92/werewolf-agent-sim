@@ -1,5 +1,9 @@
 # Role Set Decision (Phase A #2 of the foundation rebuild)
 
+> *Note 2026-10-26.* Historical: the June 2026 nine-seat casting record, superseded on 2026-10-07 by
+> [`../role_sheet.md`](../role_sheet.md) (ten seats from twelve roles); the "PARKED" and "resume here"
+> guide below describes June, not today. Why the cast changed is in [`../report.md`](../report.md).
+
 > **⏩ READING GUIDE / CURRENT STATE (started 2026-06-01). Start here if picking this up fresh.**
 > This logs the design discussion for the **role set** — one of the 5 foundation-rebuild changes
 > (part of the project roadmap's foundation-rebuild phase) and a *gating* one: the role set must be locked before

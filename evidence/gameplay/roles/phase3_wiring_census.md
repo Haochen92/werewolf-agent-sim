@@ -1,5 +1,9 @@
 # Phase 3 wiring: the plan and the census (2026-10-09)
 
+> *Note 2026-10-26.* Historical: the build plan and nine-seat census of 2026-10-09; its status line's
+> "Nothing is committed" is no longer true (the wiring was committed as `6dda451b..d9717d50`). The
+> cast today is in [`role_sheet.md`](role_sheet.md) and [`report.md`](report.md).
+
 ## The plan (agreed 2026-10-09, after an external review)
 
 **Status, end of 2026-10-09:** steps 1 to 8 built and run (the frontend pass of step 6 excepted; its starting list is in section 7 below): the suite is green (1394 passed), three live games are read in `../data/phase3_games/README.md`, the switch is done (the nine-seat prompts, schemas, rules and core strategy are deleted; the tag goes on the commit before). An external review (2026-10-09) found six gaps the suite missed; all six are fixed with regression tests (the role sheet's change log has the list; the wire gained `input_request.bodies` and `speech.claim`, both additive). Nothing is committed.
