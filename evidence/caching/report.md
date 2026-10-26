@@ -14,7 +14,7 @@ investigation showed why every saving had to be verified from usage records: dif
 retry paths turned expected cache reads into expensive writes.
 
 This report explains the implementation reviewed on **2026-10-14** and the experiments supporting its
-design. The [experiment log](experiment_log.md) preserves the full sequence of proposals, tests and
+design; sections 3.1, 3.5, 4.1 and 6 and the links were brought up to date on 2026-10-26. The [experiment log](experiment_log.md) preserves the full sequence of proposals, tests and
 changes. Cache-read counts describe input reuse, not an equivalent percentage reduction in the total bill.
 
 This report is about the provider's prompt cache. The game graph has a second, unrelated cache: LangGraph
@@ -102,8 +102,8 @@ This removes much of the repeated input charge, while each call still pays for i
 and generated output. The October extraction run in section 4.1 illustrates the distinction: output
 accounted for most of its bill even with cached input.
 
-The earlier prompt placed the role before the transcript. [Historical extraction-quality evaluations](../extraction/post_game/report.md)
-examined the extractor separately, but did not isolate the effect of that reorder. The evidence here
+The earlier prompt placed the role before the transcript. The [post-game extraction report](../extraction/post_game/report.md)
+describes the extractor's quality checks, none of which isolated the effect of that reorder. The evidence here
 establishes cache reuse, not that the two prompt orders produce equivalent quality. No retrospective
 comparison of the two orders is currently planned.
 
@@ -197,14 +197,36 @@ own cache (section 2): votes and night actions cannot share across players.
 The alternative is to write the schema as text after the shared part and validate the reply in code
 against the same per-player schema, so an illegal target still fails. In trials on 17 schemas and 24 real
 game turns per model, these unenforced replies failed validation once in about 400 calls on each of Luna
-and Haiku 5.5, and each failure costs one retry. Their fields came in a different order on Haiku until the
+and Haiku 5.5. Their fields came in a different order on Haiku until the
 schemas were changed to put the player's reads first, matching the prompt's opening line; after that, all
 24 real turns kept the schema's order.
 
-Both modes remain available per model, set in the model catalogue. Since 2026-10-14, Luna and Haiku use
-the unenforced schema in production (owner's decision), so their votes and night actions share the cache
-too. That is the configuration the paired games in section 4.3 measured; for Haiku it costs the same per
-call as the enforced schema, with more reasoning.
+Real games broke the schema far more often than the trials (which counted calls; the games below count
+seat decisions). In the 20 Haiku games of the memory demo run (2026-10-14, unenforced), 74 of 3,118 seat
+decisions, about one in forty, came back with a reply that broke the schema: a read keyed by the player's
+name, a verdict word outside the allowed three, or cut-off JSON. The retry then repeated the same
+unenforced call; six turns failed it too and went to the rescue model (then Gemini Flash-Lite), and none
+fell to a random move. The memory lookup's situation call broke five times, and once fell
+back to a generic query. The same run showed a second effect: 426 turns that were shown no lessons still
+returned a verdict on them, copied from the reply example, because nothing enforced the field's absence.
+
+Both were fixed the same day. A reply that breaks the schema is now asked again once with the schema
+enforced, on the same model (Claude's JSON-schema output, OpenAI's strict schema); that one call reads no
+cache, since its schema is part of the cache key. GLM and DeepSeek keep the plain retry, having no
+enforced schema here. A turn shown no lessons gets no verdict field and no verdict example. How often the
+enforced retry fires, and how often it holds, has not been measured in games since.
+
+Both modes remain available per model. Since 2026-10-14, Luna and Haiku use the unenforced schema in
+production (owner's decision), so their votes and night actions share the cache too. That is the
+configuration the paired games in section 4.3 measured; for Haiku it costs the same per call as the
+enforced schema, with more reasoning.
+
+**Where the mode is set.** Each model's mode is a row of the model catalogue, a database table that the
+server re-reads every few seconds, so the switch on 2026-10-14 was a database edit, not a code change.
+The code keeps a seed copy of the catalogue for a process that cannot read the database, such as a bench.
+Until 2026-10-26 the seed still had both models on the enforced schema, so a bench that fell back on it ran
+them differently from a live game; since then the seed carries the live table's later edits. A database
+built fresh from the migrations still starts both models enforced.
 
 ### 3.6 Combine offline batching with shared input
 
@@ -244,8 +266,9 @@ no automatic cache reads on `gemini-3.5-flash-lite` for the tested sizes up to a
 These findings describe the tested models and backend, not every Gemini model.
 
 A larger offline extraction run on October 12 processed **19 games in 570 calls** using
-`gemini-3.8-flash`. Its recorded bill was **$10.33**: $0.93 for uncached input, $0.43 for cached input,
-and $8.97 for output, mostly reasoning. Those are components of one run's bill, not a cached-versus-uncached
+`gemini-3.8-flash`. Its recorded bill for the extraction calls was **$10.33**: $0.93 for uncached input,
+$0.43 for cached input, and $8.97 for output, mostly reasoning. With the de-halo pass that followed it on
+Claude ($0.09), the run came to $10.42, the figure the post-game report gives. Those are components of one run's bill, not a cached-versus-uncached
 comparison. They show why a high input cache share does not imply an equally large reduction in total cost.
 
 ### 4.2 Test providers on actual game prompts
@@ -429,8 +452,10 @@ cache designs that were considered but not implemented.
 
 ## 6. Open questions
 
-- **Models never measured under the current layout.** DeepSeek, GLM and the Gemini players, including the
-  site's default, use the layout too. On cost they can only gain or stay level; their play was not tested.
+- **Models never measured under the current layout.** DeepSeek, GLM and the Gemini players use the layout
+  too; Gemini 3.5 Flash-Lite was the site's default when it went live on 2026-10-14. On cost they can only
+  gain or stay level; their play was not tested. The default since 2026-10-15, a live setting, is Claude
+  Haiku 5.5, which section 4.3 measured.
 - **Play quality beyond factual errors.** The bench checks misstatements on discussion turns. Whether
   Haiku's extra participation, or the layout in general, changes how well players play was not measured.
 - **The bench's missing cases.** It has no ten-seat vote or night turns.
@@ -451,8 +476,14 @@ cache designs that were considered but not implemented.
   `check_sonnet_2026-10-12/summary.json`. The [log](experiment_log.md) connects the runs to the fixes.
 - **DeepSeek games:** [model-selection report](../evaluation/model_admission/model_selection.md), July 26 comparison.
 - **Quality investigations:** [tell-detector report](../extraction/tell_extraction/report.md) and
-  [historical extraction report](../extraction/post_game/report.md). The extraction report describes
-  an earlier pipeline version.
+  [post-game extraction report](../extraction/post_game/report.md), which describes the current offline
+  job (revised 2026-10-22); its May 2026 judge runs are the part that predates it.
+- **Schema mode and the enforced retry:** the catalogue in `Agents/llm_factory/catalog.py`
+  (`load_from_database` for the live table; `SEED_MODELS` and `LIVE_EDITS_SINCE_MIGRATION` for the seed);
+  the retry in `Agents/llm_factory/providers/common.py::enforced_output`, called from
+  `Agents/turn/agent_player.py::run_agent` and the situation call
+  (`Agents/memory/retrieval/situation_agent.py`). The twenty-game counts are in the
+  [log](experiment_log.md), section 16.
 - **Implementation:** [prompt layout](../../Agents/prompts/layout.py),
   [Gemini cache helper](../../Agents/llm_factory/providers/google.py),
   [Claude provider integration](../../Agents/llm_factory/providers/anthropic.py),
@@ -464,4 +495,6 @@ cache designs that were considered but not implemented.
 - **Key revisions:** `9d65336` (Gemini extraction cache), `5685bf29` (Claude marks), `1ad07a81`
   (memory-lookup layout), `8c961496` (schema after shared prefix), `c3815883` (retry path), `968bdad6`
   (write pricing), `d80ee2d2` (reads-first schemas), `0d936b08` / `d41b1c0c` (current layout, the earlier
-  one retired; tag `prompt-layout-baseline`).
+  one retired; tag `prompt-layout-baseline`), `7f508c4d` / `68cef8b0` (the enforced retry for seats, and
+  for the lookup and day summary), `a1e47ad6` (no verdict field on a turn shown no lessons), `d424d0f9`
+  (the seed follows the live table's schema mode).
