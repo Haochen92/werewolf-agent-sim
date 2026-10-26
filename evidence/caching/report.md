@@ -32,7 +32,7 @@ This document is about one cost lever, caching: paying less for input that repea
 not the only lever in the pipeline. Moving extraction offline takes it out of the player's wait, and
 batch APIs price asynchronous work lower (the offline-extraction ruling is recorded in
 `evidence/memory_system/v8/`); choosing a cheaper model for a task, or reshaping the task so a cheaper
-model can do it, is in [`model_selection/`](../model_selection/report.md) and
+model can do it, is in [`model_selection/`](../evaluation/model_admission/model_selection.md) and
 [`extraction/tell_extraction/`](../extraction/tell_extraction/report.md); the reasoning budget is probed
 once in section 4.7. Batching appears below only where it interacts with caching: on Claude, one direct
 call writes the shared prefix before the batch reads it (section 3.6).
@@ -444,7 +444,7 @@ cache designs that were considered but not implemented.
 - **Bench run:** `evaluation/eval_results/hallucination_bench/shared_prefix_luna_2026_10_13/`.
 - **Claude extraction:** October 12 runs under `batch_results/extraction_runs/`, including
   `check_sonnet_2026-10-12/summary.json`. The [log](experiment_log.md) connects the runs to the fixes.
-- **DeepSeek games:** [model-selection report](../model_selection/report.md), July 26 comparison.
+- **DeepSeek games:** [model-selection report](../evaluation/model_admission/model_selection.md), July 26 comparison.
 - **Quality investigations:** [tell-detector report](../extraction/tell_extraction/report.md) and
   [historical extraction report](../extraction/post_game/report.md). The extraction report describes
   an earlier pipeline version.

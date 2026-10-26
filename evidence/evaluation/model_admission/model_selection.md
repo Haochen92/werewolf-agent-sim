@@ -3,7 +3,7 @@
 > **What this is:** the selection record for the model that plays game seats (discussion, votes,
 > night actions) — measured per-game costs from live HITL games, the owner's transcript-quality
 > reads, and a mapping onto public benchmarks (eqbench.com) used as *priors*, never verdicts.
-> Companion: `evidence/model_drift/drift_surfaces_and_guards.md` (why cross-run model comparisons
+> Companion: `evidence/evaluation/experimental_controls/drift_surfaces_and_guards.md` (why cross-run model comparisons
 > need interleaving). Guiding principle: **measure on our game; use public benchmarks only to
 > shortlist what to try next.**
 

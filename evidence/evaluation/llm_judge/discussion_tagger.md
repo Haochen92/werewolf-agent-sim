@@ -22,7 +22,7 @@ For each player on each day, the tagger gives three things:
 This page covers what the tagger produces, what depended on it, and **how far it can be trusted**.
 It is a companion to the [loop report](../loop/report.md), which places the same tagger inside the
 test of whether memory makes players better game after game. How the tagger was designed and how it
-works now: [the discussion_tagger design folder](../../discussion_tagger/) (its report and
+works now: [the discussion_tagger design folder](../../credit/discussion_tagger/) (its report and
 experiment log). The frozen design and the run records: [v7_final](../../v7_final/). How all the
 evaluation reports fit together: [the hub](../report.md). Where each number comes from:
 [the source map](../source_map.md).

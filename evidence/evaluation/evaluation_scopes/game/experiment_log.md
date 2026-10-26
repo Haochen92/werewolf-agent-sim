@@ -43,7 +43,7 @@ Every comparison in this file pairs games by game id. Two facts limit what that 
 - In the nine-seat game, a same-seed check (a *canary*: a small fixed run whose only job is to show
   whether something has shifted) measured how much the deal adds to the noise. It added almost none.
   The spread of results within one seed was 0.249 (standard deviation). Across seeds it was
-  0.211–0.262 ([`model_drift/drift_surfaces_and_guards.md`](../../../model_drift/drift_surfaces_and_guards.md)).
+  0.211–0.262 ([`model_drift/drift_surfaces_and_guards.md`](../../experimental_controls/drift_surfaces_and_guards.md)).
 - So pairing cancels little noise.
 - Its value is elsewhere. Both arms face the same starting position. And both run in the same sitting,
   the same *epoch*. An epoch is one snapshot of a hosted model, which can change overnight with no
@@ -659,7 +659,7 @@ paths are corrected above.)*
 | What | Code | Record |
 |---|---|---|
 | Deal seeding (the premise of pairing) | `tests/engine/test_seedability.py` | [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md) (20/20, 2026-06-11); [`../../experimental_controls/report.md`](../../experimental_controls/report.md) |
-| Same-seed canary (pairing ≈ no noise reduction) | — | [`model_drift/drift_surfaces_and_guards.md`](../../../model_drift/drift_surfaces_and_guards.md) |
+| Same-seed canary (pairing ≈ no noise reduction) | — | [`model_drift/drift_surfaces_and_guards.md`](../../experimental_controls/drift_surfaces_and_guards.md) |
 | June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`, `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`, `Agents/compute_metrics.py` | [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md), [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md), [`store_progression.md`](../../../memory_system/store_progression.md) (2026-10-22 correction); data `batch_results/ab_*.jsonl` (ignored by git) |
 | v6 strategy-point A/B | `evidence/memory_system/effectiveness/v6_sp_ab/launch_arms.sh`, `scripts/run_batch.py` | [`v6_sp_ab/experiment_log.md`](../../../memory_system/effectiveness/v6_sp_ab/experiment_log.md) |
 | v7 endpoint A/B | `evaluation/src/loop/measure.py`; the run's driver and the paired-statistic script: not found | [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5, [`execution_plan/experiment_log.md`](../../../execution_plan/experiment_log.md), [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md); run files [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md); per-game data `batch_results/v7_endpoint_ab/` (ignored by git) |

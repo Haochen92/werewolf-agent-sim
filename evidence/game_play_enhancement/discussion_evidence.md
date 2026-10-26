@@ -248,7 +248,7 @@ to lose.
 On the current model this is less of a problem than it sounds. Across the 28 baseline games,
 messages already averaged 43 words, and 90% were under 57. So for flash-lite the new target mostly
 writes down what the agents already do. It matters more for wordier seat models. In single-game measurements
-from July (`evidence/model_selection/report.md`), DeepSeek V4 Pro averaged 142 words with 300-word
+from July (`evidence/evaluation/model_admission/model_selection.md`), DeepSeek V4 Pro averaged 142 words with 300-word
 tails before the 120-word limit existed, and 92 words under it. *Change:* the instruction becomes
 
 > "Keep your message short: usually 2–3 sentences, about 40–80 words. Make one main point, with the
@@ -931,7 +931,7 @@ same summaries and the other two arms' verdicts reused:
 - **It is behind 3.5 at medium** (15% against 10%), though not significantly at this size (12 cases
   better and 19 worse, p = 0.28). It is barely faster (6.2 against 7.5 seconds), since it reasons too.
 - **Its messages are longer** (median 61 words against 42), and the owner's earlier reading put 3.5's
-  dialogue clearly above 3.1's (`evidence/model_selection/report.md`). Neither was re-judged here.
+  dialogue clearly above 3.1's (`evidence/evaluation/model_admission/model_selection.md`). Neither was re-judged here.
 
 The bigger Flash models are no cheaper route to reasoning. A two-turn probe each found
 `gemini-3.5-flash` and `gemini-3.6-flash` reasoning even at minimal (about 600–1,100 tokens, past

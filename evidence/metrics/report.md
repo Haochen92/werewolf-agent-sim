@@ -12,7 +12,7 @@ faction's win.
 **Scope: this doc is the A/B ruler.** It covers the deterministic proxies — plus one semi-deterministic
 diagnostic parsed from the agents' own in-game tags — that referee memory-on vs memory-off verdicts. The
 credit system's LLM-tagged instruments inform the v7 compounding loop's *learning* signal, not A/B verdicts;
-they are documented at their apparatus home ([`../discussion_tagger/report.md`](../discussion_tagger/report.md)),
+they are documented at their apparatus home ([`../credit/discussion_tagger/report.md`](../credit/discussion_tagger/report.md)),
 and §5 is the boundary between the two.
 
 > **Companion docs.** The path that produced this design is [experiment_log.md](experiment_log.md) (the
@@ -221,7 +221,7 @@ at n=175). It also makes a prediction: *any* town discussion proxy, however cons
 ~zero against win at game grain. An independent instrument agrees: the LLM tagger's discussion verdict,
 partialled on the vote proxy, shows the same structure — **+0.02 town** vs **+0.56 wolf / +0.60 SK** (N=24;
 a different instrument and sample, so qualitative agreement, lifted from
-[`../discussion_tagger/report.md`](../discussion_tagger/report.md)) — because a deceiver's discussion acts on
+[`../credit/discussion_tagger/report.md`](../credit/discussion_tagger/report.md)) — because a deceiver's discussion acts on
 *other players'* votes, a path its own vote proxy does not mediate. Two consequences, stated once: the ruler
 loses nothing by having no town-discussion witness (full mediation means a real discussion improvement
 *shows up in* `town_vote_accuracy`); and town discussion quality is teachable but not game-grain
@@ -312,7 +312,7 @@ exactly those channels. The rule that governs the whole family, stated before an
 scores never referee the A/B; they only feed the learning loop's credit signal (§7).** That rule was set by
 the v2 decision that created this system (the DECISION section of [experiment_log.md](experiment_log.md)
 demoted every LLM-scored instrument out of the comparison basket). The family's apparatus record is
-[`../discussion_tagger/`](../discussion_tagger/); its instrument-trust verdict lives in the eval
+[`../credit/discussion_tagger/`](../credit/discussion_tagger/); its instrument-trust verdict lives in the eval
 hub at [`../evaluation/llm_judge/discussion_tagger.md`](../evaluation/llm_judge/discussion_tagger.md).
 
 **Where the blind spot is.** Discussion quality has no engine-resolvable ground truth, and the one
@@ -353,7 +353,7 @@ Two guards keep that honest:
 **Where the inventory lives.** The family's consumer is the credit system — the v7 compounding loop's
 learning signal (§7). The full signal inventory (every LLM-tagged signal, its consumer, and its per-signal
 validation status) lives at the tagger's apparatus home,
-[`../discussion_tagger/report.md`](../discussion_tagger/report.md); this section is only the *boundary rule* that
+[`../credit/discussion_tagger/report.md`](../credit/discussion_tagger/report.md); this section is only the *boundary rule* that
 keeps those signals out of the A/B basket.
 
 ## 6. How they are collected
@@ -493,6 +493,6 @@ behavior, not measurement starvation. *(2026-07-02, lifted from the apparatus re
 | Validation harness | [`evaluation/src/instrument_validation/proxies/`](../../evaluation/src/instrument_validation/proxies/) | The standing runners (`proxy_win_monotonicity`, `proxy_rescue`, `accusation_metrics`, `claim_conversion`, `diagnose_wolf_sk_proxies`, `leverage_anchor_separation`, `proxy_followup_rescue`); the monotonicity code graduated here from this folder on 2026-07-04, run via `poetry run python -m evaluation.src.instrument_validation.proxies.proxy_win_monotonicity` |
 | N=180 audit logs | [`metrics_audit/`](metrics_audit/) | `proxy_discovery_log.md` + `scheduler_bias_log.md` — the 2026-07-02 proxy rescue/discovery and scheduler-bias falsification |
 | Loop credit (decision grain) | [`evaluation/src/loop/decision_scoring.py`](../../evaluation/src/loop/decision_scoring.py) · [`credit_backfill.py`](../../evaluation/src/loop/credit_backfill.py) · [`credit.py`](../../evaluation/src/loop/credit.py) | Per-decision credit (baseline-differenced lift); v7 SP learning signal |
-| LLM-tagged family | [`../discussion_tagger/`](../discussion_tagger/) (apparatus record) · [`../evaluation/llm_judge/discussion_tagger.md`](../evaluation/llm_judge/discussion_tagger.md) (trust verdict) | The second instrument tier (§5): discussion + unresolvable night cells, credit-side only |
+| LLM-tagged family | [`../credit/discussion_tagger/`](../credit/discussion_tagger/) (apparatus record) · [`../evaluation/llm_judge/discussion_tagger.md`](../evaluation/llm_judge/discussion_tagger.md) (trust verdict) | The second instrument tier (§5): discussion + unresolvable night cells, credit-side only |
 | Regression tests | `tests/test_metrics_audit_proxies.py` · `test_diagnostic_metrics.py` · `test_wolf_blending_metrics.py` · `test_loop_credit_scale.py` · `test_credit_blend.py` | Lock the tiering, the audit-graduated proxies, and the credit scaling |
 | Apparatus trust | [`../evaluation/metrics/report.md`](../evaluation/metrics/report.md) | The per-basket ✅/🟡/⚠️/🔴 instrument-trust verdicts this doc lifts from |

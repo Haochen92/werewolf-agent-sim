@@ -56,7 +56,7 @@ portfolio's load-bearing claim. This protocol protects a *secondary, qualitative
 
 **What this is NOT:** not a panel, not a third model, not a gold set. One labeler, ~28 labels,
 an afternoon. (The full panel + human-anchor machinery is reserved for the bucket-C retrieval
-gold — see `evidence/retrieval/context_eval/experiment_log.md` §6.)
+gold — see `evidence/evaluation/labeling/context_eval/experiment_log.md` §6.)
 
 ## Why the other judges don't get this
 

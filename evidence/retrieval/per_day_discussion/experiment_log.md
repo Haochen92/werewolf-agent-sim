@@ -13,7 +13,7 @@
 > a FROZEN RECORD) and [`data/within_day_retrieval_diversity.json`](data/within_day_retrieval_diversity.json)
 > (every number below is lifted from here). The mediation finding §2.2 leans on lives in
 > [`../../metrics/report.md`](../../metrics/report.md) §3; the deceiver-discussion numbers in
-> [`../../discussion_tagger/report.md`](../../discussion_tagger/report.md). No `report.md` exists yet — the
+> [`../../credit/discussion_tagger/report.md`](../../credit/discussion_tagger/report.md). No `report.md` exists yet — the
 > log-first convention holds until the variant graduates. Guiding principle throughout: **gate a behavior
 > change on a $0 recompute before spending on a live A/B.**
 
@@ -85,7 +85,7 @@ For **town**, discussion carries no win signal beyond the vote. The metrics appa
 discussion proxy (`town_accusation_precision`) partialled on vote accuracy at **partial r = +0.02** (p=.76,
 n=175); the LLM discussion tagger, partialled on the same vote proxy, put town discussion merit at **+0.02**
 as well (N=24) — a different instrument and sample reaching the same null (both lifted from
-[`../../metrics/report.md`](../../metrics/report.md) §3 and [`../../discussion_tagger/report.md`](../../discussion_tagger/report.md)).
+[`../../metrics/report.md`](../../metrics/report.md) §3 and [`../../credit/discussion_tagger/report.md`](../../credit/discussion_tagger/report.md)).
 The structural reading is mediation: for town, the collective day vote is nearly the only actuator, so
 discussion changes the game only by *becoming votes*, and the vote sits on the causal path. This is what makes
 per-day near-free *for town*: its discussion value cashes out at the vote, and the vote keeps its own
@@ -315,5 +315,5 @@ no part of this test makes a content-level judgment: every number bounds set mem
 retrieval call sites in [`../../../Agents/turn/pipeline.py`](../../../Agents/turn/pipeline.py) and the LLM query
 composer in [`../../../Agents/memory/retrieval/situation_agent.py`](../../../Agents/memory/retrieval/situation_agent.py);
 the town-discussion mediation reading in [`../../metrics/report.md`](../../metrics/report.md) §3 and the deceiver
-partial-r numbers in [`../../discussion_tagger/report.md`](../../discussion_tagger/report.md); the config-flag-vs-worktree
+partial-r numbers in [`../../credit/discussion_tagger/report.md`](../../credit/discussion_tagger/report.md); the config-flag-vs-worktree
 policy in [`../../../CLAUDE.md`](../../../CLAUDE.md) → Versioning Design Variants.*

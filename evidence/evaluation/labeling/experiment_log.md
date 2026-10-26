@@ -91,7 +91,7 @@ the over-crediting was, again, found and quantified by hand.
 how much?** On 400 items, panel-vs-strong-judge agreement was measured with a **95% CI ≈ ±4.9%**, and the
 analysis **located** the reranker label bias precisely: the leak lived in the *majority* tier, while the
 "unanimous" tier had looked clean only because it *included a careful strong judge* — "agreement that
-contains a careful judge," not "agreement is safe" (`../../retrieval/context_eval/experiment_log.md`).
+contains a careful judge," not "agreement is safe" (`context_eval/experiment_log.md`).
 
 **Decide.** These three rounds had, between them, hand-derived every piece of a real validation
 methodology. Round C wrote it down as a **pre-registered protocol** (`context_eval` §6): rubric-first;
@@ -136,7 +136,7 @@ quality-control bench — and that bench is the build still ahead of us.
 
 Primary frozen records (this log is their apparatus-level synthesis):
 `../../fine_tuning/dedup_classifier/experiment_log.md` · `../../fine_tuning/cross_encoder/reranker/experiment_log.md`
-(§"Reusable labeling pipeline", §"Systematic auto-model bias") · `../../retrieval/context_eval/experiment_log.md`
+(§"Reusable labeling pipeline", §"Systematic auto-model bias") · `context_eval/experiment_log.md`
 (§6 "The labeling protocol") · `../../fine_tuning/cross_encoder/dedup_prefilter/experiment_log.md`.
 Code: `evaluation/src/labeling/`. Companions: [`report.md`](report.md) · [`plan.md`](plan.md).
 
@@ -385,8 +385,8 @@ store `ten_seat_v2` was built (owner, 2026-10-13), so they are used as labels wi
 | Scorers that read the goldens | `evaluation/src/labeling/label_scorer/` (NDCG, reranker comparison); dedup: `evaluation/src/audits/{dedup_score,batch_dedup_score}.py`, see [`dedup.md`](dedup.md) |
 | Statistical primitives to reuse | `evaluation/src/core/stats.py` |
 | Tests for the pipeline | `tests/evaluation/test_labeling_pipeline.py`, `tests/evaluation/test_dedup_golden_builder.py` |
-| Design spec for the unbuilt half | `../../retrieval/context_eval/experiment_log.md` §6 |
-| Journey and limitation evidence | [`experiment_log.md`](experiment_log.md); `../../fine_tuning/dedup_classifier/`, `../../fine_tuning/cross_encoder/reranker/`, `../../retrieval/context_eval/`, `../../fine_tuning/cross_encoder/dedup_prefilter/` |
+| Design spec for the unbuilt half | `context_eval/experiment_log.md` §6 |
+| Journey and limitation evidence | [`experiment_log.md`](experiment_log.md); `../../fine_tuning/dedup_classifier/`, `../../fine_tuning/cross_encoder/reranker/`, `context_eval/`, `../../fine_tuning/cross_encoder/dedup_prefilter/` |
 | Prefilter calibration sets | `evaluation/frozen_eval_sets/dedup_v2_golden_labels.json`, `auto_dedup_v1_cross_game.jsonl`; `../../dedup/embedding_prefilter/` (log and `data/`); `evaluation/experiments/prefilter_similarity_exhibit.py`; Qwen re-derivation in `../../memory_system/v8/data/embedder_migration/` |
 | Tell-detector cases | `evaluation/src/loop/tells.py`; `../../extraction/tell_extraction/outputs/` (`adjudication_cases.json`, `golden_verdicts.json`, `owner_golden/owner_verdicts.json`); frozen probes in `../../extraction/tell_extraction/scripts/` |
 | Readers' duplicate groups and the dry run | `../../memory_system/v8/data/reextract/points/`; `evaluation/experiments/v8_sp_dedup_dry_run.py`; `../../memory_system/v8/data/reextract/dedup_dry_run/` |
@@ -398,7 +398,7 @@ The table of every built key is in [report.md](report.md). Keys designed or plan
 | Planned key | Status | Where it is planned |
 |---|---|---|
 | `calibration.py` + `anchor.py`: the panel measured against ~100–250 human judgments | Not built | [plan.md](plan.md) |
-| Two retrieval golds (summary recall; reranker pure-query) with a ~150-item human anchor | Deferred 2026-06-01 | `../../retrieval/context_eval/experiment_log.md` §6 |
+| Two retrieval golds (summary recall; reranker pure-query) with a ~150-item human anchor | Deferred 2026-06-01 | `context_eval/experiment_log.md` §6 |
 | Application (strategy-adoption) judge, ~28 blind labels | Never run | `../../memory_system/strategy_adoption/judge_validation_protocol.md` |
 | Owner session on the factual-error judge, 50–100 verdicts | Pending | `writeup/map.md`, "Evaluation hardening tasks" |
 | Owner checks of the silence readers and the rule-error readers, 30–50 items each | Pending, conditional | `writeup/map.md`, same section |
@@ -407,7 +407,7 @@ The table of every built key is in [report.md](report.md). Keys designed or plan
 | 20–30 hand labels on frozen merge outputs (fabrication) | Suggested | [dedup.md](dedup.md) |
 | Six-game owner tell benchmark (24 cells) | Relaxed after one game | `../../extraction/tell_extraction/outputs/owner_golden/` |
 | A larger dedup key (100–150 cases; 100+ strategy points) | Planned | `../../fine_tuning/dedup_classifier/experiment_log.md`; `../../fine_tuning/cross_encoder/dedup_prefilter/experiment_log.md` |
-| A ~20-case subset re-scored against model drift | Guard rule only | `../../model_drift/drift_surfaces_and_guards.md` |
+| A ~20-case subset re-scored against model drift | Guard rule only | `../experimental_controls/drift_surfaces_and_guards.md` |
 
 **Mismatches between records, found by the inventory.** Not corrected at source (the records are frozen):
 - The online dedup key's file metadata says "50 sampled … 25/25" and "D=31, M=2, K=32"; its 65 labels count

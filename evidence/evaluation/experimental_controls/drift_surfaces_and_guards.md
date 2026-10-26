@@ -14,7 +14,7 @@ baselines every time?* and *does drift also hit the classifiers/dedupers?*
 > deals fell from 12 to 7 (exact McNemar p = 0.18; `evaluation/experiments/june_baseline_shift_check.py`).
 > A shift in outcomes was seen; drift as its cause was never established. The interleave rule below stands,
 > since drift and chance could not be told apart. What each provider lets you pin is in
-> [`evaluation/experimental_controls/report.md`](../evaluation/experimental_controls/report.md) §1.
+> [`evaluation/experimental_controls/report.md`](report.md) §1.
 
 ## Structural fix for experiments: INTERLEAVE arms, never compare to historical runs
 

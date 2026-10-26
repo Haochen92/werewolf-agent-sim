@@ -48,7 +48,7 @@ most evaluation work has been on the other five.
 | **Play quality** | do prompt, rule and card changes make the agents argue, vote and talk better | frozen-turn replays, blind packet reads, ten-seat metrics, read Brier score, vote-target counts, same-deal game pairs, balance batches | [`game_play_enhancement/discussion_evidence.md`](../game_play_enhancement/discussion_evidence.md), [`sequential_discussion/`](../sequential_discussion/report.md) |
 | **Factual errors** | how often agents state something the game record contradicts, and does a change reduce it | the census (code screen plus model reader), the hallucination bench, pinned-case replays, the summary-claim replay | [`generation_prompt/`](../generation_prompt/validation_plan.md), `discussion_evidence.md` §6 and §8 |
 | **The deduction engine** | is every line it injects true in every legal game; does it help the seat | soundness tests over random legal nights, a brute-force oracle, acceptance cases, solver and block censuses, injection and placement replays | [`reasoning_failures/`](../reasoning_failures/report.md) |
-| **Models and cost** | can a candidate model play the game's turns; is it worse than the default; what does a game cost | admission probes, bench arms against the default, a thinking-budget replay, seat-model games, cost and cache accounting | [`caching/report.md`](../caching/report.md), [`model_selection/report.md`](../model_selection/report.md), `reasoning_failures/experiment_log.md` |
+| **Models and cost** | can a candidate model play the game's turns; is it worse than the default; what does a game cost | admission probes, bench arms against the default, a thinking-budget replay, seat-model games, cost and cache accounting | [`caching/report.md`](../caching/report.md), [`model_selection/report.md`](model_admission/model_selection.md), `reasoning_failures/experiment_log.md` |
 | **The information boundary** | does any prompt carry another seat's private information | batch leak checks, payload leak tests, the served-game leak audit, information-fidelity pins | [`agent_boundaries/report.md`](../agent_boundaries/report.md) |
 
 A seventh layer, **experimental controls** (the A/B testing method), serves all six: drift guards, the arm guard, the runtime fingerprint,
@@ -201,7 +201,7 @@ kinds recur here:
 Outside these, code loses. A keyword count of meaning said 32 summaries named a quiet player, and
 reading the matches found 4 of 124 (below, failure modes). A regex agreed with the model's addressee
 tags on 63% of 30 cases, so tagging went to the model
-(`../cross_project_synthesis/deterministic_where_reliable.md`). The prose leak pass is substring
+(`../../writeup/lessons/deterministic_where_reliable.md`). The prose leak pass is substring
 matching, so a paraphrased leak passes ([`deterministic_audits/`](deterministic_audits/report.md)).
 
 **2. When a model screens for a human, set it to catch too much.** A screener makes two errors: a false

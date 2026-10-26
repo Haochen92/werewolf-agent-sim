@@ -30,7 +30,7 @@ Tuning how memories are retrieved at game time: filtering, reranking, and capaci
 | [filtering](retrieval/filtering/report.md) | n=5 | May 23 | Pre-dedup store; filtering shown unnecessary on clean store |
 | [reranking](retrieval/reranking/report.md) | n=5 | May 23 | Strategy-only reranking on v4_deduped; small sample |
 | [capacity_limits](retrieval/capacity_limits/report.md) | n=120 | May 24 | Observations-only, top_k=3 vs 5 |
-| [context_eval](retrieval/context_eval/experiment_log.md) | — | Jun 1 | Context-based retrieval eval; methodology final, execution DEFERRED (golds conditioned on the v4_deduped_v2 substrate) |
+| [context_eval](evaluation/labeling/context_eval/experiment_log.md) | — | Jun 1 | Context-based retrieval eval; methodology final, execution DEFERRED (golds conditioned on the v4_deduped_v2 substrate) |
 | [per_day_discussion](retrieval/per_day_discussion/experiment_log.md) | 3,916 agent-days, $0 | Jul 7 | Design variant (retrieve once per day, not per turn) gated on a recompute pre-test: within-day retrievals almost never identical (0–9%), but the churn is substantially query-paraphrase noise, not adaptation; PARKED as a config-flag candidate |
 
 `filtering` and `reranking` used n=5 on v4_deduped (v0 prompts). Their directional findings hold but absolute numbers are noisy.
@@ -100,7 +100,7 @@ Distinct from the judges in other folders, which score the memory pipeline itsel
 |---|---|---|---|
 | [experiment_log](metrics/experiment_log.md) | — | Jun 6 | Design discussion: audit + proxy-basket decision (per-role decision-quality is not deterministically feasible; use de-lucked, monotonicity-verified outcome proxies) |
 
-This folder is the metric **design** journey; its instrument-**trust** twin is [evaluation/metrics/](evaluation/metrics/). Likewise [discussion_tagger/](discussion_tagger/) (the tagger design) twins [evaluation/llm_judge/discussion_tagger.md](evaluation/llm_judge/discussion_tagger.md) (the tagger-as-instrument trust report).
+This folder is the metric **design** journey; its instrument-**trust** twin is [evaluation/metrics/](evaluation/metrics/). Likewise [discussion_tagger/](credit/discussion_tagger/) (the tagger design) twins [evaluation/llm_judge/discussion_tagger.md](evaluation/llm_judge/discussion_tagger.md) (the tagger-as-instrument trust report).
 
 ### Apparatus Support
 
@@ -108,7 +108,7 @@ This folder is the metric **design** journey; its instrument-**trust** twin is [
 |---|---|---|
 | [tracing](tracing/report.md) | Jun 27 | The capture half of eval: agent decisions, extraction, dedup, and day summaries emitted as four case types to a Langfuse trace + local JSONL sidecar, then frozen into reproducible eval sets |
 | [experiment provenance](tracing/fingerprinting/report.md) ([journey](tracing/fingerprinting/experiment_log.md)) | Jun 6–Jul 23 | How run settings, runtime fingerprints, and artifact hashes identify what produced a result; includes current limitations and the build history |
-| [model_drift](model_drift/drift_surfaces_and_guards.md) | Jun 12 | Reference note: unpinnable-alias epoch-drift surface map + the interleave-arms guard (never compare to historical runs) |
+| [model_drift](evaluation/experimental_controls/drift_surfaces_and_guards.md) | Jun 12 | Reference note: unpinnable-alias epoch-drift surface map + the interleave-arms guard (never compare to historical runs) |
 
 ## The v6/v7 Campaign
 
@@ -124,7 +124,7 @@ standalone folder: the dimension build and screens live in
 | [v6 dimension build](extraction/situation_dimensions/dimension_schema_build_spec.md) | Jun 13 – Jul 2 | Per-cell schema and store-build journey; criticality screen and deterministic accuracy audit are colocated with the situation-dimensions record |
 | [forced applicability](memory_system/strategy_adoption/forced_schema_screen/experiment_log.md) | Jun 16 | Store × schema screen and the prompt-body delivery result that raised per-memory verdict coverage from 0.27 to 0.97 |
 | [v7_final](v7_final/experiment_log.md) | Jun 20 – Jul | Build log of the v7 credit / consolidation / discussion-credit work; the compounding loop itself is the one still-un-run paid test (design docs `consolidation_design.md`, `discussion_credit_design.md` hold current state) |
-| [discussion_tagger](discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/llm_judge/discussion_tagger.md](evaluation/llm_judge/discussion_tagger.md)) |
+| [discussion_tagger](credit/discussion_tagger/report.md) | Jun – Jul | The v7 credit-signal instrument: an omniscient LLM tagger scoring discussion merit + night read-quality per turn; apparatus record + full tagged-signal inventory (instrument-trust verdict at [evaluation/llm_judge/discussion_tagger.md](evaluation/llm_judge/discussion_tagger.md)) |
 | [store_curation](store_curation/report.md) | Jul | The mechanism record for how the three memory stores (observations, strategy points, tells) grow, stay bounded, and improve across games; review basis for the pre-run ownership walkthrough |
 | [credit](credit/report.md) | Jul | The credit layer: how a decision becomes a learning signal (SP ledger, tell ledger, read/tactic redesign) |
 | [credit/blindspot_fix](credit/blindspot_fix/experiment_log.md) | Jul 21 | Post-endpoint fix pair for the credit blind spot (contextual abstain rule + find→lynch conversion channel), validated on owned data ($0 re-score + replay screen); step-3 rerun NOT authorized |
@@ -153,11 +153,11 @@ Off-the-critical-path training tracks (learning-project tier), each with its own
 | [structure_audit](refactor/structure_audit.md) | Jun 6 | Pre-v5 repo structure audit (no code moved) |
 | [eval_architecture_convention](refactor/eval_architecture_convention.md), [node_factory_pattern](refactor/node_factory_pattern.md) | — | Design/convention reference notes underpinning the refactor; provenance is documented under [tracing/fingerprinting](tracing/fingerprinting/report.md) |
 
-### [cross_project_synthesis/](cross_project_synthesis/) — Lessons Across Subsystems
+### [cross_project_synthesis/](../writeup/lessons/) — Lessons Across Subsystems
 
 | Note | Date | Notes |
 |---|---|---|
-| [separating_generation_from_checking](cross_project_synthesis/separating_generation_from_checking.md) | Oct 13 | Extraction de-halo, tell detection, discussion echo gate: three different checks, kept apart |
+| [separating_generation_from_checking](../writeup/lessons/separating_generation_from_checking.md) | Oct 13 | Extraction de-halo, tell detection, discussion echo gate: three different checks, kept apart |
 
 ## Reading Guide
 

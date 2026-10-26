@@ -130,7 +130,7 @@ The controls in §1–§5 apply in every row: the same inputs, the same set-up, 
   (`_run_arms_parallel`, pairing games by id); a frozen-turn replay runs its versions in one session.
   `scripts/run_batch.py`, the general batch tool, takes several configs but does not alternate them game by
   game, so a whole-game comparison outside the loop has to be interleaved by hand.
-- **Never compare with historical runs** ([model_drift](../../model_drift/drift_surfaces_and_guards.md)).
+- **Never compare with historical runs** ([model_drift](drift_surfaces_and_guards.md)).
   Two backends for the same model (Google AI and Vertex) give different scores even at temperature 0, so
   the backend is part of what must match.
 - **Pin the model where the provider allows it, and know what pinning covers** (providers' pages checked
@@ -229,7 +229,7 @@ loop, and checking that a setting did what it names.
 | Paired statistics | `evaluation/src/core/stats.py` (`mcnemar_exact`, `wilcoxon_paired`); [scoring](../scoring/report.md), layer 3 |
 | Provenance manifests | `evaluation/src/core/manifest.py` |
 | Embedding check | `evaluation/src/audits/embedding_canary.py`, `embedding_canary_pins.json`; call site `scripts/run_batch.py`; build record [`../hardening_pass/experiment_log.md`](../hardening_pass/experiment_log.md) §4.9 |
-| June drift catch, seed effect, detectable effect sizes | `../../memory_system/effectiveness/paired_ab/experiment_log.md`; `../../model_drift/drift_surfaces_and_guards.md`; the paired re-test `evaluation/experiments/june_baseline_shift_check.py` (2026-10-25, no model calls) |
+| June drift catch, seed effect, detectable effect sizes | `../../memory_system/effectiveness/paired_ab/experiment_log.md`; `drift_surfaces_and_guards.md`; the paired re-test `evaluation/experiments/june_baseline_shift_check.py` (2026-10-25, no model calls) |
 | What pinning covers, per provider | Checked 2026-10-25: Anthropic, "Model IDs and versioning" (platform.claude.com/docs/en/about-claude/models/model-ids-and-versions); Google, Gemini API models page and Google Cloud "Model versions and lifecycle"; OpenAI, the GPT-6 Luna model page; DeepSeek, api-docs.deepseek.com/updates |
 | Power gate | `evaluation/src/instrument_validation/power/mde_simulation.py`; readout [`../../execution_plan/report.md`](../../execution_plan/report.md) §2 (full table at `24dfd3a7`) |
 | Seedability | `Agents/nodes/orchestrator.py` (`initialize_game`); `tests/engine/test_seedability.py` |

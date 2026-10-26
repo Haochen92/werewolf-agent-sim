@@ -28,7 +28,7 @@ The previous discussion judge was a reasonable starting point: it could assess t
 concealment that simple action checks missed. Its discussion verdict correlated with faction wins in
 a 24-game, single-epoch study. That supported its use as a diagnostic, but did not establish that
 using its verdict to curate memory would improve agents. Its night read-quality override also lacked
-an independent accuracy check. The [discussion-tagger report](../discussion_tagger/report.md)
+an independent accuracy check. The [discussion-tagger report](discussion_tagger/report.md)
 records that evidence.
 
 The redesign therefore separated the objects being evaluated. A behavioral association should not

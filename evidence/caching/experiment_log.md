@@ -206,7 +206,7 @@ tokens misses a thinking budget that is used in full.
 
 **Motivation.** Everything above was measured on Gemini. In July the game gained DeepSeek seats
 (`deepseek-v4-pro`, chosen on cost and dialogue quality; see
-[`../model_selection/`](../model_selection/report.md)). DeepSeek caches prompt starts automatically, and on
+[`../model_selection/`](../evaluation/model_admission/model_selection.md)). DeepSeek caches prompt starts automatically, and on
 this workload it fired: the first measured game read about 31% of its input from cache (450k of 1.50M
 tokens). Hypothesis A had been disproved on Gemini, not in general. On a provider whose automatic cache
 works, prompt order is a lever again.
@@ -234,7 +234,7 @@ price $0.292 → $0.260 per million tokens. One game per side; the same release 
 at about 120 words, and the second game was about half as long. So this shows the direction, not the size
 of the reorder's effect. Shipped with the rest of that release's prompt changes.
 
-*Provenance:* commit `47d9a719`; game costs in `../model_selection/report.md`.
+*Provenance:* commit `47d9a719`; game costs in `../evaluation/model_admission/model_selection.md`.
 
 ---
 

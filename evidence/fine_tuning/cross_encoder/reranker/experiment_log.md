@@ -393,7 +393,7 @@ Training inputs: `training_data_{sitonly,sitact,allsitonly}/`. Diagnostic raw la
 
 ## Cross-ref: over-crediting quantified + planned strong-judge re-baseline (2026-05-31)
 
-Full analysis in `evidence/retrieval/context_eval/experiment_log.md`. The "Systematic
+Full analysis in `evidence/evaluation/labeling/context_eval/experiment_log.md`. The "Systematic
 auto-model bias in new labels" noted earlier is now quantified at scale and located:
 
 - The merged labels **over-credit vs the strong judges (ChatGPT+Sonnet) on 514/1848 items**,

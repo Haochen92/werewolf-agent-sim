@@ -197,7 +197,7 @@ meaningful* direction." Three outcomes:
 
 Panel: `gemini-3.1-flash-lite` (thinking=low), `mistral/mistral-small-2506`,
 `nim/meta/llama-3.1-8b-instruct` — identical to the production auto panel.
-Script: `evidence/retrieval/context_eval/scripts/context_drift_diagnostic.py`.
+Script: `evidence/evaluation/labeling/context_eval/scripts/context_drift_diagnostic.py`.
 Sampled run first (seed 42) for a fast read; `--sample 0` for the full 1,848 items.
 
 ## Results (full 1,848 items, 2026-05-31)

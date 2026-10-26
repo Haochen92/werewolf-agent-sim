@@ -152,7 +152,7 @@ card literally, which exposed a gap in the rules text the looser models never hi
 - **Memory-job models** (October 2026). Gemini 3.8 Flash against 3.5 Flash-Lite on two pilot games, and a
   Claude extraction and a de-halo judge on one game each, counted by one reader. The choice was superseded
   on 2026-10-15, when the offline jobs moved to Claude; batch extraction now defaults to Sonnet 5.5.
-- **The July 2026 seat-model choice** ([model_selection](../../model_selection/report.md), nine-seat) rested
+- **The July 2026 seat-model choice** ([model_selection](model_selection.md), nine-seat) rested
   on the owner's unblinded reads of one or two games per model. Its method note stands: use public
   benchmarks to shortlist, and measure on the game.
 

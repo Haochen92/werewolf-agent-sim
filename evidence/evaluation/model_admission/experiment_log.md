@@ -36,7 +36,7 @@ The thinking budget is in [the reasoning-failures log](../../reasoning_failures/
 §2–3. The agents' missing reasoning step and the ten-seat games are in
 [the discussion evidence](../../game_play_enhancement/discussion_evidence.md) §6.7 and §8.4. The
 extraction model is in [the v8 memory log](../../memory_system/v8/experiment_log.md). The July
-choice is in [the July model selection](../../model_selection/report.md). The bench itself is rated
+choice is in [the July model selection](model_selection.md). The bench itself is rated
 in [factual_errors](../factual_errors/report.md). How all the evaluation reports fit
 together: [the hub](../report.md).
 
@@ -407,7 +407,7 @@ record. The v5-era `evaluation/src/studies/extraction_model_comparison.py` has i
 
 ## 8. July seat-model selection — ⚠️ (historical)
 
-[`../../model_selection/report.md`](../../model_selection/report.md), 2026-07-26, nine-seat game. The
+[`model_selection.md`](model_selection.md), 2026-07-26, nine-seat game. The
 instruments were the game's bill from Langfuse token counts × list prices, the owner's unblinded reads
 of one or two full games per model, and turn latency as felt in live play. Game length varied about
 two-fold between games and was not corrected for. Its selection table is superseded: the default seat
