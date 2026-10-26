@@ -5,7 +5,7 @@ for clean observation dedup. Scope is **LLM-based dedup tuning only** — the cr
 (fork-#3) stays deferred. Pointers:
 `evidence/extraction/situation_dimensions/dimension_schema_build_spec.md`,
 `evidence/memory_system/effectiveness/v6_sp_ab/procedural_memory_experiment.md`, and
-`evidence/execution_plan/experiment_log.md` (Track 2). Code lives in `Agents/memory/batch_deduplication/`
+`evidence/memory_system/v7/execution_plan/experiment_log.md` (Track 2). Code lives in `Agents/memory/batch_deduplication/`
 (agglomerative clustering + 2-pass LLM) and `Agents/memory/deduplication/` (incremental pairwise).
 
 ## Why this is needed now (empirical findings)

@@ -231,7 +231,7 @@ loop, and checking that a setting did what it names.
 | Embedding check | `evaluation/src/audits/embedding_canary.py`, `embedding_canary_pins.json`; call site `scripts/run_batch.py`; build record [`../hardening_pass/experiment_log.md`](../hardening_pass/experiment_log.md) §4.9 |
 | June drift catch, seed effect, detectable effect sizes | `../../memory_system/effectiveness/paired_ab/experiment_log.md`; `drift_surfaces_and_guards.md`; the paired re-test `evaluation/experiments/june_baseline_shift_check.py` (2026-10-25, no model calls) |
 | What pinning covers, per provider | Checked 2026-10-25: Anthropic, "Model IDs and versioning" (platform.claude.com/docs/en/about-claude/models/model-ids-and-versions); Google, Gemini API models page and Google Cloud "Model versions and lifecycle"; OpenAI, the GPT-6 Luna model page; DeepSeek, api-docs.deepseek.com/updates |
-| Power gate | `evaluation/src/instrument_validation/power/mde_simulation.py`; readout [`../../execution_plan/report.md`](../../execution_plan/report.md) §2 (full table at `24dfd3a7`) |
+| Power gate | `evaluation/src/instrument_validation/power/mde_simulation.py`; readout [`../../memory_system/v7/execution_plan/report.md`](../../memory_system/v7/execution_plan/report.md) §2 (full table at `24dfd3a7`) |
 | Seedability | `Agents/nodes/orchestrator.py` (`initialize_game`); `tests/engine/test_seedability.py` |
 | Prompt golden | `tests/fixtures/day_discuss_prompt_golden.{py,json}`; `tests/engine/test_draft_preview.py` |
 | Run graduation | `eval-graduate` → `evaluation/src/cli_runner/graduate_run.py`; `tests/evaluation/test_graduate.py`; `evaluation/README.md` (Data plane) |

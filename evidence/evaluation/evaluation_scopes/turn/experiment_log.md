@@ -183,11 +183,11 @@ below.
   > significant: +17 points on the raw arm (p = 0.267) and +23 points with everything on (p = 0.167).
   > What the June A/B did establish is better town *decisions* on the raw arm. On 30 paired boards the
   > healer saved the real target 37% → 60% (p = 0.005), and town lynches hit an enemy 47% → 64%
-  > (p = 0.028) ([`memory_system/store_progression.md`](../../../memory_system/store_progression.md),
+  > (p = 0.028) ([`memory_system/report.md`](../../../memory_system/report.md),
   > correction of 2026-10-22). So the screen converges with June's decision measures, not with a
   > win-rate gain. Both anchors belong to one June epoch. The v6 store did not repeat the town gain
   > (+6 points, p = 0.77), and the July v7 endpoint was 0.147 lower with memory (19 of 30 boards,
-  > p ≈ 0.06; [`execution_plan/report.md`](../../../execution_plan/report.md) §5). The screen was
+  > p ≈ 0.06; [`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §5). The screen was
   > validated as a direction-finder on one epoch; it says nothing about whether memory helps today.
 - **The cheap-lever ladder screened clean.** Every cheap way to make the agent *use* memory better
   came back null-or-harmful, tier *suggestive*: emitting reasoning before the vote synced
@@ -225,7 +225,7 @@ below.
   up with the store. Leakage is handled by a guard that refuses to run if an exam game appears in a
   store's provenance.
 - **What it was used for.** It never ran on generation snapshots. The compounding test was redesigned
-  as a final-store against no-memory A/B (`execution_plan/report.md` §3). Its only recorded runs are
+  as a final-store against no-memory A/B (`memory_system/v7/execution_plan/report.md` §3). Its only recorded runs are
   three sweeps on 2026-07-21 for the credit blind-spot fix, which compared four or five stores: empty,
   the full 168-point store, and pruned or re-synthesised variants.
 - **How far it was checked.** This is the replay's most informative trust result.

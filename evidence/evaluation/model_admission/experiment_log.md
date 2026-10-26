@@ -403,7 +403,7 @@ per game well and quality only by direction. **Dated note (2026-10-23).** The 20
 Claude (commit `d839e6f3`), and `scripts/extract_batch.py` now defaults to Sonnet 5.5. Its comment says
 Haiku writes seat ids into lessons in a v8 batch check, and that check is not found as a separate
 record. The v5-era `evaluation/src/studies/extraction_model_comparison.py` has its frozen record in
-`v7_final/extraction_screens/`.
+`memory_system/v7/extraction_screens/`.
 
 ## 8. July seat-model selection — ⚠️ (historical)
 
@@ -480,7 +480,7 @@ Cheapest upgrades (not scheduled):
 | Thinking budget | `evaluation/experiments/haiku_effort_{cases,score}.py` | `reasoning_failures/experiment_log.md` §2; `reasoning_failures/data/haiku_effort_replay/` | yes |
 | Summariser model | `evaluation/experiments/haiku_summary_compare.py` | `reasoning_failures/experiment_log.md` §3; `reasoning_failures/data/haiku_summary_compare/` | yes |
 | Seat-model games | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{flash,luna}_games/README.md`; `discussion_evidence.md` §8.4 | yes |
-| Extraction and de-halo models | `evaluation/experiments/{claude_extraction_compare,dehalo_compare}.py`; v5 `evaluation/src/studies/extraction_model_comparison.py` | `memory_system/v8/experiment_log.md` (2026-10-11); `memory_system/v8/data/{extraction_model_comparison,dehalo_compare}/`; v5: `v7_final/extraction_screens/` | yes |
+| Extraction and de-halo models | `evaluation/experiments/{claude_extraction_compare,dehalo_compare}.py`; v5 `evaluation/src/studies/extraction_model_comparison.py` | `memory_system/v8/experiment_log.md` (2026-10-11); `memory_system/v8/data/{extraction_model_comparison,dehalo_compare}/`; v5: `memory_system/v7/extraction_screens/` | yes |
 | July selection | none | `model_selection/report.md` | yes |
 | Cost and cache accounting | `Agents/llm_factory/{pricing,catalog}.py`, `server/game/usage.py`, `evaluation/src/core/costs.py`, `evaluation/src/loop/cost.py`, `evaluation/experiments/game_cache_share.py`, `scripts/model_catalog.py` | `caching/report.md` §4–5; `caching/experiment_log.md` §11 | yes |
 | Catalogue notes | `Agents/llm_factory/catalog.py` (`SEED_MODELS`, 2026-10-12) | §10 above | yes |

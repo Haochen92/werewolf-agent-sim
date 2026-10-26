@@ -77,7 +77,7 @@ diagram running end to end — curate, feed forward, play better — not any sin
 >
 > **Role in the run program.** This is the review basis for the consolidation ownership walkthrough
 > (the §R "D2" gate in
-> [`../execution_plan/report.md`](../execution_plan/report.md)).
+> [`../memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md)).
 > §6 is that walkthrough's agenda, and its item numbers are stable references (the log and the plan
 > cite them) — new items append, existing items never renumber.
 >
@@ -317,7 +317,7 @@ concentrate here.
 > evict the dead weight (with mercy rules) → retrieval surfaces the rest (proven advice tiered first,
 > plus one exploration slot) → inject at most 3 into the prompt.
 > **See:** design lineage
-> [`../v7_final/consolidation_design.md`](../v7_final/consolidation_design.md); credit
+> [`../memory_system/v7/consolidation_design.md`](../memory_system/v7/consolidation_design.md); credit
 > [`../credit/report.md`](../credit/report.md).
 
 ### Tells → [`tells.md`](tells.md)
@@ -507,7 +507,7 @@ cited.
   ([`../extraction/tell_extraction/experiment_log.md`](../extraction/tell_extraction/experiment_log.md));
   the credit layer and its invariants ([`../credit/report.md`](../credit/report.md)); the v7 run
   pre-registration draft
-  ([`../execution_plan/report.md`](../execution_plan/report.md)).
-- Design lineage: [`../v7_final/consolidation_design.md`](../v7_final/consolidation_design.md)
+  ([`../memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md)).
+- Design lineage: [`../memory_system/v7/consolidation_design.md`](../memory_system/v7/consolidation_design.md)
   (2026-06-19, SP side) · the tell ledger spec in
   [`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md) §3.

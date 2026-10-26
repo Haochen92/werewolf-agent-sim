@@ -284,7 +284,7 @@ only when labelling restarts (which is itself gated on v7 proving memory compoun
 
 > *Correction 2026-10-23.* That gate resolved the other way. The v7 compounding test closed negative in
 > July 2026 (town decision score 0.147 lower with memory, p≈0.06, pre-registered; owner closed the
-> memory research on 2026-07-21; [`../../execution_plan/report.md`](../../execution_plan/report.md)).
+> memory research on 2026-07-21; [`../../memory_system/v7/execution_plan/report.md`](../../memory_system/v7/execution_plan/report.md)).
 > Labelling through this pipeline has not restarted. The October 2026 labelling on the ten-seat game was
 > done instead by Claude model readers launched from the chat, reading packets with the answer hidden
 > (§5.3 and the v8 records). Those readers bypass the panel, the vote and the human export, so none of

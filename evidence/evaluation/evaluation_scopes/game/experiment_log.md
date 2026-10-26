@@ -233,13 +233,13 @@ ceiling."
 >   - correct eliminations, 0.47 → 0.64 (p=0.028).
 >
 >   Sources: [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md) and
->   [`store_progression.md`](../../../memory_system/store_progression.md) (correction of 2026-10-22). So
+>   [`store_progression.md`](../../../memory_system/report.md) (correction of 2026-10-22). So
 >   the screen agrees with the A/B on decisions, not on wins.
 > - **The wolf-direct arm will not run.** The memory research closed on 2026-07-21 (§3).
 > - **Every memory game ran without reasoning.** The game model ran at thinking level "minimal". That
 >   produced zero reasoning tokens (found 2026-10-04). The arms matched, so the comparisons stand. But
 >   every memory A/B here is about players that do not reason first
->   ([`execution_plan/report.md`](../../../execution_plan/report.md) §5).
+>   ([`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §5).
 
 ### Trust: 🟡
 
@@ -255,7 +255,7 @@ by deal buys almost no noise reduction.
 `evaluation/src/loop/measure.py`. Record:
 [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md),
 [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md),
-[`store_progression.md`](../../../memory_system/store_progression.md).
+[`store_progression.md`](../../../memory_system/report.md).
 
 ---
 
@@ -330,8 +330,8 @@ The pre-registered test of the v7 learning loop. A memory store built over four 
 (168 strategy points) played against no memory, on 30 shared deals, 60 games. To *pre-register* is to
 fix and sign the test's design before any data exists.
 
-Sources: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5 and its
-[`experiment_log.md`](../../../execution_plan/experiment_log.md).
+Sources: [`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §4–5 and its
+[`experiment_log.md`](../../../memory_system/v7/execution_plan/experiment_log.md).
 
 ### How it works
 
@@ -350,7 +350,7 @@ Sources: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5
   two conditions on 30 boards.
 - The reasons were written into `batch_results/v7_endpoint_ab/PREREG_AMENDMENT.md`, beside the data.
 - That file was copied on 2026-10-23 to
-  [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md).
+  [`memory_system/v7/execution_plan/data/v7_endpoint_ab/`](../../../memory_system/v7/execution_plan/data/README.md).
 
 **Run hardening.** This is recorded in the run's `config.json`, in the same folder.
 
@@ -377,7 +377,7 @@ Sources: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5
 
 - The earlier design was a trend test. It was dropped on 2026-07-05.
 - A simulation had shown it would miss a realistic effect about 9 times in 10
-  ([`execution_plan/report.md`](../../../execution_plan/report.md) §2–3, catalogued in
+  ([`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §2–3, catalogued in
   [`../../experimental_controls/report.md`](../../experimental_controls/report.md)).
 - The power of the paired design that replaced it was not simulated.
 
@@ -398,7 +398,7 @@ Sources: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5
 
 - It is in `batch_results/v7_endpoint_ab/`, 123 MB, in the data plane that git ignores.
 - Five files were copied on 2026-10-23 to
-  [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md): the config, the
+  [`memory_system/v7/execution_plan/data/v7_endpoint_ab/`](../../../memory_system/v7/execution_plan/data/README.md): the config, the
   amendment, the pooled result, the run log and the final tell book.
 
 ### Trust: 🟡
@@ -410,10 +410,10 @@ statistic has no committed code, and its data is not versioned.
 ### Code and record
 
 `evaluation/src/loop/measure.py`. The run's driver and the paired-statistic script were not found.
-Record: [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5,
-[`execution_plan/experiment_log.md`](../../../execution_plan/experiment_log.md),
+Record: [`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §4–5,
+[`memory_system/v7/execution_plan/experiment_log.md`](../../../memory_system/v7/execution_plan/experiment_log.md),
 [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md). Run files:
-[`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md).
+[`memory_system/v7/execution_plan/data/v7_endpoint_ab/`](../../../memory_system/v7/execution_plan/data/README.md).
 
 ---
 
@@ -660,9 +660,9 @@ paths are corrected above.)*
 |---|---|---|
 | Deal seeding (the premise of pairing) | `tests/engine/test_seedability.py` | [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md) (20/20, 2026-06-11); [`../../experimental_controls/report.md`](../../experimental_controls/report.md) |
 | Same-seed canary (pairing ≈ no noise reduction) | — | [`model_drift/drift_surfaces_and_guards.md`](../../experimental_controls/drift_surfaces_and_guards.md) |
-| June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`, `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`, `Agents/compute_metrics.py` | [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md), [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md), [`store_progression.md`](../../../memory_system/store_progression.md) (2026-10-22 correction); data `batch_results/ab_*.jsonl` (ignored by git) |
+| June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`, `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`, `Agents/compute_metrics.py` | [`paired_ab/report.md`](../../../memory_system/effectiveness/paired_ab/report.md), [`paired_ab/experiment_log.md`](../../../memory_system/effectiveness/paired_ab/experiment_log.md), [`store_progression.md`](../../../memory_system/report.md) (2026-10-22 correction); data `batch_results/ab_*.jsonl` (ignored by git) |
 | v6 strategy-point A/B | `evidence/memory_system/effectiveness/v6_sp_ab/launch_arms.sh`, `scripts/run_batch.py` | [`v6_sp_ab/experiment_log.md`](../../../memory_system/effectiveness/v6_sp_ab/experiment_log.md) |
-| v7 endpoint A/B | `evaluation/src/loop/measure.py`; the run's driver and the paired-statistic script: not found | [`execution_plan/report.md`](../../../execution_plan/report.md) §4–5, [`execution_plan/experiment_log.md`](../../../execution_plan/experiment_log.md), [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md); run files [`execution_plan/data/v7_endpoint_ab/`](../../../execution_plan/data/README.md); per-game data `batch_results/v7_endpoint_ab/` (ignored by git) |
+| v7 endpoint A/B | `evaluation/src/loop/measure.py`; the run's driver and the paired-statistic script: not found | [`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §4–5, [`memory_system/v7/execution_plan/experiment_log.md`](../../../memory_system/v7/execution_plan/experiment_log.md), [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md); run files [`memory_system/v7/execution_plan/data/v7_endpoint_ab/`](../../../memory_system/v7/execution_plan/data/README.md); per-game data `batch_results/v7_endpoint_ab/` (ignored by git) |
 | Persona-voice games | `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py`, `evaluation/src/loop/read_ledger.py`, `tests/leak_test.py` | [`persona_voice_games/README.md`](../../../game_play_enhancement/data/persona_voice_games/README.md), `scores.json`, the manifest of each game |
 | Evil-cover games | `evaluation/experiments/evil_cover_screen.py` (`games`) | [`evil_cover_games/README.md`](../../../game_play_enhancement/data/evil_cover_games/README.md), `games_scores.json`, the manifest of each game |
 | Fingerprint coverage (prompt-bundle hash) | `Agents/run_fingerprint.py` | [`tracing/fingerprinting/report.md`](../../../tracing/fingerprinting/report.md) |

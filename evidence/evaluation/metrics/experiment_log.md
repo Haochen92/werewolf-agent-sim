@@ -215,13 +215,13 @@ Credit keeps read accuracy apart from lesson scores on purpose (`credit/report.m
 
 **How it works.** `evaluation/src/instrument_validation/proxies/leverage_anchor_separation.py` uses town day-votes in 180 `v6ab` games. It computes P(town wins | vote hit a threat) − P(town wins | vote missed) within leverage strata. No model is called.
 
-**Result and what it can claim** (`v7_final/plan.md`, LEVERAGE-ANCHOR entry):
+**Result and what it can claim** (`memory_system/v7/plan.md`, LEVERAGE-ANCHOR entry):
 - The gap was flat across strata: +0.35 / +0.37 for `is_swing` true/false, and +0.35 / +0.41 for distance ≤1 and ≥3. So leverage does not rank votes by marginal impact.
 - P(win | miss) fell from 0.23 to 0.00 at high leverage: a miss there was fatal. So the anchor separates do-or-die turns.
 
 **What it cannot claim.** Anything about night actions or discussion, which the record says are untested. It is a stratified correlation with the outcome as the measure, on one nine-seat epoch.
 
-**Code · record.** `instrument_validation/proxies/leverage_anchor_separation.py` (promoted 2026-07-04) · `v7_final/plan.md`; `v7_final/experiment_log.md` (the 2026-06-19 ruling on how extraction uses it).
+**Code · record.** `instrument_validation/proxies/leverage_anchor_separation.py` (promoted 2026-07-04) · `memory_system/v7/plan.md`; `memory_system/v7/experiment_log.md` (the 2026-06-19 ruling on how extraction uses it).
 
 ### B5. Discussion census (October 2026, over nine-seat games of 2026-09-17) — ✅ counts · 🟡 labels
 
@@ -323,7 +323,7 @@ Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` 
 | Ten-seat decision grades | `Agents/memory/consolidation/grading.py`, `scripts/grade_observations.py` | `memory_system/v8/{plan.md §9.6, decisions.md §12–13, experiment_log.md}`; `credit/report.md` §2 |
 | Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/` |
 | Vote-target accuracy | `compute_metrics.py:536`, `Agents/memory/consolidation/decision_scoring.py`, `evaluation/experiments/haiku_vote_score.py` | Part A; `discussion_evidence.md` §8.7 |
-| Leverage anchor | `instrument_validation/proxies/leverage_anchor_separation.py` | `v7_final/plan.md`, `v7_final/experiment_log.md` |
+| Leverage anchor | `instrument_validation/proxies/leverage_anchor_separation.py` | `memory_system/v7/plan.md`, `memory_system/v7/experiment_log.md` |
 | Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `game_play_enhancement/discussion_evidence.md` §2 |
 | Phase 2 step 8 counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `game_play_enhancement/data/phase2_step8_games/` |
 | Balance batches | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5 |

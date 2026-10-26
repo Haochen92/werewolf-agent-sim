@@ -206,7 +206,7 @@ model became Claude Sonnet 5.5, with Haiku 5.5 as the backup on the online path.
 the bake-off, Phases 4–6); `eval_results/extraction_eval_20260524_*.jsonl`; `model_comparison/` and
 `model_comparison/v7_refresh/README.md`; `flash_extraction_5games.txt`,
 `pro_reextraction_playerid_fix.txt`. Elsewhere: [`../../caching/experiment_log.md`](../../caching/experiment_log.md)
-§5 and §9; [`../../v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md);
+§5 and §9; [`../../memory_system/v7/extraction_coverage_ab_spec.md`](../../memory_system/v7/extraction_coverage_ab_spec.md);
 [the v8 log](../../memory_system/v8/experiment_log.md) (2026-10-11 to 10-13);
 [v8 decisions](../../memory_system/v8/decisions.md) §6, §11, §13; commits `03a196b0`, `9d653363`
 (2026-06-10), `e68d8d6c` (2026-06-19), `90b8b38f` (2026-06-21), `4948f914` (2026-10-11), `d839e6f3`

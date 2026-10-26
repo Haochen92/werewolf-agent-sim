@@ -34,8 +34,8 @@ its source cell (`_cell_role` / `_cell_phase`).
 ## Provenance and what is NOT copied here
 
 - **Run:** 2026-06-19, Vertex backend, epoch-conditional (flash-lite was suspected of drifting about daily, never established; never compare across backends). Design, kill-tests, and the full recall/amplify tables:
-  [`../../../../v7_final/extraction_coverage_ab_spec.md`](../../../../v7_final/extraction_coverage_ab_spec.md).
-  Scripts (study code, stays in `v7_final/`): `extraction_model_ab_compare.py` (model arm),
+  [`../../../../memory_system/v7/extraction_coverage_ab_spec.md`](../../../../memory_system/v7/extraction_coverage_ab_spec.md).
+  Scripts (study code, stays in `memory_system/v7/`): `extraction_model_ab_compare.py` (model arm),
   `recall_capture_metric.py` (recall arm), `extraction_quota_screen.py` (free volume/distinctness).
 - **Not copied:** the recall-lever variant stores (`_ab_flite_anchor`, `_ab_flite_amplify`) — both NULL results
   (the suggestive anchor and the amplify pass did not lift flash-lite's pivotal recall). They remain in

@@ -10,8 +10,8 @@
 > `compounding_measurement_plan.md`, `power_analysis/` (`decision_rationale.md`, `mde_table.md`),
 > `v7_run_preregistration_DRAFT.md` (signed, despite its file name), `phase_b_plan_review.md` and
 > `v6_wide_migration_roadmap.md`. What happened after the run is in
-> [`../credit/blindspot_fix/experiment_log.md`](../credit/blindspot_fix/experiment_log.md) §①, §⑥
-> and §⑦; the earlier loop runs are in [`../v7_final/`](../v7_final/).
+> [`../../../credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md) §①, §⑥
+> and §⑦; the earlier loop runs are in [`../`](../).
 
 ---
 
@@ -94,7 +94,7 @@ The four learning generations finished on 2026-07-19 at a cost of $25.74, leavin
 
 **The main result leans toward harm but is not significant.** The town's decision score was 0.147 lower with memory than without (p ≈ 0.06: a gap this size would appear about 6% of the time by chance). Memory did worse on 19 of the 30 boards. As committed, this was reported as "no compounding detected", with the estimate leaning toward harm.
 
-**A secondary measure was clearer.** In the same games, town players with memory voted for a real threat about 15 percentage points less often (the rate without memory was near 50%) and abstained more (31% against about 23%). This measure counts votes one by one, which overstates its certainty somewhat, and it was not the main measure. The likely cause: cautious lessons told the investigator and healer to keep what they knew to themselves and told town players to abstain when unsure, and the loop's scoring could not penalise abstaining. That failure is the case study in [the credit report](../credit/report.md) §6.
+**A secondary measure was clearer.** In the same games, town players with memory voted for a real threat about 15 percentage points less often (the rate without memory was near 50%) and abstained more (31% against about 23%). This measure counts votes one by one, which overstates its certainty somewhat, and it was not the main measure. The likely cause: cautious lessons told the investigator and healer to keep what they knew to themselves and told town players to abstain when unsure, and the loop's scoring could not penalise abstaining. That failure is the case study in [the credit report](../../../credit/report.md) §6.
 
 On 2026-07-21 the owner closed the memory research without a further run. No memory version was shown to help, no memory was promoted, and every live game starts with memory off (a player can switch it on).
 

@@ -40,7 +40,7 @@ has been on the other five.
 
 | Subject | The question | Main methods | Design verdict lives in |
 |---|---|---|---|
-| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | whole-game A/Bs, the decision replay, the loop's credit validators, memory-component judges, golden sets, field audits | [`memory_system/`](../memory_system/store_progression.md), [`execution_plan/`](../execution_plan/report.md), [`credit/`](../credit/report.md) |
+| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | whole-game A/Bs, the decision replay, the loop's credit validators, memory-component judges, golden sets, field audits | [`memory_system/`](../memory_system/report.md), [`memory_system/v7/execution_plan/`](../memory_system/v7/execution_plan/report.md), [`credit/`](../credit/report.md) |
 | **Play quality** | do prompt, rule and card changes make the agents argue, vote and talk better | turn replays, blind sampled reads, ten-seat metrics, the read Brier score, vote-target counts, same-deal games, balance batches | [`game_play_enhancement/`](../game_play_enhancement/report.md), [`sequential_discussion/`](../sequential_discussion/report.md) |
 | **Factual errors** | how often agents state something the record contradicts, and does a change reduce it | the census (code screen plus model reader), the factual-error test sets, pinned-case replays | [`game_play_enhancement/`](../game_play_enhancement/report.md) (problem 1), [`generation_prompt/`](../generation_prompt/validation_plan.md) |
 | **The deduction engine** | is every line it writes true in every legal game; does it help the seat | soundness tests over random legal nights, a brute-force oracle, acceptance cases, censuses, injection and placement replays | [`reasoning_failures/`](../reasoning_failures/report.md) |
@@ -300,7 +300,7 @@ checks are its first use.
 *Rewritten 2026-10-24 as a standalone overview, from the method pages linked above. The previous hub
 (2026-10-23), including the dated memory-campaign section, is kept whole in the
 [experiment log](experiment_log.md), Part 1. The memory campaign's verdicts live in
-[`memory_system/store_progression.md`](../memory_system/store_progression.md) and
-[`execution_plan/report.md`](../execution_plan/report.md): in short, June's memory improved the town's
+[`memory_system/report.md`](../memory_system/report.md) and
+[`memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md): in short, June's memory improved the town's
 decisions but not significantly its wins, the v6 store did not repeat it, and the pre-registered v7 endpoint
 found no compounding, leaning toward harm; the ten-seat memory has not been tested at scale.*

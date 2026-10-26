@@ -109,7 +109,7 @@ undercut what the metric is for.
 component and its judge both still use the legacy v5 `SITUATION_STANDARDS` (the prose
 `information_landscape / consensus / drivers` fields), while extraction and the situation-summary query
 migrated to the v6 dimensional schema. Day-summary was left explicitly last and optional in that migration
-(`evidence/execution_plan/v6_wide_migration_roadmap.md` (removed 2026-10-22; in git history at `24dfd3a7`)). Two things keep the gap narrow:
+(`evidence/memory_system/v7/execution_plan/v6_wide_migration_roadmap.md` (removed 2026-10-22; in git history at `24dfd3a7`)). Two things keep the gap narrow:
 
 - It is not a missing-fields defect. The v6 per-agent dimensions (exposure, heat, target-landscape) are
   re-derived each day, and the board dimensions (swing, distance-to-parity, criticality) are computed

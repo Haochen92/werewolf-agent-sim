@@ -3,8 +3,8 @@
 This page covers every check made on the v7 learning loop (June–July 2026, nine-seat), with as much of the
 loop as the checks need for context. Checks that another report already tells are listed here with a link;
 the ones with no other home are told in full. Whether memory improved from batch to batch is the design
-question, closed in the [execution plan report](../../execution_plan/report.md); the scoring design is in
-the [credit report](../../credit/report.md); the June–July run records are in [v7_final](../../v7_final/).
+question, closed in the [execution plan report](../../memory_system/v7/execution_plan/report.md); the scoring design is in
+the [credit report](../../credit/report.md); the June–July run records are in [v7_final](../../memory_system/v7/).
 How the evaluation reports fit together: [the hub](../report.md).
 
 ## What the loop is
@@ -24,7 +24,7 @@ The players were `gemini-3.1-flash-lite`, with zero reasoning tokens in every ga
 
 **How it ended.** The one run under rules fixed in advance finished on 2026-07-19, and its endpoint test
 closed negative: on 30 paired boards the town's decision score was 0.147 lower with memory (p ≈ 0.06), lower
-on 19 of 30. The memory research closed on 2026-07-21 ([execution plan](../../execution_plan/report.md) §5).
+on 19 of 30. The memory research closed on 2026-07-21 ([execution plan](../../memory_system/v7/execution_plan/report.md) §5).
 The discussion tagger, an LLM judge of each player's day, had been retired from credit on 2026-07-13
 ([its note](../llm_judge/discussion_tagger.md)).
 
@@ -41,7 +41,7 @@ loop and has not been tested at scale.
 |---|---|---|---|---|
 | **Batch score** (`loop/measure.py`) | One de-lucked decision score per arm per generation, with no model call | Deterministic and unit-tested; pinned to the rule the July endpoint pre-registered | ✅ | Below |
 | **Fail-loud guards** (`loop/invariants.py`) | Does a wrongly set-up run stop at once? | Both invalid June runs were caught on audit, and each slip became a guard | ✅ | Below; the guards themselves in [experimental controls](../experimental_controls/report.md) |
-| **The July 19 run** | Did the loop run a declared experiment to its planned end? | Yes, with the guards on | ✅ | Below; the result in the [execution plan](../../execution_plan/report.md) |
+| **The July 19 run** | Did the loop run a declared experiment to its planned end? | Yes, with the guards on | ✅ | Below; the result in the [execution plan](../../memory_system/v7/execution_plan/report.md) |
 | **Credit validators** | Does a decision's grade carry signal above luck, and which shortcuts fail? | Signal for some channels; override-based decay and a survival window ruled out | 🟡 | Below |
 | **Held-out reproduction** | Does a lesson's score on half the games predict the other half? | r = +0.54 over 31 lessons; 8 of 9 flagged losers stayed negative | 🟡 | [credit](../../credit/report.md) §5 |
 | **Attribution spot-check** | Do "followed" claims match what the agent did? | 13 of 15 | 🟡 | [credit](../../credit/report.md) §5 |
@@ -107,7 +107,7 @@ graded by these rules, and no control for how hard the board was. Runner
 **What they can and cannot claim.** In the June epoch the grade carried signal for some channels and lesson
 scores repeated, which justified pruning on credit and ruled out two shortcuts. They do not show that pruning
 improves play, and the blind-spot case below shows a repeatable score can still miss a harm. The separability
-correlations are recorded without their decision counts. Record: [v7_final/experiment_log.md](../../v7_final/experiment_log.md)
+correlations are recorded without their decision counts. Record: [v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md)
 §1–2, §6 (its `review_map.md` mislabels the override check as "tagger verdict validity").
 
 ## Blind-spot fix check
@@ -160,7 +160,7 @@ read scale is coarse. It also cannot tell persuading the room from reading it ju
 
 **Trust: ⚠️.** The synthesis verdict is the author's unblinded read of two cells, with no rubric; the prune
 study's outcome is a count. Neither shows a store that plays better. Records:
-`../../v7_final/runs/synth_deluck_ab/` and `synth_deluck_ab_flite/`; [v7_final/experiment_log.md](../../v7_final/experiment_log.md) §3–4.
+`../../memory_system/v7/runs/synth_deluck_ab/` and `synth_deluck_ab_flite/`; [v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md) §3–4.
 
 ## Bottom line
 
@@ -177,8 +177,8 @@ the ten-seat credit that runs today has its own checks.
 | Loop code and module map | `evaluation/src/loop/` (`driver`, `measure`, `credit`, `credit_backfill`, `conversion_credit`, `invariants`, `consolidate`, `first_link`); `evaluation/src/loop/README.md` |
 | Tests named above | `tests/evaluation/test_loop_measure.py`, `test_loop_invariants.py`, `test_credit_blend.py`, `test_credit_blindspot_fix.py`, `test_read_ledger_first_link.py` (largely AI-written and unaudited; cited for what they pin) |
 | Credit validators | `evaluation/src/instrument_validation/credit/` |
-| June runs | [v7_final](../../v7_final/) (`experiment_log.md` §1–6, §11–12; `runs/`); v2's cost in `runs/v2_full/cost_report.json` |
-| Pre-registration, the July run, the result | [execution plan](../../execution_plan/report.md) §4–5; [its data](../../execution_plan/data/README.md) `v7_compound_town5/`, `v7_endpoint_ab/` |
+| June runs | [v7_final](../../memory_system/v7/) (`experiment_log.md` §1–6, §11–12; `runs/`); v2's cost in `runs/v2_full/cost_report.json` |
+| Pre-registration, the July run, the result | [execution plan](../../memory_system/v7/execution_plan/report.md) §4–5; [its data](../../memory_system/v7/execution_plan/data/README.md) `v7_compound_town5/`, `v7_endpoint_ab/` |
 | Blind-spot fix | `evaluation/experiments/credit_blindspot_validation.py`; [credit/blindspot_fix/](../../credit/blindspot_fix/) |
 | Tells | `evaluation/src/loop/{tells,tell_credit,tell_fold}.py`; [tell_extraction](../../extraction/tell_extraction/report.md); [store_curation/tells.md](../../store_curation/tells.md) |
 | Ten-seat credit | `Agents/memory/consolidation/`; [credit](../../credit/report.md) |

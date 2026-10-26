@@ -133,4 +133,4 @@ Values verified in: `evaluation/src/loop/config.py` (knob comments = the rationa
 Tests cited: [`strategy_points.md`](strategy_points.md) §6 (held-out) · tell-extraction log §10/§13
 ([`../extraction/tell_extraction/experiment_log.md`](../extraction/tell_extraction/experiment_log.md)) ·
 `evidence/retrieval/capacity_limits` · the MDE table
-([`../execution_plan/report.md`](../execution_plan/report.md)).
+([`../memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md)).

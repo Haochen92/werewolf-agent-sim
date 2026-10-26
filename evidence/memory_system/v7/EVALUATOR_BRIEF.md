@@ -27,8 +27,8 @@
   alternatives to consider.
 
 **Read economically.** The three load-bearing primary files, if you read nothing else:
-- `evidence/v7_final/report.md` — the canonical v7 report (claims + post-mortem).
-- `evidence/v7_final/experiment_log.md` — the journey, incl. the invalidation corrections (§11j, §12f).
+- `evidence/memory_system/v7/report.md` — the canonical v7 report (claims + post-mortem).
+- `evidence/memory_system/v7/experiment_log.md` — the journey, incl. the invalidation corrections (§11j, §12f).
 - `evidence/evaluation/source_map.md` — the apparatus reliability **ledger of record** (code-verified 2026-06-28).
 
 ---
@@ -187,16 +187,16 @@ trustworthy numbers are the deterministic and outcome-anchored ones.**
 ## §5 — Evidence & code pointer map (drill down only as needed)
 
 ### Evidence (read order; validity tagged)
-1. `evidence/v7_final/report.md` — canonical v7 report. §5c = invalid-run post-mortem; §8 = still-open;
+1. `evidence/memory_system/v7/report.md` — canonical v7 report. §5c = invalid-run post-mortem; §8 = still-open;
    §9 = artifacts table. **[valid narrative + retractions]**
-2. `evidence/v7_final/experiment_log.md` — the journey. §11j (run-1/2 invalid); §12f (v2 `all_enabled`
+2. `evidence/memory_system/v7/experiment_log.md` — the journey. §11j (run-1/2 invalid); §12f (v2 `all_enabled`
    confound + halo retraction); §12g (tagger validity). **[authoritative record]**
 3. `evidence/memory_system/effectiveness/paired_ab/report.md` — Claim-1 standing positive (N=30).
    **[valid; a *different* experiment — measures having memory, not compounding]**
 4. `evidence/evaluation/source_map.md` — apparatus ledger of record. **[trust ledger]**
-5. Design docs: `evidence/v7_final/{plan.md, consolidation_design.md, discussion_credit_design.md,
+5. Design docs: `evidence/memory_system/v7/{plan.md, consolidation_design.md, discussion_credit_design.md,
    production_design.md}`, `evidence/extraction/situation_dimensions/dimension_schema_build_spec.md`. **[design current-state]**
-6. Raw invalid-run data: `evidence/v7_final/{town_only_run1, town_only_run2, v2_full}/`
+6. Raw invalid-run data: `evidence/memory_system/v7/{town_only_run1, town_only_run2, v2_full}/`
    (`v2_full/v2_salvage.py` = the repositioned all-memory-on A/B). **[invalid / confounded]**
 7. Executed validation harnesses (what actually *ran* vs what is specced):
    `heldout_credit_reproduction.py`, `synth_deluck_ab.py`, `windowed_credit.py`, the `g2_*`/`g3*` gates,
@@ -206,7 +206,7 @@ trustworthy numbers are the deterministic and outcome-anchored ones.**
 - **Dimensions:** `Agents/schemas/memory.py` (schema), `Agents/memory/extraction/cell_units.py`
   (cell fan-out), `Agents/memory/dedup_gate.py` (gates), `Agents/memory/retrieval/dimension_gating.py`.
 - **Proxies / credit:** `evaluation/src/loop/{decision_scoring.py, credit_backfill.py, credit.py,
-  discussion_tagger.py, measure.py}`; `evidence/v7_final/credit_backfill_ledger.json` (materialized).
+  discussion_tagger.py, measure.py}`; `evidence/memory_system/v7/credit_backfill_ledger.json` (materialized).
 - **Compounding loop:** `evaluation/src/loop/{driver.py, consolidate.py, config.py, merge.py,
   invariants.py}`; `Agents/memory/strategy_synthesis.py` (LLM synthesis).
 

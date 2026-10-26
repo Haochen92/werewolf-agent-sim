@@ -101,8 +101,8 @@ the record is, and how it would be shown:
   arm was +17pp at p=0.267 (not significant); the reranked arm was +33pp at p=0.013. The robust anchor
   became the raw arm's proxy basket (healer saves +0.23 p=0.005, correct eliminations +0.17 p=0.028,
   mislynch rate −0.17 p=0.036).
-- **Record:** `evidence/v7_final/report.md`, `evidence/v7_final/evaluator_review.md` (finding F7),
-  `evidence/memory_system/store_progression.md`.
+- **Record:** `evidence/memory_system/v7/report.md`, `evidence/memory_system/v7/evaluator_review.md` (finding F7),
+  `evidence/memory_system/report.md`.
 - **Show:** content. Worth leading with: it shows the checking, not just the result.
 
 ### 8. A pre-registered negative result, and a scope condition found afterwards
@@ -112,7 +112,7 @@ the record is, and how it would be shown:
   +0.20 at 200 games), run, and closed negative. Later it emerged that every memory game ran with zero
   reasoning tokens; arms were matched, so the comparison stands, but every memory verdict is scoped to
   "a non-reasoning player", and the record says so.
-- **Record:** `evidence/execution_plan/report.md`, `evidence/v7_final/report.md`
+- **Record:** `evidence/memory_system/v7/execution_plan/report.md`, `evidence/memory_system/v7/report.md`
   (addendum), `evidence/game_play_enhancement/discussion_evidence.md` §6.7.
 - **Show:** content.
 

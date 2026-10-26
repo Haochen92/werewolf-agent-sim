@@ -246,7 +246,7 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   the pipeline is built, earlier versions were tested (gains and failures), and the current
   version (v8) has not been tested at scale, so whether it improves play is open. Its "Read the
   case study" plate goes to `SITE.caseStudy`, for now the memory research's history in the repo
-  (`evidence/memory_system/store_progression.md` on `main`).
+  (`evidence/memory_system/report.md` on `main`).
 
 ## The other pages' walls
 

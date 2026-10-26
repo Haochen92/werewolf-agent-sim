@@ -489,7 +489,7 @@ No credit numbers, no effectiveness claims, no tell book.
 - the reasoning behind D1 and D2.
 
 Stale front doors to stamp or update: the root `README.md` ("Static memory helps") and
-`evidence/v7_final/report.md` ("compounding question OPEN").
+`evidence/memory_system/v7/report.md` ("compounding question OPEN").
 
 ## 9. Final plan (2026-10-11, end of the second discussion)
 

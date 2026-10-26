@@ -3,7 +3,7 @@
   "output": "evaluation/eval_results/hallucination_bench/candidates_v1.jsonl",
   "overwrite": false,
   "census": {
-    "runs_glob": "evidence/v7_final/runs/v2_full/gen*_o*.jsonl",
+    "runs_glob": "evidence/memory_system/v7/runs/v2_full/gen*_o*.jsonl",
     "sidecars": "batch_results/v2_full/eval_cases",
     "stage1": "evidence/generation_prompt/validation/hallucination_verdicts.jsonl",
     "stage2": "evidence/generation_prompt/validation/hallucination_verdicts_stage2.jsonl",

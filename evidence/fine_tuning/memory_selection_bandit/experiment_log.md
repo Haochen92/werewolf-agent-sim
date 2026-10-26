@@ -1,7 +1,7 @@
 # RL × Memory System — selection-scorer ("contextual bandit") exploration
 
 **Status: PARKED — paper design only (2026-06-12), post-ship / learning-project tier.** Nothing here
-is on the critical path (Phase B → freeze gate → frontend, per `evidence/execution_plan/experiment_log.md`).
+is on the critical path (Phase B → freeze gate → frontend, per `evidence/memory_system/v7/execution_plan/experiment_log.md`).
 Logged so the design survives until/if we come back to it.
 
 ## Thesis fit (why this hybrid and not "add RL")
@@ -53,7 +53,7 @@ v1: attribute each decision to the memory actually applied → score with de-luc
 proxies → accumulate a per-memory usefulness rate. **This IS a bandit — the tabular kind**
 (memory = arm, empirical mean reward). And **Phase B already half-builds it**: the batch-merge
 metadata aggregation ("appears in N games, role won M",
-`evidence/execution_plan/experiment_log.md` track 2) IS the value
+`evidence/memory_system/v7/execution_plan/experiment_log.md` track 2) IS the value
 table; the missing half is merely *using* it at retrieval time as a ranking feature/filter.
 
 Phase B de-noises every term of the credit-assignment problem:

@@ -38,7 +38,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 | 24 | `memory_system/effectiveness` | `decision_replay/`, the cheap screening layer (2026-06-13 to 07-02) | **MERGE (final check, accepted 2026-10-22)** | Design · A screen that freezes one recorded decision, swaps only the memory block, regenerates the action and scores it by code, at about $1 a question, built to rule out cheap fixes before paying for whole games; Case study · Pooling hid where memory helps: pooled from day 3 it did nothing (−0.006), but split by day it helped on day 2 (+0.078) and in the endgame (+0.117) — *The $1 frozen-decision replay is rung 1 of card 26's instruments ladder line; its method is already 53 and 70. "Pooling hid the day-2 effect" becomes a clause beside 82's stratification. The retired proxy becomes a clause in 79.* |
 | 25 | `memory_system/effectiveness` | `v6_sp_ab/`, the v6 store A/B and the lessons channel (2026-06-15 to 06-17) | **MERGE (final check, accepted 2026-10-22)** | Verification · A lesson's 'follow' verdict really changes the action: seats following an 'abstain' lesson abstained 77% of the time, against 32% at baseline; Problem · Lessons were followed faithfully but play did not improve (63–66% right against 69% at baseline), because they copied the town's own weak play — *Follow changes the action (77% vs 32%) becomes a clause in 60, a behavioural check of the same "followed" claim. "Followed but no better, because it copied weak play" becomes a clause in 56 and a spine beat.* |
 | 26 | `memory_system/effectiveness` | `day_replay/` | **MERGE → instruments topic, one Gaps line** | Gaps · The middle rung of the evaluation ladder (one day replayed live from a frozen start) is designed but not built; it is the tool for judging discussion changes by their effect on votes, since a per-turn replay keeps the old talk in its transcript. Frame with the three-rung table (per turn / per day / whole game) — *Unbuilt, so no block of its own, but it names a real gap: changes to how seats talk spread within a day, which the per-turn screen cannot see and whole games see only through deal noise (owner 2026-10-22).* |
-| 27 | `memory_system/store_progression.md` | Eight store versions told as one story | **KEEP (as the spine, not as a source of numbers)** | Organisation · the spine of the memory section: each iteration told as problem → what we tried → how we found out → what it revealed — *It is the only telling of how the memory evolved and how each problem was found, and the landing page's "Read the case study" links to it today; cite every number from the primary folders, and its stale lines (the fused "+17→+33pp" headline, compounding "open", no July result) carry a dated correction note until the write-up replaces it (owner 2026-10-22).* |
+| 27 | `memory_system/report.md` | Eight store versions told as one story | **KEEP (as the spine, not as a source of numbers)** | Organisation · the spine of the memory section: each iteration told as problem → what we tried → how we found out → what it revealed — *It is the only telling of how the memory evolved and how each problem was found, and the landing page's "Read the case study" links to it today; cite every number from the primary folders, and its stale lines (the fused "+17→+33pp" headline, compounding "open", no July result) carry a dated correction note until the write-up replaces it (owner 2026-10-22).* |
 | 28 | `memory_system/strategy_adoption` | Phase 1, the adoption report (May 2026, pre-rebuild game) | **MERGE (final check, accepted 2026-10-22)** | Design · Each shown lesson gets a numbered verdict (follow, override or not relevant) before the action; moving that field first raised judged report accuracy from 4.00 to 4.80 and action quality from 3.97 to 4.67; Gaps · The judge these numbers rest on was never checked against human labels; a protocol to choose judge rigour by use was written but never run — *The verdict field placed first is an instance in 32; numbered ids are 20's point. The judge-rigour plan was never run, so it is one gap line in the judge block.* |
 | 29 | `memory_system/strategy_adoption` | `forced_schema_screen/` (June 16, 2026, nine-seat) | **KEEP, 1 block (final check, accepted 2026-10-22)** | Case study · Moving one sentence from the schema's field description into the prompt body raised per-memory verdict coverage from 27% to 97%; Verification · The skipped rows were not random: they were mostly memories that did not apply, so under full coverage 'applies' fell from 0.80 to about 0.55 — *[page: prompt engineering topic] New point: where an instruction sits. In the schema's field description it was followed 27% of the time; in the prompt body, 97% (counted by code, live, cited in code). The skipped rows not being random becomes a clause: it is the same missing-data bias family as 93.* |
 | 30 | `memory_system/v8` | A. Lessons that state rules the game does not have, and the embedder swap (11–13 October 2026) | **KEEP, 1 block (final check, accepted 2026-10-22)** | Case study · Screening synthesized lessons against the rules text found wrong mechanics: 9% wrong on Flash-Lite, 20% on the stronger Sonnet, 11% after a prompt rule, and 6% on the 40-game store; flagged lessons are left out of the served store; Design · When the embedder changed, each similarity threshold was re-derived on labelled pairs for the new model, and the store refuses vectors from another model — *[page; candidate for a hallucination topic] New point: synthesized lessons screened against the rules text. The stronger model wrote more wrong rules (20% vs 9%); flagged lessons are left out of the served store. The embedder swap becomes a clause in 27, where it is already listed as an instance to file (map lines 148–150).* |
@@ -74,7 +74,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 | 60 | `evaluation/hardening_pass` | Review and repair of the eval tools | **SKIP** | None (its one Verification block would repeat 88–89). — *Its one key finding is already block 88. The hygiene fixes are real, but none shaped today's design except the canary, which `model_drift/` carries.* |
 | 61 | `evaluation/labeling` | Model panels that agree can still be wrong | **KEEP (one block)** | Case study · Three models agreed on "discard" and were wrong 21.4% of the time (80 of 373); unanimity is not safety. — *It is a labelling skill no filed block shows and is easy to defend in an interview. The labelling sections of the two `fine_tuning/` folders can then close into it.* |
 | 62 | `evaluation/llm_judge` | — | **KEEP (one block)** | Design · Judges as smoke alarms: tie a score to a real outcome, else to human labels, else compute it; four ways judges failed (a pinned score, saturation when the judge sees the answer, generating and judging in one pass, an outcome halo); close calls went to anchored tools instead — *The judges are not in the served game and are uncalibrated, but no filed block carries judge anchoring, so it gets one block marked as such.* |
-| 63 | `evaluation/loop` | The v7 loop's measurement tools | **SKIP** | Case study · a config slip ran a treatment as the control; the guard now turns that slip into a crash at generation 1 (file it at `v7_final/`). — *Every live piece is covered elsewhere, and its one good story, the arm guard, belongs to `v7_final/`.* |
+| 63 | `evaluation/loop` | The v7 loop's measurement tools | **SKIP** | Case study · a config slip ran a treatment as the control; the guard now turns that slip into a crash at generation 1 (file it at `memory_system/v7/`). — *Every live piece is covered elsewhere, and its one good story, the arm guard, belongs to `memory_system/v7/`.* |
 | 64 | `evaluation/methodology` | Keeping a 30-game A/B honest | **MERGE INTO `model_drift/`** | Case study · Byte-identical prompts, no code change, and the baseline moved (villagers 67% → 10%, p = 0.0028), so every comparison runs both arms in the same window.; Verification · The design's own check refuted pairing as the source of fairness: the deal explained almost nothing. — *The drift case is key to how every later A/B was run, but its numbers and the fuller story live in `model_drift/`, so it should be filed from there.* |
 | 65 | `evaluation/metrics` | Which game proxies actually track winning | **MERGE INTO `metrics/`** | Verification · Proxies were checked against winning before use; only the town basket passed.; Case study · A wolf proxy hid behind a condition: null pooled, +0.31 once only games wolves could win were counted.; Gaps · No proxy has been validated on the ten-seat game. — *The finding is key (credit and every A/B rest on it), but this file only points at `metrics/`, which is where the walk should happen.* |
 | 66 | `evaluation/evaluation_scopes/turn` | Frozen-turn memory screen and an unbuilt day replay | **SKIP** | Verification · a $1 frozen-turn screen eliminated every cheap memory-use idea before any $20 game run (file it at `memory_system/effectiveness/` if that walk keeps it). — *Blocks 53 and 70 already cover the method, and what the cheap-idea screening taught belongs to the `memory_system/effectiveness/` walk.* |
@@ -598,7 +598,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 
 **Call: MERGE → instruments topic, one Gaps line** (owner 2026-10-22). Unbuilt, but it names a real gap: a per-turn replay keeps the old talk in its transcript, so it cannot judge a change to how seats talk by how the room then votes; a day replayed live from a frozen start can, with both arms sharing the history up to that day. The memory on/off purpose it was written for is gone (town day turns make no lookup; memory research closed), and the July state contract would need redoing for the ten-seat day (rounds, claim ledger, deduction engine). Not to build now.
 
-### 27. `memory_system/store_progression.md` — Eight store versions told as one story
+### 27. `memory_system/report.md` — Eight store versions told as one story
 
 **What it is.** A June 2026 narrative across about eight store versions, from one big strategy document up to v7, with an October 2026 addendum on the ten-seat v8. It produces no data; every number is quoted from other folders.
 
@@ -611,7 +611,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 
 **How sure.** A secondary source, stale in places. Its v7 table and summary still call compounding "open"; they were written before the July pre-registered test closed negative (−0.147, p ≈ .06). Its Phase 0 cites an effectiveness-report section that no longer exists.
 
-**Overlap.** `effectiveness/`, `dedup/`, `extraction/situation_dimensions/`, `v7_final/`, `memory_system/v8/`; blocks 63–67.
+**Overlap.** `effectiveness/`, `dedup/`, `extraction/situation_dimensions/`, `memory_system/v7/`, `memory_system/v8/`; blocks 63–67.
 
 **Skill it would add.** None new.
 
@@ -851,8 +851,8 @@ New, small:
 | `evidence/metrics/` (+ design, metrics_audit) | Per-role scores that grade decisions, tested against which side won | KEEP (narrow) |
 | `evidence/tracing/` | Every decision saved as a re-gradable record: trace plus local file | KEEP (small) |
 | `evidence/tracing/fingerprinting/` | Each run stamped with its code, prompt hash and models | MERGE INTO `tracing/` |
-| `evidence/v7_final/` (1 of 2: the June loop runs) | Two invalid learning-loop runs and the guards they left | KEEP (one case study) |
-| `evidence/v7_final/` (2 of 2: gates, credit design, screens) | Free screens that set how lessons are credited and pruned | MERGE INTO credit blocks 56/59 |
+| `evidence/memory_system/v7/` (1 of 2: the June loop runs) | Two invalid learning-loop runs and the guards they left | KEEP (one case study) |
+| `evidence/memory_system/v7/` (2 of 2: gates, credit design, screens) | Free screens that set how lessons are credited and pruned | MERGE INTO credit blocks 56/59 |
 
 ### 38. `model_selection` — July seat-model choice by cost, latency and reads
 
@@ -1422,13 +1422,13 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **How sure.** The page predates the signed run, which closed negative (−0.147, p≈.06, pre-registered, all games with zero reasoning tokens). Its "cheapest upgrade" is that run.
 
-**Overlap.** Blocks 58–59 and 63–67; `v7_final/` (pending: the config slip and the arm guard); `discussion_tagger/` (closed).
+**Overlap.** Blocks 58–59 and 63–67; `memory_system/v7/` (pending: the config slip and the arm guard); `discussion_tagger/` (closed).
 
 **Skill it would add.** None new. Block 3 carries invariant checks.
 
-**Candidate blocks.** Case study · a config slip ran a treatment as the control; the guard now turns that slip into a crash at generation 1 (file it at `v7_final/`).
+**Candidate blocks.** Case study · a config slip ran a treatment as the control; the guard now turns that slip into a crash at generation 1 (file it at `memory_system/v7/`).
 
-**Call: SKIP.** Every live piece is covered elsewhere, and its one good story, the arm guard, belongs to `v7_final/`.
+**Call: SKIP.** Every live piece is covered elsewhere, and its one good story, the arm guard, belongs to `memory_system/v7/`.
 
 ### 64. `evaluation/methodology` — Keeping a 30-game A/B honest
 
@@ -1513,7 +1513,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **How sure.** The tags are its authors' own reading (one AI code-check pass). Most numbers come from v4 stores, May prompts and a Gemini backend.
 
-**Overlap.** 37, 63–67. Each "caught itself" item belongs to `model_drift/`, `v7_final/`, `metrics/` or `memory_system/strategy_adoption/`.
+**Overlap.** 37, 63–67. Each "caught itself" item belongs to `model_drift/`, `memory_system/v7/`, `metrics/` or `memory_system/strategy_adoption/`.
 
 **Skill it would add.** None new. Its "trust the anchored tools, treat judges as smoke alarms" idea is told better in `llm_judge/`.
 
@@ -1588,7 +1588,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 | 9 | Dedup quality judge: the merge writer invents details; a faster model invents none but drops fields; the same model writes and judges | 3 of 9 merges; 3.5 Flash 0% | OFF (merge path off) | — | MERGE→blocks 19, 22 | `report.md` §4 |
 | 10 | The situation-retrieval golden set has two scoring formulas that disagree, and grew by model labels that no person re-checked | NDCG@10 0.83 (linear) vs 0.732 (exponential); about 20 human cases → 108 cases / 1,919 judgments | RECORD | — | MERGE→blocks 92–93 (caveat) | `agent_decision.md` |
 | 11 | An instruction hidden in a schema field was ignored: the model skipped about a third of its notes, inflating engagement | about 0.70 → 0.55; coverage 0.27 → 0.97; 48 cases | RECORD | — | MERGE→`memory_system/strategy_adoption/` | `report.md` §1; `extraction.md` |
-| 12 | A recall metric that counts parseable text was confounded by wordiness; a manual read found the same kill sequences | Flash-Lite 25% vs Pro 100%; 3 games | RECORD | metric validity | MERGE→`v7_final/` | `extraction.md` |
+| 12 | A recall metric that counts parseable text was confounded by wordiness; a manual read found the same kill sequences | Flash-Lite 25% vs Pro 100%; 3 games | RECORD | metric validity | MERGE→`memory_system/v7/` | `extraction.md` |
 | 13 | Harness rules: one central model, judge ≠ generator, the same judge on both arms, failed parses dropped, backend stamped per run | — | PARTLY LIVE: central model yes; judge ≠ generator broken (judges and seats both Haiku 5.5) | — | MERGE→new block (caveat) | `report.md` §2 |
 | 14 | Day-summary harness silently dropped failed pairs; fixed to report N of 18 | no historical pair dropped | RECORD | — | SKIP | `day_summary.md` |
 | 15 | Reference-point golden set (the Pyramid / FActScore method: atomic points, the judge quotes before crediting, recall and precision apart) planned for the extraction-family judges | — | PLAN (never built) | reference-based evaluation | MERGE→block 78 (one gap line) | `golden_set_method.md` |
@@ -2569,60 +2569,60 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 #### Files
 | File | What it is (≤10 words) | Role |
 |---|---|---|
-| `evidence/v7_final/EVALUATOR_BRIEF.md` | Neutral brief for an outside evaluator agent | F45 |
-| `evidence/v7_final/README.md` | Folder index, probe inventory, home rule | index |
-| `evidence/v7_final/consolidation_design.md` | Credit-to-store design, prune thresholds, souring spec | F23, F24, F25, F28, F29, F31 |
-| `evidence/v7_final/credit_backfill_ledger.json` | Per-lesson lift and follows, 127 lessons | data for F23, F24, F32 |
-| `evidence/v7_final/discussion_credit/README.md` | Subfolder pointer | index |
-| `evidence/v7_final/discussion_credit/discussion_coverage_check.py` | Free day-vote floor and night-exposure counts | F41 |
-| `evidence/v7_final/discussion_credit/discussion_credit_deterministic.py` | Free accusation-correctness credit slice | F41 |
-| `evidence/v7_final/discussion_credit/tagger_accuracy.py` | Tagger tags against ground truth | F43 |
-| `evidence/v7_final/discussion_credit_design.md` | Discussion credit design and amendments | F40 |
-| `evidence/v7_final/evaluator_review.md` | Evaluator verdicts, findings F1–F8, plan | F45, F46, F47, F48, F49, F50, F51, F52 |
-| `evidence/v7_final/experiment_log.md` | Chronological build and run log | F1–F11, F16, F17, F21–F30, F32–F36, F39, F42, F44 |
-| `evidence/v7_final/extraction_coverage_ab_spec.md` | Extraction recall and model A/B spec, pre-gate results | F36, F37, F38 |
-| `evidence/v7_final/extraction_screens/README.md` | Subfolder pointer | index |
-| `evidence/v7_final/extraction_screens/extraction_model_ab_compare.py` | Pro / 3.5-flash / Flash-Lite extraction compare | F37 |
-| `evidence/v7_final/extraction_screens/extraction_quota_screen.py` | Quota-padding and near-repeat screens | F36 |
-| `evidence/v7_final/extraction_screens/recall_capture_metric.py` | Pivotal-turn capture metric | F38 |
-| `evidence/v7_final/gates/README.md` | Subfolder pointer | index |
-| `evidence/v7_final/gates/g3b_target_advocacy.py` | Accusation-steers-vote gate | F18 |
-| `evidence/v7_final/gates/g3c_gating_efficacy.py` | Per-field gating waste reduction | F20 |
-| `evidence/v7_final/gates/g3c_retrieval_applicability.py` | Similarity score against applicability | F19 |
-| `evidence/v7_final/plan.md` | Pre-registered v7 plan, gates, stopping rule | F16, F17, F19, F20, F21, F22, F26, F27, F29, F30 |
-| `evidence/v7_final/production_design.md` | Async batch memory-update plan | F15 |
-| `evidence/v7_final/report.md` | Pre-July v7 write-up and post-mortem | F3, F4, F9, F12, F13, F14 (headline superseded) |
-| `evidence/v7_final/review_map.md` | Map of v7 decisions to code | index |
-| `evidence/v7_final/runs/README.md` | Subfolder pointer | index |
-| `evidence/v7_final/runs/loop_gate/gen*.jsonl` | One-game-per-arm end-to-end gate records | data for F1 |
-| `evidence/v7_final/runs/smoke_2gen/gen*.jsonl` | Two-generation smoke game records | data for F2 |
-| `evidence/v7_final/runs/smoke_parallel/gen*.jsonl` | Parallel-games smoke game records | data for F2 |
-| `evidence/v7_final/runs/town_only_run1/gen*.jsonl` | Run 1 game records, generations 1–3 | data for F1, F3, F7 |
-| `evidence/v7_final/runs/town_only_run2/gen*.jsonl` | Run 2 game records, generations 1–10 | data for F3, F6, F7, F10 |
-| `evidence/v7_final/runs/v2_full/gen*.jsonl` | v2 game records, generations 1–7 | data for F4, F5, F12 |
-| `evidence/v7_final/runs/v2_smoke/gen*.jsonl` | v2 warm smoke game records | data for F11 |
-| `evidence/v7_final/runs/v2_smoke2/gen*.jsonl` | v2 parallel-arms smoke game records | data for F11 |
-| `evidence/v7_final/runs/v2_smoke_cold/gen*.jsonl` | v2 cold-start smoke game records | data for F11 |
-| `evidence/v7_final/runs/*/gen*.gameids.json` | Game ids per paired board | data for F3 |
-| `evidence/v7_final/runs/*/loop_history.json` | Per-generation scores and credit distribution | data for F3, F4, F7, F9 |
-| `evidence/v7_final/runs/*/obs_generations.json` | Observation decay clocks | data for F2 |
-| `evidence/v7_final/runs/*/run.log` | Driver logs (v2 shows all factions enabled) | data for F4, F10 |
-| `evidence/v7_final/runs/*/cost_report.json` | Langfuse cost per generation | data for F11 |
-| `evidence/v7_final/runs/*/run_meta.json` | Run start timestamps | data for F11 |
-| `evidence/v7_final/runs/*/store/*` | Final run stores (lessons, observations, base rates, embeddings) | data for F9 |
-| `evidence/v7_final/runs/*/*/.last_dedup_at` | Dedup timestamps per store | data for F9 |
-| `evidence/v7_final/runs/*/gen*_store/*.json` | Per-generation lesson and observation stores | data for F9 |
-| `evidence/v7_final/runs/*/gen*_snapshot/*` | Generation-start snapshots used to resume | data for F9, F10 |
-| `evidence/v7_final/runs/*/tags/*.json` | Cached tagger output per game | data for F5, F44 |
-| `evidence/v7_final/runs/v2_full/tags_ablation/*.json` | Tagger 2×2 ablation inputs and outputs | data for F44 |
-| `evidence/v7_final/runs/v2_full/tagger_deleak_ablation.py` | Outcome in/out × speakers ablation | F44 |
-| `evidence/v7_final/runs/v2_full/tagger_skill_retest.py` | Blinded, verbosity-controlled tagger partial correlation | F44 |
-| `evidence/v7_final/runs/v2_full/v2_salvage.py` | v2 repositioned as all-memory per-faction A/B | F4, F5, F12 |
-| `evidence/v7_final/runs/synth_deluck_ab/serial_killer_day_vote.md` | Synthesis A/B output, Serial Killer day vote, Pro | F33 |
-| `evidence/v7_final/runs/synth_deluck_ab/serial_killer_night_action.md` | Synthesis A/B output, Serial Killer night, Pro | F33 |
-| `evidence/v7_final/runs/synth_deluck_ab_flite/serial_killer_day_vote.md` | Synthesis A/B output, day vote, Flash-Lite | F35 |
-| `evidence/v7_final/runs/synth_deluck_ab_flite/serial_killer_night_action.md` | Synthesis A/B output, night, Flash-Lite | F35 |
-| `evidence/v7_final/synthesis_checks/README.md` | Subfolder pointer | index |
-| `evidence/v7_final/synthesis_checks/inspect_synth_dims.py` | Stage fields assigned to synthesised lessons | F34 |
-| `evidence/v7_final/synthesis_checks/sp_synthesis_quality_check.py` | Carried-vs-dropped lesson lift check | F32 |
+| `evidence/memory_system/v7/EVALUATOR_BRIEF.md` | Neutral brief for an outside evaluator agent | F45 |
+| `evidence/memory_system/v7/README.md` | Folder index, probe inventory, home rule | index |
+| `evidence/memory_system/v7/consolidation_design.md` | Credit-to-store design, prune thresholds, souring spec | F23, F24, F25, F28, F29, F31 |
+| `evidence/memory_system/v7/credit_backfill_ledger.json` | Per-lesson lift and follows, 127 lessons | data for F23, F24, F32 |
+| `evidence/memory_system/v7/discussion_credit/README.md` | Subfolder pointer | index |
+| `evidence/memory_system/v7/discussion_credit/discussion_coverage_check.py` | Free day-vote floor and night-exposure counts | F41 |
+| `evidence/memory_system/v7/discussion_credit/discussion_credit_deterministic.py` | Free accusation-correctness credit slice | F41 |
+| `evidence/memory_system/v7/discussion_credit/tagger_accuracy.py` | Tagger tags against ground truth | F43 |
+| `evidence/memory_system/v7/discussion_credit_design.md` | Discussion credit design and amendments | F40 |
+| `evidence/memory_system/v7/evaluator_review.md` | Evaluator verdicts, findings F1–F8, plan | F45, F46, F47, F48, F49, F50, F51, F52 |
+| `evidence/memory_system/v7/experiment_log.md` | Chronological build and run log | F1–F11, F16, F17, F21–F30, F32–F36, F39, F42, F44 |
+| `evidence/memory_system/v7/extraction_coverage_ab_spec.md` | Extraction recall and model A/B spec, pre-gate results | F36, F37, F38 |
+| `evidence/memory_system/v7/extraction_screens/README.md` | Subfolder pointer | index |
+| `evidence/memory_system/v7/extraction_screens/extraction_model_ab_compare.py` | Pro / 3.5-flash / Flash-Lite extraction compare | F37 |
+| `evidence/memory_system/v7/extraction_screens/extraction_quota_screen.py` | Quota-padding and near-repeat screens | F36 |
+| `evidence/memory_system/v7/extraction_screens/recall_capture_metric.py` | Pivotal-turn capture metric | F38 |
+| `evidence/memory_system/v7/gates/README.md` | Subfolder pointer | index |
+| `evidence/memory_system/v7/gates/g3b_target_advocacy.py` | Accusation-steers-vote gate | F18 |
+| `evidence/memory_system/v7/gates/g3c_gating_efficacy.py` | Per-field gating waste reduction | F20 |
+| `evidence/memory_system/v7/gates/g3c_retrieval_applicability.py` | Similarity score against applicability | F19 |
+| `evidence/memory_system/v7/plan.md` | Pre-registered v7 plan, gates, stopping rule | F16, F17, F19, F20, F21, F22, F26, F27, F29, F30 |
+| `evidence/memory_system/v7/production_design.md` | Async batch memory-update plan | F15 |
+| `evidence/memory_system/v7/report.md` | Pre-July v7 write-up and post-mortem | F3, F4, F9, F12, F13, F14 (headline superseded) |
+| `evidence/memory_system/v7/review_map.md` | Map of v7 decisions to code | index |
+| `evidence/memory_system/v7/runs/README.md` | Subfolder pointer | index |
+| `evidence/memory_system/v7/runs/loop_gate/gen*.jsonl` | One-game-per-arm end-to-end gate records | data for F1 |
+| `evidence/memory_system/v7/runs/smoke_2gen/gen*.jsonl` | Two-generation smoke game records | data for F2 |
+| `evidence/memory_system/v7/runs/smoke_parallel/gen*.jsonl` | Parallel-games smoke game records | data for F2 |
+| `evidence/memory_system/v7/runs/town_only_run1/gen*.jsonl` | Run 1 game records, generations 1–3 | data for F1, F3, F7 |
+| `evidence/memory_system/v7/runs/town_only_run2/gen*.jsonl` | Run 2 game records, generations 1–10 | data for F3, F6, F7, F10 |
+| `evidence/memory_system/v7/runs/v2_full/gen*.jsonl` | v2 game records, generations 1–7 | data for F4, F5, F12 |
+| `evidence/memory_system/v7/runs/v2_smoke/gen*.jsonl` | v2 warm smoke game records | data for F11 |
+| `evidence/memory_system/v7/runs/v2_smoke2/gen*.jsonl` | v2 parallel-arms smoke game records | data for F11 |
+| `evidence/memory_system/v7/runs/v2_smoke_cold/gen*.jsonl` | v2 cold-start smoke game records | data for F11 |
+| `evidence/memory_system/v7/runs/*/gen*.gameids.json` | Game ids per paired board | data for F3 |
+| `evidence/memory_system/v7/runs/*/loop_history.json` | Per-generation scores and credit distribution | data for F3, F4, F7, F9 |
+| `evidence/memory_system/v7/runs/*/obs_generations.json` | Observation decay clocks | data for F2 |
+| `evidence/memory_system/v7/runs/*/run.log` | Driver logs (v2 shows all factions enabled) | data for F4, F10 |
+| `evidence/memory_system/v7/runs/*/cost_report.json` | Langfuse cost per generation | data for F11 |
+| `evidence/memory_system/v7/runs/*/run_meta.json` | Run start timestamps | data for F11 |
+| `evidence/memory_system/v7/runs/*/store/*` | Final run stores (lessons, observations, base rates, embeddings) | data for F9 |
+| `evidence/memory_system/v7/runs/*/*/.last_dedup_at` | Dedup timestamps per store | data for F9 |
+| `evidence/memory_system/v7/runs/*/gen*_store/*.json` | Per-generation lesson and observation stores | data for F9 |
+| `evidence/memory_system/v7/runs/*/gen*_snapshot/*` | Generation-start snapshots used to resume | data for F9, F10 |
+| `evidence/memory_system/v7/runs/*/tags/*.json` | Cached tagger output per game | data for F5, F44 |
+| `evidence/memory_system/v7/runs/v2_full/tags_ablation/*.json` | Tagger 2×2 ablation inputs and outputs | data for F44 |
+| `evidence/memory_system/v7/runs/v2_full/tagger_deleak_ablation.py` | Outcome in/out × speakers ablation | F44 |
+| `evidence/memory_system/v7/runs/v2_full/tagger_skill_retest.py` | Blinded, verbosity-controlled tagger partial correlation | F44 |
+| `evidence/memory_system/v7/runs/v2_full/v2_salvage.py` | v2 repositioned as all-memory per-faction A/B | F4, F5, F12 |
+| `evidence/memory_system/v7/runs/synth_deluck_ab/serial_killer_day_vote.md` | Synthesis A/B output, Serial Killer day vote, Pro | F33 |
+| `evidence/memory_system/v7/runs/synth_deluck_ab/serial_killer_night_action.md` | Synthesis A/B output, Serial Killer night, Pro | F33 |
+| `evidence/memory_system/v7/runs/synth_deluck_ab_flite/serial_killer_day_vote.md` | Synthesis A/B output, day vote, Flash-Lite | F35 |
+| `evidence/memory_system/v7/runs/synth_deluck_ab_flite/serial_killer_night_action.md` | Synthesis A/B output, night, Flash-Lite | F35 |
+| `evidence/memory_system/v7/synthesis_checks/README.md` | Subfolder pointer | index |
+| `evidence/memory_system/v7/synthesis_checks/inspect_synth_dims.py` | Stage fields assigned to synthesised lessons | F34 |
+| `evidence/memory_system/v7/synthesis_checks/sp_synthesis_quality_check.py` | Carried-vs-dropped lesson lift check | F32 |
 

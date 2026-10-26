@@ -41,8 +41,8 @@ class ConfigTests(unittest.TestCase):
     def test_mode_default_glob_filled(self) -> None:
         self.assertEqual(_cfg("accuracy").batch_glob,
                          "batch_results/v6ab_baseline.jsonl batch_results/v6ab_skboth.jsonl")
-        self.assertEqual(_cfg("skill").batch_glob, "evidence/v7_final/runs/v2_full/gen*_on.jsonl")
-        self.assertEqual(_cfg("deleak").batch_glob, "evidence/v7_final/runs/v2_full/gen*_on.jsonl")
+        self.assertEqual(_cfg("skill").batch_glob, "evidence/memory_system/v7/runs/v2_full/gen*_on.jsonl")
+        self.assertEqual(_cfg("deleak").batch_glob, "evidence/memory_system/v7/runs/v2_full/gen*_on.jsonl")
 
     def test_explicit_glob_preserved(self) -> None:
         self.assertEqual(_cfg("skill", batch_glob="foo/*.jsonl").batch_glob, "foo/*.jsonl")

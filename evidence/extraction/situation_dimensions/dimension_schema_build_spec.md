@@ -282,5 +282,5 @@ retrieval key + embedding match + reward. Full design + the deceiver-first exper
 
 ## 11. Pointers
 - Narrative + walkthrough: `evidence/memory_system/effectiveness/decision_replay/experiment_log.md`.
-- Phase B plan: `evidence/execution_plan/experiment_log.md`. Roadmap: `project-ship-roadmap`.
+- Phase B plan: `evidence/memory_system/v7/execution_plan/experiment_log.md`. Roadmap: `project-ship-roadmap`.
 - Screening-layer report: `evidence/memory_system/effectiveness/decision_replay/report_screening_layer.md`.

@@ -600,8 +600,8 @@ The anchor did not raise flash-lite's capture: 3 of 12 with it, and 3 of 12 with
 - It encodes the nine-seat factions.
 
 **Code and record.** `evaluation/src/audits/recall_flags.py`. Record:
-[`v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md) (the recall-arm
-pre-gate); [`v7_final/experiment_log.md`](../../v7_final/experiment_log.md).
+[`memory_system/v7/extraction_coverage_ab_spec.md`](../../memory_system/v7/extraction_coverage_ab_spec.md) (the recall-arm
+pre-gate); [`memory_system/v7/experiment_log.md`](../../memory_system/v7/experiment_log.md).
 
 ---
 
@@ -901,7 +901,7 @@ the top open item in `agent_boundaries/report.md` §5. No plan for it was found.
 | Prompt-size count | `evaluation/experiments/deduction_block_census.py` | `deduction_catalogue.md` slice 8; `data/deduction_block_census/` |
 | Speaking-order audit | `evaluation/src/audits/scheduler_access_audit.py`; `tests/evaluation/test_scheduler_access_audit.py` | `evidence/metrics/metrics_audit/scheduler_bias_log.md` §3 A–C; `metrics_audit/data/` |
 | Failed-attack audit | `evaluation/src/audits/whiff_conversion_audit.py`; `tests/evaluation/test_whiff_conversion_audit.py` | `scheduler_bias_log.md` ③.E; `metrics_audit/data/whiff_conversion.json` |
-| Pivotal-turn flags | `evaluation/src/audits/recall_flags.py` | `evidence/v7_final/extraction_coverage_ab_spec.md`; `v7_final/experiment_log.md` |
+| Pivotal-turn flags | `evaluation/src/audits/recall_flags.py` | `evidence/memory_system/v7/extraction_coverage_ab_spec.md`; `memory_system/v7/experiment_log.md` |
 | Embedding check | `evaluation/src/audits/embedding_canary.py`, `embedding_canary_pins.json`; `scripts/run_batch.py` | `../hardening_pass/experiment_log.md` §4.9 |
 | Memory search filters, recomputed (§5a–b) | `evaluation/src/instrument_validation/dimensions/dimension_audit.py`; `Agents/memory/retrieval/situation_agent.py` (`_computed_dims`, `_override_deterministic_dims`); truth in `Agents/memory/consolidation/decision_scoring.py`, `Agents/rules/board_clocks.py` | `extraction/situation_dimensions/dimension_accuracy_audit/experiment_log.md` §4–6 |
 | Stored uses-left check (§5c) | no standalone runner found | `memory_system/v8/experiment_log.md`, entries of 2026-10-12 |

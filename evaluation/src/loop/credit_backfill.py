@@ -52,7 +52,7 @@ from evaluation.src.loop.decision_scoring import (  # noqa: E402
 
 DEFAULT_DUMPS = "batch_results/*v6ab*.jsonl"
 DEFAULT_STORE = "memory_stores/v6_1"
-DEFAULT_LEDGER = "evidence/v7_final/credit_backfill_ledger.json"
+DEFAULT_LEDGER = "evidence/memory_system/v7/credit_backfill_ledger.json"
 
 
 def _expand_dumps(dumps_glob: str) -> list[str]:

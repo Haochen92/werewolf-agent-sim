@@ -5,7 +5,7 @@ design / evidence / apparatus verdicts, ranked gaps, alternatives, and a plan, b
 loop run. **Read-only pass:** no code changed; fixes below are recommendations.
 
 **Evidence base:** EVALUATOR_BRIEF, report.md, plan.md, consolidation_design.md,
-discussion_credit_design.md, `memory_system/store_progression.md` read in full;
+discussion_credit_design.md, `memory_system/report.md` read in full;
 `experiment_log.md` (§11j/§12) and `memory_system/effectiveness/paired_ab/` verified against the
 record; `evaluation/src/loop/` code verified against the design docs (file:line cites below).
 
@@ -133,8 +133,8 @@ per pair); skipped-row counters in every credit function.
 
 ### F7 (medium, $0) — claim hygiene before portfolio use
 
-- Fix the **"+17pp, p=0.013" fusion** in `v7_final/report.md` (§5a + the one-line claim set) and
-  `memory_system/store_progression.md` (§8 + summary table + provenance note). The paired-A/B
+- Fix the **"+17pp, p=0.013" fusion** in `memory_system/v7/report.md` (§5a + the one-line claim set) and
+  `memory_system/report.md` (§8 + summary table + provenance note). The paired-A/B
   record says: raw town +17pp **p=0.267**; reranked +33pp **p=0.013**; rerank-vs-raw Wilcoxon
   **null**; ~7/24 proxy tests p<0.05, none Bonferroni-surviving — the load-bearing evidence is
   cross-arm town consistency + the proxy basket, and the honest headline is "+17–33pp across arms,
@@ -163,7 +163,7 @@ per pair); skipped-row counters in every credit function.
 
 ### Phase 0 — zero-spend, before anything else
 
-1. **Claim-hygiene edits (F7):** correct the p-value fusion in `v7_final/report.md` +
+1. **Claim-hygiene edits (F7):** correct the p-value fusion in `memory_system/v7/report.md` +
    `store_progression.md`; one line reconciling §11g/§12b pairing claims.
 2. **Stratified-baseline sensitivity study (F5):** offline recompute of lift / held-out
    reproduction / b1 drop set with dim-stratified base rates on the existing v6ab + v2 ledgers.

@@ -40,7 +40,7 @@ from pathlib import Path
 from evaluation.src.core.settings import REPO_ROOT
 from evaluation.src.data.sources.batch_records import load_batch_records
 
-DEFAULT_RECORDS_GLOB = "evidence/v7_final/runs/v2_full/gen*_o*.jsonl"
+DEFAULT_RECORDS_GLOB = "evidence/memory_system/v7/runs/v2_full/gen*_o*.jsonl"
 DEFAULT_OUT = "evidence/generation_prompt/validation/hallucination_candidates.jsonl"
 
 # alias regex -> canonical role

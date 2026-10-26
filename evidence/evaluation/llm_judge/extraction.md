@@ -13,7 +13,7 @@
 > v7 credit-aware synthesis) stays in [`../../extraction/post_game/`](../../extraction/post_game/) (destination
 > → `report.md`, journey → `experiment_log.md`),
 > [`../../extraction/situation_dimensions/`](../../extraction/situation_dimensions/),
-> [`../../v7_final/`](../../v7_final/). Lens + skeleton:
+> [`../../memory_system/v7/`](../../memory_system/v7/). Lens + skeleton:
 > [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
 > **Verdict: 🟡 PARTIAL — DE-BUGGED, not calibrated** *(downgraded from ✅ VALIDATED — see corrections).*
@@ -109,7 +109,7 @@ the strength is real.**
   now at a deterministic metric). The A/B's own verdict — **the binding lever is synthesis, not extraction or
   its model** — is exactly why the unjudged-synthesis gap below is the headline. Generated obs colocated at
   `../../extraction/post_game/model_comparison/v7_refresh/`; spec + tables
-  `../../v7_final/extraction_coverage_ab_spec.md`.
+  `../../memory_system/v7/extraction_coverage_ab_spec.md`.
 
 ## Verdict + cheapest upgrade
 
@@ -134,7 +134,7 @@ exists; it's simply never aimed at synthesis (which is currently outcome-only).
   `../../v7_final/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.
 - **L2 artifacts (no golden — the gap; results pointed-at):** `../../extraction/post_game/eval_results/*.jsonl`
   (Runs 1-3), `../../extraction/post_game/model_comparison/` (May study) + `.../model_comparison/v7_refresh/`
-  (v7 model-A/B generated obs on v6_1) + `../../v7_final/extraction_coverage_ab_spec.md` (v7 spec/tables), the
+  (v7 model-A/B generated obs on v6_1) + `../../memory_system/v7/extraction_coverage_ab_spec.md` (v7 spec/tables), the
   player-ID verification txts;
   `../../extraction/observation_quality/experiment_log.md` (net_verdict halo);
   `../../extraction/situation_dimensions/criticality_screen/experiment_log.md` and

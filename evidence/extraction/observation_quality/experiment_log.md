@@ -9,7 +9,7 @@
 > [`report.md`](report.md), which also defines the terms used here (observation, verdict,
 > cell, de-halo, grade). This log condenses the folder's earlier `experiment_log.md` (2026-06-17) and
 > the halo thread of [`outcome_halo_case_study.md`](outcome_halo_case_study.md) (2026-07-26),
-> [`v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md)
+> [`memory_system/v7/extraction_coverage_ab_spec.md`](../../memory_system/v7/extraction_coverage_ab_spec.md)
 > (2026-06-19), and the v8 [log](../../memory_system/v8/experiment_log.md) and
 > [decisions](../../memory_system/v8/decisions.md) §13 (October 2026). The earlier log is in git history at `2382b34c`.
 
@@ -52,7 +52,7 @@ labels other studies depended on, so a change had to be a deliberate, versioned 
 **2026-06-19 · the selection test.** *Catches:* the risk that a cheaper extraction model misses the
 decisive turns, and that the list would fix it. Three games, 12 flagged turns, Gemini 2.5 Pro and
 Gemini Flash-Lite with and without the list, plus a "be exhaustive" variant
-(`v7_final/extraction_coverage_ab_spec.md`).
+(`memory_system/v7/extraction_coverage_ab_spec.md`).
 
 - By the automatic count, Pro covered 12 of 12 flagged turns and Flash-Lite 3 of 12, with the list or
   without it. The exhaustive variant also stayed at 3.
@@ -163,7 +163,7 @@ the same code.
 ---
 
 **Sources.** [`experiment_log.md`](experiment_log.md) and [`netverdict_calibration.py`](netverdict_calibration.py)
-(2026-06-17) · [`v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md)
+(2026-06-17) · [`memory_system/v7/extraction_coverage_ab_spec.md`](../../memory_system/v7/extraction_coverage_ab_spec.md)
 (2026-06-19) · [`outcome_halo_case_study.md`](outcome_halo_case_study.md) and
 `outcome_halo_human_game.json` (2026-07-26) · [v8 log](../../memory_system/v8/experiment_log.md),
 entries of 2026-10-11 to 2026-10-13 · [v8 decisions](../../memory_system/v8/decisions.md) §11, §13 ·

@@ -676,7 +676,7 @@ cost capture** (`loop/cost.py`). Config: 13 gens × 4 games/arm, parallel ON/OFF
 cold-bootstrap (store 0→21, credit-aware synth fires gen-2). All flash-lite, 0 pro-2.5.
 
 **Stopped at gen-6** per the pre-registered stopping rule (**$15** run vs run-1's ~$100; gens 1-6 preserved
-in `evidence/v7_final/v2_full/`).
+in `evidence/memory_system/v7/v2_full/`).
 
 ### 12a. RESULT — no positive compounding; noise-limited weak-negative
 Town on−off de-luck (gen-1 = empty-seed bootstrap, excluded): gens 2-6 = **−0.16, −0.33, +0.17, −0.32,

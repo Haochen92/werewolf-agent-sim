@@ -41,11 +41,11 @@ situation dimension. This package validates the instruments, not the agents.
   - `leverage_anchor_separation.py` — validates the deterministic **leverage anchor** (`is_swing` /
     `distance_to_parity`): does the decision→outcome coupling concentrate at high-leverage boards? This
     is the pivotalness ruler the diagnosis sampler and extraction selection lean on. (Promoted
-    2026-07-04 from `evidence/v7_final/`, which keeps the record.)
+    2026-07-04 from `evidence/memory_system/v7/`, which keeps the record.)
 - **`credit/`** — credit-signal validity (does the loop's per-decision credit carry real signal, not
   the outcome halo?). `heldout_credit_reproduction.py`, `windowed_credit.py`, `g3a_verdict_validity.py`,
   and `g2_separability.py` (the G2 precondition — is a decision's outcome attributable ABOVE luck at
-  all? re-run per epoch, promoted 2026-07-04 from `evidence/v7_final/`). Standing: these re-run after
+  all? re-run per epoch, promoted 2026-07-04 from `evidence/memory_system/v7/`). Standing: these re-run after
   the planned §0.5 credit fixes.
 - **`tagger/`** — discussion-tagger validation. `tagger_validation.py` is the config-driven apparatus
   (modes accuracy | skill | deleak) behind the `eval-tagger` console entry (thin CLI stays in
@@ -57,7 +57,7 @@ situation dimension. This package validates the instruments, not the agents.
 - **`power/`** — the pre-registered power / MDE gate (compounding plan §0.1). `mde_simulation.py` resamples
   the existing per-game de-luck scores (run-1 / v2 / v6ab), injects a known linear-in-generation effect, and
   reports detection rate + MDE across N∈{4,5,10,20}/gen × G∈{6,8,10} gens. $0, deterministic. Its dated
-  readout is summarised in `evidence/execution_plan/report.md` §2 (full table in git history at `24dfd3a7`). Standing gate: no paid compounding
+  readout is summarised in `evidence/memory_system/v7/execution_plan/report.md` §2 (full table in git history at `24dfd3a7`). Standing gate: no paid compounding
   run without a current MDE table.
 
 ## How to invoke

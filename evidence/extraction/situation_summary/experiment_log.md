@@ -216,6 +216,6 @@ player chooses.
 `report.md` (2026-07-02 snapshot) · `model_comparison/` · `outputs/retrieval_golden_labels.json`,
 `outputs/regenerated_situations_*.json`, `prompt_versions/` ·
 `../situation_dimensions/` (the v6 schema, the July number audit) ·
-`../../v7_final/experiment_log.md` (the flat score-tilt screen) ·
+`../../memory_system/v7/experiment_log.md` (the flat score-tilt screen) ·
 `../../memory_system/v8/decisions.md` §10 and `experiment_log.md` (2026-10-12 to 2026-10-14) ·
 code: `Agents/memory/retrieval/` (`situation_agent.py`, `plan_gating.py`, `lookup_cache.py`).

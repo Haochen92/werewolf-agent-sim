@@ -7,9 +7,9 @@ improves **town decision quality**: the pre-registered proxy basket moves signif
 interleaved raw arm, while the win-rate direction is consistent but underpowered at N=30, so it
 corroborates the direction rather than proving the magnitude. **Companion docs:** the store's
 version-by-version arc is
-[`../store_progression.md`](../store_progression.md); the full A/B statistics and design are in
+[`../report.md`](../report.md); the full A/B statistics and design are in
 [`paired_ab/`](paired_ab/report.md); the closed *compounding* question lives in
-[`../../execution_plan/report.md`](../../execution_plan/report.md).
+[`../v7/execution_plan/report.md`](../v7/execution_plan/report.md).
 
 **Provenance.** The A/B arms ran 2026-06-11 on `gemini-3.1-flash-lite` / Vertex, prompt_bundle
 `16f7f700`, store `memory_stores/v5_0` (consumption mode, `--no-memory-dump`). Every win-rate and proxy
@@ -165,7 +165,7 @@ reading better than a fault in the v6 schema.
 (`_compose_outcome`, `Agents/schemas/memory.py:41-49`), and v5 evidence shows that hurts town. But
 town-obs came out flat, not below baseline, so it is a minor contributor, not the cause. Full analysis
 in [`v6_sp_ab/experiment_log.md`](v6_sp_ab/experiment_log.md); store arc in
-[`../store_progression.md`](../store_progression.md).
+[`../report.md`](../report.md).
 
 ## Confounds and rejected readings
 
@@ -201,7 +201,7 @@ with memory (p ≈ 0.06), and, as committed, this was reported as "no compoundin
 estimate leaning toward harm. The owner closed the memory research on 2026-07-21 without a further run.
 Closed is not disproved: the run detected no compounding, at this size and with players that answered
 without a reasoning step. The pre-registration and result are in
-[`../../execution_plan/report.md`](../../execution_plan/report.md) §4–5.
+[`../v7/execution_plan/report.md`](../v7/execution_plan/report.md) §4–5.
 
 ## Artifacts
 

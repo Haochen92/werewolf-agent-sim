@@ -305,7 +305,7 @@ Its former flatmates moved out on 2026-07-02:
   store-evolution verdicts (the screen family, the v6 reextraction chain, the synthesis and
   calibration A/Bs). Promoted to its own top-level `evaluation/src/studies/` package on 2026-07-03 (out
   of the `experiments/`→`cli_runner/` rename — studies sit off the CLI surface, so they don't belong
-  under it). Kept runnable because frozen `evidence/v7_final/` scripts import them and two held
+  under it). Kept runnable because frozen `evidence/memory_system/v7/` scripts import them and two held
   re-screens (dimension-gating, wolf) would run on them. The module → question → verdict → evidence
   table lives in `studies/__init__.py`.
 - **`replay/decision_screen/`** — the reusable decision-replay engine extracted verbatim

@@ -137,7 +137,7 @@ Three things limit how far this reaches. The 60 games share 12 deals, so they ar
 
 ## 6. What is not established
 
-- **No gameplay benefit.** The only full-game test that included tells was the July 30-deal test of the learning memory: its memory-on games carried a 33-entry tell book alongside the town's lessons. In that test the town decided worse with memory than without, by a margin that chance would produce about 6% of the time (see the [execution-plan report](../../execution_plan/report.md) §5). The design was amended before the test so that it no longer separated tells from lessons, so the tells' own effect is unknown.
+- **No gameplay benefit.** The only full-game test that included tells was the July 30-deal test of the learning memory: its memory-on games carried a 33-entry tell book alongside the town's lessons. In that test the town decided worse with memory than without, by a margin that chance would produce about 6% of the time (see the [execution-plan report](../../memory_system/v7/execution_plan/report.md) §5). The design was amended before the test so that it no longer separated tells from lessons, so the tells' own effect is unknown.
 - **No transfer to the ten-seat game** or to today's models and prompts. Nothing has been mined or detected on ten-seat games (§3).
 - **Detector accuracy** rests on 40 model-labelled cases and one human-checked game.
 - **The 34-entry book** was never replay-tested.

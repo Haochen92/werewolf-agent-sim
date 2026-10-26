@@ -233,6 +233,6 @@ mechanism, not a rate. All 12 observations from the game carried a negative verd
 | Test-game judge comparison, seeding revisions, tag check | [v8 log](../../memory_system/v8/experiment_log.md), 2026-10-11 and 2026-10-13 |
 | The rulings | [v8 decisions](../../memory_system/v8/decisions.md) §13 |
 | The §1 example | game `20497d9e`, observation 7 of `batch_results/extraction_runs/flash_seed_gate_2026-10-12/` (`extracted.jsonl`, `dehalo.jsonl`, `grades.jsonl`) |
-| The June selection test | [`v7_final/extraction_coverage_ab_spec.md`](../../v7_final/extraction_coverage_ab_spec.md); anchor option `--anchors-from` in `evaluation/src/studies/reextract_cells.py` (research only) |
+| The June selection test | [`memory_system/v7/extraction_coverage_ab_spec.md`](../../memory_system/v7/extraction_coverage_ab_spec.md); anchor option `--anchors-from` in `evaluation/src/studies/reextract_cells.py` (research only) |
 | The June first sign (932 observations) | [`netverdict_calibration.py`](netverdict_calibration.py) over `memory_stores/v6_1/observations.json` |
 | The case study and its frozen observations | [`outcome_halo_case_study.md`](outcome_halo_case_study.md); `outcome_halo_human_game.json` |

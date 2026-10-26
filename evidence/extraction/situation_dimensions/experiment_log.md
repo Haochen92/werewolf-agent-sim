@@ -173,7 +173,7 @@ were graded against the wolf-only truth.
 
 **2026-07-21 · memory research closed.** After the town-only memory run leaned negative, the owner
 closed the memory research; no memory version was promoted, and the live game runs with memory off
-(`../../execution_plan/`). The
+(`../../memory_system/v7/execution_plan/`). The
 gating re-run authorized on 2026-07-02 was never run.
 
 ### The ten-seat game (October 2026)
@@ -224,9 +224,9 @@ with the stage filter on. They measured the credit pass, not fit or play
 **Sources.** `../situation_summary/experiment_log.md` (2026-05-27 entries) ·
 `../../memory_system/effectiveness/decision_replay/experiment_log.md` (2026-06-13 capability probe;
 2026-06-15 design entries) · `dimension_schema_build_spec.md` · `criticality_screen/experiment_log.md`
-and its JSON outputs · `v6_full_store.md` · `../../v7_final/plan.md` (G3c, gating efficacy, the gating
+and its JSON outputs · `v6_full_store.md` · `../../memory_system/v7/plan.md` (G3c, gating efficacy, the gating
 screen) · `../../evaluation/hardening_pass/experiment_log.md` §2.1 ·
 `dimension_accuracy_audit/experiment_log.md` and `data/dimension_audit_20260702_105203.json` ·
-`experiment_log.md` §9 (2026-07-11) · `../../execution_plan/report.md` §5 ·
+`experiment_log.md` §9 (2026-07-11) · `../../memory_system/v7/execution_plan/report.md` §5 ·
 `../../memory_system/v8/decisions.md` §10–11 · `../../memory_system/v8/experiment_log.md`
 (2026-10-12 gate parts one and two; 2026-10-13 fit read and synthesis split; 2026-10-14 demo run).

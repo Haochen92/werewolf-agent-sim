@@ -44,7 +44,7 @@ most evaluation work has been on the other five.
 
 | Subject | The question | Main instruments | Design verdict lives in |
 |---|---|---|---|
-| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | paired game A/B, decision-replay screen, the LLM-free loop measure and credit validators, memory-component judges, golden labels, field audits | [`memory_system/`](../memory_system/store_progression.md), [`execution_plan/report.md`](../execution_plan/report.md), [`credit/report.md`](../credit/report.md) |
+| **Memory** | do stored lessons improve play; are the model-written fields right; does credit mean anything | paired game A/B, decision-replay screen, the LLM-free loop measure and credit validators, memory-component judges, golden labels, field audits | [`memory_system/`](../memory_system/report.md), [`memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md), [`credit/report.md`](../credit/report.md) |
 | **Play quality** | do prompt, rule and card changes make the agents argue, vote and talk better | frozen-turn replays, blind packet reads, ten-seat metrics, read Brier score, vote-target counts, same-deal game pairs, balance batches | [`game_play_enhancement/discussion_evidence.md`](../game_play_enhancement/discussion_evidence.md), [`sequential_discussion/`](../sequential_discussion/report.md) |
 | **Factual errors** | how often agents state something the game record contradicts, and does a change reduce it | the census (code screen plus model reader), the hallucination bench, pinned-case replays, the summary-claim replay | [`generation_prompt/`](../generation_prompt/validation_plan.md), `discussion_evidence.md` §6 and §8 |
 | **The deduction engine** | is every line it injects true in every legal game; does it help the seat | soundness tests over random legal nights, a brute-force oracle, acceptance cases, solver and block censuses, injection and placement replays | [`reasoning_failures/`](../reasoning_failures/report.md) |
@@ -369,14 +369,14 @@ Everything below is the nine-seat game, played by `gemini-3.1-flash-lite` with z
   rate rose 27% → 43%, which was not significant (p=0.27). The figure "+17pp, p=0.013" is a fusion
   error: p=0.013 belongs to the reranked arm's +33 points, which carries a model-drift caveat. Wolves and
   the serial killer gained nothing. The decision-replay screen converges with the decision measures, not
-  with a win gain. ([`memory_system/store_progression.md`](../memory_system/store_progression.md),
+  with a win gain. ([`memory_system/report.md`](../memory_system/report.md),
   correction of 2026-10-22.)
 - **v6 store (2026-06-17).** The town gain did not repeat (+6 points, p=0.77).
 - **v7 (July).** The test was pre-registered (signed 2026-07-16). The build run finished on 2026-07-19
   with a 168-lesson store, at $25.74. On the endpoint (2026-07-20, 30 boards), the town's decision score
   was 0.147 lower with memory (p≈0.06), and lower on 19 of 30 boards. As committed in advance, this was
   reported as "no compounding detected", leaning toward harm
-  ([`execution_plan/report.md`](../execution_plan/report.md) §5).
+  ([`memory_system/v7/execution_plan/report.md`](../memory_system/v7/execution_plan/report.md) §5).
 - **The cause was traced to credit's abstain blind spot.** Cautious lessons drove the town's abstains,
   and credit graded every town abstain neutral, so the loop could not prune them. One abstain lesson had
   19 follows and a credit of exactly zero. A fix was built on 2026-07-21 and passed 9 of 12 checks on
@@ -489,7 +489,7 @@ embedding canary was built on 2026-07-02, superseding the July line that alias d
 | Block census | `evaluation/experiments/deduction_block_census.py` | `reasoning_failures/data/deduction_block_census/`; catalogue slice 8 | 10 | 🟡 | **new**. 278 turns over 4 games, 2026-10-18; not re-run since slice 17 |
 | Scheduler access audit | `evaluation/src/audits/scheduler_access_audit.py`; `tests/evaluation/test_scheduler_access_audit.py` | `metrics/metrics_audit/scheduler_bias_log.md` §3 A–C | 9 | 🟡 | **new** to this map. Hard-codes nine-seat roles and fields |
 | Whiff conversion audit | `evaluation/src/audits/whiff_conversion_audit.py`; `tests/evaluation/test_whiff_conversion_audit.py` | `scheduler_bias_log.md` ③.E | 9 | 🟡 | **new** to this map. Its premise no longer holds since the failed kill is disclosed |
-| Pivotal-turn flags | `evaluation/src/audits/recall_flags.py` | `v7_final/extraction_coverage_ab_spec.md`; `v7_final/experiment_log.md` | 9 | ⚠️ | **re-rated** (July: diagnosis-funnel step 1, unrated). Never validated as a definition; no tests |
+| Pivotal-turn flags | `evaluation/src/audits/recall_flags.py` | `memory_system/v7/extraction_coverage_ab_spec.md`; `memory_system/v7/experiment_log.md` | 9 | ⚠️ | **re-rated** (July: diagnosis-funnel step 1, unrated). Never validated as a definition; no tests |
 | Embedding canary | `evaluation/src/audits/embedding_canary.py`, `embedding_canary_pins.json`; call site `scripts/run_batch.py` | `evaluation/hardening_pass/experiment_log.md` §4.9 | both | ✅ (batch only) | **new**. Pins re-made 2026-07-16 and 2026-10-12 (`qwen/qwen3-embedding-8b`). The server never runs it. No record of it firing |
 
 Code checks homed elsewhere: the census screen (factual errors), the dedup golden scorers (rung ③), the
@@ -613,10 +613,10 @@ Spoke: [`evaluation_scopes/game/report.md`](evaluation_scopes/game/report.md).
 
 | Instrument | Code | Record | Game | Mark | Since July / notes |
 |---|---|---|---|---|---|
-| June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`; `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evidence/memory_system/effectiveness/regenerate_stats.py`; `evaluation/src/core/stats.py` | `memory_system/effectiveness/paired_ab/{report,experiment_log}.md`; `memory_system/store_progression.md` (correction 2026-10-22); data `batch_results/ab_*.jsonl` (gitignored) | 9 | 🟡 | **re-rated** (July ✅ VALIDATED). The headline is corrected: decisions improved (healer saves p=0.005, correct eliminations p=0.028, Wilcoxon), wins did not significantly (p=0.27). Never pair "+17pp" with p=0.013 |
+| June memory on/off A/B | `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`; `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evidence/memory_system/effectiveness/regenerate_stats.py`; `evaluation/src/core/stats.py` | `memory_system/effectiveness/paired_ab/{report,experiment_log}.md`; `memory_system/report.md` (correction 2026-10-22); data `batch_results/ab_*.jsonl` (gitignored) | 9 | 🟡 | **re-rated** (July ✅ VALIDATED). The headline is corrected: decisions improved (healer saves p=0.005, correct eliminations p=0.028, Wilcoxon), wins did not significantly (p=0.27). Never pair "+17pp" with p=0.013 |
 | Older does-memory-help batches | `run_batch` arms | `memory_system/effectiveness/report.md` | 9 | July ⚠️ | same; not re-examined. Batch A 70 → 97% not replicated in Batch B; the 23-point swing was a store and namespace confound |
 | v6 strategy-point A/B | `evidence/memory_system/effectiveness/v6_sp_ab/launch_arms.sh`; `scripts/run_batch.py` | `memory_system/effectiveness/v6_sp_ab/experiment_log.md` | 9 | 🟡 | **new** row (July verify #10). Town and serial killer only; the wolf was excluded |
-| v7 endpoint A/B | `evaluation/src/loop/measure.py` (`game_score`); the run driver and the paired-statistic script: not found | `execution_plan/report.md` §4–5, `experiment_log.md`; `batch_results/v7_endpoint_ab/` (gitignored: `PREREG_AMENDMENT.md`, `config.json`, `endpoint_result.json` with pooled per-decision scores only) | 9 | 🟡 | **new** |
+| v7 endpoint A/B | `evaluation/src/loop/measure.py` (`game_score`); the run driver and the paired-statistic script: not found | `memory_system/v7/execution_plan/report.md` §4–5, `experiment_log.md`; `batch_results/v7_endpoint_ab/` (gitignored: `PREREG_AMENDMENT.md`, `config.json`, `endpoint_result.json` with pooled per-decision scores only) | 9 | 🟡 | **new** |
 | Persona-voice games | `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py` | `game_play_enhancement/data/persona_voice_games/` | 10 | ⚠️ | **new**. 8 pairs, one-flag difference on one commit |
 | Evil-cover games | `evaluation/experiments/evil_cover_screen.py` (`games`) | `game_play_enhancement/data/evil_cover_games/` | 10 | ⚠️ | **new**. Three changes bundled; dirty trees |
 
@@ -631,7 +631,7 @@ Spoke: [`metrics/report.md`](metrics/report.md).
 | Ten-seat metrics and decision grades | `Agents/ten_seat_metrics.py`; `Agents/memory/consolidation/grading.py`; `scripts/grade_observations.py`; `tests/memory/test_ten_seat_grading.py` | `memory_system/v8/{plan.md §8.1–8.4 and §9.6, decisions.md §8 and §12–13, experiment_log.md}` | 10 | ⚠️ | **new** |
 | Read Brier | `evaluation/src/loop/read_ledger.py` (nine-seat); `evaluation/experiments/persona_voice_games_score.py` (ten-seat) | `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/` | both | 🟡 | **new** |
 | Vote-target accuracy | `Agents/compute_metrics.py:536`; `decision_scoring.py` (`score_vote`, nine-seat threat set); `evaluation/experiments/haiku_vote_score.py` | Part A of the spoke; `discussion_evidence.md` §8.7 | both | ✅ as a count | **new** |
-| Leverage anchor | `evaluation/src/instrument_validation/proxies/leverage_anchor_separation.py` | `v7_final/plan.md`; `v7_final/experiment_log.md` | 9 | 🟡 | **new** |
+| Leverage anchor | `evaluation/src/instrument_validation/proxies/leverage_anchor_separation.py` | `memory_system/v7/plan.md`; `memory_system/v7/experiment_log.md` | 9 | 🟡 | **new** |
 | Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `discussion_evidence.md` §2 | 9 | ✅ counts · 🟡 labels | **new** |
 | Phase 2 step 8 counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `game_play_enhancement/data/phase2_step8_games/` | 9 | ✅ counts · 🟡 reading | **new** |
 | Balance batches | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{games,balance,balance_2,balance_3,balance_4}/`; `discussion_evidence.md` §8.3 | 10 | ✅ counts · 🟡 reading | **new**. 31 games on flash-lite; none on Haiku |
@@ -659,13 +659,13 @@ Spoke: [`loop/report.md`](loop/report.md). All nine-seat.
 
 | Instrument | Code | Record | Mark | Since July / notes |
 |---|---|---|---|---|
-| Measure | `evaluation/src/loop/measure.py`; `tests/evaluation/test_loop_measure.py` | `execution_plan/report.md` | ✅ (LLM-free) | same. `game_score` is the endpoint's primary, pinned to the legacy abstain rule |
+| Measure | `evaluation/src/loop/measure.py`; `tests/evaluation/test_loop_measure.py` | `memory_system/v7/execution_plan/report.md` | ✅ (LLM-free) | same. `game_score` is the endpoint's primary, pinned to the legacy abstain rule |
 | Credit engine | `evaluation/src/loop/{credit_backfill,credit,conversion_credit}.py`; `tests/evaluation/test_credit_blend.py` | `credit/report.md` | spoke: sound, with stated limits | **changed**: `discussion_mode` is gone; tagger credit deleted 2026-07-13; `abstain_credit` (default `neutral`) and the conversion channel added 2026-07-21, off by default |
 | Invariants | `evaluation/src/loop/invariants.py` (`assert_arm_factions`, `assert_arm_declared`, `assert_fingerprint_consistent`, `assert_observations_retired`) | — | ✅ | **moved** line refs → function names. `assert_observations_retired` **new** (2026-07-15) |
 | Driver and config | `evaluation/src/loop/driver.py` (`run_loop`, `_run_arms_parallel`), `config.py` | — | July 🟡 | same. Dead toggles `arm` (label only) and `frozen_base_rates` (declared, unwired) were still unwired on 2026-10-23 |
 | Consolidate and merge | `evaluation/src/loop/{consolidate,merge}.py` | — | ✅ mechanics | evict rule can now fire (`credit.py::_adoption_counts`); evicted nothing in the July run |
-| July 19 build run | `run_loop` | `execution_plan/report.md` §5, `experiment_log.md`; `batch_results/v7_compound_town5/` (gitignored) | part of ✅ mechanics | **new** |
-| Credit validators | `evaluation/src/instrument_validation/credit/{g2_separability,g3a_verdict_validity,heldout_credit_reproduction,windowed_credit}.py` | `v7_final/experiment_log.md` §1–2, §6 | 🟡 | **new** (promoted 2026-07-04). `v7_final/review_map.md` mislabels G3a as "tagger verdict validity" |
+| July 19 build run | `run_loop` | `memory_system/v7/execution_plan/report.md` §5, `experiment_log.md`; `batch_results/v7_compound_town5/` (gitignored) | part of ✅ mechanics | **new** |
+| Credit validators | `evaluation/src/instrument_validation/credit/{g2_separability,g3a_verdict_validity,heldout_credit_reproduction,windowed_credit}.py` | `memory_system/v7/experiment_log.md` §1–2, §6 | 🟡 | **new** (promoted 2026-07-04). `memory_system/v7/review_map.md` mislabels G3a as "tagger verdict validity" |
 | Blind-spot fix validation | `evaluation/experiments/credit_blindspot_validation.py`; `tests/evaluation/test_credit_blindspot_fix.py` | `credit/blindspot_fix/step1_validation.{md,json}`, `experiment_log.md` | 🟡 | **new** |
 | Tell lift and fold | `evaluation/src/loop/{tell_credit,tell_fold}.py` | `extraction/tell_extraction/report.md` §2–4; `store_curation/tells.md` | 🟡 | **new** |
 | First link | `evaluation/src/loop/first_link.py`; `tests/evaluation/test_read_ledger_first_link.py` | `credit/read_tactic_credit_redesign.md` §3 | ⏸ (never run on record) | **new** |
@@ -680,7 +680,7 @@ Spoke: [`experimental_controls/report.md`](experimental_controls/report.md).
 | Fingerprint and drift guards | `Agents/run_fingerprint.py` (`runtime_fingerprint`); `evaluation/src/loop/invariants.py` | `model_drift/drift_surfaces_and_guards.md`; `tracing/fingerprinting/report.md` | both | ✅ in-run · manual cross-epoch | same. The prompt-bundle hash misses nested prompt packages |
 | Interleaved arms | `evaluation/src/loop/driver.py` (`_run_arms_parallel`); not in `scripts/run_batch.py` | — | 9 | — | same; per-game alternation in `run_batch` still unbuilt |
 | Paired statistics | `evaluation/src/core/stats.py` (`mcnemar_exact`, `wilcoxon_paired`, `binomial_ci`, `point_biserial`) | — | both | July ✅ | same (verify #1) |
-| Power (MDE) gate | `evaluation/src/instrument_validation/power/mde_simulation.py` | `execution_plan/report.md` §2 (full table at `24dfd3a7`) | 9 | ✅ | **new**. Not run for the paired endpoint design |
+| Power (MDE) gate | `evaluation/src/instrument_validation/power/mde_simulation.py` | `memory_system/v7/execution_plan/report.md` §2 (full table at `24dfd3a7`) | 9 | ✅ | **new**. Not run for the paired endpoint design |
 | Seedability | `Agents/nodes/orchestrator.py` (`initialize_game`); `tests/engine/test_seedability.py` | `memory_system/effectiveness/paired_ab/experiment_log.md` (20 of 20 by hand, 2026-06-11) | both | ✅ | **new** |
 | Prompt golden | `tests/fixtures/day_discuss_prompt_golden.{py,json}`; `tests/engine/test_draft_preview.py` | — | 10 | 🟡 | **new**. Day-discussion turn only; regenerated in 34 commits 2026-09-29 to 10-21 |
 | Run graduation | `evaluation/src/cli_runner/graduate_run.py` (`eval-graduate`); `tests/evaluation/test_graduate.py` | `tracing/fingerprinting/report.md` | — | ⏸ built, never used | **new** |
@@ -699,7 +699,7 @@ Spoke: [`model_admission/report.md`](model_admission/report.md) (untracked on 20
 | Thinking-budget replay | `evaluation/experiments/haiku_effort_{cases,score}.py` | `reasoning_failures/experiment_log.md` §2; `reasoning_failures/data/haiku_effort_replay/` | 10 | 🟡 |
 | Summariser comparison | `evaluation/experiments/haiku_summary_compare.py` | `reasoning_failures/experiment_log.md` §3; `reasoning_failures/data/haiku_summary_compare/` | 10 | ⚠️ |
 | Seat-model games | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{flash,luna}_games/` | 10 | ⚠️ |
-| Memory-job model comparisons | `evaluation/experiments/{claude_extraction_compare,dehalo_compare}.py`; v5 `evaluation/src/studies/extraction_model_comparison.py` | `memory_system/v8/data/{extraction_model_comparison,dehalo_compare}/`; `v7_final/extraction_screens/` | 10 / 9 | ⚠️ |
+| Memory-job model comparisons | `evaluation/experiments/{claude_extraction_compare,dehalo_compare}.py`; v5 `evaluation/src/studies/extraction_model_comparison.py` | `memory_system/v8/data/{extraction_model_comparison,dehalo_compare}/`; `memory_system/v7/extraction_screens/` | 10 / 9 | ⚠️ |
 | July seat-model selection | none | `model_selection/report.md` | 9 | ⚠️ (historical) |
 | Cost and cache accounting | `Agents/llm_factory/{pricing,catalog}.py`; `server/game/usage.py`; `evaluation/src/core/costs.py`; `evaluation/src/loop/cost.py`; `evaluation/experiments/game_cache_share.py`; `scripts/model_catalog.py`; `tests/engine/test_{pricing,langfuse_prices,shared_prefix_layout}.py` | `caching/report.md` §4–5; `caching/experiment_log.md` §11 | both | 🟡 |
 
@@ -709,7 +709,7 @@ Spoke: [`model_admission/report.md`](model_admission/report.md) (untracked on 20
 
 | Record | Code | Record | Status |
 |---|---|---|---|
-| Discussion tagger | `evaluation/src/loop/discussion_tagger.py`; `evaluation/src/cli_runner/discussion_tagger_eval.py` (`eval-tagger`); `evaluation/src/instrument_validation/tagger/{tagger_validation,tagger_effectiveness}.py` | `evaluation/llm_judge/discussion_tagger.md` (moved 2026-10-23); `v7_final/experiment_log.md` §12g | **retired**. 🟡 as recorded in July. Credit mode deleted 2026-07-13 (`evaluation/src/loop/driver.py:373`, "since the tagger mode's retirement"); runs in no game; out of the write-up (owner, 2026-10-22, `writeup/map.md`). Its report's consumer table is stale and is left as a record |
+| Discussion tagger | `evaluation/src/loop/discussion_tagger.py`; `evaluation/src/cli_runner/discussion_tagger_eval.py` (`eval-tagger`); `evaluation/src/instrument_validation/tagger/{tagger_validation,tagger_effectiveness}.py` | `evaluation/llm_judge/discussion_tagger.md` (moved 2026-10-23); `memory_system/v7/experiment_log.md` §12g | **retired**. 🟡 as recorded in July. Credit mode deleted 2026-07-13 (`evaluation/src/loop/driver.py:373`, "since the tagger mode's retirement"); runs in no game; out of the write-up (owner, 2026-10-22, `writeup/map.md`). Its report's consumer table is stale and is left as a record |
 | Hardening pass | — | `evaluation/hardening_pass/{report,experiment_log}.md` | dated record (2026-07-02, interim). Its fixes are rated where they now live |
 | Archive | `evaluation/src/archive/{legacy_cases,legacy_retrieval_judge,eval_retrieval_v1,situation_summary_model_comparison,dedup_model_comparison,per_role_extraction,pairwise_extraction,pairwise_extraction_prompts}.py` | — | superseded; do not import live |
 | Labelling and training structure (2026-06-29) | `training/` at the repo root; `evaluation/src/labeling/` | `evaluation/labeling/report.md` §1 | dated note: `training/` left `evaluation/` because it trains models rather than judging cases. `auto_dedup_labeler` was folded into the engine and adapter path (byte-identical prompts over 232 cases). `merger.merge` was retired after the staged pipeline showed it had never composed. Parked |

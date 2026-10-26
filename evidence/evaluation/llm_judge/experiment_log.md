@@ -23,9 +23,9 @@ The honest limit is that none of the live judges is calibrated. Each is one mode
 
 - *Correction (2026-10-23).* "None of the live judges is calibrated" is true of these memory judges. It is not true of every judge in the project: §7 lists the ones with a human check. "The head-to-head verdict that memory helps" overstates the record:
   - The June A/B improved the town's decisions. Healer saves went from 37% to 60% (p=0.005) and town lynches on an enemy from 47% to 64% (p=0.028). The town win rate rose from 27% to 43%, which was not significant (p=0.27). The often-quoted p=0.013 belongs to the reranked arm's +33 points, not to the raw arm.
-  - On the v6 store the town gain did not repeat (+6 points, p=0.77) (`memory_system/store_progression.md`).
+  - On the v6 store the town gain did not repeat (+6 points, p=0.77) (`memory_system/report.md`).
   - The pre-registered v7 endpoint test (2026-07-20, 30 paired boards) put the town's decision score 0.147 lower with memory (p≈0.06).
-  - The owner closed the memory research on 2026-07-21 (`execution_plan/report.md`).
+  - The owner closed the memory research on 2026-07-21 (`memory_system/v7/execution_plan/report.md`).
 
 One more limit is worth stating plainly, because it is easy to miss: none of this reached the current version. The two judge-driven calls, and the situation-summary golden set that outranked the judge, all ran on the pre-v7 pipeline (v4-era stores, May prompts). The choices that survive into v7, per-role extraction and the 2.5 Pro extractor, were validated back then and carried forward, not re-judged. v7's genuinely new parts, the dimensional memory schema and the credit-aware synthesised strategy notes, have no LLM-judge score at all. On v7 specifically, the LLM-judge layer drove no design decision; what stands behind v7 is the outcome and deterministic instruments described in the [parent report](../report.md).
 

@@ -15,7 +15,7 @@
 > **Companion docs.** The current shipped mechanism, stated destination-first, is
 > [report.md](report.md); how far the instrument is *trusted* is owned by the apparatus report
 > [../evaluation/llm_judge/discussion_tagger.md](../../evaluation/llm_judge/discussion_tagger.md). The raw run
-> records this log distils are frozen in [../v7_final/experiment_log.md](../../v7_final/experiment_log.md)
+> records this log distils are frozen in [../v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md)
 > §11–12 and the metrics design files
 > ([../metrics/design/discussion_scoring_plan.md](../../metrics/design/discussion_scoring_plan.md),
 > [../metrics/design/discussion_lead_vs_blend.py](../../metrics/design/discussion_lead_vs_blend.py));
@@ -210,7 +210,7 @@ concealment side.)
 cover exactly what the free layer cannot (concealment quality, credibility, the vote-invisible night
 consequences), must not re-derive what the floor already gives for free, and must never let its
 verdict collapse into the outcome. The design (`discussion_credit_design.md`, 2026-06-19,
-[../v7_final/discussion_credit_design.md](../../v7_final/discussion_credit_design.md)) is stated here as
+[../v7_final/discussion_credit_design.md](../../memory_system/v7/discussion_credit_design.md)) is stated here as
 it was proposed; whether the construction *worked* is §4's job.
 
 **First, a vocabulary — the seven primitives.** The design work started by asking, role by role, what
@@ -321,7 +321,7 @@ rejected here.
 ## 5 · Correctness pass — are the tags actually right? (2026-06-20)
 
 With the tagger credited, the next risk was silent per-field error. `tagger_accuracy.py` (2026-06-20,
-8 games, [../v7_final/discussion_credit/tagger_accuracy.py](../../v7_final/discussion_credit/tagger_accuracy.py))
+8 games, [../v7_final/discussion_credit/tagger_accuracy.py](../../memory_system/v7/discussion_credit/tagger_accuracy.py))
 cross-checked the structure tags — not their effectiveness, their *correctness*.
 
 *Catches: does the tagger hallucinate framing/role-claims, or read them from the actual game?* The
@@ -342,7 +342,7 @@ differs from the true role is then a mechanical deception tell. This is why the 
 readable: a cold-started memory store, memory-ON and memory-OFF arms paired on the same board setups
 (matched `game_id`s), 4 games per generation per arm, stopped at generation 6 by a pre-registered
 stopping rule (~$15; full run record
-[../v7_final/experiment_log.md](../../v7_final/experiment_log.md) §12). Its *intended* design was
+[../v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md) §12). Its *intended* design was
 town-only: memory ON for town roles alone, against an all-OFF baseline. Two defects, both found the
 next day by re-auditing the raw records instead of trusting the run's own narrative, broke that
 design:
@@ -373,7 +373,7 @@ needs no tags, villager/day_discussion on−off was pure noise (mean ≈ −0.12
 **The validation (v7_final §12g).** A separate, adversarial investigation asked whether the tagger's
 *discussion verdict* carries real skill. It was held to a far higher bar than the retracted number
 ever was — `tagger_skill_retest.py`
-([../v7_final/runs/v2_full/tagger_skill_retest.py](../../v7_final/runs/v2_full/tagger_skill_retest.py)),
+([../v7_final/runs/v2_full/tagger_skill_retest.py](../../memory_system/v7/runs/v2_full/tagger_skill_retest.py)),
 N=24 ON games:
 
 *Catches: is the wolf/SK discussion signal outcome-leak, wordiness, or real skill?* Each column
@@ -394,7 +394,7 @@ message verbosity** → it is real deceiver skill the vote proxy cannot see, not
 Town adds ~0 — its skill *is* the vote proxy, the negative control.
 
 And the leak the retraction implied was measured directly, not assumed: `tagger_deleak_ablation.py`
-([../v7_final/runs/v2_full/tagger_deleak_ablation.py](../../v7_final/runs/v2_full/tagger_deleak_ablation.py))
+([../v7_final/runs/v2_full/tagger_deleak_ablation.py](../../memory_system/v7/runs/v2_full/tagger_deleak_ablation.py))
 ran a **2×2** (outcome shown/withheld × all/speakers-only, N=6). *Catches: how much of the day-local
 coupling is the tagger simply seeing who won?* Withholding the vote and deaths moved the coupling
 **+0.07 town / −0.02 wolf / +0.05 SK** — negligible — and the mechanical silent-player effect was ~0
@@ -478,8 +478,8 @@ survive the same knives.
 
 *Companion reference (current mechanism): [report.md](report.md) · Trust/reliability apparatus:
 [../evaluation/llm_judge/discussion_tagger.md](../../evaluation/llm_judge/discussion_tagger.md) · Frozen design +
-run records: [../v7_final/discussion_credit_design.md](../../v7_final/discussion_credit_design.md),
-[../v7_final/experiment_log.md](../../v7_final/experiment_log.md) §12, and the v2_full/ tagger scripts ·
+run records: [../v7_final/discussion_credit_design.md](../../memory_system/v7/discussion_credit_design.md),
+[../v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md) §12, and the v2_full/ tagger scripts ·
 Deterministic prehistory: [../metrics/design/discussion_scoring_plan.md](../../metrics/design/discussion_scoring_plan.md),
 [../metrics/design/discussion_lead_vs_blend.py](../../metrics/design/discussion_lead_vs_blend.py),
 [../metrics/design/deceiver_metric_refinement.md](../../metrics/design/deceiver_metric_refinement.md). Live code:

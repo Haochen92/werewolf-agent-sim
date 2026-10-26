@@ -1,4 +1,4 @@
-# `v7_final/` — the v7 campaign record
+# `memory_system/v7/` — the v7 campaign record
 
 This folder is the **record of the v7 compounding campaign**: the pre-registered cheap-screen gates, the
 compounding runs, the tagger de-leak work, and the design docs behind the generational loop

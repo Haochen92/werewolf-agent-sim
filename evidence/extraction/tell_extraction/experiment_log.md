@@ -121,7 +121,7 @@ The first book left out behaviours that expose town power roles. The owner ruled
 
 The July learning loop ran with the tell pipeline on: seeded with the 34-entry book and the reviewed checklist, it mined, detected, folded and rebuilt the book in each of four generations. The 30-deal test on 2026-07-20 played each deal with and without the learned memory. Memory-on games carried the final 33-entry book, which every seat saw, alongside the town's lessons. Before the test the design was amended to drop the condition that would have separated tells from lessons ([amendment](../../../batch_results/v7_endpoint_ab/PREREG_AMENDMENT.md)).
 
-*Result:* the town's decision score was lower with memory (by 0.147, p ≈ 0.06), as reported in the [execution-plan report](../../execution_plan/report.md) §5. The tells' own effect is unknown. On 2026-07-21 the memory research closed with no memory promoted.
+*Result:* the town's decision score was lower with memory (by 0.147, p ≈ 0.06), as reported in the [execution-plan report](../../memory_system/v7/execution_plan/report.md) §5. The tells' own effect is unknown. On 2026-07-21 the memory research closed with no memory promoted.
 
 ## ⑮ Status against the ten-seat game (2026-10-13, rechecked 2026-10-22)
 

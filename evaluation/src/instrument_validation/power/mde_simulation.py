@@ -17,9 +17,9 @@ Arms are treated as UNPAIRED at the game grain (pairing collapses after the firs
 §0.1). The effect-0 column doubles as the false-positive (alpha) check.
 
 CORPORA (all existing, $0):
-  - town_only_run1 : evidence/v7_final/runs/town_only_run1/gen{1..3}_{on,off}.jsonl  (15 games/arm)
+  - town_only_run1 : evidence/memory_system/v7/runs/town_only_run1/gen{1..3}_{on,off}.jsonl  (15 games/arm)
       -> OFF town-grain is the PRIMARY pool: the pending town rerun's own noise.
-  - v2_full        : evidence/v7_final/runs/v2_full/gen{1..6}_{on,off}.jsonl          (24 games/arm)
+  - v2_full        : evidence/memory_system/v7/runs/v2_full/gen{1..6}_{on,off}.jsonl          (24 games/arm)
       -> OFF town-grain sensitivity (all_enabled epoch) + OFF WOLF-grain (the gated wolf arm).
   - v6ab           : batch_results/v6ab_*.jsonl                                        (180 games)
       -> the all-disabled baseline arm's town-grain = the N=90 SD sanity anchor.
@@ -30,7 +30,7 @@ INVOKE (from the repo root):
 No console entry, no manifest stamping — this is a standing $0 apparatus. It prints markdown tables
 (pool SD preamble, primary-estimator detection grid, per-gen-Delta secondary grid, MDE lines, a
 closed-form ANALYTIC cross-check (anchor cells + an effect-scaling ladder at N=4/G=6), cost lines,
-limitations). Its 2026-07-05 readout is summarised in evidence/execution_plan/report.md §2; the full
+limitations). Its 2026-07-05 readout is summarised in evidence/memory_system/v7/execution_plan/report.md §2; the full
 table (power_analysis/mde_table.md) is in git history at 24dfd3a7.
 """
 
@@ -58,11 +58,11 @@ ALPHA = 0.05
 POWER_TARGET = 0.80
 
 REPO = Path(__file__).resolve().parents[4]
-V2_DIR = REPO / "evidence/v7_final/runs/v2_full"
-RUN1_DIR = REPO / "evidence/v7_final/runs/town_only_run1"
+V2_DIR = REPO / "evidence/memory_system/v7/runs/v2_full"
+RUN1_DIR = REPO / "evidence/memory_system/v7/runs/town_only_run1"
 
 # Per-game $ derived from the v2_full actual spend (games_total_usd 13.43 / 48 games), the only
-# on-disk cost record for a compounding run. Source: evidence/v7_final/runs/v2_full/cost_report.json.
+# on-disk cost record for a compounding run. Source: evidence/memory_system/v7/runs/v2_full/cost_report.json.
 USD_PER_GAME = 13.43 / 48  # ~= $0.28/game (blended on+off)
 
 

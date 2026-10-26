@@ -31,7 +31,7 @@ them*. If you read one thing, read the arc below — it turns eight store versio
 >    nobody voted out. Counter-lessons against caution had begun to appear but were outnumbered about
 >    ten to one when the run ended, so whether a longer run would have corrected itself is open. The
 >    scoring was fixed afterwards and checked on recorded games, but the fixed loop was never played.
->    Sources: [`../execution_plan/report.md`](../execution_plan/report.md) §5;
+>    Sources: [`v7/execution_plan/report.md`](v7/execution_plan/report.md) §5;
 >    [`../credit/report.md`](../credit/report.md) §6;
 >    [`../credit/blindspot_fix/experiment_log.md`](../credit/blindspot_fix/experiment_log.md).
 > 3. **"The clean test that says memory works"** (v5_0 heading) should read "the clean test that
@@ -302,7 +302,7 @@ memory system: the instrument caught two invalid runs and a halo in the first-pa
 `--expect-factions` arm guard now makes the config slip crash on generation 1 (~$0.50) instead of
 surviving to a $65 null. Honest negatives and a retracted claim beat a fragile positive.
 
-*Source: `v7_final/report.md`; `v7_final/experiment_log.md` §11–12; `evaluation/src/loop/`.*
+*Source: `memory_system/v7/report.md`; `memory_system/v7/experiment_log.md` §11–12; `evaluation/src/loop/`.*
 
 ---
 
@@ -356,7 +356,7 @@ surviving to a $65 null. Honest negatives and a retracted claim beat a fragile p
 - **This document produces no new data** — it is a pointer-and-narrative layer over existing records.
   Authoritative numbers and their provenance live in the cited source folders:
   `evidence/memory_system/effectiveness/` (Phase 0–2, v5, v6_1), `evidence/dedup/` (Phase 2),
-  `evidence/extraction/situation_dimensions/` (v6), `evidence/v7_final/` (v7), and the loop code at
+  `evidence/extraction/situation_dimensions/` (v6), `evidence/memory_system/v7/` (v7), and the loop code at
   `evaluation/src/loop/`.
 - Where this synthesis restates a statistic (e.g. 70%→97% p=0.012; v7 town +17→+33pp win, reranked +33pp p=0.013), the figure is
   quoted from those folders, not recomputed here; the effectiveness A/B and v5 pilot figures were
@@ -377,7 +377,7 @@ zero reasoning tokens. The arms were matched, so each memory-on against memory-o
 stands on its own terms. But every result above, the +17→+33pp town gain and the v7 null alike, is
 a result for players that did not reason.
 
-*Source: `game_play_enhancement/discussion_evidence.md` §6.7; `v7_final/report.md`, scope addendum.*
+*Source: `game_play_enhancement/discussion_evidence.md` §6.7; `memory_system/v7/report.md`, scope addendum.*
 
 ### v8 — memory rebuilt for the ten-seat game
 

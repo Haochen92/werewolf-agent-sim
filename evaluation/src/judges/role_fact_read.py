@@ -39,7 +39,7 @@ from evaluation.src.judges.config import get_judge_llm
 DEFAULT_READ_MODEL = "anthropic/claude-haiku-5-5"  # narrow grounded task; --golden gates fitness
 DEFAULT_CANDIDATES = "evidence/generation_prompt/validation/hallucination_candidates.jsonl"
 DEFAULT_OUT = "evidence/generation_prompt/validation/hallucination_verdicts.jsonl"
-DEFAULT_RECORDS_GLOB = "evidence/v7_final/runs/v2_full/gen*_o*.jsonl"
+DEFAULT_RECORDS_GLOB = "evidence/memory_system/v7/runs/v2_full/gen*_o*.jsonl"
 
 
 class RoleFactVerdict(BaseModel):

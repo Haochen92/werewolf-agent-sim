@@ -24,7 +24,7 @@ rather than measured. From then on, each change was to be measured at the level 
 whole-game runs were kept for two named cases.
 
 **2026-06-21 to 06-23 · two loop runs, both invalid.** The first had a biased baseline. The second
-silently gave memory to every faction instead of town only (`../v7_final/report.md` §5c). Both were
+silently gave memory to every faction instead of town only (`../report.md` §5c). Both were
 read with the planned slope, and the second also showed how noisy that readout was: per-generation
 means swung by ±0.2 to 0.3 at 4 games per generation.
 
@@ -103,7 +103,7 @@ primary now tests the built store against no memory, not compounding against a s
 *Result (60 games):* town decision score 0.147 lower with memory, per board (p ≈ 0.06), lower on 19
 of 30 boards. Read as committed: no detected compounding, with the point estimate leaning toward
 harm. A secondary vote-level measure was clearer (threat votes about 15 points fewer, abstentions
-31% against about 23%, p < .001, counted per vote). Forensics: `../credit/blindspot_fix/`.
+31% against about 23%, p < .001, counted per vote). Forensics: `../../../credit/blindspot_fix/`.
 
 **2026-07-21 · closure.** The owner declined a further run (about $25) and closed the memory
 research: no memory configuration certified as beneficial on the current epoch, no store promoted,
@@ -122,9 +122,9 @@ above is about a player that does not reason.
 
 ---
 
-**Sources.** `phase_b_plan_review.md` (2026-06-12) · `../v7_final/report.md` §5c (the June runs) ·
+**Sources.** `phase_b_plan_review.md` (2026-06-12) · `../report.md` §5c (the June runs) ·
 `compounding_measurement_plan.md` (TL;DR, claim ladder, §0.1–0.3, §R, standing gates, sequencing) ·
 `power_analysis/mde_table.md` and `decision_rationale.md` (2026-07-05) ·
 `v7_run_preregistration_DRAFT.md` (§1–4, §7, §8; signed 2026-07-16) ·
 `batch_results/v7_compound_town5/` · `batch_results/v7_endpoint_ab/` ·
-`../credit/blindspot_fix/experiment_log.md` §①, §⑥, §⑦.
+`../../../credit/blindspot_fix/experiment_log.md` §①, §⑥, §⑦.

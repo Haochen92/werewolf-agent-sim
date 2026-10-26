@@ -170,12 +170,12 @@ results:
 - **The holistic verdict predicts the win *beyond* the vote proxy, and it is real skill — not leak, not
   wordiness.** Partial *r*(discussion verdict, faction **won** | de-luck proxy, message verbosity) = **+0.56
   wolf / +0.60 SK / +0.02 town**, N=24, with the tagger **blinded to the outcome** and verbosity partialled
-  out ([../v7_final/runs/v2_full/tagger_skill_retest.py](../../v7_final/runs/v2_full/tagger_skill_retest.py)). The
+  out ([../v7_final/runs/v2_full/tagger_skill_retest.py](../../memory_system/v7/runs/v2_full/tagger_skill_retest.py)). The
   town row (+0.02) is the negative control: town discussion merit is already captured by its vote endpoint, so
   the tagger adds nothing there — exactly as intended.
 - **Outcome-leak is negligible.** A 2×2 ablation (outcome shown/withheld × all/speakers-only, N=6) moved the
   discussion-verdict coupling by **+0.07 town / ~0 wolf-SK** when the vote result and deaths were withheld —
-  within noise ([../v7_final/runs/v2_full/tagger_deleak_ablation.py](../../v7_final/runs/v2_full/tagger_deleak_ablation.py)).
+  within noise ([../v7_final/runs/v2_full/tagger_deleak_ablation.py](../../memory_system/v7/runs/v2_full/tagger_deleak_ablation.py)).
   So the tagger keeps *showing* the outcome by default; blinding bought a within-noise gain at the cost of the
   night verdict's legitimate lynch context.
 - **The night verdict reassigns luck to skill.** On the effectiveness check it re-scored ~31% of night actions
@@ -184,7 +184,7 @@ results:
 - **Per-field distributions pass a sanity check, but no accuracy number is on record.** `framing=manipulative`
   skews as expected by faction (town 7% / wolf 85% / SK 88% against true roles), and `role_reveal` was
   cross-checked against a deterministic self-claim detector — but the accuracy script prints to stdout only, so
-  no persisted per-field accuracy figure exists ([../v7_final/discussion_credit/tagger_accuracy.py](../../v7_final/discussion_credit/tagger_accuracy.py)).
+  no persisted per-field accuracy figure exists ([../v7_final/discussion_credit/tagger_accuracy.py](../../memory_system/v7/discussion_credit/tagger_accuracy.py)).
 
 **What it can't do.** Flag a bad verdict distribution, yes; certify a correct per-turn verdict, no. And a
 *metric* that correlates with the win is not a *demonstration* that wolf/SK memory compounds — that needs a
@@ -202,7 +202,7 @@ Ordered by how misleading each is to a reader; severity = likelihood × impact �
 | 4 | **Night-verdict residual leak untested** | The night verdict still sees its own kill's death (the night analogue of the day leak the ablation cleared). A two-prompt split would fix it if a clean deceiver *night* metric is ever needed; the discussion verdict is the load-bearing signal and night has a deterministic de-luck proxy underneath it. | **Low** |
 | 5 | **Not promoted to the standing scorecard basket** | The tagger is wired into the loop's **credit** ledger and its own validation apparatus, but has not been promoted as a standing de-lucked proxy in the metrics basket (the "Phase-2 LLM tagger" the discussion-scoring plan deferred — see [../evaluation/metrics/report.md](../../evaluation/metrics/report.md)). Its numbers live in the credit loop, not the frozen scorecard. | **Low** |
 | 6 | **"flash-lite" is caller-pinned** | The tagger calls `get_llm_pro()`, whose bare default is `gemini-2.5-pro`; flash-lite holds only because the loop env-pins it. A standalone `tag_game` call with unset env would silently run pro-2.5. Documented, not a live hole (the driver always pins). | **Low** |
-| 7 | **Durable artifacts pending** | The retest/ablation scripts now *also* write `*_results.json`, but only on their next (paid) run — the JSON files are not yet on disk; the durable numbers still live in [../v7_final/experiment_log.md](../../v7_final/experiment_log.md) §12g. | **Low** |
+| 7 | **Durable artifacts pending** | The retest/ablation scripts now *also* write `*_results.json`, but only on their next (paid) run — the JSON files are not yet on disk; the durable numbers still live in [../v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md) §12g. | **Low** |
 
 **Open work.** The one upgrade that would move the verdict from 🟡 to green is the direct wolf A/B (gap 1),
 using the tagger as its discussion-merit ruler on a fresh, correctly-configured epoch (gaps 1+3 close
@@ -214,8 +214,8 @@ measure, which belongs to the loop spoke and chapter 3.
 
 *Companion journey: [experiment_log.md](experiment_log.md) · Trust/reliability apparatus:
 [../evaluation/llm_judge/discussion_tagger.md](../../evaluation/llm_judge/discussion_tagger.md) · Design record +
-run artifacts: [../v7_final/discussion_credit_design.md](../../v7_final/discussion_credit_design.md),
-[../v7_final/experiment_log.md](../../v7_final/experiment_log.md) §12g. Live code:
+run artifacts: [../v7_final/discussion_credit_design.md](../../memory_system/v7/discussion_credit_design.md),
+[../v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md) §12g. Live code:
 [../../evaluation/src/loop/discussion_tagger.py](../../../evaluation/src/loop/discussion_tagger.py),
 [../../evaluation/src/loop/credit.py](../../../evaluation/src/loop/credit.py) (consumer),
 [../../evaluation/src/cli_runner/discussion_tagger_eval.py](../../../evaluation/src/cli_runner/discussion_tagger_eval.py)

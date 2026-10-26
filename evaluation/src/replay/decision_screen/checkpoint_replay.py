@@ -6,7 +6,7 @@ The question
 Does the loop's store get BETTER as it grows — and do agents CONSEQUENTLY decide
 better? The live loop re-rolls a game's worth of luck every generation (fresh
 ON/OFF matches; one diverging vote cascades through the whole game), so a
-per-generation slope drowns in noise (see evidence/execution_plan/report.md).
+per-generation slope drowns in noise (see evidence/memory_system/v7/execution_plan/report.md).
 This replay freezes the boards ONCE and varies only the store, so the only thing
 moving across the curve is the memory.
 
@@ -84,14 +84,14 @@ Run command
 -----------
     poetry run eval-checkpoint-replay \\
         --cases batch_results/v6ab_townsp.jsonl \\
-        --run evidence/v7_final/runs/town_only_run2 \\
+        --run evidence/memory_system/v7/runs/town_only_run2 \\
         --n 100 --factions town \\
-        --out evidence/execution_plan/checkpoint_replay/
+        --out evidence/memory_system/v7/execution_plan/checkpoint_replay/
 
 ``--run`` auto-discovers the ``gen*_store/`` snapshots under a loop-run directory;
 ``--snapshot label=path`` can name them explicitly instead. Results (a markdown
 summary + a JSON artifact with a provenance manifest) land in
-``evidence/execution_plan/checkpoint_replay/`` by default.
+``evidence/memory_system/v7/execution_plan/checkpoint_replay/`` by default.
 
 Cost
 ----
@@ -787,7 +787,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--run", type=Path, default=None, help="Loop-run dir to auto-discover gen*_store snapshots.")
     parser.add_argument("--snapshot", action="append", default=None, help="Explicit label=path snapshot (repeatable).")
-    parser.add_argument("--out", type=Path, default=Path("evidence/execution_plan/checkpoint_replay"))
+    parser.add_argument("--out", type=Path, default=Path("evidence/memory_system/v7/execution_plan/checkpoint_replay"))
     parser.add_argument("--n", type=int, default=100)
     parser.add_argument("--factions", default="town", choices=sorted(FACTION_PLANS))
     parser.add_argument("--min-day", type=int, default=2)

@@ -32,7 +32,7 @@ Pointers only, not yet checked against their sources. Verify each instance befor
   `memory_system/v8/decisions.md` §12–13, `extraction/observation_quality/outcome_halo_case_study.md`.
 - **Check that the experiment that ran is the one you meant.** The v7 config slip (memory on for every
   faction) and the arm guard added after it; the paired-board join that merged five arms' games by
-  game id. Sources: `v7_final/report.md`, `extraction/tell_extraction/experiment_log.md`.
+  game id. Sources: `memory_system/v7/report.md`, `extraction/tell_extraction/experiment_log.md`.
   Also a decision that never reached the running system: the retrieval cap of 5 made as fetch width
   with a keep of 3 after it (`retrieval/capacity_limits/report.md` addendum), the leak checkers fed
   nothing on live games (`agent_boundaries/experiment_log.md`), the Gemini thresholds left on the old
@@ -44,11 +44,11 @@ Pointers only, not yet checked against their sources. Verify each instance befor
 - **Models favour the first, lowest or example-named option.** Seat-choice bias in prompts; the fix was
   an engine-drawn lot. Source: the prompt work around the night-1 lot.
 - **Every claim carries its epoch.** A retracted static-memory result, a cross-epoch confound, and the
-  finding that every memory game ran without reasoning tokens. Sources: `v7_final/report.md`,
+  finding that every memory game ran without reasoning tokens. Sources: `memory_system/v7/report.md`,
   `memory_system/`.
 - **A value that cannot be computed reads as missing, never as zero.** *Owner's own note for handling
   missing data (2026-10-22); not a lesson for the write-up.* Three instances: v7's "+0.41 town lift",
-  a raw rate with the no-memory baseline pinned to 0, retracted as halo (`v7_final/report.md`); July
+  a raw rate with the no-memory baseline pinned to 0, retracted as halo (`memory_system/v7/report.md`); July
   credit's missing memory-off comparison taken as 0, so the abstain lesson sat at 0.00 (the smaller of
   the two gaps: −0.16 against the real baseline; `credit/report.md` §6); and the 21 metrics that read 0
   on every ten-seat game, set to None before they were ported (`memory_system/v8/decisions.md` §2). The

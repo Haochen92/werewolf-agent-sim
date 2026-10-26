@@ -127,7 +127,7 @@ optional second example, only where records trace the exact transformation.
   tick's snapshot keeps the synthesis log (`4a32fdf0`). No migration is needed: memory records are
   stored as whole JSON.
 - **Credit data.** Ten-seat credit needs memory-on games, with retrieval on and extraction off, plus
-  the credit port. The v7 run (`evidence/v7_final/runs/v2_full/`) kept per-generation stores, the
+  the credit port. The v7 run (`evidence/memory_system/v7/runs/v2_full/`) kept per-generation stores, the
   `distilled_from` lineage and prune events, so it likely holds a traceable credit example
   (nine-seat, no wills, zero reasoning). The trace is deferred (owner KIV).
 - **The v7 blind spot.** Credit rewarded town concealment and abstain advice it could not see the

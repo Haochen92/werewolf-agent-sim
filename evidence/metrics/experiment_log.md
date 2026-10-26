@@ -11,7 +11,7 @@
 >   [`../evaluation/metrics/report.md`](../evaluation/metrics/report.md); the folder map is
 >   [README.md](README.md).
 > - **Framings that have since died.** "Phase C" no longer exists as a plan; the plan of record for the
->   memory-effect A/B is now `evidence/execution_plan/report.md`. The Phase-B
+>   memory-effect A/B is now `evidence/memory_system/v7/execution_plan/report.md`. The Phase-B
 >   prompt freeze referenced below was *lifted 2026-06-20* (prompts are normal engineering now). And the
 >   Batch A/B "70% → 97%" lineage claim cited below was later **demoted to a non-citable historical
 >   ceiling** with a multiple-comparison caveat — see

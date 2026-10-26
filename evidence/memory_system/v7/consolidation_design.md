@@ -1,6 +1,6 @@
 # v7 Consolidation (b) — design + the credit→consolidation (a→b) link
 
-> **Status:** 2026-06-19 SP-side design lineage (DESIGNED-then-built era doc). The as-built mechanism record is [`../store_curation/report.md`](../store_curation/report.md).
+> **Status:** 2026-06-19 SP-side design lineage (DESIGNED-then-built era doc). The as-built mechanism record is [`../../store_curation/report.md`](../../store_curation/report.md).
 
 **Date:** 2026-06-19 · **Status:** DESIGNED, not built. (a) credit is built+validated
 (`evaluation/src/experiments/credit_backfill.py`); this is the design for (b), the layer that *acts* on

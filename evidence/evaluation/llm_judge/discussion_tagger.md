@@ -23,7 +23,7 @@ This page covers what the tagger produces, what depended on it, and **how far it
 It is a companion to the [loop report](../loop/report.md), which places the same tagger inside the
 test of whether memory makes players better game after game. How the tagger was designed and how it
 works now: [the discussion_tagger design folder](../../credit/discussion_tagger/) (its report and
-experiment log). The frozen design and the run records: [v7_final](../../v7_final/). How all the
+experiment log). The frozen design and the run records: [v7_final](../../memory_system/v7/). How all the
 evaluation reports fit together: [the hub](../report.md). Where each number comes from:
 [the source map](../source_map.md).
 
@@ -41,7 +41,7 @@ deceiver skill, used only as a diagnostic.
 | Outcome leak in the discussion verdict (trust section) | ✅ | Tested on only 6 games |
 | Detail tags: accuracy of each tag (trust section; Gaps 3) | ⚠️ | The check exists, but no accuracy number was ever saved |
 | Night verdict sees the death its own kill caused (Gaps 2) | ⚠️ | Untested; low stakes, since a code-only luck check sits under night credit |
-| Saved record of the key numbers (trust section; Gaps 3) | ⚠️ | Only in `v7_final/experiment_log.md` §12g; the result files are not written yet |
+| Saved record of the key numbers (trust section; Gaps 3) | ⚠️ | Only in `memory_system/v7/experiment_log.md` §12g; the result files are not written yet |
 
 **Bottom line.** The tagger is a tested measure of how well wolves and the SK talk. Its discussion
 verdict predicts their win beyond what the free vote-based credit shows: +0.56 for wolves and +0.60
@@ -98,7 +98,7 @@ merit the vote proxy is blind to — which is exactly why its trust matters.
   wolf SP/obs A/B, which has never been run. The retracted "+0.556" halo was a *different quantity*
   (undifferenced **town** credit-level), not this wolf/SK correlation-with-win, so there is no
   contradiction; the retest's +0.02 town row agrees with that retraction.
-- **⚠️ Per-field accuracy is designed but not persisted.** `evidence/v7_final/discussion_credit/tagger_accuracy.py` cross-
+- **⚠️ Per-field accuracy is designed but not persisted.** `evidence/memory_system/v7/discussion_credit/tagger_accuracy.py` cross-
   checks `role_reveal` against a deterministic self-claim detector and the day-summary prose, and prints
   `framing`/`credibility` distributions by faction — but it writes to stdout only, so **no per-field
   accuracy number is on record** and none is cited here. On the v6ab validation epoch the structured
@@ -107,7 +107,7 @@ merit the vote proxy is blind to — which is exactly why its trust matters.
 - **Durability gap on the load-bearing numbers.** The +0.56/+0.60 and the deleak result were long
   stdout-only; the retest/ablation scripts now *also* write `*_results.json`, but only on their next
   (paid) execution — **the JSON artifacts do not yet exist on disk**, and the only durable record of the
-  numbers remains `v7_final/experiment_log.md` §12g.
+  numbers remains `memory_system/v7/experiment_log.md` §12g.
 
 ## Gaps, honestly rated (current 2026-07-02)
 
@@ -139,11 +139,11 @@ evidence, per the freeze rule.
   `evaluation/src/loop/credit.py::_tagger_ledger` (its consumer); tests `tests/test_tagger_inputs.py`
   (forced-failure counter + `strict` re-raise + cache provenance).
 - **L2 artifacts (pointed-at, the tagger's KEY proof):**
-  [`../../v7_final/runs/v2_full/tagger_skill_retest.py`](../../v7_final/runs/v2_full/tagger_skill_retest.py)
+  [`../../memory_system/v7/runs/v2_full/tagger_skill_retest.py`](../../memory_system/v7/runs/v2_full/tagger_skill_retest.py)
   (N=24 blinded + verbosity retest) and
-  [`tagger_deleak_ablation.py`](../../v7_final/runs/v2_full/tagger_deleak_ablation.py) (N=6 2×2);
-  the accuracy check [`../../v7_final/discussion_credit/tagger_accuracy.py`](../../v7_final/discussion_credit/tagger_accuracy.py). The durable
-  numbers live in `../../v7_final/experiment_log.md` §12g (the `*_results.json` appear on next execution).
+  [`tagger_deleak_ablation.py`](../../memory_system/v7/runs/v2_full/tagger_deleak_ablation.py) (N=6 2×2);
+  the accuracy check [`../../memory_system/v7/discussion_credit/tagger_accuracy.py`](../../memory_system/v7/discussion_credit/tagger_accuracy.py). The durable
+  numbers live in `../../memory_system/v7/experiment_log.md` §12g (the `*_results.json` appear on next execution).
   Hardening context: [`../hardening_pass/experiment_log.md`](../hardening_pass/experiment_log.md) §2.3, §4.2–4.4.
 
 *Written 2026-07-02 from the v7_final tagger evidence + hardening pass. Apparatus characterised; whether

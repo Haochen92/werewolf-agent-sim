@@ -222,9 +222,9 @@ propagating CLAUDE.md + ~15 memories + docs/ in one move):
 
 ### v7 · the compounding loop   (heavy — its own session)
 
-- **`v7_final/`** — the loop design + the honest negative findings + the invalid-run post-mortem.
+- **`memory_system/v7/`** — the loop design + the honest negative findings + the invalid-run post-mortem.
   *Tidy (heavy):* tuck run-data (`smoke_*`, `town_only_*`, `v2_full/gen*_store/`) → `runs/`; mark the
-  INVALID runs; drop `__pycache__`. The CODE-review surface is `v7_final/review_map.md` (Folders +
+  INVALID runs; drop `__pycache__`. The CODE-review surface is `memory_system/v7/review_map.md` (Folders +
   design-lineage table).  *(462 files)*
   → notes:
 

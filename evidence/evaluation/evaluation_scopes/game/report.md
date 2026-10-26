@@ -166,7 +166,7 @@ about players that do not reason first.
 **Code and data.** `scripts/run_batch.py`, `scripts/make_ab_seed_set.py`,
 `evidence/memory_system/effectiveness/paired_ab/analyze_ab.py`, `evaluation/src/core/stats.py`;
 [paired_ab](../../../memory_system/effectiveness/paired_ab/report.md),
-[store_progression](../../../memory_system/store_progression.md) (correction of 2026-10-22).
+[store_progression](../../../memory_system/report.md) (correction of 2026-10-22).
 
 ## Case 2. Decided in advance: the v7 endpoint test
 
@@ -205,8 +205,8 @@ re-run from committed code. The per-game data sits in a folder git ignores. And 
 enough to detect a real effect was not checked for the final design.
 
 **Code and data.** `evaluation/src/loop/measure.py`; the pre-registration, amendment, config and run
-log in [execution_plan/data](../../../execution_plan/data/README.md);
-[execution_plan](../../../execution_plan/report.md) §4–5.
+log in [execution_plan/data](../../../memory_system/v7/execution_plan/data/README.md);
+[execution_plan](../../../memory_system/v7/execution_plan/report.md) §4–5.
 
 ## Case 3. Small whole-game runs: smoke tests with a direction (persona voices, evil covers)
 

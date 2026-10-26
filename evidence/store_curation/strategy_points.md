@@ -7,7 +7,7 @@
 > one is quoted in report §1. The SP tick is `evaluation/src/loop/consolidate.py`, one call per
 > generation; the per-item utility it consumes is the credit layer
 > ([`../credit/report.md`](../credit/report.md)); the 2026-06-19 design lineage is
-> [`../v7_final/consolidation_design.md`](../v7_final/consolidation_design.md).
+> [`../memory_system/v7/consolidation_design.md`](../memory_system/v7/consolidation_design.md).
 > **Status:** split out of the parent report 2026-07-15; mechanism as of the 2026-07-14 reviews
 > (suite 684 green, uncommitted, `feature-dimension-schema`).
 

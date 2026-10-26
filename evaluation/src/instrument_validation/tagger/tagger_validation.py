@@ -8,7 +8,7 @@ The end-of-day discussion tagger (``evaluation.src.loop.discussion_tagger.tag_ga
 deceiver-side measurement instrument: an omniscient per-day flash-lite pass that grades each player's
 discussion (framing / credibility / role-reveal → one holistic de-luck verdict) and night read. This
 runner is its validation apparatus — one config-driven entry, three modes, each reproducing what used
-to be a separate one-off script under ``evidence/v7_final/``:
+to be a separate one-off script under ``evidence/memory_system/v7/``:
 
   mode=accuracy — are the per-FIELD tags CORRECT? role_reveal is cross-tabbed against a deterministic
                   self-claim detector on the raw day_channel (the one ground-truthable axis) + the
@@ -27,7 +27,7 @@ single-epoch flash-lite, and the measured discussion-verdict outcome-leak is neg
 coupling moved +0.07 town / ~0 wolf-SK when the outcome was withheld). These are the numbers the tagger
 keeps ``show_outcome=True`` on. A LARGER-N revalidation is a queued paid item — this runner is what
 runs it. Full write-up + the frozen originals: ``evidence/evaluation/llm_judge/discussion_tagger.md`` (hub) and
-``evidence/v7_final/`` (originals, kept as the frozen record of the numbers above).
+``evidence/memory_system/v7/`` (originals, kept as the frozen record of the numbers above).
 
   poetry run eval-tagger --config evaluation/config/template/tagger_eval_example.json
 
@@ -160,7 +160,7 @@ def tagged(
 
 
 # ---------------------------------------------------------------------------
-# mode=accuracy  (from evidence/v7_final/discussion_credit/tagger_accuracy.py)
+# mode=accuracy  (from evidence/memory_system/v7/discussion_credit/tagger_accuracy.py)
 # ---------------------------------------------------------------------------
 
 
@@ -251,7 +251,7 @@ def run_accuracy(records: list[dict], cfg: TaggerEvalConfig) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# mode=skill  (from evidence/v7_final/runs/v2_full/tagger_skill_retest.py)
+# mode=skill  (from evidence/memory_system/v7/runs/v2_full/tagger_skill_retest.py)
 # ---------------------------------------------------------------------------
 
 
@@ -330,7 +330,7 @@ def run_skill(records: list[dict], cfg: TaggerEvalConfig) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# mode=deleak  (from evidence/v7_final/runs/v2_full/tagger_deleak_ablation.py)
+# mode=deleak  (from evidence/memory_system/v7/runs/v2_full/tagger_deleak_ablation.py)
 # ---------------------------------------------------------------------------
 
 

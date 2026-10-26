@@ -16,7 +16,7 @@ import shutil
 import sys
 from pathlib import Path
 
-DEFAULT_LEDGER = "evidence/v7_final/credit_backfill_ledger.json"
+DEFAULT_LEDGER = "evidence/memory_system/v7/credit_backfill_ledger.json"
 DEFAULT_SRC = "memory_stores/v6_1"
 DEFAULT_DST = "memory_stores/v6_1_b1pruned"
 

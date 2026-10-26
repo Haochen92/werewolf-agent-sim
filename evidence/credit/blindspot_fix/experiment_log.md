@@ -184,7 +184,7 @@ vote-grain metrics as the endpoint forensics:
 
 > *Correction 2026-10-26.* "+17/+33pp" above joins two arms of the June A/B. The raw arm rose +17 points
 > (McNemar p = 0.267, not significant); the reranked arm rose +33 points (p = 0.013) and carries a
-> drift caveat. The joined figure is recorded as a fusion error in `evidence/v7_final/evaluator_review.md`
+> drift caveat. The joined figure is recorded as a fusion error in `evidence/memory_system/v7/evaluator_review.md`
 > F7; the scoped result is in `evidence/memory_system/effectiveness/report.md`.
 
 **The obs benefit rode the INFERENCE lever, not the caution lever** — abstains flat, discrimination
@@ -304,7 +304,7 @@ has nothing to certify (consistent) · every positive claim carries its epoch st
 
 > *Correction 2026-10-26.* In (a), "+17/+33pp; reranked p=0.013" joins two arms. The raw arm's +17
 > points had p = 0.267 (not significant); p = 0.013 belongs to the reranked arm's +33 points, which
-> carries a drift caveat. See the fusion note in `evidence/v7_final/evaluator_review.md` F7 and the
+> carries a drift caveat. See the fusion note in `evidence/memory_system/v7/evaluator_review.md` F7 and the
 > scoped result in `evidence/memory_system/effectiveness/report.md`.
 
 **Not conceded:** the June result within its epoch; the mechanism findings (inference-vs-caution
@@ -335,7 +335,7 @@ played by agents that answered without a reasoning step.
 | Run | Dates | Game records | Game model · thinking level |
 |---|---|---|---|
 | June static paired A/B (`batch_results/ab_*.jsonl`) | 2026-06-11 to 06-12 | 398 | `gemini-3.1-flash-lite` · minimal |
-| v7 loop runs (`evidence/v7_final/runs/`: smokes, loop_gate, town_only_run1/2, v2_full) | 2026-06-19 to 06-22 | 222 | `gemini-3.1-flash-lite` · minimal |
+| v7 loop runs (`evidence/memory_system/v7/runs/`: smokes, loop_gate, town_only_run1/2, v2_full) | 2026-06-19 to 06-22 | 222 | `gemini-3.1-flash-lite` · minimal |
 | v7 endpoint (`batch_results/v7_endpoint_ab`, 30 boards × 2 arms) | 2026-07-20 | 60 | `gemini-3.1-flash-lite` · minimal |
 
 Day summaries ran at "medium" throughout, so the summaries the players read did come from a reasoning
@@ -355,7 +355,7 @@ reasons first.
 
 > *Correction 2026-10-26.* "The June +17/+33pp result" joins two arms: +17 points on the raw arm
 > (p = 0.267, not significant) and +33 points on the reranked arm (p = 0.013, with a drift caveat). See
-> `evidence/v7_final/evaluator_review.md` F7 and `evidence/memory_system/effectiveness/report.md`.
+> `evidence/memory_system/v7/evaluator_review.md` F7 and `evidence/memory_system/effectiveness/report.md`.
 
 **Why it might matter.** These are hypotheses. None was tested.
 
@@ -375,7 +375,7 @@ reasons first.
 
 **Lesson.** A configured value is not the behaviour it was meant to produce. The fingerprint stamped
 "minimal" on every record, which proved the setting was pinned, not that the model reasoned. This is
-the same class of failure as the `all_enabled` slip in the v7 loop run (`evidence/v7_final/report.md`
+the same class of failure as the `all_enabled` slip in the v7 loop run (`evidence/memory_system/v7/report.md`
 §5c): the harness ran something other than what we believed, and the record showed the setting rather
 than its effect. Record the effect as well. The bench now records reasoning tokens per turn
 (`3e05e8a7`). Any future memory measurement should record them per game too, and should state the
