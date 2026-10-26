@@ -142,6 +142,7 @@ Main sources: `caching/`, the batch extraction records.
 | Group | Level 2 pages |
 |---|---|
 | Seeing what happened | Tracing and prompt captures; the runtime fingerprint (provenance, with the rationale from `refactor/`); error reporting and the usage ledger |
+| Serving the engine | Hosting the synchronous game engine in the async web server: three options, the parity check, the thread pool sized from a late human prompt (block 111; moved from chapter 1's page 5, owner 2026-10-26). Links to chapter 1's page 5 for the pause, checkpoint and cache |
 | When it broke | Provider stalls and the 30-second request budget; the rescue model and backup key; the cache bug's diagnosis from captures (its home is chapter 1); the missing hang watchdog as a gap |
 
 Main sources: `tracing/` (with `fingerprinting/`), `docs/agentic_ai_encountered_issues.md`, the
