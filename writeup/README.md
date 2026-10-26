@@ -28,6 +28,8 @@ _The spine — a few-minute linear tour of the project, filled in as chapters la
 4. **Evaluation rigor** — de-lucked outcome proxies, paired-A/B methodology, and the
    de-luck credit signal.
    _Proof → `../evidence/metrics/`, `../evidence/evaluation/metrics/report.md`._
+   _Draft pages → [`evaluation/`](evaluation/evaluation.md): the Level 1 page, one folder per Level 2
+   page with its Level 3 pages beside it, and `exhibits/` with its source map._
    _Exhibit menu (concrete examples to pick from) → [`eval_exhibits.md`](eval_exhibits.md)._
 5. **Frontend** — _added after the build (replay + live spectator)._
    _Server talking points, one page for interviews →_
