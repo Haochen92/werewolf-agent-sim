@@ -8,9 +8,12 @@ Sourcing contract (the production event stream): a window is a glob of game-reco
 each record carrying ``roles`` / ``day_resolutions`` / ``night_resolutions`` and an
 ``eval_cases_path`` sidecar of per-decision eval cases (``strategy_verdicts`` +
 ``strategy_index_to_key`` join the followed SPs). This is exactly what the batch runner already
-emits per game — the live backend must keep emitting it, and must stamp ``human_player`` on any
-game with a human seat: ``_iter_game_records`` DROPS those records (the poisoning rule — only
-agent-only games may teach the store).
+emits per game — the live backend must keep emitting it, and must name the human seats of any game
+that has them (``human_players``, or the seat id in ``human_player``): credit grades only the AI
+seats' decisions, and a human seat's are dropped (owner, 2026-10-26: most served games will have a
+human seat, so an AI-only rule would leave credit almost no games; credit only grades the agents'
+own decisions by fixed rules against the true roles, while extraction, which writes lesson text,
+stays AI-only).
 
 One verdict per lesson per seat per scope (owner, 2026-10-13): a scope is a day's discussion, a
 day's vote, a night's pack chat, or a night's act (the kill and the skill share one lookup). A seat
@@ -33,23 +36,43 @@ VERDICT_RANK = {"follow": 3, "override": 2, "not_relevant": 1}
 """A lesson's verdict over a scope's turns: follow on any turn wins, then override."""
 
 
+def _human_seats(g: dict) -> set[str] | None:
+    """The game's human seats, or None when it has one but the record does not say which (a record
+    that stamps only a flag): its human's decisions could not be told from the agents'."""
+    seats = set(g.get("human_players") or [])
+    flag = g.get("human_player")
+    if isinstance(flag, str):
+        seats.add(flag)
+    elif flag and not seats:
+        return None
+    return seats
+
+
 def _iter_game_records(window):
-    """Every game record in the window that is allowed to TEACH: the human-seat guard lives here,
-    once, so every ledger and base in this package inherits it. A record with a truthy
-    ``human_player`` is a human-involved game — replayable, never mined (the poisoning rule).
-    ``window``: a glob spec of batch-run dumps, or games already loaded (``sources``: files and the
-    served games' database, decisions §14)."""
+    """Every game record in the window that may teach: the human-seat guard lives here and in
+    ``iter_eval_cases``, once, so every ledger and base in this package inherits it. A game with a
+    human seat is read, and only its AI seats' decisions are graded; one whose human seats are not
+    named is dropped whole. ``window``: a glob spec of batch-run dumps, or games already loaded
+    (``sources``: files and the served games' database, decisions §14)."""
     games = games_from_files(window) if isinstance(window, str) else window
     for g in games:
-        if not g.get("human_player"):
+        if _human_seats(g) is not None:
             yield g
 
 
 def iter_eval_cases(g: dict):
     """The game's agent-action eval cases, in the order they were played: inline for a served game
-    (``eval_cases``), else from the batch run's sidecar."""
+    (``eval_cases``), else from the batch run's sidecar. A human seat's cases are skipped."""
     if not g.get("roles"):
         return
+    humans = _human_seats(g) or set()
+    for ec in _all_eval_cases(g):
+        if ec.get("player_id") not in humans:
+            yield ec
+
+
+def _all_eval_cases(g: dict):
+    """Every eval case the game recorded, inline or from its sidecar."""
     if "eval_cases" in g:
         yield from g["eval_cases"]
         return

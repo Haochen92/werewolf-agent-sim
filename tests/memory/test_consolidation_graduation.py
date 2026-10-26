@@ -97,8 +97,9 @@ def _window(tmp: Path) -> tuple[str, str]:
 
 # --- (c) the poisoning guard ------------------------------------------------------------------------
 
-def test_human_involved_games_teach_nothing(tmp_path):
-    cases_on = [_vote_case("trailseer", "player_3", "player_2", key="k_push")]
+def test_human_seat_decisions_teach_nothing(tmp_path):
+    # player_1 is the human: its own decisions are dropped from both the base and the ledger.
+    cases_on = [_vote_case("trailseer", "player_1", "player_2", key="k_push")]
     cases_off = [_vote_case("sentinel", "player_1", "abstain", mem=False)]
     human_on = _game(tmp_path, "hon", cases_on, day_res=[NO_LYNCH], human_player="player_1")
     human_off = _game(tmp_path, "hoff", cases_off, day_res=[NO_LYNCH], human_player="player_1")
@@ -107,6 +108,28 @@ def test_human_involved_games_teach_nothing(tmp_path):
     assert prod_base_rates(human_off) == {}
     stats = prod_credit_apply(sp, human_on, base_rates={}, off_window=None)
     assert stats["ledger_keys"] == 0 and stats["credited"] == 0
+
+
+def test_ai_seats_in_a_human_game_still_teach(tmp_path):
+    # Owner, 2026-10-26: a game with a human seat is read; its AI seats' decisions are graded.
+    cases_on = [_vote_case("trailseer", "player_3", "player_2", key="k_push")]
+    cases_off = [_vote_case("trailseer", "player_3", "abstain", mem=False)]
+    human_on = _game(tmp_path, "hon", cases_on, day_res=[NO_LYNCH], human_player="player_1")
+    human_off = _game(tmp_path, "hoff", cases_off, day_res=[NO_LYNCH], human_player="player_1")
+    sp = _sp_store(tmp_path, "strategy_points.json", {
+        "strategy_points/trailseer/day_vote": [_sp("k_push", cell="trailseer/day_vote")]})
+    assert prod_base_rates(human_off) != {}
+    stats = prod_credit_apply(sp, human_on, base_rates={}, off_window=None)
+    assert stats["ledger_keys"] == 1
+
+
+def test_a_human_game_whose_seats_are_not_named_teaches_nothing(tmp_path):
+    cases_on = [_vote_case("trailseer", "player_3", "player_2", key="k_push")]
+    flagged = _game(tmp_path, "flag", cases_on, day_res=[NO_LYNCH], human_player=True)
+    sp = _sp_store(tmp_path, "strategy_points.json", {
+        "strategy_points/trailseer/day_vote": [_sp("k_push", cell="trailseer/day_vote")]})
+    stats = prod_credit_apply(sp, flagged, base_rates={}, off_window=None)
+    assert stats["ledger_keys"] == 0
 
 
 # --- (d) Postgres roundtrip + the tick --------------------------------------------------------------

@@ -12,10 +12,11 @@
 
 Baseline coherence in production (load-bearing): the OFF window MUST be memory-off, agent-only
 games graded by the same fixed rule — mode-1 traffic (+ the self-play trickle) is that stream. The
-human-seat poisoning guard lives in ``credit_rules._iter_game_records``, so human-involved games
-are inert here even if a glob accidentally includes them; per-game extraction dump dirs for
-human games must still be excluded by the caller (extraction has no record-level guard). The
-offline extraction job's output (``--extracted``) skips its human-seat games itself.
+human-seat guard lives in ``credit_rules`` (``_iter_game_records``, ``iter_eval_cases``): credit
+reads games with a human seat but grades only their AI seats' decisions (owner, 2026-10-26).
+Extraction stays AI-only: per-game extraction dump dirs for human games must still be excluded by
+the caller (extraction has no record-level guard), and the offline extraction job's output
+(``--extracted``) skips its human-seat games itself.
 
 Ten-seat since 2026-10-13: the store bootstraps from ``ten_seat_v2`` and its snapshots go to their own
 folder (the nine-seat ``demo_snapshots`` are left as they are).
