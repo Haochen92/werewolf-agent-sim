@@ -52,12 +52,13 @@ planned `playbook.md` (both in the proposal).
 | `live_timing_sheet.md` | Rulings 2026-10-01, living; measurements are one flash-lite game's; head note mis-states what stage_fit replaced; extraction rows stale since 2026-10-12 | When does the server emit each event, what does each viewer's stage do with it, how far behind does it run? | 7 (the spine), 4 (ruling 6); learning realtime_and_sync |
 | `stage_fit/README.md` + `results.json` | Measured 2026-10-24 on 13 served games; rerunnable (`evaluation/experiments/stage_fit.py`) | Does the model keep ahead of the stage, and where does the stage wait? | 7 (the measured figures) |
 | `build_plan.md` §4, §5 | The client's design rulings (state model, wire integration), 2026-08-20; four passages stale (URL scrub state, the view sketch, stream error handling, persistence keys) | What holds the browser's state, and how does it talk to the server? | 1, 3, 4, 6, 8, 9 |
-| `build_plan.md` (the rest) | The plan, ruled 2026-08-20, P0 to P3 built by 2026-08-21; §7 holds the deploy record (about 70 dated entries to 2026-10-22); §8, §9 superseded | How was the build phased, and what was deployed when? | playbook 6, 11; learning loading_and_deploy |
+| `build_plan.md` (the rest) | The plan, ruled 2026-08-20, P0 to P3 built by 2026-08-21; the deploy record lifted to `deploy_log.md` on 2026-10-26; §8, §9 superseded | How was the build phased? | playbook 6; learning loading_and_deploy |
 
 ## Journey logs
 
 | Document | Status | Reader question | Feeds |
 |---|---|---|---|
+| [`deploy_log.md`](deploy_log.md) | 72 dated deploys, 2026-08-21 to 2026-10-22, lifted whole from `build_plan.md` §7 on 2026-10-26; appended to | What was deployed when, how was it checked, and how is a deploy done here? | playbook 11; learning loading_and_deploy |
 | `build_log.md` §0 to §7 | 2026-08-21, amended 2026-09-27 and 2026-10-12; by kind of problem, not date; the "I" is the AI builder | Where did reality disagree with the specs while the client was built, and what did it cost? | 1, 3, 4, 6, 8; learning realtime_and_sync, testing; playbook 12 |
 | `build_log.md` §8 | 2026-10-01 to 10-02, the stage on a phone; the home of the numbers (534 MB of layers to 114); four later-overturned claims lack dated notes | What happened, in what order, with what numbers, when the stage met an iPhone? | 10 (primary); five learning topics |
 | `server_encountered_challenges.md` | Seven debugging records, 2026-08-19 and 2026-08-24, undated per entry; all checked current | What broke while making the server host real humans, and what was it? | 2 (§1 to §5), 5, 8 (§7); learning (server-side lessons); playbook 10 |

@@ -104,8 +104,7 @@ session.
     golden and keep only the explained ones; stop the server when the batch lands. Deploy from a clean
     detached worktree, migration first from inside the new image, pre-flight, no rooms or games running,
     swap with the old images kept as `:prev`, run the smoke list, record what was not run. Exemplars:
-    `testing.md` "How a run is done here"; `build_plan.md` deploy entries `a651988` and `344b9e58` (to
-    become `deploy_log.md`). Working rules placed here: known ports only, start the Playwright server per
+    `testing.md` "How a run is done here"; `deploy_log.md` entries `a651988` and `344b9e58`. Working rules placed here: known ports only, start the Playwright server per
     batch and kill it by pid, no production build while other sessions are busy, never kill another
     session's process without the owner (2026-09-27 to 2026-10-15). Rule: a build is of a commit, never
     of the working tree; a run against someone else's build proves nothing.

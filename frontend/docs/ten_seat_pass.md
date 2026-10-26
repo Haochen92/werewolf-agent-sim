@@ -157,7 +157,7 @@ Record tab on ten-seat games.
 
 ## 8. Acceptance, 2026-10-10 (uncommitted, P0 met)
 
-[2026-10-26: committed and deployed 2026-10-11 at `74d8206b` (build_plan deploy record).]
+[2026-10-26: committed and deployed 2026-10-11 at `74d8206b` ([`deploy_log.md`](deploy_log.md)).]
 
 Typecheck 0 errors, lint clean, vitest 56 files / 1397 tests, Playwright 13 baselines regenerated
 and checked by eye (ticket at 390 and 1440, rooms, landing, replays slate, game-over, record
@@ -184,7 +184,7 @@ For the owner to rule (not changed):
 
 ## 9. Review batch, 2026-10-11 (uncommitted)
 
-[2026-10-26: committed and deployed 2026-10-11 at `74d8206b` (build_plan deploy record).]
+[2026-10-26: committed and deployed 2026-10-11 at `74d8206b` ([`deploy_log.md`](deploy_log.md)).]
 
 Six review findings fixed and the two stale landing tests rewritten: the pack chat's send state
 now comes from the container (reopens on a 422, browser-tested); nine-seat replays read a frozen
