@@ -25,9 +25,10 @@ def game_run_config(*, memory: bool, human_player: int, human_role: str | None =
 
     AI seats use their dealt puppet's speaking voice in served games.
 
-    A served game retrieves strategy points only: the town half of the store never had
-    observations, so retrieving them would give the two factions different memory, and
-    the strategy points are the lessons the replay shows being weighed."""
+    A served game retrieves strategy points only: observations are material for synthesis,
+    not prompt content (ruling 2026-07-15), and the strategy points are the lessons the
+    replay shows being weighed. (Set when the nine-seat store served had no town
+    observations; the ten-seat store has them, and the setting was carried over.)"""
     # The store's name on the game's retrieval metadata (and in the lookup cache key); the
     # store itself is the runtime's, so no file is seeded.
     persistence: dict = {"dump_enabled": False, "seed_enabled": False, "seed_store_dir": "postgres"}

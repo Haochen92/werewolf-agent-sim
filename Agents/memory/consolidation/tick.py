@@ -7,7 +7,8 @@
   every change it made.
 - **The learning tick** (``run_tick``; paid, every N games): fold the window's new observations (the
   offline extraction job's output), advance the decay clocks, synthesize (reading the lessons' labels
-  as the last credit pass left them) and run the point dedup, persist to Postgres, and export the
+  as the last credit pass left them) and, when ``TickConfig.sp_dedup`` is on (off until tuned), run the
+  point dedup, persist to Postgres, and export the
   frozen ``demo_gen{k}`` snapshot. It never prunes or evicts; that is the credit pass's.
 
 Baseline coherence in production (load-bearing): the OFF window MUST be memory-off, agent-only
@@ -147,7 +148,7 @@ def run_tick(game_store_dirs: list[str] | None = None,
             first_seen, reinforced, counts = db.load_obs_sidecar(conn)
             _stamp_obs_generations(scratch, gen, first_seen, reinforced, counts)
 
-            # 3. consolidation store-ops (decay -> synth -> dedup), on the labels the last credit pass left
+            # 3. consolidation store-ops (decay -> synth -> dedup when sp_dedup), on the labels the last credit pass left
             cons = consolidate(scratch, cfg, obs_gen_map=first_seen, current_gen=gen,
                                reinforced_map=reinforced)
 

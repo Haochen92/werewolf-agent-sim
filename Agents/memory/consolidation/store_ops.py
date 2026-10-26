@@ -7,7 +7,8 @@ Runs on a credited store (after ``credit.credit_apply``):
           merits); not_relevant-dominant non-follows are spared (retrieval's fault, not content's).
   SYNTH   credit-aware synthesis (realized track record) for cells with NEW obs — adds fresh SPs;
           existing SPs PERSIST so their credit accumulates across ticks. A freeze-old KEEP/DISCARD
-          SP dedup runs right after synth to collapse near-duplicates onto the credited survivor.
+          SP dedup can run right after synth to collapse near-duplicates onto the credited survivor
+          (``TickConfig.sp_dedup``, off until tuned).
 
 Pure prune/evict is LLM-free → testable offline; synth + the SP dedup are the paid steps.
 Graduated from ``evaluation/src/loop/consolidate.py`` (go-live 2026-07-21).
