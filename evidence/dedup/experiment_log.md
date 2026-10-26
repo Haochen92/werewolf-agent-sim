@@ -294,9 +294,9 @@ dedup is KEEP/DISCARD; the embedder is Qwen with its own threshold table, and th
 rest on the 65 golden cases alone. The sub-logs' dated addenda carry the detail and the owner's rulings
 (`memory_system/v8/decisions.md` §14 for the strategy-point rules and the credit of a merged duplicate).
 
-**Status on 2026-10-26.** Rows 1, 3, 9–12 stand. Row 2: the guard is built, but the learning tick
-runs its fold without it (the tick's working folder carries no last-dedup marker; checked in the
-code on 2026-10-26, not yet observed in a run; the report's "Built and off"). Row 7: the name "v6.1" is not in the
+**Status on 2026-10-26.** Rows 1, 3, 9–12 stand. Row 2: the guard is built; the learning tick ran its
+fold without it (its working folder carries no last-dedup marker), found in the code and fixed the
+same day: both tick steps now name their new entries (the report's "Built and off"). Row 7: the name "v6.1" is not in the
 code. Row 8: `dump_enabled` no longer gates any dedup; the online pass runs in
 `write_extracted_store`. Since 2026-10-15 the keep-or-discard judges default to Claude Haiku 5.5
 (`DEFAULT_DEDUP_MODEL`, `TickConfig.dedup_model`), unscored on either golden set.

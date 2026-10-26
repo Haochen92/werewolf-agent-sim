@@ -20,8 +20,7 @@ code. No ten-seat learning tick is recorded.
   observations that stopped recurring age out, writes new lessons and removes duplicate lessons. It
   never prunes or evicts.
 - **What supports it.** Eleven ways a store degrades were found in the v7 loop's runs and reviews,
-  and each got a guard. Ten guards are in today's code, one of them in a changed form; the eleventh is built but does not
-  engage in the learning tick. One
+  and each got a guard. All eleven guards are in today's code, one of them in a changed form. One
   threshold was checked: lessons flagged harmful on one half of a game archive stayed harmful on the
   other half in 8 of 9 cases.
 - **What is not known.** The thresholds were set on nine seats and are not validated for ten. No
@@ -118,11 +117,10 @@ and duplicate lessons.** It is `tick.py::run_tick`, which turns prune and evict 
 
 1. **Fold in new observations** from the offline extraction job (`obs_fold.py::merge_new_obs`). A
    new observation that duplicates a stored one is discarded, and the stored one's count rises. A
-   near-duplicate is kept as a separate record, and no text is rewritten. By design stored observations
-   are never judged against each other (the freeze-old guard), but in today's tick the guard does not
-   engage: the tick's working folder carries no last-dedup marker, so the fold would re-judge the
-   whole store (checked in the code 2026-10-26; the [dedup report](../dedup/report.md), "Built and
-   off"). The judge is Claude Haiku 5.5 (`TickConfig.dedup_model`). The
+   near-duplicate is kept as a separate record, and no text is rewritten. Stored observations are
+   never judged against each other (the freeze-old guard): the fold names the observations it
+   appended as the only new ones (since 2026-10-26; the [dedup report](../dedup/report.md), "Built
+   and off"). The judge is Claude Haiku 5.5 (`TickConfig.dedup_model`). The
    dedup stack itself is told in the [dedup report](../dedup/report.md).
 2. **Advance the clocks.** For each observation the database keeps the tick it first appeared and
    the tick its count last rose (`tick.py::_stamp_obs_generations`; table `obs_generations`).
@@ -212,7 +210,7 @@ the mechanism.
 | 7 | A new lesson could never earn credit: credit needs follows, and a cell full of proven lessons never showed it | lane review, 2026-07-14 | a guaranteed slot for the best unproven lesson; the cap counts unproven lessons only | yes (`filters.py::_ensure_exploration_slot`) |
 | 8 | Any observation seen twice never aged out, so store size had no bound | store-bounding review, 2026-07-14 | aging out scaled by count, clocked from the last sighting | yes (`store_ops.py::evict_observations`) |
 | 9 | Grouping cost grew with the whole store, and was paid even by cells the checks then skipped | store-bounding review, 2026-07-14 | checks before grouping; groups grow from new arrivals | yes (`store_ops.py::synthesize`) |
-| 10 | Repeated dedup passes kept re-judging old entries as neighbours arrived, eroding the store past the ~17% duplicate rate where it worked best | dedup campaign, 2026-06-09 ([diagnosis](../dedup/incremental_convergence.md)) | stored entries are never judged against each other | built, but it does not engage in the tick's fold (the [dedup report](../dedup/report.md), "Built and off") |
+| 10 | Repeated dedup passes kept re-judging old entries as neighbours arrived, eroding the store past the ~17% duplicate rate where it worked best | dedup campaign, 2026-06-09 ([diagnosis](../dedup/incremental_convergence.md)) | stored entries are never judged against each other | yes, in the observation fold and the lesson dedup, which name their new entries (since 2026-10-26; the [dedup report](../dedup/report.md), "Built and off") |
 | 11 | Synthesis rewrote advice that pruning had just removed, because observations' verdicts follow which side won | design, 2026-06-19 | synthesis shown each lesson's measured lift | yes (`store_ops.py::_track_record`); the mechanism is checked, the quality of what it writes is not |
 
 The v7 loop also checked, every generation, that each lesson's memory-off comparison came from the

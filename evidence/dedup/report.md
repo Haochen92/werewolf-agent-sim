@@ -349,15 +349,15 @@ re-judges everything, old against old; that is the mode the second-run test used
 **What the guard depends on (open).** "Old" means created before the store's last dedup run. Two
 things weaken that boundary. A merged survivor does not keep its creation time, and loading a store
 resets every entry's, so the boundary holds within a run, not across runs (the guard's Fix 1, never
-built; moot while nothing merges). And the guard engages only when the store's folder carries the
-previous run's time marker (`incremental.py::_read_last_dedup_at`). The learning tick builds a new
-folder from the database each time and writes no marker into it (checked in the code on
-2026-10-26: `tick.py::run_tick` → `db.py::materialize` → `orchestration.py`, which then logs "no
-previous dedup timestamp found, processing all entries"). So its fold treats every observation as new
-and re-judges the whole store, old against old, though without rewriting. Writing a marker would not
-fix it alone: extracted observations carry their extraction time, which can be older than the marker.
-No tick has run on ten seats, and the tick's end-to-end test runs with the fold's dedup off, so this
-has not been observed; it should be fixed before the first ten-seat learning tick.
+built; moot while nothing merges). The second weakness is fixed. Until 2026-10-26 the guard
+engaged only when the store's folder carried the previous run's time marker
+(`incremental.py::_read_last_dedup_at`), and the learning tick builds a new folder from the database
+each time without one, so its fold would have re-judged the whole store, old against old; a marker
+alone would not have helped, since an extracted observation's creation time can predate it. Now
+both tick steps name their new entries: the fold passes the observations it appended, and the
+lesson dedup the lessons synthesis just wrote (`BatchDedupRunConfig.new_keys`,
+`orchestration.py::incremental_new_keys`; `tests/memory/test_dedup_new_keys.py`). No tick had run on
+ten seats, so the old behaviour was never observed.
 
 ## What dedup cannot do
 
