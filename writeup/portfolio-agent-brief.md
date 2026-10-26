@@ -6,11 +6,39 @@ Build a personal portfolio hub for someone pursuing their first Applied AI engin
 The three project applications already have deployed websites. This hub introduces the owner,
 explains the projects and links to those applications. Do not rebuild the applications.
 
-Routes:
+Project entry routes:
 - `/`
 - `/projects/werewolf-agent-sim`
 - `/projects/dota-oracle`
 - `/projects/nutri-ally`
+
+The portfolio also needs chapter and detail routes. The owner's reading structure (2026-10-25) is:
+
+- Level 1: a chapter page with an overview and substantive summaries of its subjects.
+- Level 2: a page per substantial subject, with its own overview, subsections and exhibits.
+- Level 3: optional pages for focused investigations or technical explanations.
+
+All selected explanations stay on the portfolio. Repository links provide supporting records and code;
+they are not Level 3 and must not be required to understand the work. For Evaluation, use
+[`evaluation/content_plan.md`](evaluation/content_plan.md) for the proposed eight subject pages and
+selected deep dives. Do not turn its entire outline into one long project page.
+
+Suggested route pattern (publish only pages with reviewed content):
+
+```text
+/projects/werewolf-agent-sim/evaluation
+/projects/werewolf-agent-sim/evaluation/{subject}
+/projects/werewolf-agent-sim/evaluation/{subject}/{investigation}
+```
+
+The drafts mirror these routes: `writeup/evaluation/evaluation.md` (chapter),
+`writeup/evaluation/{subject}/{subject}.md` and `writeup/evaluation/{subject}/{investigation}.md`;
+exhibits and their sources are listed in `writeup/evaluation/exhibits/source_map.md`.
+
+Provide breadcrumbs, previous/next links between subject pages, direct section anchors and descriptive
+internal links. Subject pages are reached from their chapter page's sections, not the main navigation; a
+chapter page's subheadings are headings only, never pages. Each page must make sense
+when opened directly. A deeper page adds detail; its parent retains the finding and essential caveats.
 
 This is a starting content outline, not publication-approved copy. Allow final write-ups and
 evidence to arrive later. Do not invent personal background, contributions, measurements, URLs,
@@ -44,7 +72,11 @@ lead to a relevant project section or evidence, not merely decorate a card.
 
 Use structured metadata for cards, links, evidence and showcases, with Markdown/MDX or an
 equivalent simple content format for prose. No CMS or general page-builder framework is needed.
-This TypeScript shape describes the intended content, not a mandatory implementation:
+The project shape below is not the complete page hierarchy. Add chapter metadata and content pages with
+stable IDs, slugs, parent IDs, summaries, Markdown/MDX bodies, assets, evidence references and editorial
+status. Level 1 summaries link to those pages; do not force a Level 2 page into a single `decisions[]`
+entry or flatten it into `sections[]`. Prose and inline exhibits remain the primary content format.
+This TypeScript shape describes the project entry content, not a mandatory implementation:
 
 ```ts
 type Project = {
@@ -243,8 +275,10 @@ attribution, plus a tool interaction if implemented. Populate from a real exampl
 ## Build order
 
 Build one Werewolf card and case-study page first, with real prose, one decision, a caveated
-finding and an evidence link. Reuse the layout for Dota Oracle and nutri_ally. Keep the initial
-site to four routes and reusable content components; no portfolio-specific backend is necessary.
+finding and an evidence link. Then build the Evaluation chapter and one Level 2 subject page to validate
+the reading hierarchy before populating the rest. Reuse the layout for Dota Oracle and nutri_ally.
+Use reusable content components; no portfolio-specific backend is necessary. The four project entry
+routes are a starting point, not a limit on chapter and detail pages.
 
 Check direct project/section links, mobile readability, keyboard navigation and missing-content
 behavior. The final personal introduction, resume, contributions, media, external URLs and
