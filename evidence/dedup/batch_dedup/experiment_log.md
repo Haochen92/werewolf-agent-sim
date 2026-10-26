@@ -555,3 +555,30 @@ The June section above has moved in three places; the mechanism it describes has
   3.5-flash and flash-lite runs. The golden set is the regression check to run before the triage model
   changes.
 
+---
+
+## Addendum 2026-10-26: the Haiku 5.5 judge on the 111 entries
+
+**Question.** The fold and the lesson dedup judge on Claude Haiku 5.5 (`TickConfig.dedup_model`), never
+scored here. Is it still safe to keep or discard with it?
+
+**Run.** The 11 clusters, single pass, Haiku 5.5 at low thinking, through the production builder and
+prompt fields (`batch_dedup_judge`; its replay had drifted from production, filling prompt fields that no
+longer exist, and was fixed the same day). Data: `data/haiku_2026_10_26/`. Cost well under $0.50.
+
+**Result.** Single-pass accuracy 82 of 111 (73.9%), against Flash-Lite's 72.1% in May. Production runs it
+triage-only (a proposed merge becomes a keep), so the calls that matter are keep and discard:
+
+| What the judge said | Haiku 5.5 right | Flash-Lite right (May) |
+|---|---|---|
+| keep (keeps and merges) | 84 of 93 (90.3%) | 56 of 61 (91.8%) |
+| discard | 11 of 18 (61.1%) | 13 of 15 (86.7%) |
+
+Seven of Haiku's 18 discards removed an entry labelled distinct, against 2 of 15 for Flash-Lite. A wrong
+discard is permanent. Per-entry answers were not saved by the runner; the counts come from its confusion
+summary in `batch.log` (golden keep 77: 61 kept, 9 merged, 7 discarded; golden discard 20: 11 discarded,
+5 kept, 4 merged; golden merge 14: 10 merged, 4 kept).
+
+**Reading.** On the keep side Haiku is as reliable as Flash-Lite; on the discard side it is less reliable,
+on 18 discards from one run, so a direction, not a size. It matters for the fold and the lesson dedup,
+where a discard deletes. Not run: a higher thinking level, the anti-merge prompt variant, or Sonnet 5.5.

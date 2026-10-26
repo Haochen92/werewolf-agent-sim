@@ -381,9 +381,13 @@ What the layers rest on:
 
 What has not been checked:
 
-- **The current judges.** No non-Gemini model has been scored on either labelled set; the labelled
-  sets are the regression check owed before a judge changes, and the change to Haiku 5.5 went ahead
-  without it.
+- **The current judges on today's store.** They were scored only on the May sets (2026-10-26, one run
+  each). The one-at-a-time
+  judge, Haiku 5.5, scored 52 of 65 (80.0%), level with the May judges' 83.1%. The batch judge, Haiku 5.5
+  as the fold runs it, was right on 84 of 93 keeps but only 11 of 18 discards (Flash-Lite in May: 13 of
+  15), so in the fold and the lesson dedup about one discard in three may delete a distinct entry
+  ([per-extraction log](per_extraction/experiment_log.md), [batch log](batch_dedup/experiment_log.md),
+  addenda 2026-10-26).
 - **The current embedding lines** rest on 65 cases; on the 232 they would discard two keeps.
 - **The gate** has never been scored on a labelled set.
 - **The trace re-check**: every dedup decision logs its similarity scores so the lines could be re-set
@@ -396,7 +400,7 @@ What has not been checked:
 |---|---|---|
 | Keep or discard only, no merge | merged text unverified; fabrication in 3 of 9 Pro merges | a check of merged text against its sources, wired before the store is written |
 | Lessons partitioned by direction and honesty | the labels separate rival moves | the dry-run's alternative (honesty and stage) catching more of the readers' groups without cross-stage drops |
-| Haiku 5.5 as judge | cost; keep/discard is the reliable part of the task | its score on the 65- and 111-entry sets |
+| Haiku 5.5 as judge | cost; level with the May judges one at a time (80% on 65) | its batch discards: 11 of 18 right against Flash-Lite's 13 of 15; a judge or prompt that discards as safely in the fold |
 | Qwen lines from 65 cases | zero errors on those cases | a check on the 232 cases or on logged decisions |
 | Lean towards keeping | a wrong discard is permanent | a retrieval or play measure showing the duplicates kept cost more than the lessons saved |
 

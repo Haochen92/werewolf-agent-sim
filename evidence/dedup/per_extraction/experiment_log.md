@@ -442,3 +442,25 @@ with any non-Gemini judge; the labels are nine-seat v4-era content.
 
 *Provenance: dataset `v4_action_phase_v2`, seed=42; per-extraction prompt versions v1→v11b; backend
 Google AI Studio through v9d, Vertex AI from v10 (stamped per run).*
+
+---
+
+## Addendum 2026-10-26: the Haiku 5.5 judge on the 65 cases
+
+**Question.** The one-at-a-time judge has been Claude Haiku 5.5 at low thinking since 2026-10-15
+(`Agents/llm_factory/accessors.py::get_llm_dedup`), never scored on this set. Did the switch make it worse?
+
+**Run.** The 65 cases replayed through today's prompts (`Agents/prompts/dedup.py`), Haiku 5.5 at low
+thinking with the schema as text, as production builds it (`dedup_regen`, fixed the same day: it had
+passed the thinking level in a form only Gemini reads, and a first run made that way kept 62 of 65 and is
+discarded). Scored by `eval-dedup-score`. Cost well under $0.50. Data: `data/haiku_2026_10_26/`.
+
+| | Haiku 5.5 (2026-10-26) | Flash-Lite, final prompt (May) | 3.5 Flash (May) |
+|---|---|---|---|
+| Accuracy | 52 of 65 (80.0%) | 83.1% | 83.1% |
+| Observations / lessons | 31 of 40 / 21 of 25 | | |
+| Duplicates kept (recoverable) | 8 of 30 | | |
+| Distinct entries discarded (permanent) | 5 of 34 | 4 | |
+
+**Reading.** Level with the May judges within two cases on 65; no regression shown. One run at
+temperature 0, on nine-seat May content; it says nothing about today's ten-seat store.
