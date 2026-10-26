@@ -43,7 +43,7 @@ them.
 | Level 2 page | The game-level question it opens with | Why it deserves a page | Blocks |
 |---|---|---|---|
 | **1. Designing evidence worth debating** | What must the roles give players, so that there is something to argue about and evil can contest it? | Diagnoses thin talk from one exact source that nobody contested. Then a cast design (partial observers; an engine that never reports a false result) and an evil contest through claims, with the chapter's strongest controlled result | 131–139 |
-| **2. Organising the conversation** | Ten players share one day: who speaks, what gets said aloud, and when does the talk stop? | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
+| **2. Orchestrating the conversation** | Ten players share one day: who speaks, what gets said aloud, and when does the talk stop? | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
 | **3. Executing a day and night** | Conversation is in turn, but votes and night choices are made independently and must all be collected before anything resolves. How does the familiar cycle become execution? | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
 | **4. Turning an answer into a legal action** | A role may act only on certain players, and only while uses remain. How does a model's answer become a move code can apply? | The output contract: one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, and a legal fallback on every path. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
 | **5. Pausing the game for a human** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116 |
@@ -164,7 +164,7 @@ uncertain. A descriptive link closes each.
      model judge per line.
    - **Scope:** balance was tuned on Gemini 3.5 Flash-Lite and held, never run on Haiku. Discussion
      quality was not measured against the nine-seat game.
-2. *Organising the conversation.*
+2. *Orchestrating the conversation.*
    - **Decision:** turn order is computed from the speakers' own tags.
    - **Lead finding:** silence had three sources, and the largest was invisible. 367 of 517 passes were
      a judge holding a line, in 28 nine-seat games on Flash-Lite.
@@ -191,8 +191,8 @@ uncertain. A descriptive link closes each.
      path.
    - **Finding:** a resume re-ran the step's AI votes, so the AI turns were cached and the human turns
      were not. The verification game replayed 20 ballots from cache (one nine-seat game, 2026-08-19).
-   - **End on the cache key that crossed games:** fixed and deployed 2026-10-26, not yet seen in a served
-     game. Link to Level 3.
+   - **End on the cache key that crossed games:** fixed and deployed 2026-10-26, and checked with a before-and-after
+     control. Link to Level 3.
 
 **Hooks.** The map's "Can an AI lie well, and can the other AIs catch it?" is reworded for page 1 (or its
 summary) as "Can an AI lie convincingly when every fact the game reports is true?" The record answers
@@ -287,7 +287,7 @@ batch 2 may stay as a limit.
 - claim field and ledger → chapter 3 (blocks 69, 71);
 - the opening round's original evil silence → page 2.
 
-### 2. Organising the conversation
+### 2. Orchestrating the conversation
 
 **Reader question:** when every player is a model call, how does the engine decide who speaks, what gets
 published and when the day ends, without the machinery itself becoming evidence the players argue
@@ -383,7 +383,8 @@ private note each night (112).
 - **Fix:** notes merge by seat.
 - **Cost kept:** each wrapper must know what it sent.
 
-Tell it as caught and fixed. Check how it was found before saying so (verification).
+Tell it as fixed: what the faulty update did, the change made and the tests that pin it. How it was
+noticed is not recorded (commit `d1cbd2f8`, 2026-07-23); do not infer it from same-day commits.
 
 **Subsections:**
 1. *The game as a graph* (102, 109).
@@ -544,7 +545,8 @@ caught and fixed:
      - its payload held nothing particular to its game;
      - one served game replayed another's failed opening across models;
      - the game id is now in every cached payload.
-   - Deployed 2026-10-26, and not yet seen in a served game (check before publication).
+   - Deployed 2026-10-26: say what the fix does and how it was verified (the regression tests and the
+     before-and-after control), and make no statement about served games since, either way.
    - The Level 3 link sits here.
 6. *Running the engine inside the web server* (111).
    - Three options. **Exhibit:** three lines, each with why it was kept or rejected.
@@ -562,12 +564,18 @@ caught and fixed:
      - the event log can lead the checkpoint by one step (accepted, and it needs a hard crash);
      - how many served games crossed before the fix is unknown.
 
-**Candidate addition (not yet a map block):** resources are spent in the night resolution, once per
-night, never in a turn node, "so a human resume cannot spend one twice". Sources: the wiring census
-decisions (`roles/phase3_wiring_census.md`, line 20), the test
-`test_uses_are_spent_in_the_resolution_once_per_night_and_a_decline_spends_nothing`, and
-`Agents/nodes/night/resolution.py::_spent`. It would be a strong one-paragraph idempotence point in
-subsection 3. Owner to file (see "Open questions").
+**Candidate addition (not yet a map block): limited uses and a resume.** Two claims, kept apart:
+- **Established:** uses are deducted only in the night resolution, never in a turn node, and the
+  resolution computes the new counts from the night's starting state. Running the resolution twice on
+  the same night gives the same counts: the test
+  `test_uses_are_spent_in_the_resolution_once_per_night_and_a_decline_spends_nothing` calls it twice
+  and checks both results. Sources: `Agents/nodes/night/resolution.py::_spent`, the wiring census
+  decisions (`roles/phase3_wiring_census.md`, line 20).
+- **Not established:** that a real pause and resume can never spend a use twice. That needs a test that
+  pauses a human seat during a night where a limited use is spent, resumes from the checkpoint and checks
+  the counts. No such test was found (2026-10-26).
+
+The page may state the first claim. The second needs that test first (see "Open questions").
 
 **Tags:** human-in-the-loop systems, checkpointing, cache-key design, asynchronous programming. Name
 reliability (execution mechanics) without claiming exactly-once execution.
@@ -589,7 +597,7 @@ Level 3 page". Each candidate is anchored in a Level 2 subsection that covers th
 
 | Page | Reader question | Added value ("Readers will learn how…") | Why separate | What stays on Level 2 | Verification needed |
 |---|---|---|---|---|---|
-| **The cache key that crossed games** (page 5) | How did a cache built to make a human's resume free end up serving one game's failed turn to another game, on another model? | …five choices, each reasonable alone, composed into a cross-game key: privacy-first wiring, cached re-runs, a value-based key, one process-wide cache, and an opening payload with nothing game-specific in it. Also how a collision count, a recorded incident and a before-and-after control bounded what is known | The chain, the 7-of-66 collision analysis, the two games side by side and the 5 → 0 control need sustained attention. The parent's argument is how the game pauses for a human | The bug in one paragraph: payload with no game id, the incident, the fix, deployed 2026-10-26, one recorded case, extent unknown. Plus the lesson: a cache key must name its scope | (1) How the `51226f24` replay was attributed: its `player_9` turn has no captured prompt, so state the evidence (a `generation_failed` pass on a game where every other call succeeded, at the one seat whose role matched). (2) The control's setup: the scripted model on pre-fix code against the fixed code, the two Haiku games, the six shared seats' roles. (3) Whether any served game has run on `2ecec0cc` by publication. (4) Restart times for the 19 other candidate pairs, if they can be checked |
+| **The cache key that crossed games** (page 5) | How did a cache built to make a human's resume free end up serving one game's failed turn to another game, on another model? | …five choices, each reasonable alone, composed into a cross-game key: privacy-first wiring, cached re-runs, a value-based key, one process-wide cache, and an opening payload with nothing game-specific in it. Also how a collision count, a recorded incident and a before-and-after control bounded what is known | The chain, the 7-of-66 collision analysis, the two games side by side and the 5 → 0 control need sustained attention. The parent's argument is how the game pauses for a human | The bug in one paragraph: payload with no game id, the incident, the fix, deployed 2026-10-26, one recorded case, extent unknown. Plus the lesson: a cache key must name its scope | (1) How the `51226f24` replay was attributed: its `player_9` turn has no captured prompt, so state the evidence (a `generation_failed` pass on a game where every other call succeeded, at the one seat whose role matched). (2) The control's setup: the scripted model on pre-fix code against the fixed code, the two Haiku games, the six shared seats' roles. (3) Restart times for the 19 other candidate pairs, if they can be checked |
 
 All six criteria hold.
 - **Distinct question:** how the chain composed. Page 5 asks how the game pauses for a human.
@@ -606,8 +614,8 @@ added-value cell).
 
 | Candidate | Reader question | Added value ("Readers will learn how…") | Open point |
 |---|---|---|---|
-| **Silence calibration: a volume knob, not a filter** (page 2) | Can a model player's own choice to pass be tuned into a filter for useful speech? | …replaying each voluntary pass with "do not pass", blind classification of the forced lines, and a one-sentence ablation showed that the choice to pass did not separate value. Also how the shipped gate was then measured on the same lines | **Defensible content is the doubt.** One Sonnet reader per line, never checked against a person (Evaluation hardening task 1b), and 23–46 turns per cell. Publish with that scope stated, or wait until the human check is done. The parent keeps the result and the gate's 10 of 29 / 0 of 36 |
-| **Why the voice is in the prompt, not a rewrite** (page 2 or chapter 3) | Can a second model call add a persona's voice without changing what a line claims? | …blind naturalness and fidelity judging, a deterministic fact gate (names, nights, role words) that caught 1 of the 19 meaning changes, and a line study with a plain-against-plain noise baseline | **The home is open** (page 2 or chapter 3). Judges were Sonnet subagents. The paired games are a lean. Its general lesson (a rewrite can change meaning a name-and-night check cannot see) is strong for an LLM-engineering reader |
+| **Silence calibration: a volume knob, not a filter** (page 2) | Can a model player's own choice to pass be tuned into a filter for useful speech? | …replaying each voluntary pass with "do not pass", blind classification of the forced lines, and a one-sentence ablation showed that the choice to pass did not separate value. Also how the shipped gate was then measured on the same lines | **Draft now as a complete study** (owner, 2026-10-26); update it when the owner's labels arrive (Evaluation hardening task 1b). Present it as an engineering decision informed by model judgements: one Sonnet reader per line, never checked against a person, and 23–46 turns per cell, stated where the results are, not as a closing caveat. The parent keeps the result and the gate's 10 of 29 / 0 of 36 |
+| **Why the voice is in the prompt, not a rewrite** (page 2 or chapter 3; draft the page 2 subsection first, and create the deeper page only if the method adds something substantial) | Can a second model call add a persona's voice without changing what a line claims? | …blind naturalness and fidelity judging, a deterministic fact gate (names, nights, role words) that caught 1 of the 19 meaning changes, and a line study with a plain-against-plain noise baseline | **The home is open** (page 2 or chapter 3). Judges were Sonnet subagents. The paired games are a lean. Its general lesson (a rewrite can change meaning a name-and-night check cannot see) is strong for an LLM-engineering reader |
 | **Hosting a synchronous agent graph in an async server** (page 5) | When the engine is synchronous and the server is async, where should the blocking live? | …three options compared by what each moves (threads, ownership, a viral rewrite), a toy parity check run before the migration, and executor sizing from an observed delay | **May belong to a server chapter.** The record is the server's design notes, not `evidence/`. The 64-thread fix rests on one observed late prompt (in a code comment, 2026-10-17). Page 5 keeps the decision in a paragraph |
 
 ### Deferred to another chapter's pages
@@ -681,8 +689,8 @@ Cross-link instead of retelling.
 - The closing defence's effect on votes is unmeasured.
 - No alternative orchestration design was compared.
 - The tool-loop reason is reasoned, not measured, except the Haiku forced-tool-call probe.
-- The cache fix is regression-tested and deployed, but not yet observed in a served game; recheck at
-  publication.
+- The cache fix: state what it does and how it was verified (regression tests, the before-and-after
+  control). Make no statement about served games since the deploy, either way (owner, 2026-10-26).
 
 **Every number keeps its scope in the same sentence:** model, seat count (nine or ten), N, date, and the
 unit (turns, samples, messages, games, voting days). Two traps:
@@ -746,13 +754,9 @@ deduction row labelled "→ chapter 3"); the five page titles; no "what went wro
 host on page 5, the shared records on page 3, the voices closing page 2; the page 1 hook reworded.
 
 Still open:
-1. **The voice-rewrite study** as a possible Level 3 page (recommended: keep it possible). Its lesson is
-   that a rewrite changed meaning in 19 of 90 lines and a name-and-night check caught 1 of them.
-2. **The silence calibration** as a possible Level 3 page: publish with "one model reader per line, not
-   checked against a person", or wait for Evaluation hardening task 1b.
-3. **The idempotence block** (night uses are spent only in the resolution, so a human resume cannot spend
-   one twice): file it in the map for page 5, after confirming it in code.
-4. **How the note-wipe bug was found.** Commit `d1cbd2f8` (2026-07-23) records the bug, the fix and the
-   tests, not how it surfaced. Unless the owner remembers, page 3 says "fixed", not "caught".
-5. **The cache fix in a served game:** "not yet observed in a served game" stays until a game has run on
-   `2ecec0cc`; recheck at publication.
+1. **Possible Level 3 pages: direction set 2026-10-26, decided after drafting.**
+   - *The voice rewrite:* kept as a candidate. Its question (can a rewrite change style without changing
+     meaning?) could justify depth. Draft page 2's subsection first, then decide.
+   - *The silence calibration:* draft now as a complete study; update it when the owner's labels arrive.
+2. **Limited uses across a resume.** The resolution's re-run is tested; a real pause-and-resume over a
+   night that spends a use is not. Write that test, or file the block with the first claim only.
