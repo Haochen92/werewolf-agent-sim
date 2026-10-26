@@ -6,8 +6,12 @@ trusted, and the attempt to use them to choose lessons, which found no benefit a
 design and its tests were built on the nine-seat game in June and July 2026; the ten-seat game reuses
 the same fields.
 **Revised against the code:** 2026-10-22 at `c0732f88` (working tree; the files cited here carry no
-uncommitted edits that touch the fields).
+uncommitted edits that touch the fields). On 2026-10-26 the query build (§4) and the stage-filter
+result (§5) were cut to summaries of [the situation-query report](../situation_summary/report.md),
+their detailed home.
 **Companion docs:** the journey in date order, [`experiment_log.md`](experiment_log.md) ·
+[the situation-query report](../situation_summary/report.md) (how the query is built and the
+stage-filter result) ·
 the ten-seat memory record, [`../../memory_system/v8/experiment_log.md`](../../memory_system/v8/experiment_log.md)
 (the stage filter and the read of served lessons) · [`../../credit/report.md`](../../credit/report.md)
 (how lessons are scored) · [`../../agent_boundaries/report.md`](../../agent_boundaries/report.md)
@@ -170,14 +174,13 @@ come from, and the query prompt says so.
 
 ## 4. How a query is built, and what reads the fields today
 
-**The query (live whenever memory is on).** At a decision, the seat's own game model is asked for one
-or two situations in its cell's fields. Before it writes, the code computes every field it can from
-the game state (players alive, uses left, partner revealed, distance to parity, swing) and puts them in
-the prompt as known board facts, so the model writes the stakes prose from true numbers. After it
-writes, the code overwrites those fields with the same computed values, so a model that ignored the
-facts cannot change them. Both steps read one function, so the number the model is told and the
-number it is overwritten with cannot differ. The text fields are then joined into the search string.
-If the call fails, the turn goes on with a bare fallback string; memory never blocks a decision.
+**The query (live whenever memory is on).** At a decision, the seat's own game model writes one or
+two situations in its cell's fields; the code computes every field it can from the game state
+(players alive, uses left, partner revealed, distance to parity, swing), states those values to the
+model as known board facts and overwrites them in the reply from the same function, so the number
+the model is told and the number stored cannot differ, and the text fields are joined into the
+search string. How the call is built, when it runs and what happens when it fails are in
+[the situation-query report](../situation_summary/report.md) §3–4.
 
 **What reads the fields:**
 
@@ -195,8 +198,9 @@ lessons (off by default), sees only the embedded string, not the separate number
 planned a small trained reranking model that would read the numbers directly; it was never built.
 
 **Memory in the served game.** On the website, memory is a per-game choice that starts off (the
-production deployment allows it through `WW_MEMORY_ENABLED`); when a player turns it on, every AI seat retrieves lessons (strategy points
-only) from the published store. The observations remain the raw material that lessons are written from.
+production deployment allows it through `WW_MEMORY_ENABLED`); when a player turns it on, AI seats retrieve lessons (strategy points
+only) from the published store, though no seat looks up on day 1 and a town seat never does on day
+turns ([the situation-query report](../situation_summary/report.md) §3). The observations remain the raw material that lessons are written from.
 
 ## 5. How far the fields can be trusted
 
@@ -228,7 +232,7 @@ Three uses were tested on replayed decisions. A *replay* freezes a real decision
 
 - **Ranking by the stakes numbers (June 2026): no reliable effect.** The first run looked like a clear win near the end of the game (+0.25 over similarity alone, 16 votes). It was contaminated: 20 of its 30 games were the games the lessons came from, so a seat could see a lesson that already knew its own game's outcome. With those removed, the gain fell to +0.087 (23 votes), and on 125 held-out votes from three town roles the stakes ranking scored 0.032 *below* similarity alone. The same villager inputs run twice gave +0.061 and then −0.037, so any effect is smaller than the noise between identical runs of a replay at temperature 1.0. The numbers stayed in the store; ranking by them was never wired into play.
 - **The new query against the old (June 2026): not established.** With old-style queries, lessons beat no memory by +0.088; with queries in the new fields, by +0.120 (125 votes each). The two runs were separate, and the 0.032 gap is smaller than the 0.1 swing between identical runs. Earlier records presented this as the rewrite's main retrieval gain; it is not shown.
-- **Dropping lessons from another stage (October 2026, ten-seat): fit improved, offline.** Four Claude Sonnet readers judged whether lessons shown in seven memory-on games fitted the decision, with the true roles in hand. With similarity alone, on the 12-game store, 15% fitted (96 lookups). Dropping lessons written for another stage of the game (a different alive bucket, a lost partner, no uses left) raised that to 25%, but left 25 lookups with nothing to show. On the larger 40-game store, refilling from same-stage lessons, 52 of 96 lookups got at least one fitting lesson against 41 without the filter; the readers differed from the first read, so this is approximate. The filter is built and off by default. It was on in the 20 memory-on games of the credit demonstration (2026-10-14), which measured neither fit nor play.
+- **Dropping lessons from another stage (October 2026, ten-seat): fit improved, offline.** Used as a hard filter (a different alive bucket, a lost partner, no uses left), the stage facts raised the share of shown lessons that model readers judged to fit the decision from 19% to 24–27% on the 40-game store, over 96 replayed lookups; the result, its comparison with the first read on the smaller store, and its limits are in [the situation-query report](../situation_summary/report.md) §5. The filter is built and off by default.
 
 ## 6. Case study: using the fields to choose lessons found no benefit
 

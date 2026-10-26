@@ -95,14 +95,18 @@ mechanical consequences (the target's true faction, the votes that follow), not 
 post-hoc story. What would weaken it: a golden-set audit showing the judge agreeing with deterministic
 grades at a high rate on agent-only games.
 
-## What happened since (note added 2026-10-14)
+## What happened since (note added 2026-10-14, corrected 2026-10-26)
 
 The test this case asked for was run in October 2026 on the ten-seat game, once a deterministic
-grader existed for every decision (`evidence/memory_system/v8/decisions.md` §13). On 1,472 graded
-observations across 40 games, the verdict followed whether the side won (+0.80) twice as strongly as
-the decision's own grade (+0.40). A second-model pass, de-halo, which rewrites the verdict word with
-the outcome text still in view, removed about a third of that (+0.53 against +0.36), and only on the
-losing side: negatives fell from 53% to 27%, the winning side's positives barely moved. The rulings:
+grader existed for every decision: on 1,472 observations from 40 games, a move the grader marks good
+was called positive 83% of the time on the winning side and 23% on the losing side, and a
+second-model pass, de-halo, which rewrites the verdict word with the outcome text still in view,
+halved the praise for winners' bad moves (18% to 9%) but left that gap at 75% against 21%. The
+measurement is in [the observation-quality report](report.md) §4, "How strong the halo is, and what
+de-halo does". (Until 2026-10-26 this note joined two fits: the 1,472-observation weights with the
+482-observation result that de-halo worked "only on the losing side". On all 1,472 observations it
+also cut the winning side's praise for bad moves.) The rulings (`evidence/memory_system/v8/decisions.md`
+§13):
 every observation now names the decision it describes, so it can be graded; each stores both the
 verdict and the deterministic grade; which one synthesis should read is a config flag, with the
 verdict variant shipping and the comparison designed but not yet run. Credit was never a consumer and

@@ -1,7 +1,7 @@
 # Separating behavioral knowledge from tactical advice
 
 > **Decision record:** the July 10–14, 2026 read/tactic redesign for the nine-seat game.
-> **Editorial review:** October 13, 2026. The proposal led to an implemented experimental tell
+> **Status, October 13, 2026:** the proposal led to an implemented experimental tell
 > pipeline and prompt channel; it did not establish a gameplay benefit. This record explains the
 > design choice. The [credit reference](report.md) explains scoring, and the
 > [tell report](../extraction/tell_extraction/report.md) covers construction and evidence.
@@ -150,8 +150,10 @@ but assumes the stored strategy and stated belief allow that classification.
 
 The implemented July partition was narrower than the general proposal: negative night outcomes could
 be excluded when the actor reported a high-confidence threat read on a town target. Targeted town
-discussion used the accusation and landed lynch to identify its exclusion case. The current legacy
-scorer does not implement a per-strategy `risk_policy` exception. These implementation boundaries are
+discussion used the accusation and landed lynch to identify its exclusion case. The nine-seat
+research loop's scorer, last changed in July 2026, never implemented a per-strategy `risk_policy`
+exception, and the ten-seat credit pass that took over its role (checked 2026-10-26) has none either: a
+`risk_policy` point is scored like a general one. These implementation boundaries are
 spelled out in the [credit reference](report.md); the design should not be read as a completed causal
 decomposition.
 
@@ -238,7 +240,7 @@ of knowledge, rather than assuming every memory needs the same retrieval pipelin
 
 The [July build log](../extraction/tell_extraction/experiment_log.md) records mining, detection,
 curation and prompt injection implemented in the research loop by July 13, followed by the role-based
-book revision on July 14. The earlier “v1 not yet built” status no longer describes that outcome.
+book revision on July 14.
 
 The detector was evaluated against a small, provisionally labelled set; one game also received direct
 human adjudication. The decision to proceed with those labels did not turn them into a large independent
@@ -267,5 +269,4 @@ prompt. Keeping that distinction avoided importing an unnecessary injection-base
 [research-loop module map](../../evaluation/src/loop/README.md).
 
 Implementation pointers were checked against repository revision `d206680d` and the October 13, 2026
-working tree. Historical measurements retain their linked run artifacts; this is an editorial review,
-not a new experimental run.
+working tree. Historical measurements retain their linked run artifacts.

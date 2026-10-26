@@ -5,10 +5,11 @@ memory: what an observation looks like, how the offline job writes them, how the
 checked, and the May 2026 study that set the job's shape (one model call per role, not one for the
 whole game).
 **Revised against the code:** 2026-10-22 at `c0732f88` (the extraction package, the post-game node
-and the batch script have no uncommitted edits).
+and the batch script have no uncommitted edits). On 2026-10-26 the halo, Claude batching and cost
+passages were cut to summaries of their home reports, and the Gemini cost reconciled with caching.
 **Companion docs:** [`experiment_log.md`](experiment_log.md) (the same work in date
 order) · [the v8 record](../../memory_system/v8/experiment_log.md) (the ten-seat extraction runs,
-2026-10-11 to 10-13) · [selection](../observation_quality/) (the verdict halo, in full) ·
+2026-10-11 to 10-13) · [observation quality](../observation_quality/report.md) (the verdict halo, in full) ·
 [the judge write-up](../../evaluation/llm_judge/extraction.md) · [credit](../../credit/report.md) (what
 happens to the lessons made from observations) · [caching](../../caching/report.md) §3.1, §3.6 and
 §4.6 (the shared prefix, batching, and the Sonnet run's cache writes in full).
@@ -125,15 +126,11 @@ in full once per game and read cheaply by the other calls.
 since 2026-10-15, when the Gemini credits ran out. It was chosen on cost, on how often a model leaked
 seat ids, and on a side-by-side read of the same games (§4). The batch script defaults to it too
 (until 2026-10-22 it defaulted to Claude Haiku 5.5, which §4 rules out). The job sends the calls as a
-Message Batch, Anthropic's half-price offline queue.
-
-Two details make the shared prefix actually cached on Claude:
-
-1. **Each game's first call goes direct**, writing the prefix to a one-hour cache. The rest of that
-   game's calls go in the batch and read it. The first call's answer is kept.
-2. **The output schema goes in as text after the prefix,** and the reply is checked in code. On
-   Claude, an enforced output schema counts as part of the cached beginning. Each role and phase has
-   its own schema, so calls with enforced schemas would never share a cache.
+Message Batch, Anthropic's half-price offline queue. Each game's first call goes direct and writes
+the shared prefix to a one-hour cache before the rest go in the batch, and each call's output schema
+goes in as text after the prefix and is checked in code, because on Claude an enforced schema is part
+of the cached beginning and every role and phase has its own; why, and what it cost, is in
+[caching](../../caching/report.md) §3.6 and §4.6.
 
 A reply that fails validation goes into a second batch the same way. Only what fails again is sent
 direct with the schema enforced and no cache marker. A call that still fails is recorded as missing,
@@ -180,20 +177,15 @@ single reads by one reader.
 
 ### The verdict follows who won (the halo)
 
-The one-word verdict is the least reliable field. With every hidden role known, the extractor tends
-to call a winner's moves good and a loser's moves bad. The project calls this the *halo*.
-
-It was measured on 482 night and vote observations from 19 ten-seat games. Each verdict was fitted
-against two things at once: the grade of the role's decisions under the fixed rule table that credit
-uses, and whether the role's side won. The side's win carried a weight of +0.74, the decision's grade
-+0.33. In plain terms, the verdict tracks the result about twice as strongly as the move.
-
-The **de-halo pass** answers this. A second model (Claude Haiku 5.5) reads each observation against
-the record and rewrites a verdict the record does not support, usually to "unclear". After it, the
-weights were +0.50 for the side's win and +0.29 for the grade. It removed about a third of the halo,
-and on one side only: the losing side's negative verdicts fell from 53% to 27%, while the winning
-side's positives barely moved (57% to 54%). Repeated per observation on all 40 games (1,472
-observations, each against its own decision's grade) the picture was the same.
+The one-word verdict is the least reliable field: with every hidden role known, the extractor tends
+to call a winner's moves good and a loser's moves bad, which the project calls the *halo*. On 1,472
+observations from the 40 ten-seat games, a move that the fixed rule table credit uses grades as good
+was called positive 83% of the time on the winning side and 23% on the losing side; the **de-halo
+pass** (a second model, Claude Haiku 5.5, that rereads each observation against the record and
+rewrites a verdict the record does not support, usually to "unclear") halved the praise for winners'
+bad moves (18% to 9%) but left that gap at 75% against 21%. The measurement and its limits are in
+[observation quality](../observation_quality/report.md) §4, "How strong the halo is, and what de-halo
+does".
 
 What follows from this:
 
@@ -203,7 +195,7 @@ What follows from this:
   compared.
 
 Record: [v8 decisions](../../memory_system/v8/decisions.md) §13; the earlier nine-seat finding is in
-[selection](../observation_quality/).
+[observation quality](../observation_quality/report.md).
 
 ### The automated judge, and why it is only a floor alarm
 
@@ -226,15 +218,13 @@ behind it, and no run on ten-seat extractions is recorded.
 
 | Model, as run | Games | Cost | Per game |
 |---|---|---|---|
-| Gemini 3.8 Flash, online with its cache | 19 | $10.42 | about $0.55 (71% of it the model's thinking) |
+| Gemini 3.8 Flash, online with its cache | 19 | $10.42: $10.33 extraction, $0.09 de-halo | about $0.55 (71% of it the model's thinking) |
 | Claude Sonnet 5.5, batched | 21 | $19.99 | about $0.95 |
 
-The Sonnet run was estimated at about $9.50. Most of the overrun was cache writes: about 15% of
-replies failed validation and were retried direct, each writing its own copy of the prefix ($7.02),
-and about 15% of batched requests wrote the prefix instead of reading it ($3.01). Anthropic does not
-promise cache hits inside a batch. The second-batch retry described in §3 was added afterwards, and
-no run with it is recorded. A two-game check estimated Sonnet at about $0.45 a game with the cache
-working.
+The Sonnet run cost about twice its estimate of about $9.50, mostly in cache writes from retried
+replies and from batched requests that missed the cache; the breakdown, and the retry path added
+afterwards (§3, with no run recorded), are in [caching](../../caching/report.md) §4.6. A two-game
+check estimated Sonnet at about $0.45 a game with the cache working.
 
 ## 5. Case study: one call for every role starved the rarer roles
 
@@ -281,8 +271,10 @@ The ten-seat split was checked on one game.
 ## 6. What is not established
 
 - **That extraction helps play.** No measurement links observation quality to how memory-on agents
-  play. Memory's effect on play is itself unshown: the nine-seat test leaned negative, and the
-  ten-seat memory has not been tested at scale.
+  play. On the nine-seat game, the June static-memory A/B reported improvements on selected town
+  decision measures, and the pre-registered July test of the learning loop detected no compounding
+  benefit ([the memory hub](../../memory_system/report.md)); the ten-seat memory has not been tested
+  at scale.
 - **Recall.** Nothing measures how many of a game's important moments the job captures. The one
   attempt, on three nine-seat games in June 2026, used a metric that rewarded wordy observations and
   was overturned by a manual read.
