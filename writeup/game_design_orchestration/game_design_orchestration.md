@@ -54,7 +54,9 @@ information.
 
 In a human game, that separation comes from how information is delivered. Players receive their own
 role cards, the moderator gives night results privately, and public announcements reach the whole
-table. A player may reveal or lie about what they know, but the others have no direct access to it.
+table. Online games such as Town of Salem do the same in software: each screen shows only that
+player's role and results, and the Mafia talk in a private night chat. A player may reveal or lie about
+what they know, but the others have no direct access to it.
 
 With agents, the system holds everyone's roles, actions and results in order to run the game, and a
 model call knows only what its input contains. So for every turn, I build a restricted view from that
