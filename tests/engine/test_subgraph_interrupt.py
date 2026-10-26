@@ -5,7 +5,7 @@ resumes when the parent is compiled with a checkpointer and the wrapper forwards
 READ THIS BEFORE TRUSTING IT: this test does NOT validate that the helper preserved anything.
 LangGraph propagates the checkpointer via ambient contextvars, so this passes even if the helper
 returned an empty config (verified: scratchpad ambient spike). The helper's correctness is pinned by
-tests/test_child_config_unit.py. Keep this test for what it IS: proof the wrapper/checkpointer wiring
+tests/engine/test_child_config_unit.py. Keep this test for what it IS: proof the wrapper/checkpointer wiring
 is intact and interrupts survive the imperative subgraph boundary + resume cleanly across TWO calls
 on one thread (the real game re-invokes each phase every day).
 """

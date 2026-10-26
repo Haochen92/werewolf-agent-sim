@@ -1,8 +1,9 @@
-"""The shared LangGraph checkpointer singleton (in-memory for now).
+"""The shared in-memory LangGraph checkpointer singleton, for batch, bench and CLI games.
 
 Instantiated at import as a module-level singleton so the compiled parent graph shares one
-checkpointer across the process. In-memory = per-process, non-durable: fine for local/dev HITL
-runs; swap for PostgresSaver(WW_POSTGRES_DSN) when checkpoints must survive a restart.
+checkpointer across the process. In-memory = per-process, non-durable. The server, whose paused
+games must survive a restart, uses a PostgreSQL saver with the same serializer instead
+(server/graph_runtime.py::GraphRuntime, durable_serde below).
 
 The serializer allowlists the Pydantic models that ride graph state (every HITL resume
 deserializes them from the checkpoint): LangGraph's default permissive msgpack warns on each
