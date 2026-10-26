@@ -1,39 +1,41 @@
 # The turn prompt: what an AI seat reads, and what it must answer
 
-This page covers the call an AI seat makes on each of its turns: what its prompt holds and in what
-order, what it must answer, and which of those choices were tested, with what result. The build
-journey up to July 2026 is in [the experiment log](experiment_log.md), and the July tests in
-[the validation plan](validation_plan.md). The October work is recorded step by step in
-[discussion_evidence](../discussion_evidence.md) §6–8.
+The turn prompt is the interface between the game engine and an AI player: it supplies the player's
+information and asks for a discussion message, vote or night action. The central problem is factual
+reliability. An agent can invent a check, misread a vote or reason from the wrong surviving roles even
+when the relevant information is somewhere in its prompt.
 
-**Reading this report.** [A turn today](#a-turn-today) describes the current call;
-[the decision index](#decision-index) leads to the reasons and the tests;
-[the checks](#how-it-is-checked) separate implementation checks from behavioural evidence;
-[revision criteria](#when-to-revisit-the-design) say what would justify changing a choice.
+The design therefore makes engine facts explicit, separates them from player claims and summaries,
+and asks for structured answers that code can validate. Some changes helped in the tests recorded
+here. The strongest planned comparison was the July board-and-reads bundle: errors fell from **48%
+to 30% across 100 selected, error-prone contexts** in the nine-seat game. That is a replay result,
+not a whole-game error rate. Later changes mostly address individual failures; they do not establish
+that today's full prompt plays better than an earlier version.
 
-**Version.** The code described here is the 2026-10-26 working tree at
-`ccaec2f64788c1d3183940dd31a4c93475c164b5` (no uncommitted changes under `Agents/` or `tests/`). The
-results below belong to the models, seat counts and prompt versions recorded with each; most were
-measured on an earlier prompt than this one. The nine-seat game ran until 2026-10-09 and the ten-seat
+This report first explains [the current turn](#a-turn-today), then groups
+[the decisions and evidence](#decision-index) by the problem they address. It closes with
+[implementation checks](#how-it-is-checked), [limits](#what-is-not-established) and
+[reasons to revisit the design](#when-to-revisit-the-design). The detailed history is in
+[the experiment log](experiment_log.md), [the July validation plan](validation_plan.md) and
+[the October investigation](../discussion_evidence.md) §6–8.
+
+**Version and scope.** The code described here is at `588a3273` (2026-10-26). It was checked against
+`ccaec2f6`; since then the seed model catalogue was brought in line with the live one, and comments
+and docstrings were corrected. Results belong to the models, seat counts and prompt versions named
+with each test; most predate this version. The nine-seat game ran until 2026-10-09 and the ten-seat
 game since.
-
-**Assessment.** The call is built so that facts the engine knows are handed to the seat in a form
-it cannot easily misread, and so that the answer is a structured record that code can check. The
-July board bundle is the one prompt change tested against a measure fixed before its data existed; it
-reduced errors on error-prone turns (nine-seat). Most later choices rest on replays of a few known
-failures. No error rate has been measured on the ten-seat game, and nothing establishes that today's
-full prompt plays better than an earlier one.
 
 ## The problem
 
-Every AI player is one model call per turn: a discussion line, a vote, or a night action. The model
+Each AI player makes one model call per turn: a discussion line, a vote, or a night action. The model
 decides what the player says and does. Everything the model knows about the game, it learns from that
 one prompt, and everything the game learns from the model, it reads from the structured answer.
 
-A good turn prompt needs four things:
+The design has four requirements:
 
-- **Every fact the seat may know, in a form it reads correctly.** A fact that is present but easy to
-  misread is as bad as a missing one. The October investigation found both (decisions 2 and 3).
+- **The information the seat needs, stated clearly.** A fact that is present but easy to
+  misread can cause the same errors as a missing fact. The October investigation found both
+  (decisions 2 and 3).
 
 - **Nothing the seat may not know.** Who may see what is defined and checked in
   [agent_boundaries](../../agent_boundaries/report.md#1-the-guarantee-current-contract); this page does
@@ -42,46 +44,29 @@ A good turn prompt needs four things:
 - **An answer code can use.** The scheduler, the claim ledger and the vote count all read fields of
   the answer, so it must parse, and its checkable parts must be fields, not prose.
 
-- **A shared opening.** Ten seats read the same rules and the same transcript many times a day. If
-  every prompt opens with the same text, the provider can serve that part from its cache.
+- **A reusable opening to reduce input cost.** Ten seats read the same rules and the same transcript
+  many times a day. If every prompt opens with the same text, the provider can serve that part from its
+  cache.
 
 Two distinctions shape the design:
 
-- **The prompt states how to play and what is true; memory holds what signals mean.** The prompt
-  gives rules, facts and how to talk. It does not tell a seat which behaviour is suspicious or which
-  tactic wins (decision 6).
+- **Rules, tactical guidance and learned lessons serve different purposes.** The prompt supplies
+  rules, facts and role guidance; retrieved memory supplies lessons from earlier games. Decision 6
+  removed prescribed suspicion cues such as evasiveness. It did not remove all tactical guidance:
+  decision 7 describes advice that remained in the role cards.
 
-- **Facts are computed by code; judgement is the model's.** Who is dead, which roles remain, what a
-  seat did at night and what follows from it with certainty are written by the engine. The model
+- **Facts are computed by code; judgement is the model's.** The engine writes
+  the death record, the roles not ruled out by revealed deaths, each seat's night history and the
+  deduction engine's conclusions. The model
   supplies the reads, the argument and the choice.
 
 ---
 
 ## A turn today
 
-### The call
-
-Each turn is one structured-output call to the game's model. The default has been Claude Haiku 5.5
-since 2026-10-15; a game on the website runs on the model the player chose
-(`Agents/llm_factory/accessors.py::DEFAULT_GAME_MODEL`, `_game_model`). Temperature is 1.0 unless set
-otherwise (`get_llm`). Each model's settings live in the model catalogue, a database table edited
-without a deploy (`scripts/model_catalog.py`); the code holds only its seed
-(`Agents/llm_factory/catalog.py::SEED_MODELS`). As read from the live catalogue on 2026-10-26, Claude
-Haiku 5.5 runs every seat turn at thinking `low`, with the schema written as text in the prompt and the
-reply validated in code (`json_mode`, since 2026-10-14), and has no rescue model. The seed still says
-`json_schema` (enforced) for Haiku; the live row is what runs.
-
-**Why the schema is not enforced on Haiku.** An enforced schema counts as the start of the prompt for
-caching, and a vote's or night action's schema lists that seat's legal targets, so no two seats could
-share the cached transcript. Written as text after the cached part, the same schema still rejects an
-illegal target in code. In the trial, unenforced replies failed 1 time in 412 Haiku calls, and in paired
-games votes and night actions went from never reading the cache to reading most of it; on Haiku the cost
-per call stayed level because it reasoned more ([caching log](../../caching/experiment_log.md) §12, §13, §15).
-
-A reply that breaks the schema is asked again, with the schema enforced by the provider where the
-first call left it unenforced. If that fails and the model has a rescue model, the rescue model gets
-one try (Haiku has none). A discussion turn that still fails becomes a pass, and a vote or night action
-becomes a random legal move (`Agents/turn/agent_player.py::run_agent`).
+A turn has three parts: a shared record of the game, information specific to the seat, and a
+structured answer. Here, a **seat** means one player controlled by the model; a **read** is that
+player's current assessment of another player.
 
 ### The order of the prompt
 
@@ -104,8 +89,9 @@ user     == Previous days ==            the record of earlier days (the game mas
          the standing speaking rules
 ```
 
-A vote and a night action hold the same parts below the boundary, in a slightly different order. A
-wolf's prompt adds the pack's roster and its night chat, and a night-1 turn adds the lot (decision 5).
+Votes and night actions use the same parts below the boundary, in a slightly different order. A
+wolf's prompt adds the pack's roster and its night chat. On night 1, eligible seats also receive a
+randomly drawn default target (decision 5).
 
 **Why this order.** Everything above the boundary is identical for every seat and every kind of call
 at the same moment of the game. A vote, a night action or another seat's turn can therefore read from
@@ -118,9 +104,89 @@ Luna's cost per call by 28%, and left Haiku's unchanged.
 The layout has a price in what the seat reads first. The role card, with its strategy and cautions,
 now comes after the transcript instead of before it (decision 14).
 
-### One assembled prompt
+### The board facts
 
-This is the user message of an investigator's day-3 discussion turn, as the code renders it today. The
+Every call, the wolves' night chat included, carries two public lines below the cache boundary
+(`Agents/prompts/layout.py::BOARD`; `Agents/prompts/night.py::_night`):
+
+- **The dead**, each with the role revealed at death and when they died: "player_8 (trailseer, night 1),
+  player_9 (sigilist, lynched day 2)" (`Agents/prompts/prompt_formatters.py::format_dead_roster`).
+- **The roles still in play**: the fixed public cast minus every revealed death
+  (`format_alive_roles`). A body whose role was hidden subtracts nothing, so the line says so in words:
+  "(one of these is dead: a body whose role is hidden)".
+
+The seat's own facts come with its role card. **The uses it has left** appear under the name its card
+uses: checks, watches, bullets, sigils, conceals
+(`Agents/prompts/prompt_inputs.py::build_agent_prompt_input`).
+**Its own night record** is written by the engine, one line per night, as a past action of the seat's:
+"Night 2 (last night): you checked player_5. player_5 reads Not suspicious."
+(`prompt_formatters.py::format_night_actions`). A night with no action says why, to distinguish a
+skipped action from a result the seat has not disclosed: "you chose not to act", "you had no checks
+left"
+(`_quiet_nights`). A wolf also gets the living pack with each wolf's role, and the pack's night chat.
+
+How results are worded is a tested choice. The old line read *"Day 3: player_5 was revealed as
+healer"*, which looked like a public death reveal; replayed, the investigator invented a check on every
+sample (decision 2). Every result now names the night, marks the previous night "(last night)", and
+says "you checked".
+
+### The record of past days
+
+A seat never sees an earlier day's discussion again. It reads earlier days in three labelled blocks,
+in order of how far to trust them (`prompt_formatters.py::format_day_summaries`):
+
+1. **The game master's record**: the engine's exact announcements of each night and each vote.
+2. **The claim ledger**: every role claim and claimed night action, per player and across days, built
+   by code and checked against the record. A check reads "Record: player_9 was revealed as
+   illusionist, as claimed".
+3. **The accusations**: the day summary's account of who accused whom, each dead player tagged with
+   the role revealed.
+
+The labels tell the model which source to trust when the accounts conflict. How the
+summary is written, how the ledger checks claims, and how both have been tested is in
+[the day-summary report](../../extraction/day_summary/report.md).
+
+### What the seat must answer
+
+Each turn answers one schema, filled with the roles this game dealt
+(`Agents/schemas/lineup_output.py`). Every seat turn opens with the same fields, in this order
+(`TurnOutput`):
+
+```
+reads                  one per living player other than itself: player, why, suspected_role, confidence
+strategy_verdicts      follow / override / not_relevant, one per numbered lesson shown  (only if shown)
+memory_applicability   fully / partly / does_not_apply, one per numbered observation    (only if shown)
+updated_strategy       the seat's private note, shown back to it on its next turn
+… then the turn's own fields
+```
+
+A discussion turn then adds `pass_turn`, `message`, `claim`, `claimed_night_actions` and
+`addressed_targets` (`DayDiscussOutput`). A vote adds `vote_target`, and each night role one target
+field of its own, such as `investigator_target` with the value `no_check` for keeping a check.
+
+- **Field order is intended to put assessment before action.** The schema places reads and the
+  private note before the message, vote or target. Earlier tests found that changing output order
+  could change actions. The model does not always follow the requested order, however, and today's
+  order has not been tested for message quality (decision 10).
+- **Every field the turn shows is required.** A seat that may decline gets a boolean (`pass_turn`) or a
+  sentinel value (`abstain`, `no_check`, `hold_fire`), never an optional or empty field (decision 11).
+  The two verdict lists are the exception: they default to empty and are removed from the schema of a
+  turn shown no lessons (`Agents/turn/action_space.py::output_schema_for_memory_shown`).
+- **The schema defines legal targets.** The target field of a vote or night action
+  lists only the players that seat may target, and a reply naming anyone else fails validation
+  (`action_space.py::output_schema_with_legal_targets`).
+- **Claims are fields.** `claim` is the role the message claims, or `none`; `claimed_night_actions`
+  lists each past action the message newly states, in fixed words (an action, a night, a target, a
+  result such as `suspicious` or `no_visitors`). The claim ledger reads these fields before it reads
+  the day summary (decision 13).
+- **Speech-act tags.** `addressed_targets` records whom the message addresses, as a form (question,
+  response, mention) and a stance (accusation, defence, agreement, neutral). The scheduler decides who
+  speaks next from these tags; that is described in [the discussion report](../discussion/report.md),
+  decisions 8–10.
+
+### Example: an investigator's discussion turn
+
+This is the user message of an investigator's day-3 discussion turn, as the code renders it. The
 board is the fixed test board of the exact-prompt golden (`tests/fixtures/day_discuss_prompt_golden.json`),
 rendered through the real turn node, not a played game. The rules in the system message, most of the
 role card and the answer format are cut, marked "…":
@@ -172,104 +238,53 @@ Adaptive Strategic thinking:
 …
 ```
 
-Three things in it are worth noticing. The board lines are computed, not summarised. The night record
+The example illustrates three design choices. The board lines are computed, not summarised. The night record
 names each check as the seat's own action and by its night. And the sentences after each result ("Only
 a wolf reads Suspicious in this game, so player_7 is a wolf") are the deduction engine's: what follows
 from the seat's own results with certainty
 ([the deduction report](../deduction/report.md) explains how those lines are made and tested).
 
-### The board facts
+### Model settings, validation and retries
 
-Every call, the wolves' night chat included, carries two public lines below the cache boundary
-(`Agents/prompts/layout.py::BOARD`; `Agents/prompts/night.py::_night`):
+Each turn is one structured-output call to the game's model. The default has been Claude Haiku 5.5
+since 2026-10-15; a game on the website runs on the model the player chose
+(`Agents/llm_factory/accessors.py::DEFAULT_GAME_MODEL`, `_game_model`). Temperature is 1.0 unless set
+otherwise (`get_llm`). Each model's settings live in the model catalogue, a database table edited
+without a deploy (`scripts/model_catalog.py`); the code holds only its seed
+(`Agents/llm_factory/catalog.py::SEED_MODELS`). As read from the live catalogue on 2026-10-26, Claude
+Haiku 5.5 runs every seat turn at thinking `low`, with the schema written as text in the prompt and the
+reply validated in code (`json_mode`, since 2026-10-14), and has no rescue model. The seed in code has
+matched the live row since 2026-10-26 (`d424d0f9`).
 
-- **The dead**, each with the role revealed at death and when they died: "player_8 (trailseer, night 1),
-  player_9 (sigilist, lynched day 2)" (`Agents/prompts/prompt_formatters.py::format_dead_roster`).
-- **The roles still in play**: the fixed public cast minus every revealed death
-  (`format_alive_roles`). A body whose role was hidden subtracts nothing, so the line says so in words:
-  "(one of these is dead: a body whose role is hidden)".
+**Why the schema is not enforced on Haiku.** An enforced schema counts as the start of the prompt for
+caching, and a vote's or night action's schema lists that seat's legal targets, so no two seats could
+share the cached transcript. Written as text after the cached part, the same schema still rejects an
+illegal target in code. In the trial, unenforced replies failed 1 time in 412 Haiku calls, and in paired
+games votes and night actions went from never reading the cache to reading most of it; on Haiku the cost
+per call stayed level because it reasoned more ([caching log](../../caching/experiment_log.md) §12, §13, §15).
 
-The seat's own facts come with its role card. **The uses it has left** appear under the name its card
-uses: checks, watches, bullets, sigils, conceals
-(`Agents/prompts/prompt_inputs.py::build_agent_prompt_input`).
-**Its own night record** is written by the engine, one line per night, as a past action of the seat's:
-"Night 2 (last night): you checked player_5. player_5 reads Not suspicious."
-(`prompt_formatters.py::format_night_actions`). A night with no action says why, so the seat never
-reads its own silence as a result it is keeping: "you chose not to act", "you had no checks left"
-(`_quiet_nights`). A wolf also gets the living pack with each wolf's role, and the pack's night chat.
+A reply that breaks the schema is asked again, with the schema enforced by the provider where the
+first call left it unenforced. If that fails and the model has a rescue model, the rescue model gets
+one try (Haiku has none). A discussion turn that still fails becomes a pass, and a vote or night action
+becomes a random legal move (`Agents/turn/agent_player.py::run_agent`).
 
-How results are worded is a tested choice. The old line read *"Day 3: player_5 was revealed as
-healer"*, which looked like a public death reveal; replayed, the investigator invented a check on every
-sample (decision 2). Every result now names the night, marks the previous night "(last night)", and
-says "you checked".
-
-### The record of past days
-
-A seat never sees an earlier day's discussion again. It reads earlier days in three labelled blocks,
-in order of how far to trust them (`prompt_formatters.py::format_day_summaries`):
-
-1. **The game master's record**: the engine's exact announcements of each night and each vote.
-2. **The claim ledger**: every role claim and claimed night action, per player and across days, built
-   by code and checked against the record. A check reads "Record: player_9 was revealed as
-   illusionist, as claimed".
-3. **The accusations**: the day summary's account of who accused whom, each dead player tagged with
-   the role revealed.
-
-The labels carry the hierarchy, so a claim is never set beside an announcement as an equal. How the
-summary is written, how the ledger checks claims, and how both have been tested is in
-[the day-summary report](../../extraction/day_summary/report.md).
-
-### What the seat must answer
-
-Each turn answers one schema, filled with the roles this game dealt
-(`Agents/schemas/lineup_output.py`). Every seat turn opens with the same fields, in this order
-(`TurnOutput`):
-
-```
-reads                  one per living player other than itself: player, why, suspected_role, confidence
-strategy_verdicts      follow / override / not_relevant, one per numbered lesson shown  (only if shown)
-memory_applicability   fully / partly / does_not_apply, one per numbered observation    (only if shown)
-updated_strategy       the seat's private note, shown back to it on its next turn
-… then the turn's own fields
-```
-
-A discussion turn then adds `pass_turn`, `message`, `claim`, `claimed_night_actions` and
-`addressed_targets` (`DayDiscussOutput`). A vote adds `vote_target`, and each night role one target
-field of its own, such as `investigator_target` with the value `no_check` for keeping a check.
-
-- **Field order is generation order.** The model writes the fields in the order given, so a field
-  before the action is a commitment made before acting, and a field after it is commentary. So the
-  reads and the note come before the message, the vote or the target (decision 10).
-- **Every field the turn shows is required.** A seat that may decline gets a boolean (`pass_turn`) or a
-  sentinel value (`abstain`, `no_check`, `hold_fire`), never an optional or empty field (decision 11).
-  The two verdict lists are the exception: they default to empty and are removed from the schema of a
-  turn shown no lessons (`Agents/turn/action_space.py::output_schema_for_memory_shown`).
-- **Legal targets are in the schema, not in the prompt.** The target field of a vote or night action
-  lists only the players that seat may target, and a reply naming anyone else fails validation
-  (`action_space.py::output_schema_with_legal_targets`).
-- **Claims are fields.** `claim` is the role the message claims, or `none`; `claimed_night_actions`
-  lists each past action the message newly states, in fixed words (an action, a night, a target, a
-  result such as `suspicious` or `no_visitors`). The claim ledger reads these fields before it reads
-  the day summary (decision 13).
-- **Speech-act tags.** `addressed_targets` records whom the message addresses, as a form (question,
-  response, mention) and a stance (accusation, defence, agreement, neutral). The scheduler decides who
-  speaks next from these tags; that is described in [the discussion report](../discussion/report.md),
-  decisions 8–10.
 
 ---
 
 ## The decisions behind it
 
-Each decision gives the choice, what it replaced or was chosen over, the evidence with its model, seat
-count, N and date, and the cost accepted.
+The decisions follow four steps: supply clear facts, guide the turn, structure the answer, then tune
+layout and thinking effort. Each records the reason for the choice, the evidence available and its
+limits. Dates and model names matter: these are studies of different versions, not one cumulative
+test of the current prompt.
 
 ### Decision index
 
 | Question | Decisions | Evidence and remaining uncertainty |
 |---|---|---|
-| What facts is the seat given? | [1–5](#decision-1): the board, results worded as own actions, the own night record and labelled record, rules stated in full, the night-1 lot | One pre-registered nine-seat test (July); single-turn and few-turn replays since |
-| What is the seat told to do? | [6–9](#decision-6): no strategy in the prompt, tactical claims tested, short per-turn briefs, sentences tried and not kept | Small studies and replays; one rewrite never A/B tested |
-| What must the seat answer? | [10–13](#decision-10): field order, required fields, numbered memory, claims as fields | Strong May–July evidence on flash-lite; today's order changed for Claude, its quality effect unmeasured |
+| What facts is the seat given? | [1–5](#decision-1): the board, results worded as own actions, the own night record and labelled record, rules stated in full, the night-1 lot | One planned nine-seat comparison (July); single-turn and few-turn replays since |
+| What is the seat told to do? | [6–9](#decision-6): suspicion cues removed, tactical guidance reviewed, short per-turn briefs, sentences tried and not kept | Small studies and replays; one rewrite never A/B tested |
+| What must the seat answer? | [10–13](#decision-10): field order, required fields, numbered memory, claims as fields | May–July tests on flash-lite; today's order changed for Claude, its quality effect unmeasured |
 | How is the prompt laid out? | [14](#decision-14): the shared-prefix layout | Cost measured in paired games; one unresolved lead on vote quality |
 | How long does the seat think? | [15](#decision-15): thinking level per model | Large replay effects on two models; Haiku's setting is an open decision |
 
@@ -277,7 +292,7 @@ count, N and date, and the cost accepted.
 
 <a id="decision-1"></a>
 
-#### 1. The board bundle: the dead, the roles in play, and a read of every player (shipped 2026-07-09).
+#### 1. Show the board and ask for a read of every player (shipped 2026-07-09).
 
 - *Instead of:* leaving agents to work out who had died, and as what, from the game master's prose in
   the transcript.
@@ -290,17 +305,19 @@ count, N and date, and the cost accepted.
 - *What the first test showed:* printing the facts alone did not stop the error. Replaying the four
   errors confirmed by an earlier hand count, three never recurred in any arm, including the arm with no
   change; the fourth recurred with a correct "roles still in play" line in the prompt (T1b, 72 calls,
-  2026-07-07). So the board shipped as cheap hygiene, and the hope moved to the reads: a forced
+  2026-07-07). The board was retained as an explicit reference, and the next test added reads: a forced
   one-line read of every living player, written before the action and shown back the next turn.
 
-- *What the reads cost and gave* (T2 and T3: 60 frozen decisions, 4 arms, 200 calls, flash-lite,
-  2026-07-07): every output parsed; the verdicts on memory kept full coverage; the reads added about
-  60% output tokens per call (375 to 599), the board nothing. Wolves read their packmates as wolves 9
+- *What the reads cost and gave* (T2 and T3, flash-lite, 2026-07-07: 60 frozen decisions, 40 day
+  votes and 20 night actions, in the two arms without reads; the 40 votes alone in the two arms with
+  reads; 200 calls in all): every output parsed; the verdicts on memory kept full coverage; the reads added about
+  60% output tokens per call (375 to 599), the board added no output tokens. Wolves read their
+  packmates as wolves 9
   times in 9. Reads covered 0.84–0.85 of the living players; listing the expected names in the
   instruction raised that to 0.93. A coverage monitor logs any turn below 0.85 and never retries
   (`Agents/turn/eval.py::_reads_coverage`).
 
-- *The ship test* (T1c, 2026-07-08, nine-seat, flash-lite): error-prone turns from the census were
+- *The adoption test* (T1c, 2026-07-08, nine-seat, flash-lite): error-prone turns from the census were
   regenerated under the old prompt and the bundle, one sample each, and judged by the census reader.
   The first run pointed the right way and showed that the "clean" control turns were error-prone too,
   so the hypothesis was reworded around all error-prone contexts and written into the plan before the
@@ -312,7 +329,7 @@ count, N and date, and the cost accepted.
 
 - *How far it reaches:* the rates describe turns chosen because they went wrong, not whole games; no
   hand read of the verdicts is recorded; and vote turns were rebuilt with the vote's own result in
-  view, which bears on the rates more than on the paired comparison
+  view. That makes those prompts unlike a real vote and limits interpretation of both arms
   ([factual_errors log](../../evaluation/factual_errors/experiment_log.md) §2). The bundle shipped
   on day, vote and the four single-actor night turns; the wolves' night was left out because the test
   never covered it. Today the board appears in every call type, the pack's chat included.
@@ -349,7 +366,7 @@ count, N and date, and the cost accepted.
 
 <a id="decision-3"></a>
 
-#### 3. Each seat's own night record, and the record labelled by source (2026-10-03 and 04).
+#### 3. Restore missing history and label each source (2026-10-03 and 04).
 
 - *The failure:* in game `46355b89` (nine-seat, `gemini-3.5-flash-lite`), town won on a premise a wolf
   had leaked and town had rejected the day before. Agents cited private or missing information as
@@ -365,7 +382,8 @@ count, N and date, and the cost accepted.
 
 - *Evidence:* on the nine-seat replay set (89 cases, 3 samples each, memory off, `gemini-3.5-flash-lite`
   at its then-default thinking level, which produced no reasoning), bad samples went from 97 to 82 of
-  267, with 24 cases better and 14 worse (p = 0.14): a direction, not proof
+  267, with 24 cases better and 14 worse (p = 0.14): an improvement in this sample, with substantial
+  uncertainty
   ([discussion_evidence](../discussion_evidence.md) §6.5).
 
 - *Cost accepted:* none measured. "Addressed" in the check describes the wiring, not that the model
@@ -373,7 +391,7 @@ count, N and date, and the cost accepted.
 
 <a id="decision-4"></a>
 
-#### 4. Every rule the engine applies is stated, and the rules outrank a player's account (October).
+#### 4. State missing rules and rank them above player claims (October).
 
 - *The failure:* in the ten-seat games read in full in October (on gemini-3.5-flash-lite,
   gemini-3.5-flash and GPT-6 Luna), invented facts had become rare. The commonest player error was a
@@ -398,13 +416,14 @@ count, N and date, and the cost accepted.
   - The illusionist sentence on the f02 turns: gemini-3.5-flash went from 10 of 10 to 7 of 10, and
     flash-lite stayed at 10 of 10. The line ranking the rules above a player's statement took
     gemini-3.5-flash to 4 of 10; flash-lite stayed at 10 of 10. The later speakers on those turns
-    repeated a false rule already in the transcript, so a stated rule guards the origin of a misreading
-    more than a cascade (§8.4).
+    repeated a false rule already in the transcript, suggesting that correcting the rules alone may
+    not stop a false account already repeated by players (§8.4).
 
 - *Cost accepted:* a longer rules block, in the system message every call shares.
 
-- *The lesson recorded* (§8.5, item 7): a stronger model reasons more confidently from the rules it is
-  given, so a missing rule costs more, not less.
+- *Interpretation recorded* (§8.5, item 7): stronger reasoning does not compensate for missing rules;
+  it can still produce confident conclusions from an incomplete description. These cases do not
+  establish how that risk changes with model strength.
 
 <a id="decision-5"></a>
 
@@ -419,12 +438,13 @@ count, N and date, and the cost accepted.
 
 - *The obvious fix, and why it failed:* shuffling every player list. On 32 recorded boards (192
   calls on `gemini-3.5-flash-lite`), the target was still the lowest-numbered other seat in 95 of 96
-  shuffled calls, against 94 of 96 in seat order. The model follows the number, not the list order.
+  shuffled calls, against 94 of 96 in seat order. In this replay, changing list order did not remove
+  the preference for low seat numbers.
 
 - *The fix:* on night 1 only, the engine draws a default by lot, seeded by the game, the night and the
   player, and the prompt offers it: "a lot has been drawn for you: player_N. Take it unless you have a
   reason to prefer someone else." (`Agents/prompts/prompt_inputs.py::night_one_lot`). The pack draws one
-  lot; the vigilante draws none, since a shot with no evidence is bad play. The example read names no
+  lot; the vigilante draws none, to avoid encouraging a shot without evidence. The example read names no
   seat (`"player": "<exact player_id>"`).
 
 - *Evidence,* on the same 32 boards (192 calls): without the lot, seat 1 took 78 of 96 night-1
@@ -439,14 +459,15 @@ count, N and date, and the cost accepted.
 
 <a id="decision-6"></a>
 
-#### 6. The prompt teaches how to play and the rules; it prescribes no strategy (June 2026).
+#### 6. Remove prescribed suspicion cues (June 2026).
 
 - *The failure:* the role prompts had told agents to treat evasiveness and deflection as tells. Agents
   policed each other's tone and silence instead of playing, and one recited the villager's block
   ("playing too passively is also a classic way f[or wolves to hide]"). The memory extractor, which
   learns lessons from games, risked writing that prescription into the lesson store.
 
-- *The fix:* the strategy reads were stripped from every role's strategy block, and a clause added for
+- *The fix:* the prescribed suspicion cues were stripped from every role's strategy block, and a
+  clause added for
   when nothing is concrete: do not manufacture suspicion from tone or volume, prefer a test or a
   contradiction ([prompt_boundary](prompt_boundary/experiment_log.md)). The same clause is in today's
   discussion prompt (`Agents/prompts/day_discuss.py::DISCUSSION_SILENCE_RULE`).
@@ -456,31 +477,36 @@ count, N and date, and the cost accepted.
   from 10 of 19 to 2 of 14. The counts are substring matches, a lower bound, and the policing drop is
   confounded with an easier board in the second pair of games.
 
-- *Why it was kept anyway:* the change was kept on principle, not on the counts. A prompt that
-  prescribes strategy decides in advance what the memory experiments are meant to find out.
+- *Why it was kept anyway:* the change was kept on principle, not on the counts. Prescribing which
+  behaviours count as suspicious would build an answer into the prompt that the
+  memory experiments were meant to investigate. This is a narrower boundary than removing all
+  strategic advice from role cards.
 
 <a id="decision-7"></a>
 
-#### 7. A tactical claim in a role prompt stays only if the evidence supports it (2026-06-17).
+#### 7. Review tactical advice against observed play (2026-06-17).
 
 - *The audit:* every tactical claim in the hand-written role prose was checked against metrics the
   games already tracked ([prompt_claims_audit](prompt_claims_audit/experiment_log.md); the nine-seat
   games of the v6 memory A/B).
-  - *The investigator's "conceal your findings, let consensus build":* contradicted. In those games the
+  - *The investigator's "conceal your findings, let consensus build":* raised a concern about
+    withholding useful evidence. In those games the
     investigator voted for the wolf it had confirmed, but asserted the confirmed read in only about a
     third to two thirds of cases, mostly naming the wolf without saying it had checked it. The block
     was rewritten as a two-sided trade-off: a result helps only once the town acts on it, and revealing
     makes the investigator a target. Today's card keeps that wording
     (`Agents/prompts/roles/investigator.py::DISCUSS_FRAMING`).
-  - *The wolves' "blend your vote with the majority":* supported. Where the wolves voted with the
+  - *The wolves' "blend your vote with the majority":* consistent with a positive association in the
+    recorded games. Where the wolves voted with the
     majority at least 80% of the time, they won 38% of games (n = 50), against 25% elsewhere (n = 72);
     the correlation over the 122 games was r = +0.16, p = 0.07, consistent with an earlier r = +0.20,
     p = 0.003 over 220. Both are correlations.
 
 - *Left unchanged on purpose* (2026-10-03): a later review proposed removing "the public voting record
   is the most durable hard evidence you have" and the blend line, to push talk away from votes. Both
-  were kept: the first is true, the second showed a helpful trend, and removing them would trade play
-  quality for style ([discussion_evidence](../discussion_evidence.md) §3, P4). Both lines are in today's
+  were kept on the grounds that voting records remain useful and majority-blending showed a positive
+  association with winning. The effect of removing either line on play quality was not tested
+  ([discussion_evidence](../discussion_evidence.md) §3, P4). Both lines are in today's
   role cards.
 
 - *Not established:* the investigator rewrite was drafted for an A/B that is not recorded as run. In 28
@@ -489,11 +515,12 @@ count, N and date, and the cost accepted.
 
 <a id="decision-8"></a>
 
-#### 8. A turn's reason is told to it in one line, after the transcript.
+#### 8. Explain why the seat is being asked to speak.
 
 - *The firing brief* (June): a seat picked to answer someone is told "You were directly addressed by
-  player_4. Respond to them this turn" (`prompt_inputs.py::_firing_brief`). Without it, a seat cleared
-  of its obligation re-derived what to say and landed on the same generic line. Its role in the
+  player_4. Respond to them this turn" (`prompt_inputs.py::_firing_brief`). The brief was intended
+  to keep the seat focused on the question or accusation that triggered its
+  turn, instead of producing another generic line. Its role in the
   scheduler is in [the discussion report](../discussion/report.md), decision 10.
 
 - *Two lines added after the first Haiku game* (2026-10-12, ten-seat, Haiku 5.5 at effort low; replay
@@ -512,8 +539,9 @@ count, N and date, and the cost accepted.
 
 #### 9. Sentences tried and not kept.
 
-Each of these was tested in a replay and removed. They are listed because they show where telling the
-model stopped working.
+Each of these was tested in a replay and removed. They show why a plausible instruction still needs
+testing: some did little, and others improved
+one case while worsening another.
 
 - *Compare candidates in each read* (2026-10-16, Haiku 5.5, 11 frozen votes from game `403f4dbc`, 10
   samples each): on the ballot it was written for, the vigilante's vote for the real threat fell from
@@ -529,24 +557,27 @@ model stopped working.
   [the gameplay report](../report.md), problem 1, which draws the lesson: a request to cite produces
   prose that nothing checks.
 
-### What the seat must answer
+### How the answer is structured
 
 <a id="decision-10"></a>
 
-#### 10. Field order is generation order: reads and notes before the act.
+#### 10. Put reads and notes before the action.
 
 - *How it was found* (May–June 2026, flash-lite; [the log](experiment_log.md) §3 and §7):
   - Asking the model which retrieved strategy it adopted *after* its action produced labels that read
-    as rationalisations. Moving the field first raised adoption accuracy from 4.00 to 4.38 and action
-    quality by 0.50. A reporting field should not change the action it reports on; that it did means
-    the order changed the planning.
+    as rationalisations. Moving the field first raised the judge's adoption-accuracy score from 4.00
+    to 4.38 and its action-quality score from 3.97 to 4.47, both on 1–5 scales
+    ([strategy adoption report](../../memory_system/strategy_adoption/report.md)). The action changed
+    when the reporting field moved, suggesting that the field influenced the decision rather than
+    merely describing it.
   - The vote came before the reasoning. Moving the reasoning ahead of the vote changed nothing on its
     own. Together with a required verdict on each retrieved memory, it raised the coherence between the
     stated reasoning and the vote cast from 75% to 92.5%. Delivering the verdict instruction in the
     prompt body, not the field description, raised verdict coverage from 0.27 to 0.97.
 
 - *The reads joined in July:* in the ordering arm of T3, reads before the strategy note tripled how
-  often a seat overrode a strategy suggestion (0.06 to 0.17), but the reads came out lazier when the
+  often a seat overrode a strategy suggestion (0.06 to 0.17), but the reads were judged less
+  substantive when the
   seat had no earlier reads to update. Reads-first shipped provisionally.
 
 - *Changed for Claude* (2026-10-13): with the schema sent as text instead of enforced, Haiku 5.5 kept
@@ -563,8 +594,9 @@ model stopped working.
 
 #### 11. Every field is required; "no" is a value, not a missing field.
 
-- *Why:* flash-lite silently dropped nullable fields, so a null was indistinguishable from a parse
-  failure. Silence became a required `pass_turn` boolean, abstention the value `abstain`, and each
+- *Why:* flash-lite silently dropped nullable fields, which made the absence of a field ambiguous:
+  was the action intentionally declined, or was the
+  output incomplete? Silence became a required `pass_turn` boolean, abstention the value `abstain`, and each
   optional ability its own keep value (`no_check`, `hold_fire`). The rule is recorded from the June
   schema work and repeated in the code (`lineup_output.py::NightActionClaim`); no failure rate for
   optional fields is recorded.
@@ -595,8 +627,9 @@ model stopped working.
 
 - *Why:* a summariser error is read by every later seat. In game e06 (ten-seat, flash-lite) the day
   summary turned "I was roleblocked last night" into a chanteuse claim; two players repeated it, and
-  the real investigator was voted out holding a true result (§8.4). The lesson drawn there: invented
-  events and claims yield to structure, a field the speaker sets and code checks.
+  the real investigator was voted out holding a true result (§8.4). This motivated collecting claims
+  directly from the speaker in fields code can check, rather than
+  relying entirely on a summariser to infer them.
 - *The fix:* `claim` and `claimed_night_actions` on every discussion answer, in the summariser's fixed
   vocabulary, so the ledger reads the speaker's own fields first and the summary only for a player who
   filled none.
@@ -615,19 +648,22 @@ model stopped working.
   the caching report's ([§4.3](../../caching/report.md)): two paired games per arm, 28% less per call on
   Luna, no change on Haiku, where extra reasoning used up the input saving. The earlier layout is kept
   at the tag `prompt-layout-baseline`.
-- *An effect on play:* under the new layout, from day 2 on, Haiku spoke on free turns about 53–54% of
+- *Observed participation:* under the new layout, from day 2 on, Haiku spoke on free turns about 53–54% of
   the time against 20–35% before (4 games against 6). One plausible reading is that the role card's
   cautions ("revealing your role could mark you as a night target") weigh less once they no longer sit
-  in the system message ([caching report](../../caching/report.md) §4.5). The extra participation was
-  kept as a benefit.
+  in the system message ([caching report](../../caching/report.md) §4.5). The extra participation
+  was treated as a benefit; participation alone does not establish better
+  discussion.
 - *An unresolved lead:* in the vote replay of
-  [discussion_evidence](../discussion_evidence.md) §8.7 (Haiku 5.5, game `403f4dbc`), day-4 control votes were right 25 of 30 times on the code
+  [discussion_evidence](../discussion_evidence.md) §8.7 (Haiku 5.5, game `403f4dbc`), day-4 control
+  votes were right 25 of 30 times on the code
   before 2026-10-12, 20 at the layout tag, and 13 on the current code, with the decisive vote cited in
   19, 12 and 2 of 30 reads. One plausible reading was that the layout moved "the public voting record
   is the most durable hard evidence you have" from before the ballots to after them. A later replay on
   one layout found the same votes right 9 of 30 times at Haiku's `low` effort and 28 of 30 at `medium`
-  ([deduction log](../deduction/experiment_log.md) §2), which points at thinking time more than at the
-  layout. Neither cause is isolated, and each is one game.
+  ([deduction log](../deduction/experiment_log.md) §2), showing that thinking level also matters on
+  these cases. The studies do not establish how much of
+  the earlier decline came from layout, thinking level or other changes; each uses one game.
 
 ### How long the seat thinks
 
@@ -635,7 +671,9 @@ model stopped working.
 
 #### 15. The thinking level is set per model.
 
-The thinking level is a setting of the call, not prompt text, but it moved more than any wording did.
+The thinking level is a setting of the call, not prompt text, but it also affects whether the model
+uses the supplied information correctly. Its replay effects
+were large enough to consider alongside wording changes.
 
 - *gemini-3.5-flash-lite* (nine-seat replay set, 2026-10-04): at the then-default level the model
   reasoned for 0 tokens. At `medium`, bad samples fell from 82 to 27 of 267 (36 cases better, 4
@@ -644,8 +682,9 @@ The thinking level is a setting of the call, not prompt text, but it moved more 
 - *Claude Haiku 5.5* (ten-seat, frozen cases from two games): at `medium` against `low`, votes were
   right 98 of 160 times against 65 (12 cases better, 1 worse, p = 0.003); discussion turns did not
   change (47 against 49 bad of 115). A game would cost about $0.23 instead of $0.12. Moving votes to
-  `medium` is an open decision, parked; Haiku runs every seat turn at `low`, votes included (the live
-  catalogue, 2026-10-26; [deduction log](../deduction/experiment_log.md) §2). The result's home, as a lever against factual errors, is [the gameplay report](../report.md).
+  `medium` remains an open decision; Haiku runs every seat turn at `low`, votes included (the live
+  catalogue, 2026-10-26; [deduction log](../deduction/experiment_log.md) §2). The result's home, as
+  a lever against factual errors, is [the gameplay report](../report.md).
 
 ---
 
@@ -666,16 +705,19 @@ so this page names tests and what they assert, never a count.
 
 ## What is not established
 
-- **No error rate on the ten-seat game.** The only rate is July's, nine-seat, on the old prompt. Every
-  ten-seat result above is a replay of a few known failures, and full games still find new ones.
+- **No error rate on the ten-seat game.** The census rate comes from July's nine-seat game on the
+  old prompt; the bundle comparison uses selected error-prone contexts. The ten-seat error
+  comparisons use selected failures. Full-game observations and cost studies
+  answer other questions; they do not supply a representative factual-error rate.
 
 - **No test of today's prompt as a whole against an earlier one.** The July bundle was tested on its
-  own; everything since was checked one change at a time on a handful of turns, mostly on a different
-  model each time.
+  own; later studies cover particular changes or bundles on different models and selected turns or small
+  game batches. Their results cannot be added up into an estimate of today's overall quality.
 
 - **Small wording changes move single cases a lot.** In §8.7, adding true facts to the ballot lines
   moved per-case vote counts by up to five of ten samples in both directions. That is more than most
-  effects tested on those cases, so a one-game replay can show a direction at best.
+  effects tested on those cases, so a one-game replay can identify a local effect without
+  establishing that it generalises.
 
 - **The rules text is long, and some of it gets quoted.** Seats have recited rule sentences as
   arguments ("a follow only shows where someone went"), an open item in the
@@ -693,13 +735,13 @@ The criteria below are directions for a future comparison, not checks already ru
 
 | Choice | Assumption to test | Evidence that would justify revisiting it |
 |---|---|---|
-| The reads (1, 10) | A forced read of every player still ties messages and votes to beliefs on today's models | A bench arm without reads shows no difference in errors or votes, at the reads' 60% output cost |
+| The reads (1, 10) | A forced read of every player still ties messages and votes to beliefs on today's models | A bench arm without reads shows no difference in errors or votes, with a worthwhile reduction in output cost (about 60% added in the July test) |
 | The board and the own night record (1–3) | Facts the engine knows are best printed, not left to the model | A seat misreads a printed line, as the old results line was misread |
 | Rules stated in full (4) | A longer rules block costs little and prevents misreadings | Rule sentences recited as arguments, or errors traced to a rule still unstated |
 | The shared-prefix layout (14) | The role card after the transcript does not weaken how seats use the record | A vote-case set from several games, at one thinking level, shows the earlier layout voting better |
 | Reads first, verdicts after (10) | The verdicts' position does not matter once reads come first | A memory-on bench comparison of verdict positions finds a difference |
-| The thinking level (15) | Haiku at `low` is enough for discussion | A ruling on `medium` for votes; or a cheaper model that reasons at its default |
-| Instruction-only fixes (8, 9) | A sentence can change behaviour only where the facts are already right | A one-line change that moves a known failure in replay and then in full games |
+| The thinking level (15) | Additional reasoning is worth its cost for some turn types | A broader vote comparison confirms the replay gain at an acceptable cost; discussion needs a separate comparison |
+| Instruction-only fixes (8, 9) | A clearer instruction can improve how the seat uses available facts | A wording change improves a known failure in replay and the improvement also appears in full games |
 
 For a revision, record the baseline commit, model, thinking level, seat count and sample, and judge
 both arms with one judge in one run. Separate a turn's facts from its reasoning: a fix to one can move
@@ -731,6 +773,4 @@ the same error count as a fix to the other.
 | The Haiku replays | `../data/haiku_turn_replay/`, `../data/haiku_vote_replay/` |
 | The layout's cost and the field-order trial | [caching report](../../caching/report.md), [caching log](../../caching/experiment_log.md) §12–16 |
 
-*Written 2026-10-26 as the account of the current turn prompt and the decisions behind it, checked
-against the code at the commit above. It replaces the July account in the log's §0, now retitled as
-dated. No experiment was run for it; the tests it names passed on 2026-10-26.*
+*Written 2026-10-26; it replaces the July account in the log's §0.*
