@@ -1,5 +1,11 @@
 # Fine-tuning: small trained models for dedup and retrieval
 
+> **Write-up: clauses only, not a page. Skim, no detailed read needed.** Triage cards 2–7 keep
+> fine-tuning out of the main story: the reranker is kept as interview notes only; three findings go in as
+> clauses (the prefilter's opposite-advice example and the embedding gap in block 26, the labeller-agreement
+> bias in golden-set construction); dialogue distillation and the selection bandit are skipped
+> ([triage](../../writeup/triage.md)).
+
 This page records four attempts to train small models that could take over two jobs in the memory
 pipeline: ranking retrieved memories for a turn, and deciding whether a new lesson duplicates one already
 stored. Each section gives the question, how the model was trained and tested, what it achieved, the call

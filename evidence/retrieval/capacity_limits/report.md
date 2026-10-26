@@ -1,3 +1,6 @@
+> **Write-up: no detailed read needed.** Its block (44, in the lessons layer) is already filed in the
+> [map](../../../writeup/map.md); read the [retrieval report](../report.md) instead.
+
 > **Superseded record (May 2026).** Written 2026-05-24 and kept as it was, with its 2026-10-14 addendum
 > at the end. The read path today, and this study beside the filter and reranker studies, are in the
 > [retrieval report](../report.md), "The wider fetch: how many observations to show".
