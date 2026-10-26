@@ -17,6 +17,11 @@ This report explains the implementation reviewed on **2026-10-14** and the exper
 design. The [experiment log](experiment_log.md) preserves the full sequence of proposals, tests and
 changes. Cache-read counts describe input reuse, not an equivalent percentage reduction in the total bill.
 
+This report is about the provider's prompt cache. The game graph has a second, unrelated cache: LangGraph
+replays a recorded AI turn when a human's answer re-runs its step. Its key once left out the game, so two
+games could share an answer; that bug and its fix (2026-10-26) are recorded in
+[the orchestration report](../gameplay/orchestration/report.md), decision 12.
+
 ## 1. Where caching fits
 
 Game turns need timely responses. An agent reads the rules, its role and private information, the
