@@ -73,10 +73,12 @@ above; the old evidence folder is untouched. **The journey is told by records + 
 live dead code** — so `evaluation/` stays clean/singular while the portfolio narrative lives in the
 dated `evidence/` folders and commits.
 
-**Existing `evidence/` (pre-standard): FREEZE, don't retrofit.** The accumulated archive is the honest
-journey — *including* any study code embedded in it, which is itself a dated artifact of how the eval
-was done then. Do NOT bulk-hoist old study code into `evaluation/` (it would pollute the authoritative
-pipeline with superseded methods AND erase the record). Promote ONLY code that is still the *current*
+**Existing `evidence/` (pre-standard): the prose may be revised, the code stays where it is.** Since
+2026-10-23 (owner ruling) reports, hubs and logs may be rewritten and restructured, and folders moved. Keep
+the honest journey: logs are not rewritten into hindsight; date what changes; a retracted number is
+corrected in place with a dated note. Study code embedded in the archive is a dated artifact of how the
+eval was done then, and stays. Do NOT bulk-hoist old study code into `evaluation/` (it would pollute the
+authoritative pipeline with superseded methods AND erase the record). Promote ONLY code that is still the *current*
 authoritative method (rare — `evaluation/` is already mature). Graduation is JUST-IN-TIME: when a
 study's method becomes part of v5, its code moves to `evaluation/` as part of building v5, and its
 evidence folder gets a one-line "graduated to `evaluation/X`" note. No bulk sweep, no upfront audit.
