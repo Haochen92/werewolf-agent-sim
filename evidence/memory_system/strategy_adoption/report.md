@@ -1,5 +1,27 @@
 # Strategy Adoption Tracking: Phase 1 Report
 
+## In short
+
+*Added 2026-10-26. The report below is the May 2026 record, unchanged except where marked; the June
+section at its end is new.*
+
+- **Question.** When agents are shown strategy points (advice lessons from past games), can they report
+  reliably which ones they acted on, and how should the output be shaped so they do?
+- **Test.** Three prompt versions for a field listing the points followed, each played in 3 games;
+  frozen turns from those games scored 1–5 by one model judge (`gemini-2.5-flash`): v1 on 30 turns,
+  v2 and v3 on 120.
+- **Answer.** v2 was best: the list placed before the action, with "list only points whose advice your
+  action follows". The judge found its list accurate on 72% of 120 turns, over-claiming on 8% and
+  under-claiming on 19%. Placing the list before the action also raised the judge's action score
+  (3.97 for v1 on 30 turns, 4.47 for v2 on 120).
+- **What followed.** In June 2026 a verdict on every lesson shown replaced the list, after a screen
+  found the instruction was followed only once it was stated in the prompt body (coverage 0.27 →
+  0.97; section below). Today a turn gives each strategy point shown a verdict: follow, override or not
+  relevant, with a one-line reason (`Agents/schemas/output.py::StrategyVerdict`, carried on
+  `Agents/schemas/turn.py::TurnEffects`). Each follow raises the point's counters and feeds credit;
+  `adopted_strategy_keys` survives only as a field derived from the follows on the evaluation record
+  (`Agents/schemas/evaluation.py::EvalCase`).
+
 ## Motivation
 
 This project builds a multi-agent Werewolf simulation where AI agents accumulate long-term memory across games. A postgame extraction pipeline pulls strategic lessons ("when under pressure as a wolf, deflect to a quieter target") and stores them as **strategy points** in a vector store. Before each game, agents retrieve relevant strategy points via semantic search based on their current in-game situation.
@@ -20,7 +42,7 @@ Derived metric: `adoption_rate = used_count / retrieved_count`. These counters c
 
 ### Phase 2 — Postgame Effectiveness Scoring (deferred)
 
-A single pro-model LLM call per game evaluates all adoptions against the full transcript, scoring each as +1 (positive), 0 (neutral), or -1 (negative). This would add `positive_count`, `neutral_count`, `negative_count` to each strategy point. Phase 2 is deferred pending an ablation test on whether strategy points add value beyond observations alone.
+A single pro-model LLM call per game evaluates all adoptions against the full transcript, scoring each as +1 (positive), 0 (neutral), or -1 (negative). This would add `positive_count`, `neutral_count`, `negative_count` to each strategy point. Phase 2 is deferred pending an ablation test on whether strategy points add value beyond observations alone. (Never built in this form; see the dated note under What's Next.)
 
 ## Prompt Iterations and Experiment
 
@@ -83,7 +105,7 @@ DON'T: list a point if your action was shaped by observations, not strategy poin
 An empty list is fine if none of the points match your action.
 ```
 
-**What happened:** This failed to improve over v2. At n=120, v3's scores were statistically equivalent to v2 after accounting for one outlier game (see Results). The additional precision in the prompt didn't translate to additional precision in the output for this model at minimal thinking budget.
+**What happened:** This failed to improve over v2. At n=120, once one outlier game is set aside, v3's scores were within a tenth of v2's on three of the four measures (see Results). The additional precision in the prompt didn't translate to additional precision in the output for this model at minimal thinking budget.
 
 ## Results
 
@@ -122,7 +144,7 @@ Note: v1 was evaluated at n=30 only (the attribution direction diagnostic was ad
 | grounding | 4.73 | **4.57** | 4.08 | 4.60 |
 | adoption_accuracy | 4.00 | **4.38** | 4.26 | 4.16 |
 
-**One outlier game dominated v3's apparent regression.** Game `888e4e81...` produced 15 of 16 action_quality=1 scores and all 13 grounding=1 scores in v3 — agents in that game hallucinated heavily. Excluding it, v3's action quality (4.41), strategy application (4.61), and grounding (4.60) are statistically equivalent to v2. The regression was game variance, not a prompt effect.
+**One outlier game dominated v3's apparent regression.** Game `888e4e81...` produced 15 of 16 action_quality=1 scores and all 13 grounding=1 scores in v3 — agents in that game hallucinated heavily. Excluding it, v3's action quality (4.41), strategy application (4.61), and grounding (4.60) are within a tenth of v2's (4.47, 4.69, 4.57) on the 1–5 judge scale; no significance test is reported, and the samples differ (70 turns against 120). Its adoption accuracy stays lower (4.16 against 4.38). This points to game variance rather than a prompt effect for the regression.
 
 ### Attribution Direction (n=120)
 
@@ -160,7 +182,7 @@ All attribution direction data comes from `gemini-2.5-flash`. Independent spot-c
 
 ### Prompt Precision Doesn't Guarantee Model Precision
 
-Adding structured DO/DON'T rules and explicit anchoring on the `Action:` field didn't improve attribution accuracy over v2's simpler natural language. After excluding the outlier game, v3 was statistically equivalent to v2 on most metrics. The data supports "v3 didn't improve over v2" but not a stronger causal claim about *why* — we didn't test a conversational-style version of v3's content, so we can't distinguish whether the structured format or the added complexity caused the non-improvement.
+Adding structured DO/DON'T rules and explicit anchoring on the `Action:` field didn't improve attribution accuracy over v2's simpler natural language. After excluding the outlier game, v3 was within a tenth of v2 on three of the four measures. The data supports "v3 didn't improve over v2" but not a stronger causal claim about *why* — we didn't test a conversational-style version of v3's content, so we can't distinguish whether the structured format or the added complexity caused the non-improvement.
 
 The simpler explanation is sufficient: for flash-lite at minimal thinking budget, the simpler instruction was enough — additional precision in the prompt didn't translate to additional precision in the output. Whether this reflects a general property of weak models at low thinking budgets or is specific to this task is an open question.
 
@@ -202,6 +224,16 @@ Each adoption record is minimal: `(strategy_key, player_id, role, day, round, ac
 
 ## Decision
 
+> **2026-10-26.** v2 was the production prompt from May until 2026-06-16, when a verdict on each
+> strategy point shown (follow, override or not relevant, with a one-line reason) replaced the list;
+> see the June section below. `adopted_strategy_keys` is no longer in any model's output. It survives
+> only on the evaluation record, derived from the follow verdicts and kept for analysis
+> (`Agents/schemas/evaluation.py::EvalCase`, filled in
+> `Agents/turn/pipeline.py::run_memory_informed_action`; the judge input builder
+> `evaluation/src/judges/case_inputs.py::eval_case_to_judge_inputs` still reads it). The
+> commitment-before-action lesson carried over: today's turn schema answers in the order reads,
+> verdicts, strategy note, action (`Agents/schemas/lineup_output.py::TurnOutput`).
+
 **v2 is selected as the production prompt.** It achieves the highest adoption accuracy (4.38), the lowest over-attribution rate (8%), and — critically — the highest action quality (4.47) and strategy application (4.69) scores. The simple language fits flash-lite's capabilities, and the schema reorder provides the structural guarantee that matters most.
 
 ```
@@ -213,6 +245,15 @@ empty list is fine if none of the points match your action.
 We considered bumping `thinking_level` from minimal to low for the agent calls, which might improve adoption accuracy. This was rejected: thinking level applies to the entire agent call (discussion/vote), not just the adoption field, making it a significant cost increase across every turn of every game for a marginal improvement on one output field.
 
 ## What's Next
+
+> **2026-10-26.** Both next steps are settled. The [ablation](../ablation/report.md) ran: on 120
+> replayed turns no condition was better, and observations only was chosen then. Served games now
+> retrieve strategy points only (`server/game/run_config.py::game_run_config`), which removes the
+> overlap described below; whether that changed attribution accuracy was not measured. Phase 2 was
+> never built as a model call. Its role, a positive, neutral or negative count on each strategy point
+> from how play went when it was followed, was taken by credit assignment worked out by fixed rules
+> from the game records: first in the v7 loop, and today in the credit pass, which needs no model call
+> (`Agents/memory/consolidation/tick.py::run_credit_pass`, `Agents/memory/consolidation/credit.py`).
 
 ### The Attribution Ambiguity Is Structural, Not Prompt-Solvable
 
@@ -229,6 +270,69 @@ This finding motivates the next experiment directly:
 - **Observations-only ablation:** If observations and strategy points overlap enough to create attribution ambiguity, the question becomes whether strategy points add value beyond what observations already provide. Observations are self-correcting — postgame extraction naturally captures "tried X, it worked" vs "tried X, got caught" — and `observation_count` is a direct signal of pattern frequency without needing an adoption tracking pipeline. If action quality holds without strategy points, the memory system simplifies significantly: one memory type, no adoption tracking, no Phase 2 effectiveness scoring.
 - **Phase 2 effectiveness scoring:** Deferred pending the ablation result. If strategy points are retained, Phase 2 would add postgame effectiveness scoring to close the loop on strategy quality.
 
+## June 2026: one verdict per lesson, the step to today's field
+
+*Added 2026-10-26, from the [forced-verdict screen's log](forced_schema_screen/experiment_log.md),
+which holds every run and its data files.*
+
+**The question moved.** May asked agents to list the lessons they followed. In June the question
+became whether a seat should give a verdict on every lesson shown, before it acts: does the lesson fully
+apply, partly apply, or not apply to this board? An earlier probe (2026-06-13;
+[decision-replay log](../effectiveness/decision_replay/experiment_log.md)) had found that forcing such
+a verdict hurt the vote (0.75 → 0.55). It ran on another day, so the screen re-ran every arm
+together instead of comparing with it.
+
+**The test (2026-06-16).** 48 town day votes from 10 games that were never among the v6 store's
+sources (days 2–8; villager, healer, investigator), with memory from the same game left out of both
+stores. Each vote was regenerated five ways in one run: no memory, and each of two
+stores shown either plainly or with a forced verdict per memory. Each memory arm fetched the top 5
+observations from its own store. The stores were v5, whose lessons were worded cautiously, and v6,
+rebuilt in June to fix that content. The players were flash-lite. The measure is how often the vote
+hit a threat.
+
+| Store | Shown plainly | Forced verdict per memory | Forced − plain |
+|---|---|---|---|
+| v5 | 0.625 | 0.521 | −0.104 |
+| v6 | 0.604 | 0.625 | +0.021 |
+
+With no memory: 0.667.
+
+**Forcing a verdict hurt the vote on v5 content and was neutral on v6 content.** The earlier
+probe's harm repeated within one run on v5 and did not appear on v6, which points to the cautious v5
+content rather than to the forced verdict.
+
+**Missing verdicts were a delivery problem, not a limit of the model.** In this run the model gave a
+verdict for only about a third of the memories shown (148 and 145 verdicts for 240 memories; a full
+row of verdicts 0.33–0.35 of the time). Two follow-ups on 60 decisions ruled out two causes: the model
+was not dropping the low-ranked memories (coverage was flat across ranks 1–5), and numbering the
+memories did not help. The instruction had sat only in the output schema's field description. Stating
+it in the prompt body as well raised the verdicts from 168 to 302 for 300 memories (a full row 0.27 →
+0.97 of the time, every rank covered); fixing the list's length in the schema gave 300 of 300. Neither
+padded the rows: no decision gave every memory the same verdict, and every reason was distinct. Full
+coverage did not hurt the v6 vote (0.617 with the instruction in the schema only, 0.60 in the prompt
+body, 0.65 with the length fixed). A check on 40 discussion turns with the v6 store gave 200 verdicts
+for 200 memories; 34 of the 40 seats spoke and 6 passed, and the messages read as natural.
+
+**How sure we are.**
+- 48 votes, with McNemar not significant: a screen, not a verdict. Under forcing, v6 against v5
+  flipped 8 votes toward v6 and 3 toward v5 (p = 0.23); shown plainly, 3 against 4 (p = 1.0).
+- No memory arm beat no memory (0.667) on this slice. The screen says forcing is safe on v6 content,
+  not that memory helped the vote.
+- Partial coverage inflated the share of memories judged applicable (v5 0.649, v6 0.697 at n=48).
+  Under full coverage it fell from 0.798 to about 0.55, because the memories the model had skipped
+  were mostly the ones that did not apply. The v6-against-v5 comparison of that share was not re-run.
+- One player model, observations only, single decisions replayed rather than whole games.
+
+**What followed.** The design was locked the same day: the per-memory instruction goes in the prompt
+body and the field description stays short (`memory_applicability` on the turn's output schema). The
+same delivery replaced `adopted_strategy_keys` for strategy points: one verdict per strategy point
+shown, follow, override or not relevant, with a one-line reason, its instruction stated in the prompt
+body (`Agents/prompts/memory/context.py::STRATEGY_VERDICT_INSTRUCTION`, added 2026-06-16). The log
+covers the observation verdict; it records no screen of the strategy-point verdict itself. That is
+today's field (`Agents/schemas/output.py::StrategyVerdict`, on
+`Agents/schemas/lineup_output.py::TurnOutput`). Served games show strategy points only, so there the
+observation verdict is always empty.
+
 ## Artifacts
 
 All artifacts are co-located in `evidence/memory_system/strategy_adoption/`.
@@ -243,8 +347,12 @@ All artifacts are co-located in `evidence/memory_system/strategy_adoption/`.
 | `eval_results/captured_eval_20260524_021749.jsonl` | v2 application eval, n=120 (updated judge) |
 | `eval_results/captured_eval_20260524_021750.jsonl` | v3 application eval, n=120 (updated judge) |
 | `eval_configs/` | All dataset build and eval configs |
+| `forced_schema_screen/` | June 2026 forced-verdict screen: log and `run_*.json` results |
 
 ## Implementation Changes
+
+Paths as of May 2026; the code has since been reorganised. Today's count write-back is
+`Agents/turn/adoption.py::process_strategy_adoption`.
 
 | Area | Files | Change |
 |------|-------|--------|

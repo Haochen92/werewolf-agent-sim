@@ -1,5 +1,10 @@
 # Strategy-Adoption Judge — Validation Protocol
 
+> **Superseded, never executed (2026-10-26).** Parked on 2026-06-01 and never run. The judge it would
+> calibrate scored the May adoption list, which a verdict per lesson replaced in June 2026; that
+> judge's scores survive only in the May [adoption](report.md) and [ablation](../ablation/report.md)
+> reports, as one uncalibrated model judge's.
+
 > **🛑 EXECUTION DEFERRED (2026-06-01).** The protocol below is final, but running it is parked until
 > after the foundation rebuild — the spot-check labels would be on old-structure (parallel, 4-role,
 > day-only, v4-DB) games that are about to change. The *method* is substrate-independent and carries
