@@ -1,513 +1,375 @@
-# Store curation — how the three memory stores grow, stay bounded, and improve
+# Store curation: how the memory store stays bounded and keeps improving
 
-## What this document is (start here)
+This page describes how the memory store is curated today: what decides which observations and
+lessons stay, which are removed, and what keeps the store's size and running cost in check. It also
+covers the evidence behind each rule. The rules come from the v7 learning loop of June and July 2026,
+which is described here only as the design they graduated from; its result is told in the
+[v7 report](../memory_system/v7/report.md). The review sessions that shaped the rules, in date order,
+are in the [experiment log](experiment_log.md).
 
-**The setting.** This project runs LLM agents that play Werewolf. We don't just want an agent to
-play *one* game well; we want it to play *better across many games*, the way a person improves with
-experience. That requires a **memory that persists between games** and genuinely carries lessons
-forward. The machinery that runs game after game and folds each game's lessons into the next is what
-we call **the loop**.
+**Version.** This describes the code at the `feature-frontend-v1` branch head on 2026-10-26
+(`5d8ea41c`), checked against the code named in each statement. Every measured result below was
+taken on the nine-seat v7 loop and belongs to that game, store and model; none was re-run on today's
+code. No ten-seat learning tick is recorded.
 
-**The problem this document is about.** A memory that only *accumulates* gets worse, not better. It
-bloats — retrieval quality and prompt budget both degrade as the store grows — and stale or harmful
-entries pile up beside the good ones and drown them out. So a persistent memory only helps if
-something **curates** it: decides what gets in, what survives, and what actually reaches the agent.
-This document is the record of that curation machinery. Its one-line thesis: **"compounding" — each
-batch of games making the next play better — mechanically *is* this curation.** Take the curation
-away and the memory just appends, and an appending memory decays.
+## In short
 
-**Three kinds of memory, curated three ways.** The loop keeps three separate stores, because three
-different kinds of thing are worth remembering:
+- **What runs.** Two passes keep the store, both run by hand. The **credit pass** (no model call)
+  grades every lesson from the memory-on games it is given, then prunes the harmful ones and evicts
+  the ones seats keep rejecting. The **learning tick** (paid) folds in new observations, lets
+  observations that stopped recurring age out, writes new lessons and removes duplicate lessons. It
+  never prunes or evicts.
+- **What supports it.** Eleven ways a store degrades were found in the v7 loop's runs and reviews,
+  and each got a guard. Ten guards are in today's code, one of them in a changed form; the eleventh is built but does not
+  engage in the learning tick. One
+  threshold was checked: lessons flagged harmful on one half of a game archive stayed harmful on the
+  other half in 8 of 9 cases.
+- **What is not known.** The thresholds were set on nine seats and are not validated for ten. No
+  learning tick has run on ten seats. Nobody has judged whether synthesised lessons are good. The
+  removal rules are slow, so within any run measured so far the stores grew almost without pause.
+- **Tells are not served.** The behaviour-to-role hints the v7 loop also curated are not part of
+  today's game.
 
-- **Observations** — raw "what happened" records. *"On Day 1 I argued for a slow pace to avoid
-  drawing suspicion; it worked."* Evidence, not advice.
-- **Strategy points (SPs)** — distilled "what to do" advice an agent may choose to follow, each
-  carrying counters for whether following it tended to go well.
-- **Tells** — falsifiable "behavior X ⇒ likely role Y" facts mined from past games. *"A player who
-  counter-accuses their accuser of using a role claim as a distraction is evil 27 games out of 30."*
+**Terms used below.**
 
-Each store grows, stays bounded, and improves by its own rules — for reasons §4 makes precise. The
-rest of the document is the framework common to all three (§1–§2), the three stores in brief (§3),
-why their mechanisms differ (§4), what is verified (§5), and the open review points (§6). Full
-per-store detail lives in three companion docs in this folder:
-[`observations.md`](observations.md) · [`strategy_points.md`](strategy_points.md) ·
-[`tells.md`](tells.md).
+- An **observation** is a short account of one move and its effect, written by a model from a
+  finished game. It is evidence: it says what happened, not what to do.
+- A **lesson**, stored as a **strategy point**, is advice for one role at one kind of decision,
+  written by a model from a group of similar observations.
+- A **cell** is one role's shelf for one kind of decision (day discussion, day vote or night). Ten
+  seats drawn from twelve roles give 36 cells.
+- A lesson's **lift** is the average grade of the decisions made while following it, minus the
+  average grade of the same kind of decision in games played without memory. The grades come from a
+  fixed table per role and action ([credit report](../credit/report.md)). Lift above zero means the
+  lesson's followers did better than play without memory.
+- A lesson is **proven** when its lift is above zero over at least 2 follows. Every other lesson is
+  **unproven**.
 
-### A small glossary — the terms the rest of the doc leans on
+## Why a store needs curating
 
-Skim this once; the sections below assume it. (Each term is expanded where it first does real work.)
+A memory that only adds entries gets worse as it grows. The v7 loop showed this in two ways.
 
-| Term | In plain words |
-|---|---|
-| **generation** | One batch of games (run shape: ~10 games). The fine-grained clock — most curation runs once per generation. |
-| **epoch / fold** | The tell store's coarser update cycle. A **fold** rebuilds the tell store and republishes the detection **checklist**, which then stays frozen until the next fold. One fold ≈ one generation at run scale. |
-| **credit** | Scoring each stored item by the outcomes tied to it — did following this SP go well? did this tell predict the right role? Credit is the *input* to curation, never the verdict on whether the loop worked (that is measured by separate instruments). |
-| **lift** | An item's credited effect versus a memory-off baseline. Positive = it helped; negative = it hurt. (SPs below −0.15 lift get pruned; tells are ranked by lift.) |
-| **extraction / mining** | The two "growth from a finished game" steps. *Extraction* writes observations from a game; *mining* discovers candidate tell wordings in the transcript. |
-| **synthesis / consolidation** | The loop's one *generative* step: an LLM writes new strategy-point text by distilling clusters of observations. The whole SP-update tick is "consolidation." |
-| **retrieval → injection** | Retrieval pulls the most relevant stored items for the current situation (semantic / RAG search); injection places a small, bounded set (≤3 SPs) into the agent's prompt. Most of a store never reaches a prompt. |
-| **cell** | The store is partitioned by (role, phase) — e.g. `villager / day_discussion`, 17 cells for observations. Curation runs per cell. |
-| **cluster** | A group of a cell's observations stating the same recurring lesson in different words. Built by a greedy seed-based routine — a seed observation gathers its nearest neighbours above cosine 0.70, ≤15 per cluster, each obs in one cluster only (not connected components; `strategy_points.md` §2). Synthesis writes one SP per cluster; a lone observation (a *singleton*) is never synthesized alone. |
-| **off-policy (tells)** | Tells earn credit from *every* player who exhibited the behavior in *every* game, whether or not any agent read the book. SP credit is the opposite: an SP earns only when an agent actually follows it. |
-| **proven / contested (SPs)** | *Proven* = an SP with positive lift and ≥2 follows (earned, and protected from deletion). *Contested* = everything else — unproven, still competing for the evidence credit needs. |
-| **probation → incumbent → archive (tells)** | A tell's lifecycle: new tells enter on **probation**, become **incumbents** once they recur, and are **archived** (retired, not deleted — they can re-earn their way back) if they never gather support. |
-| **the book / the checklist (tells)** | The **checklist** is the internal list the detector scans each game against; the **book** is the role-identification manual injected into agents' prompts, built from the tell ledger at fold time. |
+- **Volume.** Its first paid run grew the lesson store from 0 to 227 with no ceiling. Healthy cells
+  held about 5 lessons; bloated ones about 34. Retrieval keeps only a few lessons per situation, so a
+  crowded cell lowers the chance that the right one is among them.
+- **Quality.** Without removal, a lesson that measures harmful keeps being shown and followed. And
+  near-duplicate lessons split one piece of advice's follows across several rows, so none of them
+  gathers enough evidence for credit to act on.
 
-### The loop at a glance — one cycle, two curation ticks, three stores
+Duplicates only became costly once the store started grading and writing its own contents. Before
+v7, a duplicate's one cost was clutter in the few retrieval slots, which a cheap dedup removed.
+Credit made a duplicate lesson cost evidence (the split follows above). Synthesis made a duplicate
+observation cost compute, because synthesis groups observations and every redundant one inflates
+that work and the variants it writes.
 
-Each generation of games feeds all three stores, and each store is curated before the next
-generation reads it:
+So both passes do the same three things for their store: keep what has earned its place, drop what
+measured harmful or useless, and add only where new evidence justifies it.
 
-> **games → extraction (observations) + mining (tell wordings) → credit (per-item utility)
-> → SP consolidation *(every generation; carries observation decay)* + tell fold *(every epoch)*
-> → store v(g+1) + checklist v(k+1) + injected book → next games**
+## The two passes today
 
-Credit is the input to curation and the referee of nothing: whether the loop *helped* is always
-measured by instruments outside it (credit report §1). And the compounding claim is precisely the
-diagram running end to end — curate, feed forward, play better — not any single step in it.
+```
+memory-on games ──► credit pass (no model call) ──► prune, evict ──► publish
+                     grade each followed lesson
+offline extraction ─► learning tick (paid) ──────────────────────────► publish
+                       fold observations → age out → synthesise (every 2nd tick) → lesson dedup
+```
 
-### About this document (navigation and status)
+Both passes live in `Agents/memory/consolidation/tick.py` and end by publishing the store to the
+Postgres database the server reads (`Agents/memory/consolidation/publish.py`). No schedule runs
+them. They were split on 2026-10-13: credit needs only the games' records, so it can run often and
+free, while extraction and synthesis are paid and run in batches
+([v8 decisions](../memory_system/v8/decisions.md) §14). How the passes fit the rest of the memory
+system is in the [v8 report](../memory_system/v8/report.md), "Keeping the store: two passes, both run
+by hand"; this page gives the rules each pass applies.
 
-> **What it is.** The framework record for the loop's store layer — the rules that decide what
-> enters each store, what survives, and what reaches an agent's prompt (the section map is in the
-> intro above). The per-item utility that curation consumes is the credit layer
-> ([`../credit/report.md`](../credit/report.md)); the complete knob inventory with per-value
-> provenance is [`knobs.md`](knobs.md); upstream instruments and build journeys are named per store
-> in §3's lifecycle maps.
->
-> **Role in the run program.** This is the review basis for the consolidation ownership walkthrough
-> (the §R "D2" gate in
-> [`../memory_system/v7/report.md`](../memory_system/v7/report.md)).
-> §6 is that walkthrough's agenda, and its item numbers are stable references (the log and the plan
-> cite them) — new items append, existing items never renumber.
->
-> **Status.** First written 2026-07-14 (as `evidence/consolidation/report.md`), revised the same day
-> across three review sessions (log §4–§7); **restructured 2026-07-15** — folder renamed to
-> `store_curation/`, per-store detail split out. Suite 684 green at the 07-14 review; uncommitted,
-> `feature-dimension-schema`. Of the §6 agenda, still open: §6.2's tracked prefilter limitation,
-> §6.4's signing-time pin, and §6.5's post-run readout. *Section map for readers of the frozen log
-> and plan:* the old §2 (SP tick, incl. §2.1 observation decay) is now
-> [`strategy_points.md`](strategy_points.md) + [`observations.md`](observations.md); the old §3 (tell
-> tick) is now [`tells.md`](tells.md); §1/§4/§5/§6 numbering is unchanged.
+### The credit pass: grade, then prune and evict
 
----
+**What does the credit pass change? It recounts every lesson's record from the games, then removes
+lessons on that record.** It calls no model (`tick.py::run_credit_pass`).
 
-## 1. Why stores need curation at all
+1. **Recount.** Every lesson's counters (follows; good, neutral and bad grades; times shown,
+   overridden and judged not relevant) are set from the games in the window, not added to what was
+   there (`credit.py::credit_apply`). A lesson absent from the window stops carrying old credit. A
+   lesson shown on every turn of a day counts as shown once for that decision.
+2. **Fold in discarded duplicates.** When the lesson dedup has discarded a lesson as a duplicate,
+   the survivor records its key, and the follows recorded against that key count for the survivor
+   (`credit.py::_fold_merged`).
+3. **Compare with play without memory.** Each lesson's lift is taken against the memory-off games of
+   the same kind of decision, supplied as a separate set of games. A lesson whose decisions have no
+   memory-off comparison is left unscored and is never pruned.
+4. **Apply the rules** (`store_ops.py::prune_and_evict`), in this order:
+   - **Protect** a proven lesson (lift above 0, at least 2 follows). Nothing removes it.
+   - **Prune** a lesson whose lift is below −0.15 after at least 8 follows.
+   - **Evict** a lesson shown at least 8 times and never followed, but only when seats overrode it
+     ("it applies, but I have a better move") at least once and at least as often as they judged it
+     not relevant. A lesson mostly judged not relevant was shown in the wrong situation; that is a
+     retrieval miss, and it is kept (`store_ops.py::_evict_ok`).
 
-**Why a duplicate only became expensive at v7.** It helps to be precise about *when* a duplicate
-costs anything, because the answer is what motivated this whole apparatus. Through v5/v6 —
-observations and SPs injected, but no credit and no synthesis — a near-duplicate was nearly free. Its
-one real cost was **retrieval clutter**: identical lessons crowding the few top-N slots, removed by a
-dedup that is cheap and bounded per generation. Two v7 additions changed that. **Credit** made a
-duplicate cost *evidence*: near-duplicate SPs split one lesson's follows, so no row gathers enough
-signal to act on (the "Quality" failure below). **Synthesis** made an *observation* duplicate cost
-*compute*: it clusters observations, so redundant obs inflate the clustering it runs and the variants
-it writes. The store, in other words, only needed real curation once it began grading and generating
-from its own contents, which is exactly the v7 step. The two failure modes below are those costs at
-scale.
+Every change is recorded with its numbers (`db.py::record_credit_run`). In a game with a human seat
+only the AI seats' decisions are graded (`credit_rules.py::iter_eval_cases`; since 2026-10-26,
+[v8 decisions](../memory_system/v8/decisions.md) §15). The one recorded pass, over 20 ten-seat games on
+2026-10-14, pruned 4 lessons and evicted 4 ([v8 report](../memory_system/v8/report.md), "Does the
+credit pass run on ten-seat games?").
 
-An uncurated memory store degrades in two distinct ways, and the loop's first paid run (call it
-run-1) demonstrated both — the episode the config's own comments call the "§12 bloat record":
+### The learning tick: fold, age out, synthesise, dedup
 
-- **Volume**: run-1 grew the SP store from 0 to 227 with no ceiling — bloated cells carried ~34 SPs
-  where healthy cells ran ~5. Retrieval quality and prompt budget both degrade with cell size, so
-  growth alone erodes the very effect the store exists to produce.
-- **Quality**: without prune/evict, an SP that measures *harmful* keeps being retrieved and followed
-  forever, and near-duplicate SPs smear one lesson's credit across several rows so none of them ever
-  accumulates enough evidence to act on.
+**What does the learning tick change? It adds evidence and lessons, and removes only observations
+and duplicate lessons.** It is `tick.py::run_tick`, which turns prune and evict off for the call.
 
-The other two stores degrade the same two ways at their own grain. The tell store: mining produces
-a new wording for essentially the same behavior in almost every game (the same tell arrived as 27
-distinct wordings in one 30-game sample), and a checklist that only grows makes detection cost
-scale with corpus size instead of game count. The observation store: the same lesson re-arrives
-reworded every game, and an observation that can never be dropped makes store size — and the
-clustering cost that scales with it — unbounded.
+1. **Fold in new observations** from the offline extraction job (`obs_fold.py::merge_new_obs`). A
+   new observation that duplicates a stored one is discarded, and the stored one's count rises. A
+   near-duplicate is kept as a separate record, and no text is rewritten. By design stored observations
+   are never judged against each other (the freeze-old guard), but in today's tick the guard does not
+   engage: the tick's working folder carries no last-dedup marker, so the fold would re-judge the
+   whole store (checked in the code 2026-10-26; the [dedup report](../dedup/report.md), "Built and
+   off"). The judge is Claude Haiku 5.5 (`TickConfig.dedup_model`). The
+   dedup stack itself is told in the [dedup report](../dedup/report.md).
+2. **Advance the clocks.** For each observation the database keeps the tick it first appeared and
+   the tick its count last rose (`tick.py::_stamp_obs_generations`; table `obs_generations`).
+3. **Age out** an observation once it has gone 4 ticks per time it has been seen without being seen
+   again (`store_ops.py::evict_observations`). An observation seen once gets 4 ticks; one seen ten
+   times gets 40; any new sighting restarts the clock.
+4. **Synthesise**, on every second tick (`store_ops.py::synthesize`; Claude Sonnet 5.5,
+   `TickConfig.model`). Three checks decide where synthesis runs, all before any grouping is done:
+   - a cell is considered only if at least 4 observations *arrived* since the last synthesis, counted
+     by the tick they first appeared;
+   - a cell already holding 12 unproven lessons is skipped (proven lessons do not count toward the
+     12);
+   - within a cell, only groups that contain a new observation are synthesised.
 
-So every store's curation does the same three verbs — **keep** what earned its place, **drop** what
-measured dead or harmful, **grow** only where fresh evidence justifies it — implemented differently
-per store (§4 explains why they cannot be one mechanism).
+   A cell with fewer than 3 lessons is exempt from the first two checks, so it can refill. The
+   groups are built from the new arrivals outward: each new observation gathers its nearest
+   neighbours in the cell, at most 15, within the same situation and game stage. An observation with
+   no close neighbour is never synthesised on its own. Each lesson already followed at least 5 times
+   is shown to synthesis with its lift, so advice that measured badly is corrected rather than
+   rewritten.
+5. **Remove duplicate lessons**, only when synthesis added some
+   (`store_ops.py::_dedup_strategy_points`). A new lesson that duplicates an older one is discarded;
+   the older one, which holds the credit history, always survives and records the discarded key. Two
+   lessons are never merged into one text.
 
-For concreteness, the three item kinds being curated. An observation is a situation → approach →
-outcome record extracted post-game into one of 17 (role, phase) cells (this one from the v2 smoke
-run's store, `observation_count: 2` — the same lesson arrived twice):
+The tick then saves a snapshot of the generation and publishes.
 
-> *situation:* "Day 1, an information-starved opening where you established a baseline of being a
-> helpful, cautious voice …" → *approach:* "You advocated for a measured pace on Day 1 to delay any
-> momentum against you and discourage early investigation." → *outcome:* "Positive; successfully
-> steered the village away from identifying an early target, preserving your anonymity."
+### What a seat sees of this
 
-A strategy point is a situation-conditioned directive with live counters (lifted from a smoke-run
-store, trimmed):
+In served games memory is the player's switch and starts off; with it on, seats are shown lessons
+only, never observations (`server/game/run_config.py::game_run_config`). The counts the credit pass writes also order what a seat is shown
+(`Agents/memory/retrieval/filters.py`). Lessons followed at least 5 times with more good grades than
+bad are placed first. When every kept lesson is such a lesson, the lowest slot goes to the best
+untried one, because a lesson earns credit only when a seat follows it, and a lesson never shown can
+never earn. This read-side test of "proven" differs on purpose from the credit pass's: the read path
+has no memory-off averages to compare with. The full read path is in the
+[v8 report](../memory_system/v8/report.md), "In a game: looking lessons up".
 
-> *situation:* "Healer is operating during day discussion … Stakes: maintaining your status as an
-> unexposed power role is more valuable than pushing a specific lynch early …" → *action:* (a
-> directive the agent may follow), with counters `follow_count / positive_count / negative_count`.
+## Why the two stores are kept differently
 
-A tell is a falsifiable behavior→role fact (this one from the v1 seed book, `tell_id: disc_530`):
+**Why not one rule for both? Because an observation is evidence and a lesson is an instruction, and
+their failure modes differ.**
 
-> "A player who is being accused of holding a hostile role counter-accuses their accuser of using
-> the role claim as a distraction to protect themselves." — evil 27/30, shrunk lift +0.49.
+| | Observations | Lessons |
+|---|---|---|
+| What it is | what happened in a game | what to do in a situation |
+| Graded? | never: nothing follows an observation | yes, each time a seat follows it |
+| Only quality signal | whether the same account keeps arriving | lift |
+| A duplicate | is discarded and the stored one's count rises | is discarded and its follows go to the survivor |
+| Removed when | it stops recurring | it measures harmful, or is shown and rejected on its merits |
+| What can go wrong | volume | synthesis can write bad advice |
 
-## 2. The framework — stores, layers, operations
+The lesson side carries most of the guards because its growth step is a model writing new text, so
+growth itself can create bad content. The observation side can only grow, which is why aging out is
+its one removal rule.
 
-### 2.1 The three stores and their layers
+Four rules hold across both:
 
-Each store has *persistent* layers (what survives between games) and a *consumption* layer (what an
-agent actually sees). Keeping the two apart matters: most curation acts on the persistent layers,
-and only a small, bounded surface ever reaches a prompt.
+- **Credit feeds curation; it does not judge it.** The lift that decides what to keep never decides
+  whether memory works. That verdict comes from separate whole-game tests (the
+  [memory hub](../memory_system/report.md)).
+- **An item's meaning stays fixed so its evidence stays meaningful.** Lesson text is never merged,
+  and a dedup only ever discards the newer copy, so the counters on a surviving lesson still measure
+  the advice they counted.
+- **Cheap checks run before paid ones.** Exact-match and count checks run before any embedding
+  search, and an embedding search only nominates candidates for the model judge.
+- **No lesson is removed for age.** A lesson leaves only by measuring harmful or by being rejected on
+  its merits; a proven one is never removed. Observations are the exception by design: recurrence is
+  the only evidence they carry, so they leave when it stops.
 
-| | Observations | Strategy points | Tells |
-|---|---|---|---|
-| One item is | evidence: a situation→approach→outcome record | a directive: situation-conditioned advice with follow/outcome counters | a fact: "behavior X marks role Y", carried by instances |
-| Persistent layers | per-cell store (17 role×phase cells) + a generation sidecar carrying each record's first-seen and last-reinforced clocks | per-cell store with two implicit lanes — **proven** (positive lift, ≥2 follows) and **contested** (everything else) | **ledger** (`instances.jsonl`, append-only event rows) → **canon** (`canon.json`, every identity ever admitted) → **checklist** (`checklist_v{k}.json`, the ≤48/channel active-duty card detection scans for) |
-| Consumption layer | **none in v7, by design** — synthesis substrate only; the injection role obs held in v5/v6 is superseded by the tell book (§6.8, RESOLVED: the run wiring now enforces this) | RAG retrieval (top-k, proven tiering, exploration slot) → injection ≤3 per situation | the **book** — a role-identification manual built from the ledger at fold time, injected at game start |
-| Curation cadence | every generation (online dedup at game fold; decay inside the SP tick) | every generation (synthesis every 2) | every epoch (the fold); frozen checklist between folds |
-| Code anchors | `evaluation/src/loop/merge.py`, `consolidate.py` | `evaluation/src/loop/consolidate.py`, `credit.py` | `evaluation/src/loop/tells.py`, `tell_credit.py`, `tell_fold.py`, `Agents/memory/tell_book.py` |
+## What supports it: eleven failure modes and their guards
 
-### 2.2 The operation taxonomy
+**Where did the rules come from? Each guards a failure the v7 loop's runs or reviews found.** The v7
+runs could not answer whether memory compounds (the [v7 report](../memory_system/v7/report.md),
+"The June loop runs"), but they surfaced most of what is known about curating a store. The
+"Surfaced by" column separates what the runs showed (rows 1–4) from what reviews caught by reading
+the mechanism.
 
-Every curation rule in the system belongs to one of six classes. The class names are used
-consistently in the per-store docs; where the codebase uses a different verb, this table is the
-canonical definition.
-
-| Class | What it does | Observations | Strategy points | Tells |
+| # | Failure | Surfaced by | Guard | In today's code |
 |---|---|---|---|---|
-| **Growth** | adds items | post-game extraction (one pass per role×phase cell) | **synthesis** — the system's only *generative* op: an LLM writes new directive text from observation clusters, behind three admission checks | **mining** — discovers wordings in transcripts; the fold only admits, never writes |
-| **Admission** | resolves an arriving item's identity: new, or a duplicate of an existing one | online freeze-old dedup at game fold — triage-only: exact duplicates collapse and pool counts; near-duplicates are kept separate | post-synthesis KEEP/DISCARD dedup — freeze-old, duplicate's counts absorbed by the credited older survivor, never a text merge | fold wording-resolution {keep, discard} — a new wording dies into a canonical or becomes a new probation canonical; canonical text never rewritten |
-| **Removal** | drops or retires items, on evidence | **decay** — dropped after `obs_evict_min_age × observation_count` generations without reinforcement | **prune** (measured harmful: lift < −0.15 at ≥8 follows) + **evict** (dead weight: retrieved ≥8×, never followed — with mercy rules) | **archive** — probation singleton after 12 scanned games, or fat-support null lift (with a split-check flag); archive is retirement, never deletion |
-| **Protection / promotion** | shields earned items, gives candidates a path to earn | any reinforcement restarts the decay clock | proven exemption (never dropped), proven tiering at retrieval, a guaranteed exploration slot for the best unproven candidate | probation→incumbent on recurrence; direction-balanced checklist quota; archive rotation re-audits retired tells at zero marginal cost |
-| **Bounding** | keeps size and per-tick cost flat as history grows | decay is the size bound; clustering seeds from new arrivals only, so cost tracks inflow, not store size | admission checks run before any clustering; `synth_cell_unproven_cap = 12` caps the contested lane | checklist cap (48/channel) bounds detection; match-index cap (~65/channel) bounds wording resolution; epoch quantization bounds curation frequency |
-| **Repair** | offline, evidence-ratified correction — never part of the routine tick | batch dedup (the full-store pass; merge with count pooling lives here) | a report-only batch-dedup pass over any seeded store before launch (§6.4) | the strong-model audit (designed cadence ~3 epochs; not yet loop-wired — exists as an offline screen) — the only place existing canonicals merge or split, ratified by pooled-lift arithmetic |
+| 1 | Lesson store grew without limit: 0 → 227, bloated cells about 34 lessons against about 5 | the first paid loop run | a cap per cell, on unproven lessons since 2026-07-14 | yes: 12 unproven (`TickConfig.synth_cell_unproven_cap`) |
+| 2 | Already-condensed groups re-synthesised every tick, about 6× growth per run (5.4 → 34 lessons per cell) | loop run store records | only groups with a new observation are synthesised; groups grow from new arrivals | yes (`store_ops.py::_synth_cluster`) |
+| 3 | Synthesis stalled silently: counting the net change let aging-out cancel new arrivals, so the trigger read "nothing new" | generation 6 of the v2 smoke run | arrivals counted by the tick they first appeared | yes (the `obs_generations` table) |
+| 4 | A harmful lesson escaped pruning for a generation: the dedup added a discarded duplicate's counts to it after the prune had run | forensics of the runs' below-baseline tail | prune last, on the counts after dedup | changed: pruning moved to the credit pass, which recounts from the games and folds in discarded duplicates' follows first (`credit.py::_fold_merged`) |
+| 5 | Near-duplicate lessons split one lesson's follows, so no row gathered enough evidence | design review, 2026-06-19 | keep/discard lesson dedup onto the older, credited survivor | yes, with the survivor recording the discarded key (v8 decisions §14) |
+| 6 | Good advice evicted for a retrieval miss | the v7 plan's pre-run fix programme | evict only when overrides dominate; spare a lesson mostly judged not relevant | yes (`store_ops.py::_evict_ok`) |
+| 7 | A new lesson could never earn credit: credit needs follows, and a cell full of proven lessons never showed it | lane review, 2026-07-14 | a guaranteed slot for the best unproven lesson; the cap counts unproven lessons only | yes (`filters.py::_ensure_exploration_slot`) |
+| 8 | Any observation seen twice never aged out, so store size had no bound | store-bounding review, 2026-07-14 | aging out scaled by count, clocked from the last sighting | yes (`store_ops.py::evict_observations`) |
+| 9 | Grouping cost grew with the whole store, and was paid even by cells the checks then skipped | store-bounding review, 2026-07-14 | checks before grouping; groups grow from new arrivals | yes (`store_ops.py::synthesize`) |
+| 10 | Repeated dedup passes kept re-judging old entries as neighbours arrived, eroding the store past the ~17% duplicate rate where it worked best | dedup campaign, 2026-06-09 ([diagnosis](../dedup/incremental_convergence.md)) | stored entries are never judged against each other | built, but it does not engage in the tick's fold (the [dedup report](../dedup/report.md), "Built and off") |
+| 11 | Synthesis rewrote advice that pruning had just removed, because observations' verdicts follow which side won | design, 2026-06-19 | synthesis shown each lesson's measured lift | yes (`store_ops.py::_track_record`); the mechanism is checked, the quality of what it writes is not |
 
-Four removal verbs, one distinction each — they are not synonyms. **Decay** removes for lack of
-fresh evidence (nothing graded an observation; recurrence is its only signal). **Prune** removes on
-measured harm (the item was followed and outcomes were bad). **Evict** removes dead weight (the
-item was offered and never once used on the merits). **Archive** removes from *active duty* only —
-the tell keeps its rows and can re-earn its way back.
+The v7 loop also checked, every generation, that each lesson's memory-off comparison came from the
+same grading as its follows (`evaluation/src/loop/invariants.py::assert_baseline_coherence`). That
+check did not graduate. Today the credit pass takes its memory-off games as a separate, required
+input and grades them with the same table, but nothing asserts it.
 
-### 2.3 Cross-cutting principles
+### The one threshold that was checked
 
-Five rules recur across all three stores. The per-store docs point back here rather than
-re-arguing them.
+**Does the prune threshold remove lessons that are really harmful, or noise? On the one check run,
+it removes a repeatable signal.** The review ranked the prune threshold (−0.15) as the only setting
+that could plausibly flip a run's conclusion, since it decides what is deleted every generation.
 
-**1. Credit is the input to curation, never the judge of it.** Curation uses each item's measured
-usefulness — its lift — to decide what to keep and what to drop. It never uses those same numbers to
-judge whether the memory system as a whole is *working*; that verdict comes from separate
-instruments that sit outside the loop. The two jobs are kept apart on purpose. If the loop scored
-its own success from the very credit it uses to curate, it would be grading its own homework.
+*The test* (2026-07-14, no cost). A nine-seat game archive was split in two by game, and every
+lesson's lift was measured on each half separately, so the flags from one half could be checked on
+games that never produced them.
 
-**2. An item's identity is protected so its evidence stays meaningful.** An item's accumulated
-evidence only means something as long as the item keeps meaning the same thing. Change what an item
-says, and its counters no longer measure what they counted. So curation never alters an item's
-identity out from under its evidence, and this shows up three ways:
+*The result.* The two halves' lifts correlated at +0.54 over 31 lessons that could be compared
+(noise would give about 0). Of the 9 lessons flagged harmful on the first half, 8 stayed negative on
+the second, against a 61% rate for lessons overall. The one that flipped had 3 follows, below the
+rule's floor of 8; all 4 flagged lessons with at least 8 follows stayed negative.
 
-  - *SP text is never merged.* Fusing two directives into one would leave the survivor's counters
-    measuring a blend of two different pieces of advice.
-  - *Tell text is never rewritten.* A tell's meaning *is* the set of transcript moments that count
-    as instances of it; reword it and you change which moments count.
-  - *Dedup is "freeze-old."* When a duplicate arrives, only the newer copy can be dropped; the
-    existing item — the one holding the credit history — always survives.
+*How sure we are.* It shows direction on a small sample, not a calibrated threshold. It was run on
+nine seats, and the threshold is unvalidated for ten. Method and data:
+[the strategy-point store](strategy_points.md) §6.
 
-  Observations are the deliberate exception: an observation is evidence, not a commitment, so when
-  the same one arrives twice the copies simply pool their counts.
+The other settings were set by design reasoning and never swept, with three exceptions anchored in a
+record: the cap of 12 (from the 227-lesson run: about 2.4 times a healthy cell, well under a bloated
+one), the aging-out allowance of 4 (an allowance of 2 dropped about 250 observations a generation and
+starved synthesis), and the cap of 3 lessons kept per situation (kept when the May capacity study scored five per
+situation slightly higher; the fetch widened to five and the cap stayed, see the
+[retrieval report](../retrieval/report.md), "The wider fetch").
+Every setting, with where its value came from, is in the [settings ledger](knobs.md).
 
-**3. Cheap deterministic checks run before paid LLM calls.** Every curation decision runs its
-cheapest test first and only escalates when it must. A free key comparison (exact-match) runs before
-the embedding prefilter, and the prefilter only *nominates* candidates for the expensive LLM judge —
-it never decides on its own (a standing house rule: an embedding proposes, it never judges). The
-tell store takes this further and batches its curation into epochs instead of running it after every
-game. It can afford the delay because nothing in a game needs *that game's* tells before the next
-fold, so the wait is free. Batching also turned out to be more accurate, not just cheaper: the old
-per-game pass judged wordings one at a time, was the single most expensive component in the pipeline
-(178 LLM calls per game), and fragmented the most important tells — splitting one common behavior
-across three near-duplicate entries. Retiring it fixed both problems at once.
+## How the stores grow: no plateau in any run so far
 
-**4. Nothing is removed for age alone — removal needs evidence.** No item is ever dropped just for
-being old; something must show it has stopped earning its place. An SP leaves only by *souring* (its
-lift went negative) or by being *dead weight* (retrieved again and again but never followed) — and
-even then, a proven SP is exempt from every drop rule. An observation survives for as long as it
-keeps recurring. An archived tell is never truly gone: it rotates back for re-evaluation, or
-re-enters the instant its behavior recurs. The reason for the whole rule is that a rare-but-proven
-lesson is exactly the content the store exists to keep, and a blanket "delete anything old" rule
-would be most likely to throw it away.
+**Do the stores level off? Not within any run measured: removal is slow next to how often the passes
+run, so the stores grow almost without pause.**
 
-**5. A curation mistake must be recoverable, never baked in.** No step is allowed to silently
-compound its own error, and four habits enforce that:
+The rules' own arithmetic shows why (one v7 generation corresponds to one learning tick today). An
+observation seen three times needs 12 quiet ticks before it
+ages out, so in a run of ten ticks or fewer only observations seen once ever leave. A lesson needs 8
+follows to be pruned or 8 showings to be evicted, which many lessons never reach in ten generations.
+Within a run like that, the lesson store is held mainly by the cap of 12 unproven lessons per cell,
+not by removal.
 
-  - *Tallies are recomputed, not accumulated.* Every fold recounts a tell's support from scratch by
-    re-reading the raw ledger, so a miscount in one fold cannot carry into the next.
-  - *The fold refuses to publish suspicious numbers.* A publication tripwire crashes the fold rather
-    than ship a checklist whose counts have shrunk — which can only mean instance rows were lost.
-  - *Repairs preview before they act.* A seed-store cleanup runs in report-only mode first, so a
-    human sees what it would change before anything is changed.
-  - *Merging or splitting an existing identity needs hard evidence* — the periodic audit's
-    pooled-lift arithmetic, not a single in-the-moment judgment.
+The July v7 learning run shows the same (4 generations of 10 memory-on games each; the run's
+generation history, `../memory_system/v7/execution_plan/data/v7_compound_town5/loop_history.json`):
 
-### 2.4 The cost model — what curation costs, and what bounds it
+| After generation | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| Observations kept | 187 | 380 | 547 | 718 |
+| Observations aged out | 0 | 0 | 0 | 0 |
+| Lessons kept | 0 | 82 | 77 | 168 |
+| Lessons pruned | 0 | 0 | 5 | 5 |
 
-A compounding store bears cost on four surfaces: **write** (turning a finished game into new
-entries), **curate** (the per-generation tick), **read** (surfacing entries to an agent), and
-**store** (the standing footprint on disk). One rule runs across all of them: every *recurring
-compute* cost must stay flat as history accumulates. A cost that secretly scales with the whole
-store — re-embedding every observation each tick, scanning a game against the entire tell canon — is
-the failure mode, because it turns "the loop ran longer" into "each generation costs more." Only the
-standing store itself is allowed to grow, because storage is the cheap, recomputable cost.
+Nothing was evicted in any generation; 6 and 7 never-followed lessons were spared in the last two
+because seats mostly judged them not relevant. The tells store grew the same way in a 30-game
+simulation (see [the tells, in the v7 loop](#the-design-it-graduated-from-the-v7-loop)).
 
-Read each column as one store's cost profile; each cell names the cost and the mechanism that bounds
-it.
+**Why growth does not raise the running cost.** Every recurring paid cost is tied to what arrives,
+not to what is stored. The fold's judge sees only new observations. Synthesis groups only from new
+arrivals (a cell being refilled regroups in full), after checks computed from counts alone. Credit is arithmetic over the games in its window.
+Only the stored records grow, and storing them is cheap. What growth can still cost is quality: stale
+observations stay in the store and can join a synthesis group as members. That is why aging out
+exists, even though it rarely bites within a short run.
 
-| Cost surface (when paid) | Observations | Strategy points | Tells |
-|---|---|---|---|
-| **Write** — game → entries (per game) | extraction: one LLM pass per cell — scales with **games** | — (SPs are written by curation, not per game) | mining (~2 strong-model calls per game-day) + detection (one call per player×channel per game); both scale with **games**, and detection's in-context cost is bounded by the checklist cap |
-| **Curate — embed / cluster** (per tick) | cluster obs for synthesis; naively O(store), **held to new-obs inflow** by checks-before-cluster + seed-from-new (`strategy_points.md` §2) | shares the obs clustering above (synthesis clusters *observations*) — no separate SP-side clustering | resolve new wordings against a **bounded match index (~65/channel)**, flat as the singleton tail grows (`tells.md` §3, §5) |
-| **Curate — paid LLM** (per tick) | dedup judge on new arrivals only — flash-lite, **triage-only** (no merge writes) | **synthesis** writes SPs every `k=2` generations (+ its dedup judge) — this store's main paid cost | fold wording-judge on the epoch's new wordings only (the retired online pass was 178 calls/game — `tells.md` §2) |
-| **Curate — deterministic** (per tick, ~free) | count-scaled decay — arithmetic | prune / evict / credit — arithmetic | recompute tallies from rows — linear in total history, trivial at run scale (`tells.md` §5) |
-| **Read** — surface to the agent | **none in v7** (not injected) | RAG retrieval per decision → **≤3 injected** (prompt budget capped, `strategy_points.md` §5) | the **book** injected per game — bounded selection (`tells.md` §6) |
-| **Store** — standing footprint | grows ~monotonically in-run (decay barely bites — the convergence gap, `observations.md` §6), but cheap | held by the contested-lane cap + prune/evict (`strategy_points.md` §2, §4) | ledger + canon grow ~monotonically, but **cheap and recomputable** (`tells.md` §5) |
+*How sure we are.* Whether any store would level off at these rates was never estimated: the v2
+smoke run's six generations are too few to fit a curve. Today's published store holds 2,008
+observations and 490 lessons; no learning tick has run on it, so its growth under the tick is
+unrecorded.
 
-The pattern is the point. Every *recurring* compute cost is pinned either to per-game inflow (write;
-and clustering, once it seeds from new arrivals) or to a hard cap (checklist ≤48/channel, match index
-~65/channel, SP injection ≤3, contested lane 12), so none of them scales with accumulated history.
-The one quantity left free to grow is the standing store — and that is deliberately the cheap,
-recomputable one. This is the precise reason the non-plateauing stores flagged in the convergence
-gaps (`observations.md` §6, `strategy_points.md` §7, `tells.md` §8) are not a cost blow-up: the
-unbounded quantity is the cheap one, and every expensive quantity is bounded by construction. What a
-non-plateauing store *can* still cost is quality rather than compute — stale observations lingering
-as synthesis cluster members — which is why decay exists at all, even though its size bound rarely
-bites within a short run.
+## The design it graduated from: the v7 loop
 
-**In complexity terms**, every *paid* (LLM) cost is bounded by the generation's new-item inflow, not
-by store size; the per-operation big-O lives in the companion docs (`observations.md` §4,
-`strategy_points.md` §2, `tells.md` §5). The only quantities that scale with the store are the cheap
-ones — a brute-force cosine search is `O(store)` arithmetic, and the tell fold's recount is
-`O(history)` — both trivial at run scale.
+The rules above were built for the v7 loop (`evaluation/src/loop/`), which ran on the nine-seat game.
+It played games in generations and, after each generation, ran one step that did everything: credit,
+aging out, synthesis every second generation, lesson dedup and, last, prune and evict
+(`evaluation/src/loop/consolidate.py`). The lesson and observation rules graduated into
+`Agents/memory/consolidation/` on 2026-07-21 and were ported to the ten-seat game on 2026-10-13, when
+the one step became the two passes above. The loop's run checks stayed behind with its experiment
+harness: the check that observations never reached a prompt, the check on which factions had memory,
+and the memory-off check above. Served games enforce strategy points only through their own
+configuration (`server/game/run_config.py::game_run_config`).
 
-## 3. The three stores in brief
+The verdict on the loop, in the owner's wording: the June static-memory A/B reported improvements on
+selected town decision measures; a later A/B on a different store, run against a higher no-memory
+baseline, found no town effect and was not a replication of the June test; separately, the
+pre-registered v7 endpoint detected no compounding benefit. The investigation is closed; the
+hypothesis was not disproved. Every game behind those results ran with players that produced no
+reasoning before answering. The test and its numbers are in the [v7 report](../memory_system/v7/report.md).
 
-Each store's full mechanism, knobs, and per-store gaps live in its own doc. This section is the
-map: what each store is for, and where each lifecycle step's instrument and record live.
+**The tells, in the v7 loop.** The loop curated a third store that did not graduate: **tells**,
+behaviour-to-role hints mined from past games ("a player accused of holding a hostile role
+counter-accuses the accuser of using the claim as a distraction": evil in 27 of 30 sightings). Once a
+generation a *fold* matched new wordings to known tells, recounted every tell's evidence from an
+append-only record, retired tells that never recurred, and published a capped list of at most 48
+per channel for a detector to scan. A short book of the strongest tells was shown to every seat. The
+fold ran four times inside the July learning run, adding 170 to 202 new tells each time, and the
+July test's memory games showed every seat a book; the effect of the tells was never separated from
+the lessons'.
 
-### Observations → [`observations.md`](observations.md)
+Before it was built, the fold was tried on 1,109 candidates mined from 30 nine-seat games. The store
+reached 740 entries, with about 22 new ones a game in games 21–30. A whole-corpus review took it to
+596 (one family of retaliation votes alone had arrived as 27 wordings), and new entries still arrived
+at about 16 a game. The share of each batch of new entries that was ever seen again fell from 37%
+(games 1–10) to 19% (11–20) to 11% (21–25); later batches had less time to recur, so this does not
+show the core had stopped growing. The vote channel was 38% redundant and the discussion channel 8%.
+The mechanism, its checks and its gaps are in [the tell store](tells.md), which describes the v7
+loop only; the build journey is in the [tell extraction log](../extraction/tell_extraction/experiment_log.md).
 
-**The evidence layer.** Observations are the raw record of what happened in a game — one
-situation→approach→outcome note, filed into one of 17 (role, phase) cells. They are the raw material
-SP synthesis distills, not something an agent reads directly. Nothing ever "follows" an observation,
-so it carries no credit; its only quality signal is *recurrence* — whether the same lesson keeps
-arriving — and recurrence is the only thing its curation acts on.
+In served games no tell book is loaded: the book is read only when `WW_TELL_BOOK` is set
+(`Agents/memory/tell_book.py::tell_book_block`), and in the repository only the loop's driver and
+tests set it; nothing in the server code or its deployment files does.
 
-> **Lifecycle:** play a game → extract observations from it, one pass per cell → dedup each new
-> arrival into the store as it lands (freeze-old: only the newer copy can be dropped) → once per
-> generation, decay out the observations that have stopped recurring → hand the survivors to SP
-> synthesis as clustering substrate. In v7 the chain ends there — observations no longer reach any
-> prompt (§6.8).
-> **See:** extraction [`../extraction/post_game/`](../extraction/post_game/report.md); dedup design
-> + goldens [`../dedup/`](../dedup/report.md); code `loop/merge.py`; offline repair is batch dedup
-> ([`../dedup/batch_architecture.md`](../dedup/batch_architecture.md)).
+## What is not known
 
-### Strategy points → [`strategy_points.md`](strategy_points.md)
+Each item limits a specific claim above.
 
-**The directive layer.** Strategy points are distilled advice an agent may choose to follow, graded
-by what actually happened when agents followed them. This is the one store whose growth step is
-*generative* — an LLM writes new directive text — which is why most of the system's guards
-concentrate here.
+- **The thresholds on ten seats.** Prune, protect and evict use the nine-seat values, unvalidated for
+  ten seats. The four prunes of the one ten-seat credit pass rest on them.
+- **The learning tick on ten seats.** `ten_seat_v2` was built by a one-off script, not by the tick,
+  and no ten-seat tick is recorded. The rule screen that left 37 lessons out of the published store
+  was a one-off review; nothing screens what the tick would write.
+- **Whether synthesised lessons are good.** The checks, the cap and the track record are tested as
+  mechanism; no judge has scored whether a synthesised lesson is a good condensation of its group.
+- **The read-side ordering.** The proven-first order and the slot for an untried lesson are on by
+  default; their effect on what seats follow has not been measured.
+- **The similarity thresholds.** The grouping thresholds are set per embedding model (0.46 on Qwen,
+  the served embedder; 0.65 on gemini-embedding-2), the Qwen values remapped from the Gemini ones by
+  percentile on 2026-10-12. The original values were chosen before the tells work found that
+  absolute cosine scores in these stores sit close together; a check of where each threshold falls in
+  its own store's spread was never run.
+- **Whether curation makes play better.** No test compares a curated store with an uncurated one, and
+  no ten-seat test compares memory on with off ([v8 report](../memory_system/v8/report.md), "What is
+  not known").
 
-> **Lifecycle:** cluster the observations → an LLM synthesizes new SPs from the clusters every 2
-> generations, behind three admission checks → a keep/discard dedup collapses near-duplicates onto the credited
-> survivor → each agent decision that follows an SP credits it by the outcome → prune the soured and
-> evict the dead weight (with mercy rules) → retrieval surfaces the rest (proven advice tiered first,
-> plus one exploration slot) → inject at most 3 into the prompt.
-> **See:** design lineage
-> [`../memory_system/v7/consolidation_design.md`](../memory_system/v7/consolidation_design.md); credit
-> [`../credit/report.md`](../credit/report.md).
+The agenda of the 2026-07-14 ownership walkthrough, which this page used to carry as its §6, is kept
+with its item numbers in the [experiment log](experiment_log.md), entry 9; code comments and the v7
+plan cite those items as "report §6.N".
 
-### Tells → [`tells.md`](tells.md)
+## Sources and implementation
 
-**The fact layer.** Tells are falsifiable "behavior→role" associations. They are credited
-*off-policy*: every player who exhibited the behavior in every stored game counts toward a tell's
-evidence, whether or not any agent ever read it. They grow by *discovery* — mining finds them in
-transcripts — never by generation.
+| What | Where |
+|---|---|
+| The two passes and their command line | `Agents/memory/consolidation/tick.py` (`run_credit_pass`, `run_tick`) |
+| Settings | `Agents/memory/consolidation/config.py::TickConfig` |
+| Prune, evict, aging out, synthesis, lesson dedup | `Agents/memory/consolidation/store_ops.py` |
+| Observation fold | `Agents/memory/consolidation/obs_fold.py::merge_new_obs` |
+| Credit recount and duplicate folding | `Agents/memory/consolidation/credit.py::credit_apply` |
+| Clocks, records of each pass, publishing | `Agents/memory/consolidation/db.py`, `publish.py`; `Agents/memory/persistence/postgres.py::publish` |
+| Grouping thresholds | `Agents/llm_factory/embeddings.py::SIMILARITY_THRESHOLDS` |
+| Read-side ordering | `Agents/memory/retrieval/filters.py` |
+| The v7 loop | `evaluation/src/loop/` (`consolidate.py`, `driver.py`, `invariants.py`, `tell_fold.py`) |
+| Mechanism detail as built for v7 | [observations](observations.md), [strategy points](strategy_points.md), [tells](tells.md), [settings ledger](knobs.md) |
+| Review sessions and rulings | [experiment log](experiment_log.md) |
+| Why the passes are split | [v8 decisions](../memory_system/v8/decisions.md) §14 |
+| Design lineage | [`consolidation_design.md`](../memory_system/v7/consolidation_design.md) (2026-06-19); the tell ledger in [`read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md) §3 |
 
-> **Lifecycle:** each game → mine candidate wordings from it, and detect known tells against the
-> frozen checklist v_k → once per epoch, the *fold* resolves new wordings into the canon, appends
-> instance rows to the ledger, rules verdicts (promote / archive), and publishes the next checklist
-> v(k+1) → a fresh book is built from the ledger and injected at the start of every game.
-> **See:** mining/detection instrument + journey
-> [`../extraction/tell_extraction/`](../extraction/tell_extraction/experiment_log.md); ledger design
-> + rejected alternatives
-> [`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md) §3; offline
-> repair is the strong-model audit (designed cadence ~3 epochs; not yet wired into the loop).
-
-## 4. Why the mechanisms differ per store
-
-Every structural difference below traces to one root: **an observation is evidence a game
-generated; a strategy point is a directive an agent follows; a tell is a fact the world exhibits.**
-
-| | Observations | Strategy points | Tells |
-|---|---|---|---|
-| Item's meaning lives in | the recurring lesson — a rewording is the *same* evidence | its directive text | its instance set (which transcript moments count) |
-| Credit arrives | never — nothing follows an obs, so there is no outcome to grade; recurrence is the only signal | usage-gated — only when followed, so the store must *manage exploration* (tiering, exploration slot) | off-policy — every exhibitor counts, so candidates mature uninjected and need no exploration slot |
-| Growth step | extraction — new evidence arrives every game regardless of curation | **generative** — synthesis writes new text, so growth itself can create bad content | discovery — mining finds wordings; admission never writes |
-| Duplicate handling | exact duplicates pool counts (evidence accumulates) | keep/discard onto the credited survivor; never merge | drop-or-keep at the door; instance always kept; text never touched |
-| Removal evidence | stopped recurring | measured harmful, or dead weight | insufficient or null instance evidence — and reversible |
-| Cadence | every generation | every generation (synthesis every 2) | every epoch, frozen checklist between |
-
-The asymmetry that matters most for the walkthrough: the SP tick can *create* bad content
-(synthesis is an LLM writing directives — hence the cap, the track record, and the dedup chasing
-it), while the tell tick can only *mis-file* content (wrong-merge, wrong-archive — hence
-freeze-text, recompute-from-rows, and the audit). The observation store can do neither; its risk is
-pure volume, which is why decay is its one substantive rule. The failure modes are disjoint, which
-is why the guards look nothing alike.
-
-## 5. What is verified, and by what
-
-- **Unit suite**: the loop modules are covered by the loop tests (684 green, 2026-07-14,
-  uncommitted working tree on `feature-dimension-schema`; the store-bounding revision added
-  count-scaled decay, sidecar-stamping, check-ordering, and seeded-clustering tests; the §6.7 lane
-  ruling added contested-lane-cap and exploration-slot tests; the fold-ownership review added
-  tripwire and bounded-index tests). Pure prune/evict and the fold logic are LLM-free by
-  construction, so their tests run offline.
-- **SP side — the negative-record ledger.** The v7 loop runs are invalid for the compounding
-  *thesis* (v7_final report, §5c confound), but they were productive as mechanism stress tests:
-  every SP-side guard traces to a named store pathology, most surfaced by a run or a review of run
-  output. This table is the consolidated inventory (each row's mechanism is argued in the
-  per-store doc cited; the credited baselines pruning relies on are guarded by
-  `invariants.py::assert_baseline_coherence`, credit report §3):
-
-  | # | Store pathology | Surfaced by | Standing guard |
-  |---|---|---|---|
-  | 1 | Unbounded SP growth — store 0→227, bloated cells ~34 SPs vs healthy ~5 | run-1 (the §12 bloat record) | per-cell cap; since 2026-07-14 on the contested lane (`strategy_points.md` §2) |
-  | 2 | Cluster re-synthesis compounding ~6×/run — variants of already-distilled lessons that don't exact-dedup | loop-run store records (5.4 → 34 SPs/cell) | new-clusters-only check; clusters seed from new arrivals (`strategy_points.md` §2) |
-  | 3 | Silent synthesis stall — the net-change trigger cancels arrivals against decay and reads "no new obs" | gen 6 of the v2 smoke | arrivals counted by first-seen generation, via the driver sidecar (`strategy_points.md` §2) |
-  | 4 | Harmful-tail escape — prune-first ordering let dedup's count-absorption push a bad SP back over the threshold for a generation | run outcome forensics (the below-baseline tail) | prune runs last, on post-dedup counts (`strategy_points.md` §1) |
-  | 5 | Credit smearing — near-duplicate SPs split one lesson's follows so no row ever accumulates actionable evidence | design review 2026-06-19 | freeze-old KEEP/DISCARD SP dedup onto the credited survivor (`strategy_points.md` §3) |
-  | 6 | Wrong-blame eviction — deleting good content over a retrieval/scoping miss | the §0.4/§0.5 fix program | verdict-aware evict: override-dominant evicts, not_relevant-dominant spared (`strategy_points.md` §4) |
-  | 7 | Exploration starvation — credit is usage-gated, so a never-retrieved candidate never earns | §6.7 review, 2026-07-14 | guaranteed exploration slot at the retrieval cap + contested-lane quota (`strategy_points.md` §5) |
-  | 8 | Observation immortality — any obs at count ≥ 2 escaped decay forever, leaving store size unbounded | store-bounding review, 2026-07-14 (log §4) | count-scaled decay clocked from last reinforcement (`observations.md` §3) |
-  | 9 | Clustering cost scaled with total store size and was paid even by gated-out cells | store-bounding review, 2026-07-14 (log §4) | checks before clustering; seed-from-new (`strategy_points.md` §2) |
-  | 10 | Incremental dedup non-convergence — old entries re-litigated as neighbors land, eroding the store past the ~17% sweet spot | dedup campaign, 2026-06-09 ([`../dedup/incremental_convergence.md`](../dedup/incremental_convergence.md)) | freeze-old apply-guard (old↔old operations forbidden), live in the loop's obs fold |
-  | 11 | Halo-weighted synthesis regenerates what prune killed — observation outcome tags track faction-won, i.e. luck | design 2026-06-19 (consolidation_design) | credit-aware synthesis over the realized track record (`strategy_points.md` §2) — mechanism-verified only, quality unmeasured |
-- **Tell side, simulation before code**: the 30-game ledger simulation (tell-extraction log §10)
-  replayed 1,109 mined rows through the spec — the funnel held (probation absorbed ~12%, recurrence
-  re-entry fired), the head concentrated, and it produced the finding that killed the online dedup
-  (2× head fragmentation). Its headline was then *re-scoped, not retracted*, by consolidation №1
-  (log §11): batch consolidation took the store 740→596 (−19.5%), and splitting the "no saturation"
-  curve showed the **recurring core converges** (~140 tells with support ≥2 at 30 games) while a
-  flat ~16/game **singleton tail** keeps arriving — open vocabulary at move grain, so mining is a
-  standing per-game pass and the bounded checklist is THE cost-control mechanism. Channel asymmetry
-  is real (vote 38% redundant vs discussion 8% — small action alphabet), and the batch judge's
-  measured wrong-merge rate was 1/44. The consolidated store seeds the v1 checklist.
-- **Not yet verified**: no fold has run inside a live generation loop (the `--tells` smoke is the
-  queued next step); everything cited above is offline replay on the v6ab archive, one epoch old.
-
-## 6. Open review points — the walkthrough agenda
-
-Ordered by criticality. Items 1–7 were the 2026-07-14 review agenda; their numbering is frozen
-(the log and the execution plan cite it). Resolved items keep a short verdict here — the mechanism
-they produced is described in the per-store doc, and the review narrative is in the log entry
-cited.
-
-1. **RESOLVED 2026-07-14 — the fold publication tripwire is built** (ruled and built same day; log
-   §7). The fold is the critical path — a bad fold publishes a bad checklist that detection runs
-   against for a whole epoch with no in-epoch correction. Two always-on deterministic invariants
-   now gate persistence and publication: monotone detected support (a recount may never shrink —
-   shrinkage means ledger rows were silently lost) and head continuity (a top incumbent leaves
-   only via this fold's explicit null-lift verdict). Mechanism: `tells.md` §4. Residual, tracked:
-   wrong keep/discard verdicts at the single-wording grain remain possible; the tripwire catches
-   their *systematic* form, and the periodic audit stays the semantic backstop.
-2. **Threshold provenance is mixed — top-ranked knob now checked, rest pinned.** Evidence-anchored:
-   the SP cap (bloat record), the credit window (density calculation). Design-anchored, never
-   swept: `prune_tau = −0.15`, the three follow/retrieve floors (8/8/2), `K_PROBATION = 12`, the
-   null-lift cut (0.03 at n≥20), the prefilter (0.80/top-3), the checklist caps (25/15/48). The
-   review ranked `prune_tau` as the only knob that could plausibly flip a run conclusion: every
-   generation the loop *deletes* SPs whose lift falls below τ, and the compounding story assumes
-   those deletions remove genuinely bad directives — if lift at that threshold were mostly noise,
-   pruning would be deleting near-randomly, good SPs included. The held-out check ran 2026-07-14
-   (`heldout_credit_reproduction`, zero spend; method and full numbers: `strategy_points.md` §6):
-   Pearson(lift_A, lift_B) = +0.54 at n = 31, A-flagged losers stayed negative on the held-out
-   half 8/9 against a 61% base rate, and the one flip sat below the prune rule's ≥8-follow floor.
-   Direction-credible at small n: the prune rule cuts reproducible signal, not noise. Tracked
-   limitation: the tell-side prefilter (0.80/top-3) remains uncalibrated — the data to calibrate
-   it exists (the 30-game sim's resolved rows), but a replay harness is a new instrument and the
-   closing rule is no new complications pre-run. The remaining knobs are pinned as design-anchored
-   in the pre-reg, with a post-run sensitivity readout. *(2026-07-15: the complete per-knob
-   inventory — value, provenance class, validation status, and the pinning policy's rationale —
-   is now [`knobs.md`](knobs.md).)*
-3. **RESOLVED 2026-07-14 — the fuzzy match index is bounded** (owner ruling: a simple hard cap
-   over the ledger design's unseen-based retirement, "easy to build, easy to explain"; built and
-   suite-verified same day, log §7). Wording resolution now consults ~65 candidates per channel,
-   flat as the singleton tail grows; retirement from *matching* is not deletion. Mechanism and the
-   three-cap disambiguation: `tells.md` §3/§5. Tracked limitations: the 30/10 window sizes are
-   design-anchored (unswept); the fold-time recompute-from-rows scan is linear in total history
-   (trivial at run scale; snapshotting is the fix if it ever matters).
-4. **SP dedup only runs when synthesis added SPs** (`cfg.sp_dedup and syn.get("added")`). A seeded
-   store's pre-existing near-duplicates are never collapsed in-loop — the run's seed store must
-   arrive already deduped. *Resolution path (2026-07-14):* the pre-reg is silent on the SP store's
-   starting state and must pin it at signing. Cold start (as both v2 smokes) closes this by
-   construction; a seeded store gets one report-only batch-dedup pass first.
-5. **Probation pressure under open vocabulary.** The sim's funnel was healthy at 30 games, but the
-   flat singleton inflow means the 15-slot probation lane is permanently contested; beyond 30
-   games the rotation/starvation behavior is unmeasured. Post-run readout, not a blocker.
-6. **RESOLVED 2026-07-14 — the role-revealing exclusion is removed** (owner ruling, pre-reg §5
-   records it): the book is a role-identification manual for every unrevealed role, selection
-   re-based on subject-role concentration, launch seed rebuilt (`tell_book_v2_seed.json`, 34
-   entries, all six roles). Mechanism: `tells.md` §6. Residual for the walkthrough: the
-   injection-channel screen (27.5% changed, direction positive) was measured on the v1
-   wolf+SK-only book — the v2 book is unscreened, and its weakest tail entries
-   (vigilante/healer at lift +0.03–0.06) are near-prior; whether the book needs a
-   minimum-strength floor is a fair probe.
-7. **RESOLVED 2026-07-14 — SP cells adopt the two tell-style lane pieces that transfer** (owner
-   ruling, same day it was raised; log §5): the synthesis cap re-scoped to the contested lane, and
-   a guaranteed exploration slot at the retrieval cap. Rejected, reasons standing:
-   archive-with-rotation (an archived SP would need paid retrieval slots to re-earn; the obs store
-   already serves as the SP's archive, since deletion plus re-synthesis is the SP-native re-audit
-   path) and a probation deadline (a generation-based clock would kill rare-situation SPs).
-   Mechanism and residuals: `strategy_points.md` §5.
-8. **RESOLVED 2026-07-15 — the v7 obs-injection retirement is now wired into the run path** (found
-   while restructuring this folder, ruled + built the same day; log entry 8). The design stands
-   (prompts carry tells + SPs; observations are synthesis substrate only) and the wiring now
-   enforces it: a new `LoopConfig.retrieval_types` knob defaults to `strategy_points_only`, the
-   loop driver passes `--retrieval-types` to every game (both arms), and a per-generation invariant
-   (`assert_observations_retired`) fails loud on two record surfaces — the recorded per-game
-   `retrieval_types_config["observations"]` and every memory-enabled ON decision's recorded
-   `retrieved_observations` slot — so an obs+SP arm can never launch silently under the SP-only
-   default. `"both"` reproduces
-   the v5/v6 obs+SP injection for a comparison arm. Mechanism: `observations.md` §1. Two notes,
-   unchanged: pulling observations out of prompts changes generation behavior, so it stays in the
-   same epoch bundle as the other prompt-affecting changes; and the static-memory claim rungs that
-   used obs injection (v5/v6 arms) are unaffected — this was a v7 arm-definition item, not a retraction.
-9. **NEW 2026-07-16 — the book collapses same-behavior fragments at injection** (`tell_book_dedup`,
-   default on; found while cold-reading `tells.md`, ruled + built + suite-verified the same day). The
-   book seats only ~3 tells per (subject role, channel), and the unwired merge/split audit's
-   fragmentation (`tells.md` §8 gap 5) reaches the prompt with a sharp geometry: selection ranks by
-   `subject_lift`, so the fragments of a *popular* discriminating behavior are precisely the
-   high-lift, high-support rows the book preferentially pulls in — two or three of a role's three
-   slots can repeat one behavior, collapsing the manual to a single signal where it intended several.
-   `build_book` now runs the fold's own embedding+judge cascade (§3 step 1) over each candidate pool
-   before the cut, keeping the highest-lift member of each same-behavior class so freed slots backfill
-   with distinct behaviors. Guardrail is structural: candidates are lift-sorted, so only
-   lift-equivalent rows are ever dropped — diversity never costs lift. Mechanism: `tells.md` §6; suite
-   692 (+2). Deliberately scoped as a **symptom fix, not the cure**: it is view-layer (canon, ledger,
-   and credit untouched — a collapsed fragment keeps its identity, stays scanned, keeps paying
-   credit), and it does *not* pool the fragments' evidence, so the credit side stays fragmented across
-   partial-support lifts. Pooling into one accurate lift and one identity is the audit's canon merge
-   (still unwired), which remains the real fix; this only stops the injection budget being spent twice
-   on one behavior.
-
-## Sources
-
-- Code (maintained): `evaluation/src/loop/consolidate.py` · `merge.py` · `tell_fold.py` ·
-  `tell_credit.py` · `tells.py` · `config.py` (knob rationale lives in its comments) ·
-  `Agents/memory/tell_book.py` · `Agents/memory/strategy_synthesis.py` (the synthesis prompt) —
-  module table in [`evaluation/src/loop/README.md`](../../evaluation/src/loop/README.md).
-- Per-store mechanism docs (this folder): [`observations.md`](observations.md) ·
-  [`strategy_points.md`](strategy_points.md) · [`tells.md`](tells.md); knob inventory:
-  [`knobs.md`](knobs.md); review record: [`experiment_log.md`](experiment_log.md).
-- Evidence cited: tell-extraction log §10 (ledger sim) · §11 (consolidation №1) · §12
-  (epoch-quantization ruling) · §16 (granularity screen)
-  ([`../extraction/tell_extraction/experiment_log.md`](../extraction/tell_extraction/experiment_log.md));
-  the credit layer and its invariants ([`../credit/report.md`](../credit/report.md)); the v7 run
-  pre-registration draft
-  ([`../memory_system/v7/report.md`](../memory_system/v7/report.md)).
-- Design lineage: [`../memory_system/v7/consolidation_design.md`](../memory_system/v7/consolidation_design.md)
-  (2026-06-19, SP side) · the tell ledger spec in
-  [`../credit/read_tactic_credit_redesign.md`](../credit/read_tactic_credit_redesign.md) §3.
+*Rewritten 2026-10-26 from the July framework document, whose text is in git history. No code, tests
+or experiments were run for this revision; statements about today's code were checked by reading it.*
