@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" width="980" height="600" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="600" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A dead stream sends no error: the watch</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">useGameStream notes when the stream last said anything (heard). Every 5 s the watch asks streamStalled.</text>
+<line x1="200" y1="130" x2="910" y2="130" stroke="#9ca3af" stroke-width="1.2"/>
+<line x1="200" y1="300" x2="910" y2="300" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="200.0" y="154" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">0 s</text>
+<text x="342.0" y="154" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">15 s</text>
+<text x="484.0" y="154" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">30 s</text>
+<text x="626.0" y="154" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">45 s</text>
+<text x="768.0" y="154" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">60 s</text>
+<text x="910.0" y="154" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">75 s</text>
+<text x="24" y="116" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="start">A quiet game</text>
+<text x="24" y="136" font-size="13" fill="#4b5563" text-anchor="start">(stream alive)</text>
+<rect x="178.0" y="104" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="200.0" y="120" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="320.0" y="104" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="342.0" y="120" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="462.0" y="104" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="484.0" y="120" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="604.0" y="104" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="626.0" y="120" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="746.0" y="104" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="768.0" y="120" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="888.0" y="104" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="910.0" y="120" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<text x="200" y="186" font-size="13" fill="#374151" text-anchor="start">The server pings as the stream opens and after every quiet 15 s. Silence never passes 15 s,</text>
+<text x="200" y="204" font-size="13" fill="#374151" text-anchor="start">so a quiet game is never taken for a dead one.</text>
+<text x="24" y="286" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="start">Dead, no error</text>
+<text x="24" y="306" font-size="13" fill="#4b5563" text-anchor="start">(half-open)</text>
+<rect x="178.0" y="274" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="200.0" y="290" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="320.0" y="274" width="44" height="22" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="342.0" y="290" font-size="12" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">ping</text>
+<rect x="462.0" y="274" width="44" height="22" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="484.0" y="290" font-size="12" font-family="Menlo, Consolas, monospace" fill="#9ca3af" text-anchor="middle">ping</text>
+<rect x="604.0" y="274" width="44" height="22" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="626.0" y="290" font-size="12" font-family="Menlo, Consolas, monospace" fill="#9ca3af" text-anchor="middle">ping</text>
+<rect x="746.0" y="274" width="44" height="22" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="768.0" y="290" font-size="12" font-family="Menlo, Consolas, monospace" fill="#9ca3af" text-anchor="middle">ping</text>
+<line x1="389.33333333333337" y1="250" x2="389.33333333333337" y2="320" stroke="#b91c1c" stroke-width="2"/>
+<text x="395.33333333333337" y="246" font-size="12.5" fill="#b91c1c" text-anchor="start">the connection dies; readyState stays 1 (open)</text>
+<line x1="342.0" y1="330" x2="720.6666666666666" y2="330" stroke="#c2410c" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="531.3333333333333" y="348" font-size="12.5" fill="#c2410c" text-anchor="middle">40 s of silence from the last ping heard (STREAM_SILENT_MS)</text>
+<line x1="389.33333333333337" y1="306" x2="389.33333333333337" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="436.66666666666663" y1="306" x2="436.66666666666663" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="484.0" y1="306" x2="484.0" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="531.3333333333333" y1="306" x2="531.3333333333333" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="578.6666666666667" y1="306" x2="578.6666666666667" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="626.0" y1="306" x2="626.0" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="673.3333333333333" y1="306" x2="673.3333333333333" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="720.6666666666666" y1="306" x2="720.6666666666666" y2="316" stroke="#374151" stroke-width="1.4"/>
+<line x1="768.0" y1="306" x2="768.0" y2="316" stroke="#374151" stroke-width="1.4"/>
+<text x="379.33333333333337" y="316" font-size="11.5" fill="#374151" text-anchor="end">watch, every 5 s</text>
+<rect x="734.0" y="360" width="68" height="26" rx="4" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="768.0" y="378" font-size="13" fill="#1f2937" text-anchor="middle">reopen</text>
+<path d="M768.0,318 L768.0,358" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="726.0" y="378" font-size="12.5" fill="#15803d" text-anchor="end">at the first check past 40 s</text>
+<rect x="24" y="412" width="456" height="168" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="440" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Reopened by the page</text>
+<text x="44" y="466" font-size="14.5" fill="#1f2937" text-anchor="start">Silent over 40 s, though open: reopen.</text>
+<text x="44" y="489" font-size="14.5" fill="#1f2937" text-anchor="start">Closed for good by the browser (a 502 or 403</text>
+<text x="44" y="512" font-size="14.5" fill="#1f2937" text-anchor="start">on its own reopen): retry, about every 10 s.</text>
+<text x="44" y="535" font-size="14.5" fill="#1f2937" text-anchor="start">Never while the page is hidden.</text>
+<rect x="500" y="412" width="456" height="168" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="520" y="440" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">A phone back from sleep</text>
+<text x="520" y="466" font-size="14.5" fill="#1f2937" text-anchor="start">Timers stop while the phone sleeps, so heard is</text>
+<text x="520" y="489" font-size="14.5" fill="#1f2937" text-anchor="start">minutes old on waking. If the dead stream still</text>
+<text x="520" y="512" font-size="14.5" fill="#1f2937" text-anchor="start">says open, the first check reopens it (within 5 s);</text>
+<text x="520" y="535" font-size="14.5" fill="#1f2937" text-anchor="start">if not, coming back to the tab reopens it at once.</text>
+</svg>

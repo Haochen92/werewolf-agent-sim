@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">One baked sheet, slid to the room&#x27;s centre line (sheetFor)</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Sheets are baked with the side slot closed; a layout centred elsewhere takes the same sheet moved by dx.</text>
+<text x="408.84" y="102" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">stage 0</text>
+<text x="872.8399999999999" y="102" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="end">1600</text>
+<text x="24" y="136" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">live, slot closed</text>
+<text x="24" y="156" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">live sheet, dx 0</text>
+<rect x="408.84" y="112" width="463.99999999999994" height="56" rx="0" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="321.84" y="122" width="638.0" height="36" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<line x1="668.68" y1="110" x2="668.68" y2="170" stroke="#1d4ed8" stroke-width="2.4"/>
+<line x1="668.68" y1="110" x2="668.68" y2="170" stroke="#b45309" stroke-width="2.4" stroke-dasharray="5 3"/>
+<text x="676.68" y="186" font-size="12.5" fill="#1f2937" text-anchor="start">glass = shutter = 896</text>
+<text x="24" y="228" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">live, slot open</text>
+<text x="24" y="248" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">live sheet, dx −296</text>
+<rect x="408.84" y="204" width="463.99999999999994" height="56" rx="0" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="236.0" y="214" width="638.0" height="36" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<line x1="582.8399999999999" y1="202" x2="582.8399999999999" y2="262" stroke="#1d4ed8" stroke-width="2.4"/>
+<line x1="582.8399999999999" y1="202" x2="582.8399999999999" y2="262" stroke="#b45309" stroke-width="2.4" stroke-dasharray="5 3"/>
+<text x="590.8399999999999" y="278" font-size="12.5" fill="#1f2937" text-anchor="start">glass = shutter = 600</text>
+<text x="24" y="320" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">no HUD (upright phone)</text>
+<text x="24" y="340" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">live sheet, dx −96</text>
+<rect x="408.84" y="296" width="463.99999999999994" height="56" rx="0" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="294.0" y="306" width="638.0" height="36" rx="3" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<line x1="640.8399999999999" y1="294" x2="640.8399999999999" y2="354" stroke="#1d4ed8" stroke-width="2.4"/>
+<line x1="640.8399999999999" y1="294" x2="640.8399999999999" y2="354" stroke="#b45309" stroke-width="2.4" stroke-dasharray="5 3"/>
+<text x="648.8399999999999" y="370" font-size="12.5" fill="#1f2937" text-anchor="start">glass = shutter = 800</text>
+<text x="24" y="412" font-size="14" font-weight="bold" fill="#9a3412" text-anchor="start">no HUD, before 10-15</text>
+<text x="24" y="432" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">live sheet, dx 0: unslid</text>
+<rect x="408.84" y="388" width="463.99999999999994" height="56" rx="0" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="321.84" y="398" width="638.0" height="36" rx="3" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<line x1="668.68" y1="386" x2="668.68" y2="446" stroke="#1d4ed8" stroke-width="2.4"/>
+<line x1="640.8399999999999" y1="386" x2="640.8399999999999" y2="446" stroke="#b45309" stroke-width="2.4" stroke-dasharray="5 3"/>
+<text x="632.8399999999999" y="462" font-size="12.5" fill="#92400e" text-anchor="end">shutter 800</text>
+<text x="676.68" y="462" font-size="12.5" font-weight="bold" fill="#9a3412" text-anchor="start">glass 896: 96 units apart</text>
+<text x="24" y="494" font-size="13" fill="#4b5563" text-anchor="start">Blue: the window&#x27;s glass, painted into the sheet (where the car&#x27;s centre line puts it). Dashed amber: the shutter,</text>
+<text x="24" y="514" font-size="13" fill="#4b5563" text-anchor="start">placed live from the layout&#x27;s geometry. backdrop.test.ts checks the two agree for all six layouts.</text>
+<text x="24" y="540" font-size="13" fill="#1f2937" text-anchor="start">Until 2026-10-18 the open slot had sheets of its own: 48 sheets, and a fresh ~17 MB decode per tap on a phone.</text>
+</svg>

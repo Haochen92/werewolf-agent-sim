@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" width="980" height="600" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="600" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A gate sees only what is there when it looks</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">phone-rule.spec.ts watches each beat for 3.2 s. Three animations, and what each version of the gate saw.</text>
+<line x1="263.0" y1="96" x2="263.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="296.0" y1="96" x2="296.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="329.0" y1="96" x2="329.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="362.0" y1="96" x2="362.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="395.0" y1="96" x2="395.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="428.0" y1="96" x2="428.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="461.0" y1="96" x2="461.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="494.0" y1="96" x2="494.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="527.0" y1="96" x2="527.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="560.0" y1="96" x2="560.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="593.0" y1="96" x2="593.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="626.0" y1="96" x2="626.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="659.0" y1="96" x2="659.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="692.0" y1="96" x2="692.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="725.0" y1="96" x2="725.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="758.0" y1="96" x2="758.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="791.0" y1="96" x2="791.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="824.0" y1="96" x2="824.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="857.0" y1="96" x2="857.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="890.0" y1="96" x2="890.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<line x1="923.0" y1="96" x2="923.0" y2="400" stroke="#d1d5db" stroke-width="1"/>
+<text x="230.0" y="422" font-size="12" fill="#4b5563" text-anchor="middle">0 ms</text>
+<text x="362.0" y="422" font-size="12" fill="#4b5563" text-anchor="middle">600 ms</text>
+<text x="494.0" y="422" font-size="12" fill="#4b5563" text-anchor="middle">1200 ms</text>
+<text x="626.0" y="422" font-size="12" fill="#4b5563" text-anchor="middle">1800 ms</text>
+<text x="758.0" y="422" font-size="12" fill="#4b5563" text-anchor="middle">2400 ms</text>
+<text x="934.0" y="422" font-size="12" fill="#4b5563" text-anchor="middle">3200 ms</text>
+<line x1="934.0" y1="96" x2="934.0" y2="400" stroke="#b91c1c" stroke-width="2.2"/>
+<text x="930.0" y="90" font-size="12.5" fill="#b91c1c" text-anchor="end">the first gate&#x27;s one look</text>
+<text x="230" y="90" font-size="12.5" fill="#4b5563" text-anchor="start">grey lines: a sample every 150 ms (since 2026-10-02)</text>
+<text x="30" y="138" font-size="13.5" font-weight="bold" fill="#1f2937" text-anchor="start">Night choice: 600 ms</text>
+<text x="30" y="158" font-size="12.5" fill="#4b5563" text-anchor="start">full-stage opacity fade</text>
+<rect x="230.0" y="124" width="132.0" height="28" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<circle cx="263.0" cy="138" r="4" fill="#111827"/>
+<circle cx="296.0" cy="138" r="4" fill="#111827"/>
+<circle cx="329.0" cy="138" r="4" fill="#111827"/>
+<text x="374.0" y="136" font-size="12.5" fill="#1f2937" text-anchor="start">sampled: 3 sightings, a finding</text>
+<text x="374.0" y="154" font-size="12.5" fill="#b91c1c" text-anchor="start">first gate: missed (ended long before)</text>
+<text x="30" y="230" font-size="13.5" font-weight="bold" fill="#1f2937" text-anchor="start">A 250 ms fade</text>
+<text x="30" y="250" font-size="12.5" fill="#4b5563" text-anchor="start">(hypothetical)</text>
+<rect x="265.2" y="216" width="55.0" height="28" rx="3" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<circle cx="296.0" cy="230" r="4" fill="#111827"/>
+<text x="332.2" y="228" font-size="12.5" fill="#1f2937" text-anchor="start">sampled: 1 sighting, passes</text>
+<text x="332.2" y="246" font-size="12.5" fill="#b91c1c" text-anchor="start">first gate: missed</text>
+<text x="30" y="322" font-size="13.5" font-weight="bold" fill="#1f2937" text-anchor="start">An exit fade, 450 ms</text>
+<text x="30" y="342" font-size="12.5" fill="#4b5563" text-anchor="start">its node then removed</text>
+<rect x="450.0" y="308" width="99.0" height="28" rx="3" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<circle cx="461.0" cy="322" r="4" fill="#111827"/>
+<circle cx="494.0" cy="322" r="4" fill="#111827"/>
+<circle cx="527.0" cy="322" r="4" fill="#111827"/>
+<text x="561.0" y="320" font-size="12.5" fill="#1f2937" text-anchor="start">sampled: 3 sightings, but skipped</text>
+<text x="561.0" y="338" font-size="12.5" fill="#b91c1c" text-anchor="start">first gate: missed</text>
+<rect x="30" y="440" width="920" height="146" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="50" y="468" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">What the samples still miss (2026-10-11 audit)</text>
+<text x="50" y="494" font-size="14.5" fill="#1f2937" text-anchor="start">A finding needs two sightings, so anything under about 300 ms can pass between them.</text>
+<text x="50" y="517" font-size="14.5" fill="#1f2937" text-anchor="start">A node gone at the end is skipped (!el.isConnected), so an exit animation escapes.</text>
+<text x="50" y="540" font-size="14.5" fill="#1f2937" text-anchor="start">Cost is inferred from DOM boxes and style writes, not read from the compositor; and the</text>
+<text x="50" y="563" font-size="14.5" fill="#1f2937" text-anchor="start">will-change ban is the project&#x27;s conservative policy, not a law of browsers.</text>
+</svg>

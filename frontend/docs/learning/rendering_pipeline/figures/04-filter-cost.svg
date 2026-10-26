@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 548" width="980" height="548" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="548" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A filter&#x27;s cost: its area x how many x how often it is drawn</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">A filter or a blend is computed over its whole box in pixels, each time that box is painted again.</text>
+<rect x="24" y="86" width="150" height="36" rx="4" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="36" y="109" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">case</text>
+<rect x="184" y="86" width="166" height="36" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="196" y="109" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">area</text>
+<rect x="374" y="86" width="166" height="36" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="386" y="109" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">count</text>
+<rect x="564" y="86" width="166" height="36" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="576" y="109" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">how often</text>
+<rect x="754" y="86" width="202" height="36" rx="4" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="766" y="109" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">what changed</text>
+<text x="362" y="110" font-size="16" font-weight="bold" fill="#b45309" text-anchor="middle">x</text>
+<text x="552" y="110" font-size="16" font-weight="bold" fill="#b45309" text-anchor="middle">x</text>
+<rect x="24" y="132" width="932" height="106" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="36" y="158" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">The guide&#x27;s role</text>
+<text x="36" y="178" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">cards (lesson 26)</text>
+<text x="196" y="158" font-size="13.5" fill="#1f2937" text-anchor="start">270 -&gt; 417 px wide,</text>
+<text x="196" y="178" font-size="13.5" fill="#1f2937" text-anchor="start">about 2.4x the</text>
+<text x="196" y="198" font-size="13.5" fill="#1f2937" text-anchor="start">pixels per card</text>
+<text x="386" y="158" font-size="13.5" fill="#1f2937" text-anchor="start">ten ink filters</text>
+<text x="386" y="178" font-size="13.5" fill="#1f2937" text-anchor="start">and a drop-shadow</text>
+<text x="386" y="198" font-size="13.5" fill="#1f2937" text-anchor="start">on every card</text>
+<text x="576" y="158" font-size="13.5" fill="#1f2937" text-anchor="start">every frame of a</text>
+<text x="576" y="178" font-size="13.5" fill="#1f2937" text-anchor="start">scroll or a turn</text>
+<text x="766" y="158" font-size="13.5" fill="#14532d" text-anchor="start">18 fps scrolling, 12</text>
+<text x="766" y="178" font-size="13.5" fill="#14532d" text-anchor="start">turning (CPU 4x) -&gt;</text>
+<text x="766" y="198" font-size="13.5" fill="#14532d" text-anchor="start">clean ink and a painted</text>
+<text x="766" y="218" font-size="13.5" fill="#14532d" text-anchor="start">shadow: 42 and 48</text>
+<rect x="24" y="248" width="932" height="106" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="36" y="274" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">The grain</text>
+<text x="36" y="294" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">(§8.9)</text>
+<text x="196" y="274" font-size="13.5" fill="#1f2937" text-anchor="start">the whole stage</text>
+<text x="386" y="274" font-size="13.5" fill="#1f2937" text-anchor="start">one tile at 16%</text>
+<text x="386" y="294" font-size="13.5" fill="#1f2937" text-anchor="start">opacity</text>
+<text x="576" y="274" font-size="13.5" fill="#1f2937" text-anchor="start">every repaint</text>
+<text x="576" y="294" font-size="13.5" fill="#1f2937" text-anchor="start">under a mover</text>
+<text x="766" y="274" font-size="13.5" fill="#14532d" text-anchor="start">off on a phone; hiding</text>
+<text x="766" y="294" font-size="13.5" fill="#14532d" text-anchor="start">the grade: frames in</text>
+<text x="766" y="314" font-size="13.5" fill="#14532d" text-anchor="start">a rise 19 -&gt; 31</text>
+<rect x="24" y="364" width="932" height="106" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="36" y="390" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">The wing&#x27;s dead</text>
+<text x="36" y="410" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">tiles (§8.10)</text>
+<text x="196" y="390" font-size="13.5" fill="#1f2937" text-anchor="start">one photo tile</text>
+<text x="386" y="390" font-size="13.5" fill="#1f2937" text-anchor="start">a grayscale filter</text>
+<text x="386" y="410" font-size="13.5" fill="#1f2937" text-anchor="start">per dead seat, more</text>
+<text x="386" y="430" font-size="13.5" fill="#1f2937" text-anchor="start">as the game goes on</text>
+<text x="576" y="390" font-size="13.5" fill="#1f2937" text-anchor="start">every frame a full-</text>
+<text x="576" y="410" font-size="13.5" fill="#1f2937" text-anchor="start">stage box moved</text>
+<text x="576" y="430" font-size="13.5" fill="#1f2937" text-anchor="start">over them</text>
+<text x="766" y="390" font-size="13.5" fill="#14532d" text-anchor="start">the bounded box left</text>
+<text x="766" y="410" font-size="13.5" fill="#14532d" text-anchor="start">the wing out of the</text>
+<text x="766" y="430" font-size="13.5" fill="#14532d" text-anchor="start">repaint; the filter</text>
+<text x="766" y="450" font-size="13.5" fill="#14532d" text-anchor="start">is still live</text>
+<text x="24" y="502" font-size="14" fill="#374151" text-anchor="start">Shrink any one factor: box the effect to what it affects, bake it where it never changes, or drop</text>
+<text x="24" y="524" font-size="14" fill="#374151" text-anchor="start">what the eye cannot see on a small screen.</text>
+</svg>

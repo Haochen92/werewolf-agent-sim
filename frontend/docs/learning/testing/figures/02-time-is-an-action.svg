@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">Time is an action, so a test can play a game without waiting</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">liveReducer never reads a clock. The page turns a timer into an action; the test sends the same action at once.</text>
+<rect x="30" y="90" width="920" height="130" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="48" y="116" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">In the page (LiveTheatre)</text>
+<rect x="48" y="140" width="190" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="62" y="163" font-size="13.5" fill="#1f2937" text-anchor="start">stream frame</text>
+<text x="62" y="182" font-size="13.5" fill="#1f2937" text-anchor="start">arrives</text>
+<rect x="290" y="140" width="190" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="304" y="163" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">setTimeout(holdMs)</text>
+<text x="304" y="182" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">runs out</text>
+<rect x="540" y="140" width="170" height="56" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="554" y="163" font-size="13.5" fill="#1f2937" text-anchor="start">liveReducer</text>
+<text x="554" y="182" font-size="13.5" fill="#1f2937" text-anchor="start">(pure)</text>
+<rect x="770" y="140" width="160" height="56" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="784" y="163" font-size="13" fill="#1f2937" text-anchor="start">state: which beat,</text>
+<text x="784" y="182" font-size="13" fill="#1f2937" text-anchor="start">playing or still</text>
+<path d="M238,150 Q390,96 545,150" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="390" y="117" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="middle">recut</text>
+<path d="M480,182 L540,182" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="510" y="208" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="middle">held</text>
+<path d="M710,168 L770,168" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="30" y="240" width="920" height="190" rx="6" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="48" y="266" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">In the test (live-state.test.ts, Session)</text>
+<text x="48" y="292" font-size="13.5" fill="#374151" text-anchor="start">the ballot asked before the vote opens (game 403f4dbc, owner, 2026-10-12)</text>
+<rect x="48" y="306" width="42" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="69.0" y="325.0" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">103</text>
+<rect x="96" y="306" width="42" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="117.0" y="325.0" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">105</text>
+<rect x="144" y="306" width="42" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="165.0" y="325.0" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">107</text>
+<rect x="192" y="306" width="42" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="213.0" y="325.0" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">110</text>
+<rect x="240" y="306" width="42" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="261.0" y="325.0" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">112</text>
+<rect x="288" y="306" width="42" height="28" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="309.0" y="325.0" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">113</text>
+<text x="48" y="354" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">s.arrive([...], true)</text>
+<text x="48" y="372" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">turns, summary, ballot, phase</text>
+<path d="M345,320 L405,320" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="410" y="300" width="150" height="40" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="485" y="325" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">s.held() x 4</text>
+<path d="M560,320 L620,320" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="625" y="300" width="305" height="112" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="640" y="324" font-size="13" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">watch.played</text>
+<text x="640" y="348" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">day.speech</text>
+<text x="640" y="365" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">day.pass  (seats 2, 4 and 10)</text>
+<text x="640" y="382" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">vote.opens</text>
+<text x="640" y="399" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">vote.your-ballot</text>
+<text x="410" y="380" font-size="13" fill="#374151" text-anchor="start">no clock, no network, no waiting:</text>
+<text x="410" y="400" font-size="13" fill="#374151" text-anchor="start">the whole day runs in milliseconds</text>
+<rect x="30" y="446" width="920" height="98" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="50" y="474" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Why it is cheap</text>
+<text x="50" y="500" font-size="14.5" fill="#1f2937" text-anchor="start">Same inputs, same state, every time: no timer to wait for, no flake from a slow machine.</text>
+<text x="50" y="523" font-size="14.5" fill="#1f2937" text-anchor="start">The timer lives in the container, so the container is the part these tests do not cover.</text>
+</svg>

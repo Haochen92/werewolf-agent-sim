@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">What a move repaints: the moving box, and everything under it</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">A figure placed in stage units (1600 x 900), moved by a full-stage wrapper and then by Bounded (build_log §8.10).</text>
+<text x="24" y="106" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">A full-stage wrapper (position: absolute; inset: 0)</text>
+<rect x="24" y="120" width="440.00000000000006" height="247.50000000000003" rx="2" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="24" y="120" width="52.800000000000004" height="247.50000000000003" rx="0" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="128" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="154" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="180" width="40.800000000000004" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<rect x="30" y="206" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="232" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="258" width="40.800000000000004" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<rect x="30" y="284" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="310" width="40.800000000000004" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<rect x="30" y="336" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<ellipse cx="167.0" cy="164.0" rx="63.25000000000001" ry="41.25" fill="#fde68a" opacity="0.6"/>
+<ellipse cx="326.5" cy="164.0" rx="63.25000000000001" ry="41.25" fill="#fde68a" opacity="0.6"/>
+<rect x="197.25" y="128.25" width="181.50000000000003" height="236.50000000000003" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="288.0" y="249.25" font-size="13" fill="#1e3a8a" text-anchor="middle">figure</text>
+<text x="516" y="106" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Bounded: the load&#x27;s bounds plus a pad, clipped</text>
+<rect x="516" y="120" width="440.00000000000006" height="247.50000000000003" rx="2" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="516" y="120" width="52.800000000000004" height="247.50000000000003" rx="0" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="522" y="128" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="522" y="154" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="522" y="180" width="40.800000000000004" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<rect x="522" y="206" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="522" y="232" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="522" y="258" width="40.800000000000004" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<rect x="522" y="284" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="522" y="310" width="40.800000000000004" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<rect x="522" y="336" width="40.800000000000004" height="20" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<ellipse cx="659.0" cy="164.0" rx="63.25000000000001" ry="41.25" fill="#fde68a" opacity="0.6"/>
+<ellipse cx="818.5" cy="164.0" rx="63.25000000000001" ry="41.25" fill="#fde68a" opacity="0.6"/>
+<rect x="689.25" y="128.25" width="181.50000000000003" height="236.50000000000003" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="780.0" y="249.25" font-size="13" fill="#1e3a8a" text-anchor="middle">figure</text>
+<rect x="20" y="116" width="448.00000000000006" height="255.50000000000003" rx="4" fill="none" stroke="#b91c1c" stroke-width="2.2" stroke-dasharray="5 4"/>
+<rect x="683.75" y="122.75" width="192.50000000000003" height="247.50000000000003" rx="4" fill="none" stroke="#15803d" stroke-width="2.2" stroke-dasharray="5 4"/>
+<text x="24" y="393.5" font-size="13.5" fill="#7f1d1d" text-anchor="start">Invalidated each frame: 1600 x 900, the wing&#x27;s grey</text>
+<text x="24" y="413.5" font-size="13.5" fill="#7f1d1d" text-anchor="start">tiles and the light&#x27;s gradients with it.</text>
+<text x="516" y="393.5" font-size="13.5" fill="#14532d" text-anchor="start">Invalidated each frame: about 630-1290 x 30-890</text>
+<text x="516" y="413.5" font-size="13.5" fill="#14532d" text-anchor="start">units; the wing (x &lt; 192) is outside it.</text>
+<rect x="24" y="448" width="932" height="172" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="476" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">What was measured, and what was not</text>
+<text x="44" y="502" font-size="14.5" fill="#1f2937" text-anchor="start">Chromium in the phone frame, CPU 4x slower, production builds, 2026-10-02, each beat under a trace:</text>
+<text x="44" y="525" font-size="14.5" fill="#1f2937" text-anchor="start">the table down: paint records 88 -&gt; 22, paint 126 -&gt; 34 ms, raster 1,782 -&gt; 1,837 ms;</text>
+<text x="44" y="548" font-size="14.5" fill="#1f2937" text-anchor="start">voting opens: paint records 81 -&gt; 32; the vote over 15 steps: raster 10,489 -&gt; 10,341 ms.</text>
+<text x="44" y="571" font-size="14.5" fill="#1f2937" text-anchor="start">Chromium rasters in tiles, so the smaller box showed mostly as fewer paint records, not less raster.</text>
+<text x="44" y="594" font-size="14.5" fill="#1f2937" text-anchor="start">The phone&#x27;s own reading of the box was never recorded.</text>
+</svg>

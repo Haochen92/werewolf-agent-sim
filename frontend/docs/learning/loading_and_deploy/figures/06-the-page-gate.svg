@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A wait the viewer can see: hold the page whole, and start before React</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">PageGate.tsx (2026-10-18). Times are the lesson&#x27;s own readings; the loader shows only past 1 s.</text>
+<text x="24" y="104" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Without a gate, a cold first visit: the HTML comes seconds before its pictures</text>
+<rect x="24" y="118" width="220" height="36" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="36" y="141" font-size="13.5" fill="#1f2937" text-anchor="start">words on bare black</text>
+<rect x="254" y="118" width="220" height="36" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="266" y="141" font-size="13.5" fill="#1f2937" text-anchor="start">walls paint from the top</text>
+<rect x="484" y="118" width="220" height="36" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="496" y="141" font-size="13.5" fill="#1f2937" text-anchor="start">pictures, one by one</text>
+<rect x="714" y="118" width="242" height="36" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="726" y="141" font-size="13.5" fill="#1f2937" text-anchor="start">the page, whole at last</text>
+<text x="24" y="196" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">With the gate, a cached revisit</text>
+<text x="24" y="236" font-size="14" fill="#1f2937" text-anchor="start">wait in a React effect</text>
+<text x="24" y="254" font-size="12.5" fill="#6b7280" text-anchor="start">(after the code loads</text>
+<text x="24" y="270" font-size="12.5" fill="#6b7280" text-anchor="start">and hydrates)</text>
+<rect x="300" y="220" width="420.0" height="30" rx="3" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<rect x="720.0" y="220" width="150.0" height="30" rx="3" fill="#fff7ed" fill-opacity="0.45" stroke="#c2410c" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="310" y="240" font-size="13" fill="#7c2d12" text-anchor="start">page hidden; up at 1.4 to 1.9 s</text>
+<line x1="600.0" y1="212" x2="600.0" y2="300" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="606.0" y="306" font-size="12.5" fill="#b91c1c" text-anchor="start">loader shows from 1 s</text>
+<text x="24" y="336" font-size="14" fill="#1f2937" text-anchor="start">wait in an inline script</text>
+<text x="24" y="354" font-size="12.5" fill="#6b7280" text-anchor="start">(runs as the HTML parses)</text>
+<rect x="300" y="320" width="30.0" height="30" rx="3" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<rect x="330.0" y="320" width="39.0" height="30" rx="3" fill="#bbf7d0" fill-opacity="0.45" stroke="#15803d" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="379.0" y="340" font-size="13" fill="#14532d" text-anchor="start">up at 100 to 230 ms; the loader never shows</text>
+<line x1="300" y1="376" x2="900" y2="376" stroke="#9ca3af" stroke-width="1"/>
+<line x1="300.0" y1="376" x2="300.0" y2="382" stroke="#9ca3af" stroke-width="1"/>
+<text x="300.0" y="398" font-size="12" fill="#6b7280" text-anchor="middle">0 s</text>
+<line x1="450.0" y1="376" x2="450.0" y2="382" stroke="#9ca3af" stroke-width="1"/>
+<text x="450.0" y="398" font-size="12" fill="#6b7280" text-anchor="middle">0.5 s</text>
+<line x1="600.0" y1="376" x2="600.0" y2="382" stroke="#9ca3af" stroke-width="1"/>
+<text x="600.0" y="398" font-size="12" fill="#6b7280" text-anchor="middle">1 s</text>
+<line x1="750.0" y1="376" x2="750.0" y2="382" stroke="#9ca3af" stroke-width="1"/>
+<text x="750.0" y="398" font-size="12" fill="#6b7280" text-anchor="middle">1.5 s</text>
+<line x1="900.0" y1="376" x2="900.0" y2="382" stroke="#9ca3af" stroke-width="1"/>
+<text x="900.0" y="398" font-size="12" fill="#6b7280" text-anchor="middle">2 s</text>
+<rect x="24" y="420" width="932" height="204" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="448" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">What the gate does (components/site/PageGate.tsx)</text>
+<text x="44" y="474" font-size="14.5" fill="#1f2937" text-anchor="start">Hides the page under the nav (opacity, so no box moves) and finds the first screen&#x27;s pictures itself:</text>
+<text x="44" y="497" font-size="14.5" fill="#1f2937" text-anchor="start">every on-screen &lt;img&gt;, and every computed background, ::before and ::after included, plus the fonts.</text>
+<text x="44" y="520" font-size="14.5" fill="#1f2937" text-anchor="start">Opens when they are decoded, or at 8 s. A loader that came up stays at least 2 s, never a blink.</text>
+<text x="44" y="543" font-size="14.5" fill="#1f2937" text-anchor="start">The same function is written into the page as text (gate.toString()), so it may use nothing from outside</text>
+<text x="44" y="566" font-size="14.5" fill="#1f2937" text-anchor="start">itself. A page reached by a click runs it from React. The stylesheet shows the page after 10 s</text>
+<text x="44" y="589" font-size="14.5" fill="#1f2937" text-anchor="start">should the script never run.</text>
+</svg>

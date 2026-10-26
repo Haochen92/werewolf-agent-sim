@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">An absolutely placed wall taller than the page</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The ticket office&#x27;s wall today: 1,081 px tall on a 1536 px-wide screen, placed with top: 0 and a height</text>
+<text x="70" y="92" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">Placed against the document</text>
+<rect x="70" y="110" width="300" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="82" y="135" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">TopNav</text>
+<rect x="70" y="150" width="300" height="220" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="82" y="175" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">&lt;main&gt; (the page)</text>
+<rect x="70" y="370" width="300" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="82" y="395" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">SiteFooter</text>
+<rect x="380" y="110" width="26" height="460" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<rect x="56" y="410" width="350" height="160" fill="#fee2e2" fill-opacity="0.55" stroke="#b91c1c" stroke-dasharray="5 4"/>
+<text x="68" y="470.0" font-size="13.5" fill="#b91c1c" text-anchor="start">the page now scrolls on</text>
+<text x="68" y="489.575" font-size="13.5" fill="#b91c1c" text-anchor="start">past its footer, over</text>
+<text x="68" y="509.15" font-size="13.5" fill="#b91c1c" text-anchor="start">nothing but wall</text>
+<text x="393" y="104" font-size="12" fill="#b45309" text-anchor="middle">wall</text>
+<text x="393" y="590" font-size="12" fill="#b45309" text-anchor="middle">1,081 px</text>
+<text x="540" y="88" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">Placed against the station, clipped</text>
+<rect x="526" y="98" width="364" height="318" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<rect x="540" y="110" width="300" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="552" y="135" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">TopNav</text>
+<rect x="540" y="150" width="300" height="220" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="552" y="175" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">&lt;main&gt; (the page)</text>
+<rect x="540" y="370" width="300" height="40" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="552" y="395" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">SiteFooter</text>
+<text x="532" y="446" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1d4ed8" text-anchor="start">.station {</text>
+<text x="532" y="464" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1d4ed8" text-anchor="start">  position: relative;</text>
+<text x="532" y="482" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1d4ed8" text-anchor="start">  overflow: clip }</text>
+<rect x="850" y="98" width="26" height="318" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<rect x="850" y="416" width="26" height="154" rx="2" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="690" y="520.0" font-size="13" fill="#4b5563" text-anchor="start">the rest of the wall:</text>
+<text x="690" y="538.85" font-size="13" fill="#4b5563" text-anchor="start">cut at the station&#x27;s</text>
+<text x="690" y="557.7" font-size="13" fill="#4b5563" text-anchor="start">foot, adds no scroll</text>
+<text x="863" y="92" font-size="12" fill="#b45309" text-anchor="middle">wall</text>
+<text x="863" y="590" font-size="12" fill="#b45309" text-anchor="middle">1,081 px</text>
+<text x="24" y="622" font-size="13.5" fill="#374151" text-anchor="start">Out of flow, the wall gives the page no height, but it still counts toward how far the page scrolls.</text>
+</svg>

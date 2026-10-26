@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 700" width="980" height="700" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="700" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">y: &#x27;115%&#x27; measures the moving box, not the stage</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">the same string over three boxes; heights in stage units (the stage is 1600 x 900); arrows are the move</text>
+<line x1="40" y1="480" x2="940" y2="480" stroke="#374151" stroke-width="1.2"/>
+<text x="944" y="484" font-size="12" fill="#6b7280" text-anchor="end">the stage&#x27;s foot</text>
+<rect x="60" y="192.0" width="120" height="288.0" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<rect x="70" y="192.0" width="100" height="288.0" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<path d="M210,192.0 L210,523.2" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="220" y="357.6" font-size="14" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">1,035</text>
+<text x="60" y="96" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Before: a full-stage wrapper</text>
+<text x="60" y="116" font-size="13" fill="#4b5563" text-anchor="start">box 900 tall</text>
+<text x="60" y="590" font-size="13.5" fill="#1f2937" text-anchor="start">115% of 900 = 1,035 units:</text>
+<text x="60" y="610" font-size="13.5" fill="#1f2937" text-anchor="start">the figure falls clear of the</text>
+<text x="60" y="630" font-size="13.5" fill="#1f2937" text-anchor="start">stage, as designed</text>
+<rect x="380" y="192.0" width="120" height="288.0" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<rect x="390" y="188.8" width="100" height="304.0" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<path d="M530,188.8 L530,538.4000000000001" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="540" y="363.6" font-size="14" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">~1,090</text>
+<text x="380" y="96" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Bounded: the drop&#x27;s own box</text>
+<text x="380" y="116" font-size="13" fill="#4b5563" text-anchor="start">the figure&#x27;s column to the foot,</text>
+<text x="380" y="134" font-size="13" fill="#4b5563" text-anchor="start">plus a 40-unit pad all round</text>
+<text x="380" y="590" font-size="13.5" fill="#1f2937" text-anchor="start">about 950 tall for a figure whose</text>
+<text x="380" y="610" font-size="13.5" fill="#1f2937" text-anchor="start">top is near y 30: 115% would be</text>
+<text x="380" y="630" font-size="13.5" fill="#1f2937" text-anchor="start">about 1,090, and differ per figure</text>
+<rect x="700" y="192.0" width="120" height="288.0" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="5 4"/>
+<rect x="710" y="303.36" width="100" height="176.64000000000001" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<path d="M850,303.36 L850,506.496" stroke="#b91c1c" stroke-width="1.8" fill="none" marker-end="url(#r)"/>
+<text x="860" y="404.928" font-size="14" font-family="Menlo, Consolas, monospace" fill="#b91c1c" text-anchor="start">635</text>
+<text x="700" y="96" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">If a small box moved in percent</text>
+<text x="700" y="116" font-size="13" fill="#4b5563" text-anchor="start">the card&#x27;s measured bounds,</text>
+<text x="700" y="134" font-size="13" fill="#4b5563" text-anchor="start">87 to 639: 552 tall</text>
+<text x="700" y="590" font-size="13.5" fill="#1f2937" text-anchor="start">115% = 635 units: from y 87 it</text>
+<text x="700" y="610" font-size="13.5" fill="#1f2937" text-anchor="start">ends at 722, still inside the</text>
+<text x="700" y="630" font-size="13.5" fill="#1f2937" text-anchor="start">frame (hypothetical)</text>
+<text x="24" y="680" font-size="14" font-weight="bold" fill="#15803d" text-anchor="start">The drop is now given in units, y: 1.15 * STAGE_H = 1,035, whatever its box (LynchScene.tsx).</text>
+</svg>

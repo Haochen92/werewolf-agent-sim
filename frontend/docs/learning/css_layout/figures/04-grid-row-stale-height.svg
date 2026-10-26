@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" width="980" height="600" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="600" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A grid row kept a height from before its content measured itself</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The guide&#x27;s tools tray, 2026-10-22: tabs, then the cards&#x27; stack</text>
+<rect x="40" y="100" width="380" height="330" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<rect x="64" y="126" width="330" height="34" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="74" y="148" font-size="12.5" fill="#1f2937" text-anchor="start">tabs: Seat cards · Your agent · Your card</text>
+<rect x="58" y="172" width="344" height="150" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="394" y="290" font-size="12" fill="#1d4ed8" text-anchor="end">row 2: sized</text>
+<text x="394" y="306" font-size="12" fill="#1d4ed8" text-anchor="end">before the crop</text>
+<rect x="64" y="180" width="220" height="285" rx="3" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="74" y="204" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">the seat card</text>
+<rect x="74" y="216" width="200" height="150" rx="2" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="84" y="240.0" font-size="12.5" fill="#1f2937" text-anchor="start">the demo: a container</text>
+<text x="84" y="258.125" font-size="12.5" fill="#1f2937" text-anchor="start">query and an</text>
+<text x="84" y="276.25" font-size="12.5" fill="#1f2937" text-anchor="start">aspect-ratio box,</text>
+<text x="84" y="294.375" font-size="12.5" fill="#1f2937" text-anchor="start">sized later</text>
+<rect x="64" y="430" width="220" height="35" fill="#fee2e2" stroke="#b91c1c" stroke-dasharray="5 4"/>
+<text x="294" y="452" font-size="12.5" fill="#b91c1c" text-anchor="start">past the rim</text>
+<text x="40" y="500" font-size="13.5" fill="#b91c1c" text-anchor="start">the card runs out of the tray until a tab switch</text>
+<text x="40" y="520" font-size="13.5" fill="#b91c1c" text-anchor="start">makes the browser lay it out again</text>
+<text x="40" y="90" font-size="13.5" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">display: grid (to 2026-10-22)</text>
+<rect x="540" y="100" width="380" height="430" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<rect x="564" y="126" width="330" height="34" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="574" y="148" font-size="12.5" fill="#1f2937" text-anchor="start">tabs: Seat cards · Your agent · Your card</text>
+<rect x="564" y="174" width="220" height="250" rx="3" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="574" y="198" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="start">the seat card</text>
+<rect x="574" y="210" width="200" height="150" rx="2" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="584" y="234.0" font-size="12.5" fill="#1f2937" text-anchor="start">the demo, sized</text>
+<text x="584" y="252.125" font-size="12.5" fill="#1f2937" text-anchor="start">whenever it is</text>
+<text x="540" y="560" font-size="13.5" fill="#15803d" text-anchor="start">no row to remember a height: the tray is its items</text>
+<text x="540" y="580" font-size="13.5" fill="#15803d" text-anchor="start">and gaps, laid out again whenever one changes</text>
+<text x="540" y="90" font-size="13.5" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">display: flex; flex-direction: column</text>
+</svg>

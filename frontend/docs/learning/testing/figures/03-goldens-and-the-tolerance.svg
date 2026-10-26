@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">Goldens: the diff is the review, and the tolerance hides small changes</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Text goldens are compared exactly; picture goldens allow 0.5% of pixels to differ.</text>
+<text x="30" y="100" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">A text golden (the beat list)</text>
+<rect x="30" y="116" width="210" height="58" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="44" y="140" font-size="13.5" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">1. beat_sheet.md</text>
+<text x="44" y="162" font-size="13" fill="#374151" text-anchor="start">change the table</text>
+<path d="M240,145 L266,145" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="266" y="116" width="210" height="58" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="280" y="140" font-size="13.5" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">2. beatsFor.ts</text>
+<text x="280" y="162" font-size="13" fill="#374151" text-anchor="start">change the code</text>
+<path d="M476,145 L502,145" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="502" y="116" width="210" height="58" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="516" y="140" font-size="13.5" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">3. npx vitest run -u</text>
+<text x="516" y="162" font-size="13" fill="#374151" text-anchor="start">regenerate</text>
+<path d="M712,145 L738,145" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="738" y="116" width="210" height="58" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="752" y="140" font-size="13.5" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">4. git diff</text>
+<text x="752" y="162" font-size="13" fill="#374151" text-anchor="start">read every line</text>
+<rect x="30" y="188" width="920" height="60" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="46" y="212" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#b91c1c" text-anchor="start">-  3  day.pass         d1 seq 13 end 29  public {1,5,4}  4000ms</text>
+<text x="46" y="234" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#15803d" text-anchor="start">+  3  day.pass         d1 seq 13 end 29  public {1,5,4}  3000ms</text>
+<text x="620" y="223" font-size="12.5" font-style="italic" fill="#6b7280" text-anchor="start">(an illustrative edit to one hold)</text>
+<text x="30" y="290" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">A picture golden: what each update command writes</text>
+<rect x="30" y="306" width="920" height="30" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="30" y="306" width="300" height="30" rx="4" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="180" y="326" font-size="13" fill="#1f2937" text-anchor="middle">under 0.5% of pixels: passes</text>
+<rect x="330" y="306" width="620" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="640" y="326" font-size="13" fill="#1f2937" text-anchor="middle">over 0.5%: fails</text>
+<text x="30" y="356" font-size="13" font-weight="bold" fill="#4b5563" text-anchor="start">case</text>
+<text x="400" y="356" font-size="13" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#4b5563" text-anchor="start">--update-snapshots</text>
+<text x="660" y="356" font-size="13" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#4b5563" text-anchor="start">--update-snapshots=all</text>
+<rect x="30" y="370" width="340" height="58" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="44" y="395" font-size="13.5" font-weight="bold" fill="#1f2937" text-anchor="start">Sub-pixel noise on a page</text>
+<text x="44" y="415" font-size="13" fill="#374151" text-anchor="start">you did not touch</text>
+<rect x="390" y="370" width="250" height="58" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="404" y="395" font-size="13.5" fill="#1f2937" text-anchor="start">not written</text>
+<rect x="652" y="370" width="298" height="58" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="403" font-size="13.5" fill="#1f2937" text-anchor="start">written: put it back</text>
+<rect x="30" y="438" width="340" height="58" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="44" y="463" font-size="13.5" font-weight="bold" fill="#1f2937" text-anchor="start">A deliberate small change</text>
+<text x="44" y="483" font-size="13" fill="#374151" text-anchor="start">(a colour, a line of text)</text>
+<rect x="390" y="438" width="250" height="58" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="404" y="463" font-size="13.5" fill="#9a3412" text-anchor="start">NOT written: the golden</text>
+<text x="404" y="483" font-size="13.5" fill="#9a3412" text-anchor="start">keeps the old look</text>
+<rect x="652" y="438" width="298" height="58" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="471" font-size="13.5" fill="#1f2937" text-anchor="start">written: keep it</text>
+<rect x="30" y="506" width="340" height="58" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="44" y="531" font-size="13.5" font-weight="bold" fill="#1f2937" text-anchor="start">A moved object</text>
+<rect x="390" y="506" width="250" height="58" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="404" y="531" font-size="13.5" fill="#1f2937" text-anchor="start">written</text>
+<rect x="652" y="506" width="298" height="58" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="539" font-size="13.5" fill="#1f2937" text-anchor="start">written: keep it</text>
+<rect x="30" y="578" width="920" height="50" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="50" y="606" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">S5: regenerate all, then put back every golden your change does not explain</text>
+</svg>

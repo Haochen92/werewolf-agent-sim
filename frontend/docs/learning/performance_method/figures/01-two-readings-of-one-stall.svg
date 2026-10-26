@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">The landing&#x27;s deal lag: two readings of one stall</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Lesson 46, 2026-10-22. The deal in the landing&#x27;s carriage, phone frame, CPU 4x slower.</text>
+<rect x="24" y="86" width="452" height="200" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="44" y="114" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">First reading: pictures arriving mid-move</text>
+<text x="44" y="142" font-size="14" fill="#1f2937" text-anchor="start">Long tasks lined up with the beat changes.</text>
+<text x="44" y="164" font-size="14" fill="#1f2937" text-anchor="start">Fix: decode the reel&#x27;s pictures under the</text>
+<text x="44" y="186" font-size="14" fill="#1f2937" text-anchor="start">cover before it plays (warm-reel.ts).</text>
+<text x="44" y="208" font-size="14" fill="#1f2937" text-anchor="start">Result: blocking cut by 38%, cover up longer.</text>
+<text x="44" y="252" font-size="14" font-weight="bold" fill="#c2410c" text-anchor="start">A real stall, but not the one the viewer meant.</text>
+<rect x="504" y="86" width="452" height="200" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="524" y="114" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Second reading: sum one beat by kind</text>
+<text x="524" y="142" font-size="14" fill="#1f2937" text-anchor="start">The owner: &quot;it is the animation&quot;.</text>
+<text x="524" y="164" font-size="14" fill="#1f2937" text-anchor="start">One trace of the face-up beat, the</text>
+<text x="524" y="186" font-size="14" fill="#1f2937" text-anchor="start">main thread&#x27;s time added up by kind of work.</text>
+<text x="524" y="208" font-size="14" fill="#1f2937" text-anchor="start">Nearly all of it: the per-frame lifecycle.</text>
+<text x="524" y="252" font-size="14" font-weight="bold" fill="#15803d" text-anchor="start">Fixes followed: lessons 47 and 48.</text>
+<text x="40" y="328" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">The face-up beat: a 2,000 ms window</text>
+<rect x="40" y="340" width="900" height="40" rx="3" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<rect x="40" y="340" width="529.2" height="40" rx="3" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<rect x="569.2" y="340" width="10.8" height="40" rx="0" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="52" y="365" font-size="13.5" fill="#1f2937" text-anchor="start">style, layout, paint, layerize, commit: nearly all of the 1.2 s</text>
+<text x="592.0" y="365" font-size="13.5" fill="#4b5563" text-anchor="start">main thread not busy: about 800 ms</text>
+<path d="M574.6,432 L574.6,384" stroke="#b91c1c" stroke-width="1.8" fill="none" marker-end="url(#r)"/>
+<text x="344.6" y="450.0" font-size="13.5" fill="#b91c1c" text-anchor="start">decoding: 24 ms, the thin red sliver</text>
+<path d="M40,392 L40,400 L580.0,400 L580.0,392" stroke="#1d4ed8" stroke-width="1.5" fill="none"/>
+<text x="40" y="420" font-size="13.5" font-weight="bold" fill="#1d4ed8" text-anchor="start">main thread busy: 1.2 s of the 2 s</text>
+<text x="40" y="520" font-size="14.5" font-weight="bold" fill="#111827" text-anchor="start">Rule: trace one beat and sum its time by kind before choosing the fix.</text>
+</svg>

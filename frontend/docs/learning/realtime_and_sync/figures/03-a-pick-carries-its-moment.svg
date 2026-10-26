@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A viewer&#x27;s pick carries the moment it was made in</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The Record&#x27;s page (record-model.ts::shownMorning). The pick is stored as { morning, latest }.</text>
+<rect x="24" y="86" width="296" height="250" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="42" y="114" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">1. Mornings 2 and 3 are in</text>
+<rect x="42" y="134" width="48" height="34" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="66.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">2</text>
+<rect x="100" y="134" width="48" height="34" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="124.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">3</text>
+<text x="42" y="196" font-size="12.5" fill="#4b5563" text-anchor="start">mornings</text>
+<text x="42" y="226" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">pick: none</text>
+<text x="42" y="262" font-size="14" fill="#1f2937" text-anchor="start">no pick:</text>
+<text x="42" y="284" font-size="14" fill="#1f2937" text-anchor="start">the latest</text>
+<text x="42" y="318" font-size="15" font-weight="bold" fill="#1d4ed8" text-anchor="start">page shown: 3</text>
+<rect x="342" y="86" width="296" height="250" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="360" y="114" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">2. The viewer turns back to 2</text>
+<rect x="360" y="134" width="48" height="34" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="384.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">2</text>
+<rect x="418" y="134" width="48" height="34" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="442.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">3</text>
+<text x="360" y="196" font-size="12.5" fill="#4b5563" text-anchor="start">mornings</text>
+<text x="360" y="226" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">pick: { morning: 2, latest: 3 }</text>
+<text x="360" y="262" font-size="14" fill="#1f2937" text-anchor="start">latest is still 3:</text>
+<text x="360" y="284" font-size="14" fill="#1f2937" text-anchor="start">the pick holds</text>
+<text x="360" y="318" font-size="15" font-weight="bold" fill="#1d4ed8" text-anchor="start">page shown: 2</text>
+<rect x="660" y="86" width="296" height="250" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="678" y="114" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">3. Morning 4 arrives</text>
+<rect x="678" y="134" width="48" height="34" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="702.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">2</text>
+<rect x="736" y="134" width="48" height="34" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="760.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">3</text>
+<rect x="794" y="134" width="48" height="34" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="818.0" y="156.0" font-size="15" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">4</text>
+<text x="678" y="196" font-size="12.5" fill="#4b5563" text-anchor="start">mornings</text>
+<text x="678" y="226" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">pick: { morning: 2, latest: 3 }</text>
+<text x="678" y="262" font-size="14" fill="#1f2937" text-anchor="start">latest is 4, not 3:</text>
+<text x="678" y="284" font-size="14" fill="#1f2937" text-anchor="start">the pick lapses</text>
+<text x="678" y="318" font-size="15" font-weight="bold" fill="#1d4ed8" text-anchor="start">page shown: 4</text>
+<path d="M320,210 L340,210" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M638,210 L658,210" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="24" y="356" width="456" height="180" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="384" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Derived in render (as built)</text>
+<text x="44" y="412" font-size="14.5" fill="#1f2937" text-anchor="start">shown = pick holds ? pick.morning : latest,</text>
+<text x="44" y="435" font-size="14.5" fill="#1f2937" text-anchor="start">worked out on every render. The render that</text>
+<text x="44" y="458" font-size="14.5" fill="#1f2937" text-anchor="start">brings morning 4 already shows page 4. Nothing</text>
+<text x="44" y="481" font-size="14.5" fill="#1f2937" text-anchor="start">is scheduled, so nothing can fire late.</text>
+<rect x="500" y="356" width="456" height="180" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="520" y="384" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Reset by an effect (rejected)</text>
+<text x="520" y="412" font-size="14.5" fill="#1f2937" text-anchor="start">Store only { morning: 2 }; an effect clears it when</text>
+<text x="520" y="435" font-size="14.5" fill="#1f2937" text-anchor="start">a new morning arrives. Effects run after paint, so</text>
+<text x="520" y="458" font-size="14.5" fill="#1f2937" text-anchor="start">the first render with morning 4 still shows page 2,</text>
+<text x="520" y="481" font-size="14.5" fill="#1f2937" text-anchor="start">and the clear races the stage moving on.</text>
+</svg>
