@@ -6,7 +6,7 @@
   <rect x="30" y="30" width="300" height="140" rx="12" fill="#fff4d6" stroke="#c99a2e" stroke-width="2"/>
   <text x="50" y="60" font-size="18" font-weight="bold" fill="#5c4410">Day</text>
   <text x="50" y="86" font-size="14" fill="#333">Openings, then open discussion,</text>
-  <text x="50" y="106" font-size="14" fill="#333">then a vote: one player is voted out.</text>
+  <text x="50" y="106" font-size="14" fill="#333">then a vote that may remove a player.</text>
   <text x="50" y="132" font-size="13" fill="#7a5c14" font-style="italic">Said in public: claims, accusations, votes.</text>
   <text x="50" y="154" font-size="12" fill="#777">Day 1: openings only, no vote.</text>
 
@@ -14,14 +14,14 @@
   <rect x="430" y="30" width="300" height="140" rx="12" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
   <text x="450" y="60" font-size="18" font-weight="bold" fill="#26325a">Night</text>
   <text x="450" y="86" font-size="14" fill="#333">The wolves choose a victim in private;</text>
-  <text x="450" y="106" font-size="14" fill="#333">each role uses its ability on a player.</text>
+  <text x="450" y="106" font-size="14" fill="#333">roles with night actions choose targets.</text>
   <text x="450" y="132" font-size="13" fill="#3b4a7a" font-style="italic">Learned in private: each seat's own</text>
   <text x="450" y="150" font-size="13" fill="#3b4a7a" font-style="italic">results, true but partial.</text>
 
   <!-- Resolution -->
   <rect x="430" y="300" width="300" height="140" rx="12" fill="#ede7f6" stroke="#6a4c93" stroke-width="2"/>
   <text x="450" y="330" font-size="18" font-weight="bold" fill="#3d2a5c">Resolution</text>
-  <text x="450" y="356" font-size="14" fill="#333">Every night action is applied at once,</text>
+  <text x="450" y="356" font-size="14" fill="#333">Night choices are resolved together,</text>
   <text x="450" y="376" font-size="14" fill="#333">by the rules: blocks, protections,</text>
   <text x="450" y="396" font-size="14" fill="#333">attacks. The game never reports a</text>
   <text x="450" y="416" font-size="14" fill="#333">false result.</text>

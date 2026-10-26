@@ -38,7 +38,7 @@
   <text x="440" y="200" font-size="11.5" fill="#555" text-anchor="middle">answers</text>
 
   <!-- Panel B: the resume -->
-  <text x="470" y="34" font-size="16" font-weight="bold" fill="#222">2. The answer resumes it</text>
+  <text x="470" y="34" font-size="16" font-weight="bold" fill="#222">2. Resume while cached ballots remain</text>
   <rect x="470" y="50" width="380" height="215" rx="12" fill="#fafafa" stroke="#999" stroke-width="1.5"/>
   <text x="484" y="74" font-size="13" fill="#555">To the framework the subgraph is one step,</text>
   <text x="484" y="92" font-size="13" fill="#555">so the whole step runs again from the top.</text>
@@ -61,7 +61,7 @@
   <rect x="760" y="110" width="84" height="100" rx="8" fill="#fdebd8" stroke="#c4732e" stroke-width="1.5"/>
   <text x="802" y="134" font-size="14" font-weight="bold" fill="#5c3410" text-anchor="middle">Human</text>
   <text x="802" y="160" font-size="12" fill="#333" text-anchor="middle">uncached</text>
-  <text x="802" y="176" font-size="12" fill="#333" text-anchor="middle">twin: takes</text>
+  <text x="802" y="176" font-size="12" fill="#333" text-anchor="middle">node: takes</text>
   <text x="802" y="192" font-size="12" fill="#333" text-anchor="middle">the answer</text>
 
   <text x="484" y="240" font-size="12.5" fill="#555">The answer is validated like a model's reply</text>
@@ -69,12 +69,12 @@
 
   <rect x="470" y="282" width="380" height="54" rx="8" fill="#ede7f6" stroke="#6a4c93" stroke-width="1.5"/>
   <text x="660" y="305" font-size="13" font-weight="bold" fill="#3d2a5c" text-anchor="middle">All four ballots collected</text>
-  <text x="660" y="324" font-size="12" fill="#3d2a5c" text-anchor="middle">then the vote resolves, once</text>
+  <text x="660" y="324" font-size="12" fill="#3d2a5c" text-anchor="middle">then the vote resolves</text>
 
   <!-- Footer -->
   <line x1="30" y1="362" x2="850" y2="362" stroke="#ddd" stroke-width="1"/>
   <text x="30" y="388" font-size="13" fill="#333">Without the cache (the first test game, 2026-08-19), the resume asked every AI voter again, and some</text>
-  <text x="30" y="406" font-size="13" fill="#333">changed their votes.</text>
+  <text x="30" y="406" font-size="13" fill="#333">changed their votes. Cache entries expire after six hours and are lost on a server restart.</text>
   <text x="30" y="434" font-size="13" fill="#333">The cache key is the turn's input written as canonical JSON, so it survives the checkpoint's save</text>
   <text x="30" y="452" font-size="13" fill="#333">and reload; since 2026-10-26 it also includes the game id.</text>
 </svg>
