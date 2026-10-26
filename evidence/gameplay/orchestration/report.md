@@ -281,7 +281,14 @@ Where no record gives the reason, the text says so.
   cannot answer." Turn prompt: "Facts are computed by code; judgement is the model's", and the
   scheduler, ledger and vote count read the answer's fields. The deduction engine moved rule-based
   inference into code because seats holding the facts still failed to connect them.
-- *Chosen over:* no record names a rejected alternative, and none says why a tool loop was not used.
+- *Chosen over:* a tool loop, in which the agent would call tools to act. The owner's reasoning
+  (recorded 2026-10-26): each turn's action space is fixed and small (one legal target, a pass, a
+  message), so there is no tool to find or choose between, and a tool would be called on every turn.
+  That adds a model round-trip and output tokens, and makes the prompt prefix less stable for caching.
+  The tool's result would still have to be validated as structured data, which structured output does
+  in one call. The extra cost is reasoned, not measured. One part was measured: on Claude Haiku 5.5 a
+  forced tool call turns its thinking off (the model-admission probes, 51 of 51 against 45 of 51; map
+  block 100).
 - *Cost accepted:* the model can do only what a field allows. Legal targets live in the schema, so an
   enforced schema differs per seat and per vote; since 2026-10-14 Haiku's schema is written as text and
   checked in code ([turn prompt](../turn_prompt/report.md), "Model settings, validation and retries").
@@ -507,7 +514,8 @@ not yet audited.
 
 ## What is not established
 
-- **No comparison with another orchestration design**, and no record of why a tool loop was not used.
+- **No comparison with another orchestration design.** The reason a tool loop was not used is the owner's
+  reasoning (decision 1); its cost was not measured.
 - **The first subgraphs' reason is not recorded**; the October collapse's is inferred (decision 3).
 - **How many served games the cache crossed before the fix.** One case is in the record (decision 12).
   Only 11 of the 68 served games have prompt captures, and for the rest a copied pass is visible only
