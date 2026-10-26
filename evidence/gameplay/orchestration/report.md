@@ -301,7 +301,9 @@ Where no record gives the reason, the text says so.
 report. Night actions are simultaneous: a killed healer's protection still applies, and a killed
 investigator's check happened but its result is not delivered
 (`Agents/nodes/night/resolution.py::night_resolution`). Resolving after a barrier makes the order of the
-parallel branches irrelevant. The rules are the [roles report](../roles/report.md)'s; tests pin them on
+parallel branches irrelevant. A limited use (a bullet, a check) is spent only here, never in a turn
+node, and the new counts are computed from the night's starting state. A human's pause happens inside a
+turn, so it always comes before the resolution, and a resume cannot spend a use twice. The rules are the [roles report](../roles/report.md)'s; tests pin them on
 the resolution layer (`tests/engine/test_ten_seat_game.py`).
 
 ### The shape of the graph
@@ -505,6 +507,7 @@ the boundary between blocking and async code sits inside LangGraph, not in appli
 | Interrupt and resume through an imperatively invoked subgraph | A toy parent and subgraph, paused and resumed twice on one thread (`test_subgraph_interrupt.py`) | Its docstring warns it cannot check the config helper, which `test_child_config_unit.py` pins |
 | Cache and checkpoint identity | A payload round-tripped through the real serializer keeps its key; two games' day-1 openings get different keys (`test_turn_cache_key.py`). Paired ids across multiple configs are refused (`test_run_batch_experiment.py`) | Regression coverage for key stability and game isolation; no post-fix served-game verification recorded here |
 | State preservation | A one-key note update keeps other seats' notes (`test_agent_strategies_merge.py`); every model in state is allowlisted (`test_checkpoint_allowlist.py`) | Regression coverage for the note-merge and serialization failures |
+| Limited uses across a pause | The resolution run twice on one night gives the same counts; a scripted game with a human Vigilante, paused at its night turn and resumed with a shot, ends with one bullet left, and fails if a shot is spent twice (`test_ten_seat_game.py`) | One lineup, one seed, no model; it checks the count, not exactly-once execution of the step |
 | The pack's night, the day's rounds, human seats | `test_wolf_night_sequential.py`, `test_day_rounds.py`, `test_human_seat.py`, `test_human_turn_announced.py` | Implementation evidence |
 | The leak boundary | Nine checks on every batch game, unit tests on each builder (`tests/leak_test.py`) | Covers the encoded leak cases; no later leak reported here |
 | The cache in a real game | The 2026-08-19 verification game | One historical game, on the nine-seat pack vote; predates the October key fix |
