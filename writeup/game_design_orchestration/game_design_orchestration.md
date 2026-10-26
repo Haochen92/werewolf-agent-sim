@@ -31,9 +31,9 @@ through claims. The game is built
 to produce partial evidence and competing explanations. The ten-seat game has run since 2026-10-09;
 numbers from the earlier nine-seat game say so.
 
-**Exhibit (diagram).** The day-and-night loop: day (discussion, then a vote that removes one player) →
-night (private actions, resolved together) → morning report → next day, with "a side meets its win
-condition" as the exit. No graph nodes. Spec in `exhibits/source_map.md`, L1-loop.
+![One game cycle: day, night, resolution, morning report, and the exit when a side meets its win condition](exhibits/day_night_loop.svg)
+
+*One cycle of the game. What is said by day is public and can be anything; what a seat learns at night is private, true and partial.*
 
 Human players manage much of a Werewolf game's conversation themselves. When every player is a model
 call, the system must decide explicitly who receives which information, who gets a turn, which choices
@@ -53,7 +53,7 @@ has a chapter of its own.
 | Discussion that responds to earlier speech | Turn scheduling and updated conversational context | [Orchestrating the conversation](conversation/conversation.md) |
 | Votes and night choices made independently | Independent decisions, then collection, then one resolution | [Executing a day and night](day_and_night/day_and_night.md) |
 | Actions restricted by role and remaining uses | Validation and rule-based state updates | [Turning an answer into a legal action](legal_action/legal_action.md) |
-| A human who may take time to answer | A pause, durable state and a controlled resume | [Pausing the game for a human](human_seat/human_seat.md) |
+| A human who may take time to answer | A pause, durable state and a controlled resume | [Adding a human in the loop](human_in_the_loop/human_in_the_loop.md) |
 
 <!-- **Link (planned):** "Information boundaries (chapter 2)" → the chapter 2 page, once built. -->
 
@@ -64,7 +64,7 @@ Flash-Lite, the Investigator, the one role with exact results, claimed in 24, an
 claimed a role. I replaced that one exact source with three roles that each see part of the truth, a
 narrowed Investigator among them, and kept the engine truthful, so a lie has to be a claim.
 
-Evil still denied rather than claimed. Replaying 41 recorded turns where an evil player was under
+Evil still denied rather than claimed. When I replayed 41 recorded turns where an evil player was under
 suspicion, on Claude Haiku 5.5, with only its role card (its instructions) changed, claims rose from
 13 to 33 and denials fell from 21 to 3 (82 samples per version, one blind model judge
 per line). Balance
@@ -96,9 +96,9 @@ on LangGraph, a framework that executes a program as a graph of steps with share
 shape follows that flow, not the roles: parallel steps where every seat answers the same snapshot,
 then one step that collects and resolves them; sequential steps where seats converse.
 
-Open discussion run in parallel, tried in a nine-seat test game (2026-10-07), produced overlapping
-points: seven lines generated to keep two. It was reverted to one speaker at a time. No alternative
-orchestration design was compared; the evidence is tests and incidents found and fixed.
+When I ran open discussion in parallel in a nine-seat test game (2026-10-07), the lines overlapped:
+seven generated to keep two. I reverted it to one speaker at a time. I did not compare another
+orchestration design; the evidence is tests and incidents found and fixed.
 
 **Link:** Explore how the day-and-night cycle becomes graph execution →
 [Level 2](day_and_night/day_and_night.md).
@@ -111,14 +111,14 @@ targets, and every path ends in a legal move. I chose this over a tool loop beca
 few and fixed (reasoned, not measured).
 
 On Claude Haiku 5.5, a provider-enforced schema counts as the start of the input, so seats with
-different targets could not share the provider's prompt cache, which reuses an identical start. The
-schema is now text after the shared part, checked in code: in a 2026-10-13 trial, unenforced replies
+different targets could not share the provider's prompt cache, which reuses an identical start. I
+moved the schema into text after the shared part and check it in code: in a 2026-10-13 trial, unenforced replies
 failed once in 412 Haiku calls, and in paired games votes and night actions went from never reading
 the cache to reading most of it.
 
 **Link:** Explore the output contract, validation and fallbacks → [Level 2](legal_action/legal_action.md).
 
-#### Pausing the game for a human
+#### Adding a human in the loop
 
 A person may take minutes to answer, close the tab or come back after a server restart. A human's turn
 is a pause in the same pipeline as a model's: the game saves its state and stops, and the answer
@@ -127,11 +127,11 @@ resumes it, validated like a model's reply.
 Resuming re-ran the step's AI votes, and some voters changed their minds. I cached the AI turns, with
 an uncached path for humans; in one nine-seat verification game (2026-08-19), 20 ballots replayed from
 cache. The key later proved too wide: it lacked the game id, and one game on the public site replayed
-another's failed turn. The fix, deployed 2026-10-26, adds the game id; regression tests check it, and a
+another's failed turn. My fix, deployed 2026-10-26, adds the game id; regression tests check it, and a
 before-and-after control on two deals went from five turns served across games to none.
 
 **Link:** Explore the pause, the cache and how the engine runs inside the web server →
-[Level 2](human_seat/human_seat.md).
+[Level 2](human_in_the_loop/human_in_the_loop.md).
 
 <!-- Authoring sources for the Level 1 copy (drafted 2026-10-26):
 The game: evidence/gameplay/roles/role_sheet.md, "Renames" (1920s setting, away from Town of Salem),

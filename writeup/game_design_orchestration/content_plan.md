@@ -46,7 +46,7 @@ them.
 | **2. Orchestrating the conversation** | Ten players share one day: who speaks, what gets said aloud, and when does the talk stop? | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
 | **3. Executing a day and night** | Conversation is in turn, but votes and night choices are made independently and must all be collected before anything resolves. How does the familiar cycle become execution? | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
 | **4. Turning an answer into a legal action** | A role may act only on certain players, and only while uses remain. How does a model's answer become a move code can apply? | The output contract: one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, and a legal fallback on every path. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
-| **5. Pausing the game for a human** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116, 165 |
+| **5. Adding a human in the loop** | A human may take minutes to answer. How does the game wait, survive a restart and continue without changing what the AI players already did? | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), and the async server host | 105–106, 111, 114–116, 165 |
 
 **Why the arrangement holds.**
 - **Pages 3 and 4 stay apart.** They answer different questions: how ten calls become one game, and
@@ -186,7 +186,7 @@ uncertain. A descriptive link closes each.
      of it.
    - **Why not a tool loop:** the owner's reasoning, not measured. The one measured part: a forced tool
      call turns Haiku's thinking off.
-5. *Pausing the game for a human.*
+5. *Adding a human in the loop.*
    - **Decision:** an interrupt in the same pipeline, so a human's answer takes the model's validation
      path.
    - **Finding:** a resume re-ran the step's AI votes, so the AI turns were cached and the human turns
@@ -218,7 +218,7 @@ Proposed files:
 | 2 | `conversation/conversation.md` |
 | 3 | `day_and_night/day_and_night.md` |
 | 4 | `legal_action/legal_action.md` |
-| 5 | `human_seat/human_seat.md` · Level 3: `human_seat/cache_key.md` |
+| 5 | `human_in_the_loop/human_in_the_loop.md` · Level 3: `human_in_the_loop/cache_key.md` |
 
 ### 1. Designing evidence worth debating
 
@@ -490,7 +490,7 @@ can absorb page 5's "a human's answer takes the same path" paragraph rather than
 
 **Tags:** structured outputs and validation, output guardrails, graceful degradation.
 
-### 5. Pausing the game for a human
+### 5. Adding a human in the loop
 
 **Reader question:** what does it take to seat a human at a table of AI agents, when the game must stop
 for the human, wait, survive a restart and continue without changing what the AI players already did?
@@ -695,6 +695,8 @@ unit (turns, samples, messages, games, voting days). Two traps:
 - samples per frozen turn read as independent situations (82 samples come from 41 turns).
 
 **Authorship:**
+- The pages always say "I", never "we": the owner is the project's solo developer (owner,
+  2026-10-26). That covers decisions, experiments and the server.
 - The orchestration code may be presented as the owner's build.
 - The deduction engine may not: it is AI-written, so keep its row in the who-decides table attributed to
   its chapter.

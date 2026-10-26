@@ -1,4 +1,4 @@
-# Pausing the game for a human
+# Adding a human in the loop
 
 *Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Turning an answer into a legal action](../legal_action/legal_action.md) (not yet drafted) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
 
@@ -132,6 +132,10 @@ and still did when probed on LangGraph 1.2.14 (2026-10-07). On any version, a ca
 a person: it would replay their old answer instead of asking. So each cached node has an uncached
 twin, the same code under a second name, and the step that dispatches turns sends each human seat
 through the twin.
+
+![A human's vote pauses the step; on resume the whole step re-runs, the AI ballots replay from the cache and the human's answer goes through the uncached twin](../exhibits/pause_and_resume.svg)
+
+*A pause and resume inside the day's vote, as it runs today.*
 
 The first verification game still made no cache hits. The cache's default key serialised the input
 with Python's pickle, which encodes how an object was built as well as its values. A re-run's input is
@@ -301,7 +305,7 @@ For the verifier:
   (all ten opening calls each). Check that the Haiku pair ran on the fixed code (the report implies it;
   the deploy log's pre-flight is a separate check).
 - "On 2026-08-08 I chose among three options": first person for a server decision; the design notes
-  are written as "we". The orchestration code is the owner's; confirm the server decision is too.
+  are written as "we". Resolved 2026-10-26: the owner is the solo developer, so the pages always say "I".
 - "The first test game with two human players ... stopped at a day's vote": §2 says the server
   crashed "at a day resolution" in the first real two-human test game; "vote" is the resolution of
   a day's vote.
