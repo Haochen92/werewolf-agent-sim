@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620" width="980" height="620" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="620" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">History lands still; news plays</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">A refresh in the middle of a game. The stream sends the whole log through the same socket as the future.</text>
+<rect x="24" y="84" width="932" height="54" rx="8" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="44" y="108" font-size="14.5" font-weight="bold" fill="#1f2937" text-anchor="start">1. The page asks for the status first:</text>
+<text x="330" y="108" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">GET /games/{id}  →  last_seq: 100</text>
+<text x="44" y="128" font-size="13.5" fill="#4b5563" text-anchor="start">That number is the line. At or below it is history; above it is news.</text>
+<text x="44" y="172" font-size="14.5" font-weight="bold" fill="#1f2937" text-anchor="start">2. Then the stream opens and delivers:</text>
+<rect x="60" y="190" width="640" height="44" rx="4" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<text x="380.0" y="217" font-size="13.5" fill="#1f2937" text-anchor="middle">seq 1 … 100 arrive in a burst; gathered 50 ms at a time and folded as blocks</text>
+<rect x="714" y="197" width="62" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="745.0" y="217.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">101</text>
+<rect x="790" y="197" width="62" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="821.0" y="217.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">102</text>
+<rect x="866" y="197" width="62" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="897.0" y="217.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">103</text>
+<line x1="707" y1="176" x2="707" y2="252" stroke="#111827" stroke-width="2.5"/>
+<text x="707" y="270" font-size="12.5" font-weight="bold" fill="#1f2937" text-anchor="middle">the line (100)</text>
+<rect x="24" y="290" width="452" height="170" rx="10" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<text x="44" y="318" font-size="15.5" font-weight="bold" fill="#111827" text-anchor="start">History: applyCatchUp</text>
+<text x="44" y="344" font-size="14" fill="#1f2937" text-anchor="start">Folded into the view; seq NOT added to liveSeqs.</text>
+<text x="44" y="367" font-size="14" fill="#1f2937" text-anchor="start">The stage draws the result settled:</text>
+<text x="44" y="390" font-size="14" fill="#1f2937" text-anchor="start">no role-card reveal, no death animation, no</text>
+<text x="44" y="413" font-size="14" fill="#1f2937" text-anchor="start">music cue, no game-over takeover.</text>
+<rect x="504" y="290" width="452" height="170" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="524" y="318" font-size="15.5" font-weight="bold" fill="#111827" text-anchor="start">News: applyLive</text>
+<text x="524" y="344" font-size="14" fill="#1f2937" text-anchor="start">Folded the same way, and the seq IS added to</text>
+<text x="524" y="367" font-size="14" fill="#1f2937" text-anchor="start">liveSeqs. The beat layer asks one question,</text>
+<text x="524" y="390" font-size="14" fill="#1f2937" text-anchor="start">isLive(seq)?, and only then plays the beat at</text>
+<text x="524" y="413" font-size="14" fill="#1f2937" text-anchor="start">its full hold, with its sound.</text>
+<rect x="24" y="478" width="932" height="122" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="506" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Why the line exists</text>
+<text x="44" y="532" font-size="14.5" fill="#1f2937" text-anchor="start">The fold cannot tell new from old: “I have a role” is true after a reload too. Without the line, every</text>
+<text x="44" y="555" font-size="14.5" fill="#1f2937" text-anchor="start">refresh would replay the role reveal and the ending for events an hour old. After a dropped connection the</text>
+<text x="44" y="578" font-size="14.5" fill="#1f2937" text-anchor="start">line moves to wherever the page caught up to; a drop under 20 s counts as a blip and what follows plays.</text>
+</svg>

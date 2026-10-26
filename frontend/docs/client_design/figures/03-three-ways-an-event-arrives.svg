@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">When an event reaches the store: three cases</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">addDurable in store.ts decides which. The log is kept sorted by seq; the view is the fold of it.</text>
+<rect x="24" y="84" width="300" height="382" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="40" y="110" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">A. Already held: dropped</text>
+<text x="40" y="130" font-size="13" fill="#4b5563" text-anchor="start">a resend after a reconnect</text>
+<text x="40" y="162" font-size="13" fill="#4b5563" text-anchor="start">log before</text>
+<rect x="344" y="84" width="300" height="382" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="360" y="110" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">B. Past the end: append</text>
+<text x="360" y="130" font-size="13" fill="#4b5563" text-anchor="start">the usual case, live or catch-up</text>
+<text x="360" y="162" font-size="13" fill="#4b5563" text-anchor="start">log before</text>
+<rect x="664" y="84" width="300" height="382" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="680" y="110" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">C. Belongs earlier: insert</text>
+<text x="680" y="130" font-size="13" fill="#4b5563" text-anchor="start">the reveal after game over</text>
+<text x="680" y="162" font-size="13" fill="#4b5563" text-anchor="start">log before</text>
+<rect x="40" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="63.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">39</text>
+<rect x="92" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="115.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">40</text>
+<rect x="144" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="167.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">41</text>
+<rect x="196" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="219.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">42</text>
+<text x="40" y="236" font-size="13" fill="#4b5563" text-anchor="start">arrives:</text>
+<rect x="104" y="216" width="46" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="127.0" y="236.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">41</text>
+<text x="40" y="280" font-size="13" fill="#4b5563" text-anchor="start">log after</text>
+<rect x="40" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="63.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">39</text>
+<rect x="92" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="115.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">40</text>
+<rect x="144" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="167.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">41</text>
+<rect x="196" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="219.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">42</text>
+<text x="40" y="352.0" font-size="13.5" fill="#1f2937" text-anchor="start">Nothing changes, so nothing</text>
+<text x="40" y="371.575" font-size="13.5" fill="#1f2937" text-anchor="start">re-renders. The server resends</text>
+<text x="40" y="391.15" font-size="13.5" fill="#1f2937" text-anchor="start">across a reconnect; that is</text>
+<text x="40" y="410.725" font-size="13.5" fill="#1f2937" text-anchor="start">expected, not an error.</text>
+<rect x="360" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="383.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">39</text>
+<rect x="412" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="435.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">40</text>
+<rect x="464" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="487.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">41</text>
+<rect x="516" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="539.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">42</text>
+<text x="360" y="236" font-size="13" fill="#4b5563" text-anchor="start">arrives:</text>
+<rect x="424" y="216" width="46" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="447.0" y="236.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">43</text>
+<text x="360" y="280" font-size="13" fill="#4b5563" text-anchor="start">log after</text>
+<rect x="360" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="383.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">39</text>
+<rect x="412" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="435.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">40</text>
+<rect x="464" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="487.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">41</text>
+<rect x="516" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="539.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">42</text>
+<rect x="568" y="290" width="46" height="30" rx="4" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="591.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">43</text>
+<text x="360" y="352.0" font-size="13.5" fill="#1f2937" text-anchor="start">One step of the fold:</text>
+<text x="360" y="371.575" font-size="13.5" fill="#1f2937" text-anchor="start"></text>
+<text x="360" y="372" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">view = foldEvent(view, 43)</text>
+<text x="360" y="396.0" font-size="13.5" fill="#1f2937" text-anchor="start">The old view is the starting</text>
+<text x="360" y="415.575" font-size="13.5" fill="#1f2937" text-anchor="start">point, so this is cheap.</text>
+<rect x="680" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="703.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">56</text>
+<rect x="732" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="755.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">58</text>
+<rect x="784" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="807.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">…</text>
+<rect x="836" y="172" width="46" height="30" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="859.0" y="192.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">90</text>
+<text x="859" y="216" font-size="11" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">game_over</text>
+<text x="680" y="236" font-size="13" fill="#4b5563" text-anchor="start">arrives:</text>
+<rect x="744" y="222" width="46" height="30" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="767.0" y="242.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">57</text>
+<text x="680" y="280" font-size="13" fill="#4b5563" text-anchor="start">log after</text>
+<rect x="680" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="703.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">56</text>
+<rect x="732" y="290" width="46" height="30" rx="4" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="755.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">57</text>
+<rect x="784" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="807.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">58</text>
+<rect x="836" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="859.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">…</text>
+<rect x="888" y="290" width="46" height="30" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="911.0" y="310.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">90</text>
+<text x="680" y="352.0" font-size="13.5" fill="#1f2937" text-anchor="start">Inserted in order, then the</text>
+<text x="680" y="371.575" font-size="13.5" fill="#1f2937" text-anchor="start">whole log is folded again:</text>
+<text x="680" y="396" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">view = foldEvents(log)</text>
+<text x="680" y="420.0" font-size="13.5" fill="#1f2937" text-anchor="start">Folding 57 on top of game_over</text>
+<text x="680" y="439.575" font-size="13.5" fill="#1f2937" text-anchor="start">would put the reveal out of order.</text>
+<rect x="24" y="486" width="932" height="136" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="44" y="514" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Why case A asks “do I hold 57?” and not “is 57 below my newest?”</text>
+<text x="44" y="540" font-size="14.5" fill="#1f2937" text-anchor="start">The first build dropped anything at or below the highest seq it had folded. After game over the newest</text>
+<text x="44" y="563" font-size="14.5" fill="#1f2937" text-anchor="start">was 90, so every withheld event of the reveal (57, 61, 64 …) looked like a resend and was thrown away.</text>
+<text x="44" y="586" font-size="14.5" fill="#1f2937" text-anchor="start">The store now checks membership: a binary search of the sorted log for that exact seq (holds).</text>
+</svg>
