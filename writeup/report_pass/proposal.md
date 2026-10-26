@@ -50,6 +50,19 @@ document, it means this card.
 **Code anchors are `path::symbol`, never line numbers.** The assessments found rotted line anchors in
 tracing, metrics, dedup, store_curation and the discussion tagger; a symbol survives an edit above it.
 
+**Learned from the pilot (2026-10-26),** kept only where it transfers beyond that report:
+- **Say what a measure counts and what it cannot see:** its unit (per message, per game, per event),
+  its denominator, and its blind spots. A rate per message is not a rate per event; counts that do not
+  add up name their remainder.
+- **A mechanism is not its outcome, and an outcome count is not an effect.** A rule that gives a turn
+  does not make the turn an answer; served is not used, merged is not correct, retrieved is not
+  helpful. "7 of 7 voted out" says nothing about what the change did without a comparison.
+- **Every current-system reference opens with a version line:** the code snapshot it describes, and a
+  note that historical results belong to the setup they ran on.
+- **Optional, for reports that record several design decisions:** a decision index, and a "when to
+  revisit" table (the assumption each choice rests on, and the evidence that would justify changing
+  it). Not a default section.
+
 **The exemplars are models of presentation, not of claim strength.** Two of their sentences are stronger
 than the scoped wording since adopted, and are corrected in the first commit so they are not imitated:
 deterministic audits case 2, "✅ for soundness: nothing false is said" (true within what the oracle
