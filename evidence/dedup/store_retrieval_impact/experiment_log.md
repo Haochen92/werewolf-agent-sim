@@ -197,7 +197,7 @@ code:
 2. **Numbers are v4-store-era.** These n=5 / n=39 results justify the *direction* (clean
    conservatively, don't over-merge), not absolute scores on today's v6 store — and the n=5 phase is
    superseded by n=39 regardless. The consolidated current-vs-documented gaps live in
-   [../report.md](../report.md) § *Current-vs-documented gaps*.
+   [../experiment_log.md](../experiment_log.md) §11 (the gap table, moved there 2026-10-26).
 
 *Addendum 2026-10-14.* Three facts for a reader arriving from the ten-seat game. The study's control
 was plain top-k retrieval and its comparison was store dedup against retrieval-time **filtering** (the

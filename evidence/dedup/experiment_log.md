@@ -253,3 +253,50 @@ shipped shape without reopening the tuning; each point is recorded in the sub-lo
 - **Open from §8:** the `created_at` carry-through (Fix 1) is still not built; no non-Gemini judge has been
   run on either golden set.
 
+---
+
+## 11 · The June gap audit and its October rows (moved from the report, 2026-10-26)
+
+Until 2026-10-26 the folder report carried this table of where the code had moved past the June
+documents (rows 1–8, 2026-06-25) and past the June report itself (rows 9–12, 2026-10-14). The report is
+now one present-tense account; the table is kept here as written, with its severity column (how
+misleading the stale document was to a reader at the time).
+
+| # | Gap | What the doc says | What the code does | Severity |
+|---|---|---|---|---|
+| 1 | **Merge fabrication guard** | contract implies merges are safe (counts summed, fails-safe survivor) | **No content check** — `operations.py` writes the rewritten text as-is; 2.5-pro fabricates ~1/3 of merges; the `fabrication_detected` judge exists only in `evaluation/`, unwired from apply | High — a reader *under*-trusts the risk; the item to close before the offline pass is turned on |
+| 2 | **Freeze-old guard** | [incremental_convergence.md](incremental_convergence.md): Fix 2 "not yet built" | **Built & live** (commit `6704202`, 2026-06-16; `operations.py:137-150`, tests) | High — doc reads as an open risk that is actually closed; corrected via that doc's banner |
+| 3 | **`created_at` on merge (Fix 1)** | proposed alongside Fix 2 | **Still NOT built** — `created_at` lives only on the envelope and resets on re-put (`operations.py:99-105`, `incremental.py:42`) | Medium — Fix 1 underpins Fix 2's old/new partition across runs; genuinely open |
+| 4 | **The deterministic gate** | absent from every evidence doc | **Live** online + batch (`dedup_gate.py`, `gate_enabled=True`) | Medium — the most important current mechanism, undocumented before this report |
+| 5 | **Namespace scoping** | [batch_architecture.md](batch_architecture.md): "dedup within a namespace" | namespace **+ gate bucket** (`clustering.partition_key_for`) | Low — additive; banner added to that doc |
+| 6 | **Online MERGE** | per_extraction journeys MERGE v1→v11 | **removed** — KEEP/DISCARD only (`schemas.py:84-91`) | Low — the log's own endpoint; stated as live in its close |
+| 7 | **Prompt version** | logs cite v9d / v11b | live = stabilized "v6.1" in `Agents/prompts/dedup.py` (same v9d ordering) | Low — naming only |
+| 8 | **Run defaults** | scattered across logs | online on (`dump_enabled`); incremental off; bounded; gate on | Low — consolidated in the config table above |
+| 9 | **Merge path dormant** (2026-10-14) | two-pass config "recommended", `two_pass=True` | the v8 fold runs triage-only (`skip_verify=True`); strategy-point dedup is KEEP/DISCARD with no rewrite (`2036f83a`); the 2.5-pro verify model is configured and never called | Medium — the fabrication risk in gap #1 is dormant, not open; the merge results describe a built, validated, switched-off path |
+| 10 | **Prefilter thresholds** (2026-10-14) | the constants table above (May values on `gemini-embedding-001`) | per-model table in `Agents/llm_factory/embeddings.py`; on `qwen/qwen3-embedding-8b`: observations keep < 0.72 / discard ≥ 0.94, strategy points 0.61 / 0.88, derived on the 65 golden cases only; on the 232 cross-game cases the strategy-point line auto-discards two labelled keeps (one is case 155) and the observation lines decide 1.7% | High — "zero-error on golden + cross-game" no longer holds for the live model; the strategy-point path is dormant, the observation path nearly idle |
+| 11 | **Threshold drift after the July embedder swap** (found 2026-10-12) | thresholds "calibrated" | the four prefilter lines were never remapped from `-001` to `-2`; the Gemini-era prefilter auto-kept some labelled duplicates for three months | Low now (model retired) — but the rule stands: a threshold is meaningful only for the model it was set on |
+| 12 | **Fix 1, `created_at` on merge** (re-checked 2026-10-14) | gap #3 | still not built (`operations.py` carries no `created_at`); moot while no merge runs | Low while the merge path is off |
+
+**Open work (not just stale docs), as written in June:** two genuine not-yet-built items remain, both
+gating the offline pass. **(a) Merge fabrication guard** (gap #1) — the `fabrication_detected` judge
+from the batch_dedup eval is the natural pre-apply check but isn't wired into `operations.py`, so a
+fabricated merge would land; it's the top risk to close before the offline pass is turned on by
+default. **(b) `created_at` preservation** (gap #3) — without it, the old/new partition the freeze-old
+guard relies on is only trustworthy within a single run, so unbounded repeated incremental runs could
+still drift; a prompt-neutral apply-layer change tracked in
+[incremental_convergence.md](incremental_convergence.md).
+
+**The October paragraph, as written (2026-10-14):** The sections above are the June truth; gaps #9 to
+#12 record where the ten-seat game moved. In one paragraph: the gate, the bounded clustering, the online
+KEEP/DISCARD pass (now the store-write step of offline extraction) and the freeze-old guard are live and
+unchanged; nothing rewrites an entry anywhere, since the fold runs triage-only and the strategy-point
+dedup is KEEP/DISCARD; the embedder is Qwen with its own threshold table, and the prefilter's lines on it
+rest on the 65 golden cases alone. The sub-logs' dated addenda carry the detail and the owner's rulings
+(`memory_system/v8/decisions.md` §14 for the strategy-point rules and the credit of a merged duplicate).
+
+**Status on 2026-10-26.** Rows 1, 3, 9–12 stand. Row 2: the guard is built, but the learning tick
+runs its fold without it (the tick's working folder carries no last-dedup marker; checked in the
+code on 2026-10-26, not yet observed in a run; the report's "Built and off"). Row 7: the name "v6.1" is not in the
+code. Row 8: `dump_enabled` no longer gates any dedup; the online pass runs in
+`write_extracted_store`. Since 2026-10-15 the keep-or-discard judges default to Claude Haiku 5.5
+(`DEFAULT_DEDUP_MODEL`, `TickConfig.dedup_model`), unscored on either golden set.

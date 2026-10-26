@@ -412,7 +412,7 @@ contradictions of it:
    `Agents/memory/deduplication/config.py` (SP 0.93/0.81, OBS 0.96/0.935); the LLM sees only the
    ambiguous middle band.
 
-Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
+Full current-vs-documented gaps: [../experiment_log.md](../experiment_log.md) §11 (the gap table, moved there 2026-10-26).
 
 *Addendum 2026-10-14.* Still live, now as the store-building step of offline extraction: each game's
 observations pass through this KEEP/DISCARD pipeline as they are written into the store

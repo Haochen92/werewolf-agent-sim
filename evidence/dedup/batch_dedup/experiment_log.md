@@ -530,7 +530,7 @@ refresh is manual-only). What shipped from this log:
 - **Open before flipping the offline pass on: merge fabrication is unguarded** (see *Merge Rewrite
   Quality*) — the one risk to close first.
 
-Full current-vs-documented gaps: [../report.md](../report.md) § *Current-vs-documented gaps*.
+Full current-vs-documented gaps: [../experiment_log.md](../experiment_log.md) §11 (the gap table, moved there 2026-10-26).
 
 ## Current live state, revisited (2026-10-14)
 

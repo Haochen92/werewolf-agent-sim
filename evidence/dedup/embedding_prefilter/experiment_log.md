@@ -175,7 +175,7 @@ per new entry, short-circuiting both ends with LLM fallback in the middle. One t
 the **deterministic gate now runs *before* the pre-filter**, so candidates are already
 role/phase/bucket-homogeneous when similarity is computed (see [report.md](../report.md)). The ~15-30%
 ceiling is unchanged — it's the property of the embedding space explained above, not a tuning target.
-Full current-vs-documented gaps: [report.md](../report.md) § *Current-vs-documented gaps*.
+Full current-vs-documented gaps: [../experiment_log.md](../experiment_log.md) §11 (the gap table, moved there 2026-10-26).
 
 ## Current live state, revisited (2026-10-14)
 
