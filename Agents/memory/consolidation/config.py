@@ -50,7 +50,12 @@ class TickConfig:
     synth_outcome: str = "verdict"              # which outcome each observation shows synthesis: the extraction
                                                 # judge's "verdict" or its decision's deterministic "grade"
                                                 # (decisions §13; both kept until measured)
-    sp_dedup: bool = True
+    sp_dedup: bool = False
+    """The lesson dedup after synthesis. Off until tuned (owner, 2026-10-26): its dry run on the 605
+    points of the 40-game store caught 9 of the readers' 65 duplicate groups and dropped points across game
+    stages (evidence/memory_system/v8/experiment_log.md, 2026-10-13), and on the 111-entry labelled set
+    the Haiku 5.5 judge deleted 7 distinct points (evidence/dedup/batch_dedup/experiment_log.md,
+    2026-10-26). The planned retune: partition by honesty and the stage facts, and a stronger judge."""
 
     def env(self) -> dict:
         """Env overrides pinning every paid model in a tick to the cheap tier — the pro-2.5 cost

@@ -67,6 +67,16 @@ def test_the_lesson_dedup_judges_only_the_lessons_synthesis_wrote(tmp_path, monk
     seen = {}
     monkeypatch.setattr(store_ops, "_dedup_strategy_points",
                         lambda store_dir, model, new_keys=None: seen.setdefault("keys", new_keys) and {})
-    stats = store_ops.consolidate(tmp_path, TickConfig(prune=False, evict=False, evict_observations=False))
+    stats = store_ops.consolidate(tmp_path, TickConfig(prune=False, evict=False, evict_observations=False, sp_dedup=True))
     assert seen["keys"] == {"sp_a", "sp_b"}
     assert "added_keys" not in stats["synth"]  # the keys feed the dedup, not the tick's stats
+
+
+def test_the_lesson_dedup_is_off_until_tuned(tmp_path, monkeypatch):
+    (tmp_path / "observations.json").write_text(json.dumps({"namespaces": {}}))
+    (tmp_path / "strategy_points.json").write_text(json.dumps({"namespaces": {}}))
+    monkeypatch.setattr(store_ops, "synthesize", lambda *a, **k: ({"added": 2, "added_keys": ["sp_a"]}, {}))
+    called = []
+    monkeypatch.setattr(store_ops, "_dedup_strategy_points", lambda *a, **k: called.append(1) or {})
+    store_ops.consolidate(tmp_path, TickConfig(prune=False, evict=False, evict_observations=False))
+    assert not called
