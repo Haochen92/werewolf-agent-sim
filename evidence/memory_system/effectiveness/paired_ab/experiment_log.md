@@ -854,7 +854,9 @@ The town regression did NOT resolve as a clean number — it was overtaken by a 
 is the honest outcome to record:
 
 1. **The cross-day comparison was confounded by a large overnight model drift.** nh_town (06-12) was
-   being read against raw_town (06-11). A canary (10 no-mem games on the baseline seeds, today) caught it:
+   being read against raw_town (06-11). A canary (10 no-mem games on the baseline seeds, today) caught it [*corrected 2026-10-26: the figures below are
+   from the canary extended to two 30-seed memory-off runs, 59 games when logged (30 of 59 villager wins), per
+   "Drift + noise-floor exhibit — FINAL" above; the first 10 games alone gave 5 of 10 and 0.773*]:
    off-baseline town_vote_accuracy 0.560 -> 0.699 (+0.14), villager WIN 27% -> 51% (faction-ranking
    inversion), confirmed real (≈2.5× the same-epoch variance floor; metric-definition artifact ruled out).
    So the -0.36/-0.22 "regression" was treatment + up-to-25h of drift, blended in unknown proportion.

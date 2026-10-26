@@ -117,6 +117,8 @@ Filtering made scores *worse*. Two mechanisms caused this:
 
 The original evaluation above used n=5 frozen cases and v0 (untuned) batch dedup prompts. After tuning batch prompts through v1-v3 (see [batch_dedup](../batch_dedup/experiment_log.md)), we created a third store — v4_deduped_v2 — using v3 prompts, then re-evaluated all three stores on the full 40-case eval set (39 complete).
 
+*Corrected 2026-10-26: all 40 cases were scored (`evaluation/eval_results/legacy/retrieval_eval_20260526_174803.jsonl`, 240 rows, none missing). The means tables below are over the first 39 (the 40th, a wolf day_vote, was dropped for no recorded reason); the win/tie/loss counts and the −0.28 delta are over all 40. The 40-case means differ by at most 0.04.*
+
 ### Store sizes
 
 | Store | Prompts | Observations | Strategy Points | Total | Reduction |

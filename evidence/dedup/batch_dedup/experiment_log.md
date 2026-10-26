@@ -610,3 +610,9 @@ is safe but catches no copies on this set; the copies stay as recoverable bloat.
 lesson from another game stage is never discarded (a rule this replay does not apply, so some of the
 seven might not occur in production). Owner, 2026-10-26: the judge stays Haiku 5.5 for now; Sonnet 5.5
 for the lesson dedup alone is the option if it needs tightening.
+
+**The lesson dedup switched off (same day).** Owner, 2026-10-26: the lesson dedup after synthesis is off
+by default until it is tuned (`TickConfig.sp_dedup = False`, commit `e2da5f1e`). With seven wrong discards
+here and the dry run's cross-stage drops (v8 log, 2026-10-13), it removes more than it should; the fold
+keeps running, since on this set it deleted nothing distinct. The retune: partition by honesty and stage,
+and a stronger judge (Sonnet 5.5 made no wrong discard here).

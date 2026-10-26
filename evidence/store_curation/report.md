@@ -1,4 +1,4 @@
-# Store curation: how the memory store stays bounded and keeps improving
+# Store curation: controlling growth and deciding which lessons to keep
 
 This page describes how the memory store is curated today: what decides which observations and
 lessons stay, which are removed, and what keeps the store's size and running cost in check. It also
@@ -12,13 +12,13 @@ are in the [experiment log](experiment_log.md).
 taken on the nine-seat v7 loop and belongs to that game, store and model; none was re-run on today's
 code. No ten-seat learning tick is recorded.
 
-## In short
+## Design and evidence at a glance
 
 - **What runs.** Two passes keep the store, both run by hand. The **credit pass** (no model call)
-  grades every lesson from the memory-on games it is given, then prunes the harmful ones and evicts
+  grades every lesson from the memory-on games it is given, then prunes those below its comparison threshold and evicts
   the ones seats keep rejecting. The **learning tick** (paid) folds in new observations, lets
-  observations that stopped recurring age out, writes new lessons and removes duplicate lessons. It
-  never prunes or evicts.
+  observations that stopped recurring age out and writes new lessons; its duplicate-lesson removal is
+  built and off until tuned ([batch log](../dedup/batch_dedup/experiment_log.md), 2026-10-26). It never prunes or evicts.
 - **What supports it.** Eleven ways a store degrades were found in the v7 loop's runs and reviews,
   and each got a guard. All eleven guards are in today's code, one of them in a changed form. One
   threshold was checked: lessons flagged harmful on one half of a game archive stayed harmful on the
@@ -41,12 +41,12 @@ code. No ten-seat learning tick is recorded.
   average grade of the same kind of decision in games played without memory. The grades come from a
   fixed table per role and action ([credit report](../credit/report.md)). Lift above zero means the
   lesson's followers did better than play without memory.
-- A lesson is **proven** when its lift is above zero over at least 2 follows. Every other lesson is
-  **unproven**.
+- The code calls a lesson **proven** when its lift is above zero over at least 2 follows. This is a protection rule, not statistical proof that the lesson helps. Every other lesson is
+  **unproven**. Lift compares outcomes associated with following advice; it does not isolate the advice's causal effect.
 
 ## Why a store needs curating
 
-A memory that only adds entries gets worse as it grows. The v7 loop showed this in two ways.
+An append-only memory risks crowding retrieval and retaining weak advice. The v7 loop exposed two reasons to curate it.
 
 - **Volume.** Its first paid run grew the lesson store from 0 to 227 with no ceiling. Healthy cells
   held about 5 lessons; bloated ones about 34. Retrieval keeps only a few lessons per situation, so a
@@ -55,14 +55,13 @@ A memory that only adds entries gets worse as it grows. The v7 loop showed this 
   near-duplicate lessons split one piece of advice's follows across several rows, so none of them
   gathers enough evidence for credit to act on.
 
-Duplicates only became costly once the store started grading and writing its own contents. Before
+Duplicates gained additional costs once the store started grading and writing its own contents. Before
 v7, a duplicate's one cost was clutter in the few retrieval slots, which a cheap dedup removed.
 Credit made a duplicate lesson cost evidence (the split follows above). Synthesis made a duplicate
 observation cost compute, because synthesis groups observations and every redundant one inflates
 that work and the variants it writes.
 
-So both passes do the same three things for their store: keep what has earned its place, drop what
-measured harmful or useless, and add only where new evidence justifies it.
+The two passes address different parts of this problem: credit revisits lessons using recorded decisions; learning adds observations and synthesises advice under growth controls.
 
 ## The two passes today
 
@@ -70,21 +69,19 @@ measured harmful or useless, and add only where new evidence justifies it.
 memory-on games ──► credit pass (no model call) ──► prune, evict ──► publish
                      grade each followed lesson
 offline extraction ─► learning tick (paid) ──────────────────────────► publish
-                       fold observations → age out → synthesise (every 2nd tick) → lesson dedup
+                       fold observations → age out → synthesise (every 2nd tick) → lesson dedup (off until tuned)
 ```
 
 Both passes live in `Agents/memory/consolidation/tick.py` and end by publishing the store to the
 Postgres database the server reads (`Agents/memory/consolidation/publish.py`). No schedule runs
-them. They were split on 2026-10-13: credit needs only the games' records, so it can run often and
-free, while extraction and synthesis are paid and run in batches
+them. They were split on 2026-10-13: credit needs only the games' records, so it can run without model API charges, while extraction and synthesis are paid and run in batches
 ([v8 decisions](../memory_system/v8/decisions.md) §14). How the passes fit the rest of the memory
 system is in the [v8 report](../memory_system/v8/report.md), "Keeping the store: two passes, both run
 by hand"; this page gives the rules each pass applies.
 
 ### The credit pass: grade, then prune and evict
 
-**What does the credit pass change? It recounts every lesson's record from the games, then removes
-lessons on that record.** It calls no model (`tick.py::run_credit_pass`).
+**The credit pass rebuilds each lesson's counters and applies the removal rules.** It calls no model (`tick.py::run_credit_pass`).
 
 1. **Recount.** Every lesson's counters (follows; good, neutral and bad grades; times shown,
    overridden and judged not relevant) are set from the games in the window, not added to what was
@@ -97,7 +94,7 @@ lessons on that record.** It calls no model (`tick.py::run_credit_pass`).
    the same kind of decision, supplied as a separate set of games. A lesson whose decisions have no
    memory-off comparison is left unscored and is never pruned.
 4. **Apply the rules** (`store_ops.py::prune_and_evict`), in this order:
-   - **Protect** a proven lesson (lift above 0, at least 2 follows). Nothing removes it.
+   - **Protect** a proven lesson (lift above 0, at least 2 follows). The prune and evict rules spare it for this pass; a later window can change its status.
    - **Prune** a lesson whose lift is below −0.15 after at least 8 follows.
    - **Evict** a lesson shown at least 8 times and never followed, but only when seats overrode it
      ("it applies, but I have a better move") at least once and at least as often as they judged it
@@ -112,15 +109,13 @@ credit pass run on ten-seat games?").
 
 ### The learning tick: fold, age out, synthesise, dedup
 
-**What does the learning tick change? It adds evidence and lessons, and removes only observations
-and duplicate lessons.** It is `tick.py::run_tick`, which turns prune and evict off for the call.
+**The learning tick adds evidence and advice; it removes only observations (duplicates at the fold, and those that stop recurring), while its duplicate-lesson removal is off until tuned.** It is `tick.py::run_tick`, which turns prune and evict off for the call.
 
 1. **Fold in new observations** from the offline extraction job (`obs_fold.py::merge_new_obs`). A
    new observation that duplicates a stored one is discarded, and the stored one's count rises. A
    near-duplicate is kept as a separate record, and no text is rewritten. Stored observations are
    never judged against each other (the freeze-old guard): the fold names the observations it
-   appended as the only new ones (since 2026-10-26; the [dedup report](../dedup/report.md), "Built
-   and off"). The judge is Claude Haiku 5.5 (`TickConfig.dedup_model`). The
+   appended as the only new ones (since 2026-10-26; the [dedup report](../dedup/report.md), "Preserving old entries during incremental dedup"). The judge is Claude Haiku 5.5 (`TickConfig.dedup_model`). The
    dedup stack itself is told in the [dedup report](../dedup/report.md).
 2. **Advance the clocks.** For each observation the database keeps the tick it first appeared and
    the tick its count last rose (`tick.py::_stamp_obs_generations`; table `obs_generations`).
@@ -139,9 +134,9 @@ and duplicate lessons.** It is `tick.py::run_tick`, which turns prune and evict 
    groups are built from the new arrivals outward: each new observation gathers its nearest
    neighbours in the cell, at most 15, within the same situation and game stage. An observation with
    no close neighbour is never synthesised on its own. Each lesson already followed at least 5 times
-   is shown to synthesis with its lift, so advice that measured badly is corrected rather than
-   rewritten.
-5. **Remove duplicate lessons**, only when synthesis added some
+   is shown to synthesis with its lift, so the model can take poor past scores into account. Whether that produces better advice has not been measured.
+5. **Remove duplicate lessons**: built, off until tuned (`TickConfig.sp_dedup=False` since 2026-10-26;
+   [batch log](../dedup/batch_dedup/experiment_log.md), 2026-10-26). Switched on, it runs only when synthesis added lessons
    (`store_ops.py::_dedup_strategy_points`). A new lesson that duplicates an older one is discarded;
    the older one, which holds the credit history, always survives and records the discarded key. Two
    lessons are never merged into one text.
@@ -161,21 +156,19 @@ has no memory-off averages to compare with. The full read path is in the
 
 ## Why the two stores are kept differently
 
-**Why not one rule for both? Because an observation is evidence and a lesson is an instruction, and
-their failure modes differ.**
+Observations record past moves; lessons recommend future ones. Their retention rules therefore use different signals.
 
 | | Observations | Lessons |
 |---|---|---|
 | What it is | what happened in a game | what to do in a situation |
-| Graded? | never: nothing follows an observation | yes, each time a seat follows it |
-| Only quality signal | whether the same account keeps arriving | lift |
-| A duplicate | is discarded and the stored one's count rises | is discarded and its follows go to the survivor |
+| Used for follow-based credit? | no: seats report follows only for lessons; an observation can carry its decision's fixed-table grade (`decision_grade`), which synthesis shows only when `TickConfig.synth_outcome` is `"grade"` (default `"verdict"`) | yes, when a seat reports following it |
+| Signal used for retention | recurrence and time since last sighting | lift and reported adoption |
+| A duplicate | is discarded and the stored one's count rises | stays while the lesson dedup is off; when it runs, it is discarded and its follows go to the survivor |
 | Removed when | it stops recurring | it measures harmful, or is shown and rejected on its merits |
 | What can go wrong | volume | synthesis can write bad advice |
 
 The lesson side carries most of the guards because its growth step is a model writing new text, so
-growth itself can create bad content. The observation side can only grow, which is why aging out is
-its one removal rule.
+growth itself can create bad content. Observations can also contain extraction errors; their retention rule uses recurrence, not a direct quality judgement. Dedup and aging control their volume.
 
 Four rules hold across both:
 
@@ -188,12 +181,12 @@ Four rules hold across both:
 - **Cheap checks run before paid ones.** Exact-match and count checks run before any embedding
   search, and an embedding search only nominates candidates for the model judge.
 - **No lesson is removed for age.** A lesson leaves only by measuring harmful or by being rejected on
-  its merits; a proven one is never removed. Observations are the exception by design: recurrence is
-  the only evidence they carry, so they leave when it stops.
+  its merits; one currently protected by the credit rule is spared by prune and evict. Observations are the exception by design: recurrence is
+  the signal this retention rule uses, so they leave when it stops.
 
 ## What supports it: eleven failure modes and their guards
 
-**Where did the rules come from? Each guards a failure the v7 loop's runs or reviews found.** The v7
+The rules address failures observed in v7 runs or identified in design reviews. The v7
 runs could not answer whether memory compounds (the [v7 report](../memory_system/v7/report.md),
 "The June loop runs"), but they surfaced most of what is known about curating a store. The
 "Surfaced by" column separates what the runs showed (rows 1–4) from what reviews caught by reading
@@ -205,12 +198,12 @@ the mechanism.
 | 2 | Already-condensed groups re-synthesised every tick, about 6× growth per run (5.4 → 34 lessons per cell) | loop run store records | only groups with a new observation are synthesised; groups grow from new arrivals | yes (`store_ops.py::_synth_cluster`) |
 | 3 | Synthesis stalled silently: counting the net change let aging-out cancel new arrivals, so the trigger read "nothing new" | generation 6 of the v2 smoke run | arrivals counted by the tick they first appeared | yes (the `obs_generations` table) |
 | 4 | A harmful lesson escaped pruning for a generation: the dedup added a discarded duplicate's counts to it after the prune had run | forensics of the runs' below-baseline tail | prune last, on the counts after dedup | changed: pruning moved to the credit pass, which recounts from the games and folds in discarded duplicates' follows first (`credit.py::_fold_merged`) |
-| 5 | Near-duplicate lessons split one lesson's follows, so no row gathered enough evidence | design review, 2026-06-19 | keep/discard lesson dedup onto the older, credited survivor | yes, with the survivor recording the discarded key (v8 decisions §14) |
+| 5 | Near-duplicate lessons split one lesson's follows, so no row gathered enough evidence | design review, 2026-06-19 | keep/discard lesson dedup onto the older, credited survivor | built, off until tuned (2026-10-26, [batch log](../dedup/batch_dedup/experiment_log.md), 2026-10-26); the survivor records the discarded key (v8 decisions §14) |
 | 6 | Good advice evicted for a retrieval miss | the v7 plan's pre-run fix programme | evict only when overrides dominate; spare a lesson mostly judged not relevant | yes (`store_ops.py::_evict_ok`) |
 | 7 | A new lesson could never earn credit: credit needs follows, and a cell full of proven lessons never showed it | lane review, 2026-07-14 | a guaranteed slot for the best unproven lesson; the cap counts unproven lessons only | yes (`filters.py::_ensure_exploration_slot`) |
 | 8 | Any observation seen twice never aged out, so store size had no bound | store-bounding review, 2026-07-14 | aging out scaled by count, clocked from the last sighting | yes (`store_ops.py::evict_observations`) |
 | 9 | Grouping cost grew with the whole store, and was paid even by cells the checks then skipped | store-bounding review, 2026-07-14 | checks before grouping; groups grow from new arrivals | yes (`store_ops.py::synthesize`) |
-| 10 | Repeated dedup passes kept re-judging old entries as neighbours arrived, eroding the store past the ~17% duplicate rate where it worked best | dedup campaign, 2026-06-09 ([diagnosis](../dedup/incremental_convergence.md)) | stored entries are never judged against each other | yes, in the observation fold and the lesson dedup, which name their new entries (since 2026-10-26; the [dedup report](../dedup/report.md), "Built and off") |
+| 10 | Repeated dedup passes kept re-judging old entries as neighbours arrived, eroding the store past the ~17% duplicate rate where it worked best | dedup campaign, 2026-06-09 ([diagnosis](../dedup/incremental_convergence.md)) | stored entries are never judged against each other | yes, in the observation fold, which names its new entries (the lesson dedup does the same but is off until tuned; since 2026-10-26; the [dedup report](../dedup/report.md), "Preserving old entries during incremental dedup") |
 | 11 | Synthesis rewrote advice that pruning had just removed, because observations' verdicts follow which side won | design, 2026-06-19 | synthesis shown each lesson's measured lift | yes (`store_ops.py::_track_record`); the mechanism is checked, the quality of what it writes is not |
 
 The v7 loop also checked, every generation, that each lesson's memory-off comparison came from the
@@ -220,8 +213,7 @@ input and grades them with the same table, but nothing asserts it.
 
 ### The one threshold that was checked
 
-**Does the prune threshold remove lessons that are really harmful, or noise? On the one check run,
-it removes a repeatable signal.** The review ranked the prune threshold (−0.15) as the only setting
+**One split-archive check found that negative lift often persisted on held-out games.** It supports the retention signal's direction on this sample, without establishing that the removed lessons caused harm. The review ranked the prune threshold (−0.15) as the only setting
 that could plausibly flip a run's conclusion, since it decides what is deleted every generation.
 
 *The test* (2026-07-14, no cost). A nine-seat game archive was split in two by game, and every
@@ -271,10 +263,9 @@ Nothing was evicted in any generation; 6 and 7 never-followed lessons were spare
 because seats mostly judged them not relevant. The tells store grew the same way in a 30-game
 simulation (see [the tells, in the v7 loop](#the-design-it-graduated-from-the-v7-loop)).
 
-**Why growth does not raise the running cost.** Every recurring paid cost is tied to what arrives,
-not to what is stored. The fold's judge sees only new observations. Synthesis groups only from new
+**How the design limits repeated work.** The controls aim to tie model work mainly to new arrivals, instead of reprocessing the entire store each tick. The fold's judge sees only groups that contain a new observation. Synthesis groups only from new
 arrivals (a cell being refilled regroups in full), after checks computed from counts alone. Credit is arithmetic over the games in its window.
-Only the stored records grow, and storing them is cheap. What growth can still cost is quality: stale
+This does not make total cost independent of store size: searching, publishing, storage, re-embedding the whole store at each tick's fold, and occasional full regrouping still depend on the stored records. What growth can still cost is quality: stale
 observations stay in the store and can join a synthesis group as members. That is why aging out
 exists, even though it rarely bites within a short run.
 
@@ -299,8 +290,7 @@ The verdict on the loop, in the owner's wording: the June static-memory A/B repo
 selected town decision measures; a later A/B on a different store, run against a higher no-memory
 baseline, found no town effect and was not a replication of the June test; separately, the
 pre-registered v7 endpoint detected no compounding benefit. The investigation is closed; the
-hypothesis was not disproved. Every game behind those results ran with players that produced no
-reasoning before answering. The test and its numbers are in the [v7 report](../memory_system/v7/report.md).
+hypothesis was not disproved. Those experiments used the player model at its minimal thinking setting. The test and its numbers are in the [v7 report](../memory_system/v7/report.md).
 
 **The tells, in the v7 loop.** The loop curated a third store that did not graduate: **tells**,
 behaviour-to-role hints mined from past games ("a player accused of holding a hostile role

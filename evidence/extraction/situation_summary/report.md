@@ -65,7 +65,7 @@ With memory on, the call runs for one decision and is skipped for others:
 
 On that first game this cut about 60 lookups to about 38, plus one per new claim. The reuse is a cache inside the server process; a restart just means a fresh lookup.
 
-**The served game searches strategy points only.** The store also holds *observations* (accounts of a single play and its effect), but the served configuration turns their retrieval off: the town half of the store never had observations, so serving them would give the two sides different memory.
+**The served game searches strategy points only.** The store also holds *observations* (accounts of a single play and its effect), but the served configuration turns their retrieval off. It was set on 2026-09-25, when the store served (the nine-seat `demo_gen1`) had no town observations, so serving them would have given the two sides different memory; the ten-seat store published since 2026-10-14 holds town observations, and the setting was carried over ([retrieval report](../../retrieval/report.md)).
 
 To give a sense of scale (recomputed for this doc from the turn records of the 20 memory-on demo games of 2026-10-14): of 3,118 recorded decisions, 1,496 carried a lookup, fresh or reused; 1,106 were town day decisions and 516 were day-1 decisions, both skipped.
 

@@ -1,13 +1,9 @@
 # Retrieval: how a seat finds its lessons, and what the May study of the optional stages showed
 
-**What does a seat see from memory, and did the extra stages tested in May make it better? It sees up
-to three lessons per described situation, found by similarity search alone; the extra stages showed
-directions on five test cases and none is on by default.** Before a decision, a seat with memory on
+**The served path retrieves up to three lessons per situation; on a store that carries credit counts it also puts lessons with a good follow record first and may give one slot to an untried lesson.** Before a decision, a seat with memory on
 describes its situation in a short model call, searches its own shelf of the store for the closest
 lessons, and is shown the best few. In May 2026 three optional stages after the search were tested on
-the nine-seat game: a filter against near-repeats, a model reranker, and a wider fetch. Each moved the
-judge's scores in some direction on small samples. None was switched on by default, and served games
-use none of them.
+the nine-seat game: a filter against near-repeats, a model reranker, and a wider fetch. The filter and reranker were compared on five cases; the capacity study replayed 120 decisions. Filtering and reranking remain off. Fetching five candidates became the default, but the cap stayed at three: the larger prompt tested by the capacity study did not ship.
 
 This page has two parts. [Part 1](#part-1-the-read-path-today) is the read path as it runs today.
 [Part 2](#part-2-the-may-2026-study-of-the-optional-stages) is the May study as it ran, one section per
@@ -64,17 +60,21 @@ player's switch for every AI seat at once and starts off; that is described in t
    find the same item: the situation that lost it refills from its fourth or fifth hit. The reason the
    fetch is five and the cap three is told in [the wider fetch](#the-wider-fetch-how-many-observations-to-show).
 4. **Order by track record.** Two steps use the counts the credit pass writes onto each lesson. A lesson
-   followed at least five times with more good grades than bad counts as **proven**
+   followed at least five times with more good grades than bad is labelled **proven** by the retrieval code
    (`filters.py::_sp_is_proven`). At the cap, if every lesson kept for a situation is proven, the
    weakest is swapped for the best unproven candidate, so an untried lesson gets a chance to be followed
    and scored (the **exploration slot**). After the cap, proven lessons are moved ahead of unproven ones
-   without changing the order within each group (`filters.py::partition_proven_first`). Both are on by
+   without changing the order within each group (`filters.py::partition_proven_first`). This label is a heuristic, not a statistical finding, and differs from the credit pass's lift-based protection rule. Both are on by
    default and do nothing on a store without counts. Whether the published store carries counts is
    discussed in the [v8 report](../memory_system/v8/report.md), "In a game: looking lessons up".
 
 **Served games retrieve strategy points only, never observations**
-(`server/game/run_config.py::game_run_config`). The town half of the store never had observations, so
-serving them would give the two sides different memory. Batch games retrieve both kinds by default
+(`server/game/run_config.py::game_run_config`). The setting dates from 2026-09-25, when the store served,
+the nine-seat `demo_gen1`, held observations only for the wolf and the serial killer, so serving them
+would have given the two sides different memory. The ten-seat store published since 2026-10-14 holds
+town observations too (1,133 of 2,008); the setting was carried over, not re-ruled. The other reasons
+stand: since a ruling of 2026-07-15 observations are material for synthesis, not prompt content, and
+lessons are what the replay shows being weighed. Batch games retrieve both kinds by default
 (`Agents/config/run.py::DEFAULT_RETRIEVAL_TYPES_CONFIG`).
 
 ### When a lookup is reused
@@ -130,7 +130,7 @@ whether stages after the search made the set less repetitive and more relevant.
 
 ## Part 2: the May 2026 study of the optional stages
 
-> **In short (record of May 2026; superseded as a description of the read path).**
+> **May findings (historical configuration).**
 > - **Question.** After the search, do a near-repeat filter, a model reranker or a wider fetch give a
 >   seat a better set of memories?
 > - **Tests.** The filter and the reranker: 5 frozen decisions from nine-seat games, the sets scored by
@@ -139,9 +139,7 @@ whether stages after the search made the set less repetitive and more relevant.
 > - **Answer.** Directions only. The filter helped on a store full of duplicates and hurt on a cleaned
 >   one. The reranker made strategy-point sets less repetitive on 5 cases. Five observations per
 >   situation scored slightly above three and seven, with no significance test.
-> - **What followed.** None of the three is on by default. The cap of three per situation is the one
->   stage of that pipeline that always runs, and the wider fetch was built as a fetch width with the
->   cap still after it, so it never reached the prompt.
+> - **What followed.** Filtering and reranking stayed off. Fetch width increased to five, but the prompt cap stayed at three; the measured five-item prompt condition did not ship.
 
 ### What the study was for
 
@@ -227,7 +225,7 @@ vote: five observations, each scored 5 on relevance, efficiency and unique lesso
 healer's day vote: endgame consensus advice for an early, information-starved vote, relevance 1 and no
 unique lessons (see [missing lessons](#what-every-stage-ran-into-missing-lessons)).
 
-**Filtering does not stack on a cleaned store.** The same filter (gate at 0.92, MMR λ = 0.8) was then
+**Filtering scored worse on the cleaned store tested.** The same filter (gate at 0.92, MMR λ = 0.8) was then
 run on **v4_deduped**, the v4 store after an aggressive batch dedup (150 observations, 167 strategy
 points), against plain top-3 retrieval on the same store. Observations, 5 cases, 2.5 Flash:
 
@@ -243,7 +241,7 @@ row is in [the reranker table](#the-model-reranker). The record names two causes
 three) pulled in items on the right topic but for the wrong situation, which plain top-3 had left out.
 And the gate over-removed: in one case it dropped one of two observations about endgame consensus
 voting that taught different lessons (passive communication against vote alignment). Store dedup and
-the filter both remove repetition, so on a cleaned store the filter removes useful items instead. The
+the filter both remove repetition, which explains why combining them can remove useful items. Five cases on this aggressively cleaned store do not establish that the combination always hurts. The
 measurement is recorded in the
 [store dedup → retrieval impact log](../dedup/store_retrieval_impact/experiment_log.md), "Filtering on
 a Clean Store"; this report is the finding's home.
@@ -329,7 +327,7 @@ every role by default (`Agents/config/run.py::DEFAULT_RERANKING_CONFIG`). Served
 points and do not rerank them, so the configuration this study recommended (rerank strategy points
 only) has never run in a served game. When switched on, the reranker today calls the game's configured
 model (`Agents/llm_factory::get_llm`), not Flash-Lite. A small trained model (a cross-encoder) was later
-built to replace the call; it matched the LLM reranker on held-out labels and is not wired into the read
+built to replace the call; it scored similarly to the LLM reranker on 17 held-out turns, without an equivalence test and is not wired into the read
 path. That work is told in the [fine-tuning report](../fine_tuning/report.md), "The retrieval reranker".
 
 ### The wider fetch: how many observations to show

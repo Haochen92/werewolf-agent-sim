@@ -75,8 +75,9 @@ The strongest case for keeping strategy points is that this ablation tests retri
 
 > **2026-10-26: what runs now.** The plan below was reversed. Served games retrieve strategy points
 > only, never observations (`server/game/run_config.py::game_run_config`); its stated reasons are
-> that the town half of the store never had observations, so retrieving them would give the two
-> factions different memory, and that strategy points are the lessons the replay shows being weighed.
+> that the town half of the store never had observations (true of the nine-seat `demo_gen1` served when
+> the setting was made, 2026-09-25; the ten-seat store published since 2026-10-14 holds town
+> observations), and that strategy points are the lessons the replay shows being weighed.
 > Observations are still extracted after a game; since a ruling of 2026-07-15 they are material that
 > synthesis distils into strategy points, not something a live prompt shows (the v7 loop enforced it:
 > `evaluation/src/loop/invariants.py::assert_observations_retired`). The code default

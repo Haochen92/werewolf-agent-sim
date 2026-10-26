@@ -2,7 +2,7 @@
 
 > **Status (2026-10-26):** interim pilot read (2026-06-11), superseded. Its town-harm (−32pp) and wolf-lift
 > (+33pp) came from unpaired games on a growing store; the paired A/B on the frozen store found no town
-> collapse ([`report.md`](report.md), "Confounds and rejected readings").
+> collapse ([`report.md`](report.md), "Alternative explanations and design limits").
 
 Aggregation of the per-game de-lucked proxies (`computed_metrics`) across the v5 seeding run.
 **Directional / hypothesis-generating only** — the memory-ON arm is the v5_1 *build* games

@@ -8,7 +8,7 @@ what the signed test found. The journey in date order is in two logs: the June l
 [What followed](#what-followed-and-what-runs-today); this page does not describe today's code
 except where it says so, with a date.
 
-## In short
+## Main finding
 
 - **Question.** A learning loop played games in rounds, graded every lesson by the decisions that
   followed it, removed the bad ones and wrote new ones. Did the finished memory make the town decide
@@ -18,22 +18,19 @@ except where it says so, with a date.
   would be read were signed before any game was played (2026-07-16); one change was made after the
   learning games and before any test game.
 - **Answer.** The town's decision score was 0.147 lower with memory, and lower on 19 of the 30 deals
-  (p ≈ 0.06, not significant). As committed in advance, this was reported as "no compounding
-  detected", with the estimate leaning toward harm. Every game ran with players that produced no
-  reasoning before answering.
+  (paired t-test p = 0.065; Wilcoxon p = 0.105, neither significant). As committed in advance, this was reported as "no compounding
+  detected", with the estimate leaning toward harm. The runs used the minimal-thinking player configuration; a later probe reported zero reasoning tokens.
 - **What followed.** The owner closed the memory research on 2026-07-21 without a further run. Closed
   is not disproved. The loop's grading and lesson-writing later became the memory system's
   consolidation code; in served games today memory is the player's switch and starts off.
 
 ## Scope
 
-**The players did not reason.** Every game behind this report played its turns on
+**Model configuration limits the scope.** Every game behind this report played its turns on
 `gemini-3.1-flash-lite` at thinking level "minimal", a 128-token budget on Vertex. A probe on
-2026-10-04 found that this model, asked for the game's structured output at that budget, reasons for 0
+2026-10-04 found that this model, asked for the game's structured output at that budget, reported 0 reasoning
 tokens. The run fingerprints confirm "minimal" on all 222 game records of the June loop runs and all 60
-of the July test. Both sides of every comparison ran the same way, so each comparison is fair. Every
-result here, positive or negative, is a result for a player that answers without a reasoning step;
-none of them says what memory does for one that reasons. Detail and the run-by-run table:
+of the July test. Both sides of every comparison ran the same way, so this setting was held constant between arms. These results do not establish what memory does at higher thinking settings. Zero reported reasoning tokens does not establish an absence of reasoning inside the model. Detail and the run-by-run table:
 [`../../credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §⑦.
 
 **Dates.** The June loop runs: 2026-06-19 to 06-23. The July plan: 07-04. The power simulation: 07-05.
@@ -55,7 +52,7 @@ it does three things:
    against the hidden roles (the score below). A lesson's *lift* is the average grade of the
    decisions that followed it minus the average grade of the same kind of decision in games without
    memory. Grading against the roles rather than the game's result is called *de-lucked*: a lucky
-   win does not make a bad move look good.
+   win does not automatically make a bad move look good. The grade still depends on the situation and the rules used to score it; lift is a curation signal, not an isolated causal effect of the lesson.
 2. **Synthesise.** A model writes new lessons from the observations gathered so far and from the
    existing lessons' track records.
 3. **Prune.** Lessons whose lift falls below −0.15 after at least 8 follows are removed (the July
@@ -83,8 +80,7 @@ because memory cannot have made a difference yet. The grades are averaged, so th
 **A worked example.** A game with 12 graded town decisions, 7 good, 2 neutral and 3 bad, scores
 (7 − 3) ÷ 12 = +0.33. The score ignores who won.
 
-**Games wobble.** The same setup gives very different scores from game to game, because each game is a
-different deal: who the wolves are, who holds which power role, how the talk goes. These are the 15
+**Scores vary across games.** Each game has a different deal and sampled dialogue: who the wolves are, who holds which power role, how the talk goes. These are the 15
 memory-off games from the first town-only loop run:
 
 > −0.15, −0.10, −0.04, +0.08, +0.13, +0.17, +0.27, +0.35, +0.35, +0.46, +0.46, +0.53, +0.68, +0.88, +0.93
@@ -98,10 +94,12 @@ labels or judges, was the obstacle.
 **The question: could the planned test see a realistic improvement at an affordable size?** No. At the
 size of the previous paid run it would have noticed one about 1 time in 9.
 
-**The planned test.** Average the score for each generation, draw the best straight line through the
-averages, and check whether it slopes upward by more than chance would explain. The June runs had been
+**The planned test.** Fit a straight line through every game's score against its generation number and
+check whether it slopes upward by more than chance would explain. With equal games per generation the
+line is the one through the generation averages, but the test's uncertainty comes from the spread of the
+individual games. The June runs had been
 read this way. Each generation gives only one average from a handful of games that wobble this much,
-so before paying for another run the plan (2026-07-04) checked, for free, whether this test could see
+so before paying for another run the plan (2026-07-04) checked without model calls whether this test could see
 a realistic improvement.
 
 **The simulation.** Build pretend runs in which the right answer is known, then check whether the
@@ -124,12 +122,12 @@ planned test finds it. Each pretend run took four steps:
 
 This was repeated 2,000 times with fresh draws. The *hit rate* is the share of repeats in which the test
 reported the planted improvement; statisticians call it *power*, and the usual target is 80%. Other run
-sizes were simulated the same way. No model was called, so it cost nothing.
+sizes were simulated the same way. No model was called, so the simulation incurred no model API charge.
 
 **Why +0.15.** It is the middle of the plan's own estimate of a realistic improvement (+0.1 to +0.2).
 That estimate came from the largest memory effect ever measured on this score, about +0.2, from an
 earlier experiment with a fixed memory on older prompts. A learning memory was not expected to beat
-that by much, and the score had little room above the town's +0.33. The simulation also planted +0.05,
+that by much; this was a planning assumption, not an established ceiling on the score. The simulation also planted +0.05,
 +0.10, +0.20 and +0.30, and +0.00 to check for false alarms.
 
 **The result: the test mostly missed it.**
@@ -151,9 +149,7 @@ failed at the size of effect the project expected to find.
 - **It corrected one assumption.** The plan expected a game's score to swing by about ±0.9, which is how
   much one graded decision swings. A game averages several decisions, so it swings about three times
   less (0.33 in the main set, 0.32 and 0.27 in two other sets checked). The test still missed.
-- **Its main limit flatters the test.** The simulation treats each generation as separate, while in a
-  real run every generation shares the same growing memory. That probably makes the test look better
-  than it is, so the real miss rate is likely worse.
+- **It treats every game as an independent draw.** In a real run, games of one generation share a store and generations share a growing memory. The code's own note expects this to make the hit rates optimistic; that was not measured.
 
 ## The redesign: compare the same deals, finished memory against none
 
@@ -165,8 +161,7 @@ risks the hosted model changing partway through, which would spoil any compariso
 
 **The replacement.** Let the loop learn for several generations without measuring anything. Then play a
 set of *boards* twice, once with the final memory and once without. A board is one fixed deal of roles
-and random seed, so both copies start with the same luck, and the difference between them comes from
-the memory. A finished memory carries its whole effect into every game at once, which is easier to see
+and random seed, so both copies start with the same luck, which controls the initial deal. Their later differences can reflect both memory and model sampling. A finished memory carries its whole effect into every game at once, which is easier to see
 than a slow rise spread thin across generations.
 
 **The tradeoff.** This design says whether the final memory makes a difference, not when or how fast it
@@ -195,8 +190,7 @@ detect the effect it is looking for.
 - **How a bad result would be read:** a null or negative result is reported as "no compounding
   detected", not rerun with a different measure. No prompt edits during the run.
 
-This is why the outcome counts as a result. The measure, the size and the reading of a negative were
-fixed before any data existed, so there was no room to pick a friendlier measure afterwards.
+This is why the outcome counts as a result. The main measure and the reading of a negative were fixed before the run. The comparison and board count were amended after learning but before the endpoint games, as described next.
 
 **One change after signing, before any test game.** The signed design had three conditions on 20 boards
 each, with the main comparison between the final memory and the memory after the first generation. On
@@ -218,11 +212,11 @@ lessons. The test ran on 2026-07-20: 30 boards, each played once with that memor
 games).
 
 - **Main measure.** The town's decision score was 0.147 lower with memory than without, compared board
-  by board (p ≈ 0.06: a gap this size would appear about 6% of the time by chance). Memory did worse on
+  by board (paired t-test p = 0.065). Under the test's null hypothesis and assumptions, that is the probability of a result at least this extreme; it is not the probability that chance caused this result. Memory did worse on
   19 of the 30 boards. As committed, this was reported as "no compounding detected", with the estimate
   leaning toward harm.
 - **The test behind the p-value** (rebuilt 2026-10-26 from the per-game records, see Provenance). The
-  p ≈ 0.06 is a paired t-test on the 30 board gaps (0.065). Two tests that assume less give weaker
+  p ≈ 0.06 is a paired t-test on the 30 board gaps (0.065). Two alternative tests give weaker
   readings: the Wilcoxon signed-rank test, which does not assume the gaps are normally spread, gives
   0.105, and a sign test, which counts only the direction (19 worse against 11 better), gives 0.20.
 - **A secondary measure was clearer.** In the same games, town players with memory voted for a real
@@ -230,23 +224,23 @@ games).
   more (31% of votes against about 23%). Counted vote by vote this gave p < .001, but votes within one
   game are not independent, so that overstates its certainty, and it was not the main measure.
 
-**The explanation the record offers: the grading could not see the harm.** Cautious lessons told the
+**The investigation found a grading blind spot.** Cautious lessons told the
 investigator and healer to keep what they knew to themselves and told town players to abstain when
 unsure. The loop's grading scored every town abstain as neutral, and a lesson with no memory-off
 comparison was compared with zero, so a lesson telling the vigilante to abstain scored exactly 0.00 and
-was never pruned. That case, with its numbers and the fix, is told once in
+was never pruned. This explains how such advice survived pruning. A replay of recorded decisions with the fixed grading's pruned store recovered the deficit (directional, 50 day votes per arm, not significant), but the corrected loop was never played, so the cause of the full endpoint result is not established. That case, with its numbers and the fix, is told once in
 [the credit report](../../credit/report.md) §6.
 
 **How sure we are.**
 
 - **It rests on** 30 deals, each played both ways, under a design fixed in advance.
-- **It is not significant.** "No compounding detected" is the committed reading. The run did not show
-  that memory hurts, and it did not show that a self-improving memory cannot help.
+- **It is not significant.** "No compounding detected" is the committed reading. The main endpoint did not establish
+  harm at the stated significance threshold, and it did not show that a self-improving memory cannot help.
 - **What the memory arm included.** Besides the town's lessons, the memory games showed a short list
   of tells to every seat, wolves included, and the games without memory did not. The amendment names
   the treatment as the matured store "SPs + tells" against no memory, so the test measures the two
   together; the tells' own effect was never separated.
-- **What it does not cover.** Players that reason before answering; a longer run (counter-lessons
+- **What it does not cover.** Higher thinking settings; a longer run (counter-lessons
   against caution had begun to appear but were outnumbered when the run ended); the loop with its
   grading fixed, which was never played.
 - **What the comparison changed.** After the amendment the test compares the finished memory with no
@@ -326,8 +320,8 @@ parts:
 - **The credit pass** (`tick.py::run_credit_pass`, no model call) grades every stored lesson from the
   memory-on games in a window, with the fixed abstain rule built in, then prunes and evicts.
 - **The learning tick** (`tick.py::run_tick`, paid) folds in new observations from the offline
-  extraction job, writes new lessons and drops duplicate lessons (keep or discard, never rewritten). It
-  never prunes or evicts. Both passes are run by hand; no schedule is in the repository.
+  extraction job and writes new lessons; the lesson dedup after synthesis (keep or discard, never
+  rewritten) is off by default since 2026-10-26 (`TickConfig.sp_dedup`). It never prunes or evicts. Both passes are run by hand; no schedule is in the repository.
 
 **In served games today** (checked 2026-10-26), memory is the player's switch and starts off
 (`frontend/src/app/(site)/_components/ticket/TicketOffice.tsx`); whether a deployment offers it at all
@@ -353,8 +347,7 @@ evicted 4 lessons ([`../v8/experiment_log.md`](../v8/experiment_log.md)).
 - **Test the test before paying for it.** A score can measure the right thing and still be too noisy to
   notice a realistic change at the number of games you can afford. Here the planned test would have
   noticed a realistic improvement about 1 time in 9.
-- **When an effect builds slowly, compare the finished state with none on the same deals** instead of
-  looking for a trend across rounds.
+- **Choose the comparison to match the question.** Final memory against none tests its overall value. Final memory against an earlier memory is needed to isolate improvement during learning. Pairing either comparison controls the initial deals.
 - **Make the experiment's identity a checked fact, not a launch-time intent.** Both June runs ran a
   different experiment from the one intended, and neither raised an error. Reading what actually ran
   and comparing it with a declared intent turns that failure into a crash in the first generation.
@@ -382,5 +375,6 @@ The board-paired figures were reported in July without a committed source
 (`evaluation/experiments/v7_endpoint_paired.py`; output
 [`paired_boards.json`](execution_plan/data/v7_endpoint_ab/paired_boards.json), one row per board). The
 rebuild matches the pooled file exactly and gives 19 of 30 boards worse and a paired t-test p of
-0.065. Its mean gap is −0.1465, which rounds to −0.146 against the recorded −0.147; the record does
-not explain the 0.001 difference.
+0.065. Its mean gap is −0.14648 (−0.146 to three places) against the recorded −0.147, which first appears
+without a source in the credit blind-spot log of 2026-07-21. It matches neither the pooled gap (−0.208)
+nor a mean of rounded per-board gaps (−0.1464), so the record does not explain the difference.

@@ -1,32 +1,36 @@
 # Memory v8: the memory system of the ten-seat game
 
+v8 separates learning from play: games read an existing store, while offline jobs extract observations, write lessons and update credit. The rebuild adapted v7 to new roles, moved extraction out of gameplay and addressed problems in lesson relevance, rule accuracy and outcome-based judgement. These are the reasons for the architecture below; whether it improves ten-seat play remains untested.
+
 **Version.** This report describes the code at the `feature-frontend-v1` branch head on 2026-10-26
 (`abfdf984`), checked against the code named in each statement. Every measured result belongs to the
 store, prompts and models it ran on, named beside it; none was re-run on today's code. Deployment
 statements are dated separately in "What is deployed, and since when".
 
-## In short
+## System and evidence at a glance
 
 - **What it is.** The AI players can be given short lessons written from past games. After a game, a
   model writes accounts of the moves that mattered; another model condenses them into advice per role
   and kind of decision; during a later game, a seat looks up the advice that matches its situation
   and says, for each lesson shown, whether it followed it. A rule-based pass then scores each followed
-  lesson by the decisions it led to and removes the ones that do worse than play without memory.
+  lesson by the decisions associated with following it and removes the ones that do worse than play without memory.
 - **What has been checked.** Each stage on its own: how many of the lessons shown fit the decision
   (15% → 24–27% after a larger store and a filter by game stage, 96 lookups), how many lessons state a
   rule the game does not have (11% → 6.1%), how far the written verdicts follow the result instead of
   the move, whether each observation can be matched to its decision (98 of 102), and one run of the
   scoring pass over 20 games.
 - **What is not known.** Whether memory makes the ten-seat players play better. No game set has
-  compared memory on with memory off; a test would need about 35–60 games per arm. v8 has not been
+  compared memory on with memory off; the planning estimate is about 35–60 games per arm, extrapolated from nine-seat data and not yet checked for ten seats. v8 has not been
   tested at scale, which is not the same as having tested negative.
-- **On the live site,** memory is the player's switch and starts off.
+- **In the served configuration described here,** memory is the player's switch and starts off. Deployment dates are recorded separately below.
 
-> **The loop in one line.** A game ends and saves what it can teach → an offline job writes
+> **The data flow (manually operated, not an automatic loop).** A game ends and saves what it can teach → an offline job writes
 > **observations** from it → a second model re-reads each observation's verdict → the observations are
 > folded into the store and condensed into **lessons** → later games look lessons up and give a
 > **verdict** on each → the **credit pass** scores followed lessons and prunes → the store is
 > **published** to the database the server reads.
+
+Read §1 for the architecture, §2 for the choices behind it, and §3 for the checks. §4 separates missing outcome evidence from remaining component questions. The [memory hub](../report.md) owns the version history; this report owns the ten-seat implementation.
 
 **Terms used below.**
 
@@ -155,7 +159,7 @@ Both passes live in `Agents/memory/consolidation/tick.py`; no schedule runs them
 
 - **The credit pass** (`tick credit`; no model call) re-scores every lesson from the memory-on games
   in its window. Each followed decision is graded by the table above and compared with memory-off
-  decisions of the same kind, so a lesson attached to an easy decision gets no credit for it. It
+  decisions of the same kind, to reduce credit for decisions that already score well without memory. This comparison does not isolate the lesson's effect: situations, player choices and the baseline can still differ. It
   then prunes a lesson that scores below −0.15 after at least 8 follows, protects one that scores
   above 0 after at least 2, and evicts one shown at least 8 times, never followed, and overridden at
   least once and at least as often as marked not relevant. The thresholds are carried over from the nine-seat loop and
@@ -165,7 +169,8 @@ Both passes live in `Agents/memory/consolidation/tick.py`; no schedule runs them
   scoring is told in full in the [credit report](../../credit/report.md).
 - **The learning tick** (`tick learn`; paid) folds in new observations from the offline job, lets old
   ones age out (an observation not seen again for four ticks per time it has been seen is dropped),
-  synthesises on every second tick, and runs the lesson dedup. It never prunes or evicts lessons;
+  and synthesises on every second tick. The lesson dedup after synthesis is off by default since
+  2026-10-26 (`TickConfig.sp_dedup`) until it is tuned. It never prunes or evicts lessons;
   that is the credit pass's.
 
 **Publishing.** Both passes end by publishing: the store's records are mirrored into LangGraph's
@@ -186,17 +191,17 @@ the lessons.
 
 ## 2. Why it is built this way
 
-Each choice below was an owner ruling; the reasoning is in the decision record
+The choices below combine recorded owner rulings and implementation decisions; their sources are in the decision record
 ([decisions](decisions.md)) and the final plan ([plan](plan.md) §9). The working constraint for the
 rebuild was **no extra judge, no new model calls and no new pipeline stage**; anything larger went to
 limitations. The de-halo pass is the one approved exception.
 
 | Choice | Why | Record |
 |---|---|---|
-| Town day lessons are written for the owner's review and never served | Advice the owner approves becomes fixed role-prompt text instead; keeping it out of play also closes the path by which v7's credit rewarded town withholding | decisions §5, §7; plan §9.1 |
+| Town day lessons are written for the owner's review and never served | Advice the owner approves becomes fixed role-prompt text instead; keeping it out of play also closes the path by which v7's credit rewarded town withholding: town day advice is never followed, so it is never credited | decisions §5, §7; plan §9.1 |
 | No forced disclosure for the town's information roles | In 28 saved ten-seat games they already reported the next day almost every time (Investigator after Suspicious 13 of 13, after Not suspicious 25 of 28; Sentinel 42 of 42; Trailseer 44 of 44, rough counts by claim field or text match) | decisions §5; plan §9.1 |
 | New roles mapped onto existing cell shapes, plus one "uses left" field group | No per-role fields; old stores still load | decisions §5; plan §9.1 |
-| Served games retrieve strategy points only | The town half of the store never had observations, so serving them would give the sides different memory | `server/game/run_config.py::game_run_config` |
+| Served games retrieve strategy points only | Set on 2026-09-25, when the store served was the nine-seat `demo_gen1`: it held observations only for the wolf and the serial killer, none for the town, so serving them would have given the sides different memory. The ten-seat store published since 2026-10-14 does hold town observations (1,133 of 2,008); the setting was carried over without a new ruling. The other reasons stand: since a ruling of 2026-07-15 observations are material for synthesis, not prompt content, and lessons are what the replay shows being weighed | `server/game/run_config.py::game_run_config` |
 | Extraction offline, never during a game | It slowed and cost every game; the store needed more source games, cheaply; the saved input lets any game be extracted later | decisions §11 |
 | The day extracted as two calls, discussion and vote | One day call filed nearly everything under the vote (one pilot game: 0 → 16 discussion observations, about $0.18 more a game) | decisions §6; plan §9.5 |
 | A de-halo pass after extraction | The verdicts leaned toward the winning side; on the one game where a reader had marked them, Haiku 5.5 fixed the 4 halo verdicts and none of the 3 fair ones, at about $0.006 a game | log, 2026-10-11; plan §9.5 |
@@ -204,7 +209,7 @@ limitations. The de-halo pass is the one approved exception.
 | Models chosen within the budget and credits at hand | Extraction moved from Gemini 2.5 Pro to 3.8 Flash for cost, then to Sonnet 5.5 when the Gemini credits ran out; synthesis on Sonnet 5.5 on Claude credits; the embedder moved to Qwen3-Embedding-8B, at $0.01 per million tokens the cheapest of those compared | log, 2026-10-11 and 2026-10-12; `Agents/llm_factory/accessors.py` |
 | Lookups reused within a day's discussion and a night | About 60 lookups a game fell to about 38 on the owner's first ten-seat game; a new claim refreshes the day's lookup because it changes the situation | decisions §10 |
 | The stage filter built and left off | It raised fit in replays; turning it on in served games is a separate ruling | decisions §11; log, 2026-10-13 |
-| Credit as its own pass; prune and evict apply themselves | Without credit a harmful lesson is served every game and a good one is never promoted, a step back from v7; credit needs only the games, so it can run often and free | decisions §12, §14 |
+| Credit as its own pass; prune and evict apply themselves | Without credit a harmful lesson is served every game and a good one is never promoted, a step back from v7; credit needs only the games, so it can run without additional model calls | decisions §12, §14 |
 | v7's thresholds kept, labelled unvalidated | None of the nine-seat validations carry over to ten seats | decisions §12 |
 | Lessons in the database the server reads | A file store re-seeded on every game broke served games on 2026-10-14 after the embedder change | `frontend/docs/deploy_log.md`, 2026-10-14 |
 
@@ -240,9 +245,9 @@ set of four Sonnet subagents on the same rubric:
 | Stage filter, gap left empty | 25%; 28 (25 lookups empty) | 27%; 33 (17 empty) |
 | Stage filter, gap refilled from the cell | 22%; 30 (18 empty) | 24%; 52 (2 empty) |
 
-Two comparisons sit in this table and answer different questions. **The filter alone**, on the
+Two comparisons sit in this table and answer different questions. **The filter with refill**, on the
 40-game store and the same readers, moves the lookups with a fitting lesson from 41 to 52 and fit
-from 19% to 24–27%. **The whole change**, a store three to four times larger plus the filter, moves
+from 19% to 24%. Without refill, fit reaches 27% but only 33 lookups contain a fitting lesson. Precision and coverage therefore need to be read together. **The whole change**, a store three to four times larger plus the filter, moves
 them from 36 to 52 and fit from 15% to 24–27%, but across two sets of readers, so it is approximate.
 With larger cells, refilling after the filter finds a same-stage lesson for most lookups; on the
 12-game store refilling mostly added misfits (2 of the 28 promoted lessons fit). On the 12-game store
@@ -260,7 +265,7 @@ bucket).
 
 ### 3.2 Do lessons state the game's rules correctly?
 
-**About one lesson in sixteen states a rule the game does not have, down from one in nine.**
+**Model readers flagged 6.1% of the larger store for incorrect rules, compared with 10.8% of the smaller store.** Different stores and readers make this an approximate comparison, not an isolated effect of a fix.
 
 *The test.* Model readers checked each lesson against the ten-seat rules text and flagged claims the
 rules contradict, with a confidence.
@@ -286,7 +291,7 @@ readers and different stores, so the fall is approximate.
 
 ### 3.3 Does an observation's verdict judge the move or the result?
 
-**Mostly the result; de-halo removes about a third of that.** The detailed account is the
+**The verdict is strongly associated with the winning side; de-halo reduces that association.** In the fitted models below, the win coefficient falls by about one third. This is not a count of bias errors removed. The detailed account is the
 [observation quality report](../../extraction/observation_quality/report.md), "How strong the halo is,
 and what de-halo does".
 
@@ -306,18 +311,17 @@ The verdict reaches synthesis (each observation is shown with it), the observati
 verdicts are never duplicates) and the replay's verdict stamp. It never reaches a seat or credit,
 which uses the grade.
 
-*How sure we are.* The grade is computed by code and never sees who won, so these are counts, not a
-judge's opinion. The de-halo pass revised 25–29% of verdicts across the three extraction runs, and a
+*How sure we are.* The grade is computed by code and never sees who won, so the comparison uses a repeatable scoring rule rather than another model's judgement. The rule is still a proxy for decision quality; outcome association alone does not prove that each verdict is biased. The de-halo pass revised 25–29% of verdicts across the three extraction runs, and a
 read of one game's 19 revisions found most fair and a few over-corrected (a Fortune Teller's death
 after declining the self-bet turned "unclear", although the self-bet gives immunity by rule). The
 judge varies between runs. Which signal, verdict or grade, writes better lessons is not known.
 
 ### 3.4 Can each observation be matched to its decision?
 
-**Yes, in 98 of 102 cases read.** The 2,277 observations of the 40 games were tagged with their
+**The tag and the model reader agreed in 98 of 102 cases.** The 2,277 observations of the 40 games were tagged with their
 decision by Claude Haiku 5.5, one batched request per game ($0.08). A Sonnet reader per game named
 each decision from the record without seeing the tag, on six games chosen at random, 17 observations
-each: 98 of 102 agreed (96.1% ± 3.8%), and the day alone 101 of 102. Three of the four misses were a
+each: 98 of 102 agreed (96.1%; the record's ±3.8 points treat the 102 as independent, and taking the six games as the unit the 95% interval is about ±5 points, still above the 90% bar), and the day alone 101 of 102. This is agreement with a model reader, not a human-validated accuracy estimate. Three of the four misses were a
 wolf's night tagged "several" where the reader chose the skill; one put a Healer's protection a night
 early. The bar, set beforehand, was 90%. Of the 2,277 tagged observations, 1,711 could be graded by the
 table; the rest describe decisions the table leaves unscored or the record cannot settle (a served
@@ -373,7 +377,7 @@ table has not been re-run on ten-seat games. The earlier versions' results do no
 June static-memory A/B reported improvements on selected town decision measures; a later A/B on a
 different store, run against a higher no-memory baseline, found no town effect and was not a
 replication of the June test; separately, the pre-registered v7 endpoint detected no compounding
-benefit. All three ran on nine-seat games with players that answered without a reasoning step, and
+benefit. All three ran on nine-seat games at the minimal thinking setting, and
 v8 changed much of the pipeline on their evidence. The [memory hub](../report.md) holds those
 results; v8 has been tested by none of them.
 
@@ -382,7 +386,7 @@ Smaller unknowns, each tied to the claim it limits:
 - **The prune and evict thresholds** are v7's, unvalidated for ten seats. The four prunes above rest
   on them.
 - **Whether the credit pass has read a served game.** The record holds one credit pass, over the 20
-  batch games. The code reads served AI-only games; none is recorded as read.
+  batch games. The code reads served games, grading only the AI seats' decisions in a game with a human seat (since 2026-10-26); no credit pass over served games is recorded.
 - **The learning tick on ten seats.** `ten_seat_v2` was synthesised by a one-off build, not by the
   tick, and the demonstration stopped at credit. No ten-seat learning tick is recorded, and nothing
   screens the rules in what it would write.

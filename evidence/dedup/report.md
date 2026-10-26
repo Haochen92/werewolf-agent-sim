@@ -6,23 +6,23 @@ and what evidence supports each layer. How the design got here is told in
 under each layer.
 
 **Version.** The code described here is the `feature-frontend-v1` snapshot of 2026-10-26
-(`5d8ea41c458e7fc115a81eeeff2a14f560693551`). Each result belongs to the store, models and embedding
+(`e2da5f1e88fea2a1485cff6929a31486f4ae8eb0`). Each result belongs to the store, models and embedding
 model it ran on, named beside it. Most of the evidence is from May and June 2026, on nine-seat stores
 and Gemini models; today the dedup judges are Claude Haiku 5.5 and the embedding model is
-Qwen3-Embedding-8B, and no accuracy test has been run on either.
+Qwen3-Embedding-8B. The report now records one Haiku run on each historical labelled set on 2026-10-26, alongside Qwen calibration and rechecks on historical cases. None validates the complete pipeline on ten-seat content.
 
-## In short
+## Design and evidence at a glance
 
 - **What it does.** Before a judge model sees two entries, a rule on their structured fields (the
   gate) decides whether they may be compared at all, and an embedding check settles the plainly
   identical and the plainly different. The judge then only keeps or discards. Nothing rewrites an
   entry: the merge that would is built and switched off.
-- **Where it runs.** Offline only, in three places: when an extraction job writes its games'
-  observations into a store, when the learning tick folds new observations in, and after synthesis
-  writes new lessons. No game deduplicates anything while it is played.
+- **Where it runs.** Offline only, in two places: when an extraction job writes its games'
+  observations into a store, and when the learning tick folds new observations in. A third step, the
+  lesson dedup after synthesis, is built and off until tuned ([batch log](batch_dedup/experiment_log.md), 2026-10-26). No game deduplicates anything while it is played.
 - **What supports it.** Two labelled sets scored the judges (65 single-entry cases, labelled by hand;
-  111 entries in 11 clusters), a 232-case set checked the embedding lines, and one retrieval study (39 scenarios)
-  compared a lightly and a heavily deduplicated store. All ran in May 2026 on a nine-seat store.
+  111 entries in 11 clusters), a 232-case set checked the embedding lines, and one retrieval study (40 scenarios)
+  compared a lightly and a heavily deduplicated store. The sets came from May 2026 nine-seat stores; the report also records an October Haiku recheck.
 - **What is not known.** How accurate the current judges and embedding lines are on today's ten-seat
   store, and whether dedup changes how the players play.
 
@@ -67,7 +67,9 @@ These rules were pinned down by relabelling, not declared up front. Three labell
 |---|---|---|
 | A healer pattern seen with "2 saves" and with "3 saves" | duplicate | a difference of degree, not of kind |
 | The same villager response to two different wolf tactics | kept apart | a different opposing move is a different lesson |
-| The same failed defence mid-game and in the endgame | duplicate | the game phase alone does not make a new lesson |
+| The same failed defence mid-game and in the endgame | duplicate in the historical labels | the old labelling rule did not treat stage alone as a distinct lesson |
+
+The last example is historical. Today's observation gate and lesson apply rules can keep different stages apart before or after a judge calls them duplicates. The labelled examples therefore do not by themselves validate the current gated pipeline.
 
 ## Where dedup runs today
 
@@ -75,9 +77,9 @@ These rules were pinned down by relabelling, not declared up front. Three labell
 |---|---|---|---|---|
 | **Write** | an offline extraction job writes its games into a fresh store | each new observation against the entries written before it in that job | keep or discard | `Agents/memory/extraction/offline.py::write_extracted_store` → `Agents/memory/deduplication/pipeline.py::_dedup_single_memory` |
 | **Fold** | the learning tick adds a window's new observations to the store | the store's observations, in clusters | keep or discard (a merge is turned into a keep) | `Agents/memory/consolidation/obs_fold.py::merge_new_obs` |
-| **Lesson dedup** | the learning tick, after synthesis has added lessons | the store's lessons, in clusters | keep or discard; the kept lesson's text never changes | `Agents/memory/consolidation/store_ops.py::_dedup_strategy_points` |
+| **Lesson dedup** | built, off until tuned (`TickConfig.sp_dedup`, 2026-10-26); when on, the learning tick, after synthesis has added lessons | the store's lessons, in clusters | keep or discard; the kept lesson's text never changes | `Agents/memory/consolidation/store_ops.py::_dedup_strategy_points` |
 
-Both tick steps are run by hand (`Agents/memory/consolidation/tick.py`); no schedule runs them, and no
+The fold, and the lesson dedup when switched on, are run by hand (`Agents/memory/consolidation/tick.py`); no schedule runs them, and no
 ten-seat learning tick is recorded ([v8 report](../memory_system/v8/report.md)). The published store
 `ten_seat_v2` was built by a one-off script that ran the write step and the lesson dedup, then had a
 review drop the duplicates the dedup missed (below).
@@ -181,7 +183,7 @@ cases. The reason is that embeddings capture topic, not stance. Case 155 pairs "
 investigating players who are actively pushing narratives…" with "Avoid investigating the most vocal
 leader…"; the two are opposite advice, labelled a keep, and their actions embed at 0.913 on Gemini and
 0.881 on Qwen. So the embedding
-check can only ever settle the extremes (about 15–30% of cases); the middle needs the judge
+check settled only a minority of these cases (about 15–30% in the May checks); the configured pipeline sends the middle to the judge
 ([prefilter log](embedding_prefilter/experiment_log.md)).
 
 **Evidence: today's lines.** The Qwen lines were derived on 2026-10-12 from the 65 cases alone, at
@@ -246,19 +248,19 @@ The two steps that use it differ in what the judge may change:
 - **The fold** runs it on observations, judging on Haiku 5.5 (`TickConfig.dedup_model`), in
   **triage-only** mode: the judge's keeps and discards stand, and any merge it proposes becomes a keep,
   so near-duplicates stay separate and no text is rewritten (`TwoPassConfig.skip_verify`).
-- **The lesson dedup** runs it on lessons after synthesis, also on Haiku 5.5, and only if synthesis
-  added lessons. Three rules hold whatever the judge says (2026-10-13): the kept lesson keeps its own
+- **The lesson dedup** is built and off until tuned (2026-10-26, [batch log](batch_dedup/experiment_log.md), 2026-10-26); switched on, it runs on
+  lessons after synthesis, also on Haiku 5.5, and only if synthesis added lessons. Three rules hold whatever the judge says (2026-10-13): the kept lesson keeps its own
   text and fields; a lesson learned at another stage of the game (players alive, pack partner lost, a
   limited ability used up) is never discarded into one from a different stage, since retrieval's
   stage filter (built, off by default) would serve each to different seats; and a discarded lesson's key is listed on its survivor, so the
   follows recorded against it still count (`operations.py::_apply_strategy_operation`,
   `_merged_metadata`; [v8 decisions](../memory_system/v8/decisions.md) §14).
 
-Both run in **incremental mode**, which is meant to freeze old entries (next section).
+Both use **incremental mode** (the lesson dedup when switched on), with the old-entry guard explained below.
 
 **Evidence: the judge on clusters.** The 111-entry set (11 clusters from the nine-seat v4 store: 77
-keeps, 20 discards, 14 merges; [batch log](batch_dedup/experiment_log.md)) showed why a cheap judge can
-be trusted to keep or discard but not to merge. Gemini 3.1 Flash-Lite's calls by what it said:
+keeps, 20 discards, 14 merges; [batch log](batch_dedup/experiment_log.md)) showed that this judge
+was more reliable at keep/discard than at merge on the tested clusters. Gemini 3.1 Flash-Lite's calls by what it said:
 
 | Flash-Lite said | Right |
 |---|---|
@@ -271,8 +273,9 @@ The same set scored the single-model options (Gemini 3.5 Flash 86.5%, 2.5 Pro 83
 Flash-Lite with an anti-merge prompt 85.6%) and the prompt changes that moved them, in the log.
 
 **Evidence: the store-level effect.** The retrieval study ([retrieval impact
-log](store_retrieval_impact/experiment_log.md), phase 2) compared three nine-seat stores on 39
-scenarios of a 40-case set, with Gemini 2.5 Flash scoring each retrieval from 1 to 5:
+log](store_retrieval_impact/experiment_log.md), phase 2) compared three nine-seat stores on a
+40-case set, with Gemini 2.5 Flash scoring each retrieval from 1 to 5. The means below are the log's, over
+the first 39 cases; the counts after the table are over all 40, and the 40-case means differ by at most 0.04:
 
 | Store (scores for observations) | Entries, both kinds | Relevance | Efficiency | Distinct lessons |
 |---|---|---|---|---|
@@ -283,7 +286,7 @@ scenarios of a 40-case set, with Gemini 2.5 Flash scoring each retrieval from 1 
 The light dedup traded a little relevance for more efficiency and more distinct lessons; no
 significance test was run, so it is a trade, not an improvement. The heavy dedup lost relevance on
 observations (−0.28 on average; 2 scenarios better, 24 the same, 14 worse) and gained no efficiency.
-An earlier five-scenario run had shown the heavy store winning everywhere; the 39 overturned it. This
+An earlier five-scenario run had shown the heavy store winning everywhere; the 40 overturned it. This
 is why every setting above leans towards keeping.
 
 **Evidence: the lesson dedup on ten seats.** Building `ten_seat_v2` (2026-10-12/13, Flash-Lite as
@@ -300,11 +303,43 @@ larger problem:
 Two of the three rules above came from this run: the stage rule, and the end of rewriting (the judge
 had rewritten one lesson in 605 when it still could). The 78 duplicates were left out of the published
 store by hand. The dry run's reading (split by honesty and stage instead of direction, and use a
-stronger judge) has not been built; the judge has since changed to Haiku 5.5 without a re-run.
+stronger judge) has not been built; the judge has since changed to Haiku 5.5 without a re-run, and the
+lesson dedup has been off since 2026-10-26 until this retune is done.
 
 The write step on the same build kept 2,008 of 2,277 observations, discarding 269 as copies; nearly
 all of the build's 4.7 hours went to it. Earlier, folding 562 observations from parallel seed games
 into a fresh store (Flash-Lite, triage-only) collapsed 9.
+
+## Preserving old entries during incremental dedup
+
+The observation fold, and the lesson dedup when switched on, use incremental mode: new entries can reinforce old entries, but an old entry cannot be removed into another old entry. Preserving this boundary matters because repeated model judgements can gradually erode a store.
+
+**The freeze-old guard (built, unit-tested).** A second full run of the batch pass on an
+already-deduplicated store removed another 45 of 432 entries (10.4%). Some were real misses; others
+merged entries that different searches would find. The diagnosis
+([incremental_convergence.md](incremental_convergence.md), kept as the diagnosis record): re-running
+with nothing new changes nothing, but every new entry reopens the settled old entries around it, so the
+store erodes with no fixed point. The fix, built on 2026-06-16, is in the apply layer: an operation
+that would remove one old entry into another is refused, and when an old and a new entry collapse, the
+old one survives (`operations.py::_frozen_old_conflict`, `_resolve_survivor`;
+`tests/memory/test_batch_dedup.py`). Run by hand without incremental mode, the pass has no guard and
+re-judges everything, old against old; that is the mode the second-run test used.
+
+**Two ways to identify new entries.** The current tick passes explicit new-entry keys, so its guard does not depend on timestamps. The older timestamp-based path defines "old" as created before the store's last dedup run. Two
+things weaken that boundary. Creation times are not kept: writing a survivor back, or loading a store from
+its files, stamps the current time on the entry (the guard's Fix 1, never built). Within one run this is
+harmless, because the marker is written after the store is saved; but if another process loads and saves
+the store between two runs, every entry then looks newer than the marker and the guard freezes nothing.
+That holds with merging off too, and affects only callers that rely on the timestamp (the command line's
+`--incremental`, the v7 loop, the unused post-game pass). The second weakness is fixed. Until 2026-10-26 the guard
+engaged only when the store's folder carried the previous run's time marker
+(`incremental.py::_read_last_dedup_at`), and the learning tick builds a new folder from the database
+each time without one, so its fold would have re-judged the whole store, old against old; a marker
+alone would not have helped, since an extracted observation's creation time can predate it. Now
+both tick steps name their new entries: the fold passes the observations it appended, and the
+lesson dedup (off until tuned since 2026-10-26) the lessons synthesis just wrote (`BatchDedupRunConfig.new_keys`,
+`orchestration.py::incremental_new_keys`; `tests/memory/test_dedup_new_keys.py`). No tick had run on
+ten seats, so the old behaviour was never observed.
 
 ## Built and off
 
@@ -332,32 +367,7 @@ default models are now Haiku 5.5 and Sonnet 5.5, neither of which has been score
 
 The batch pass was also built to run after games, on new entries only (`IncrementalDedupConfig`). It
 is off twice over: its switch defaults off, and since extraction moved out of the game nothing calls
-it. Its incremental mode is the one the fold and the lesson dedup now use, and two pieces of it matter
-to them.
-
-**The freeze-old guard (built, unit-tested).** A second full run of the batch pass on an
-already-deduplicated store removed another 45 of 432 entries (10.4%). Some were real misses; others
-merged entries that different searches would find. The diagnosis
-([incremental_convergence.md](incremental_convergence.md), kept as the diagnosis record): re-running
-with nothing new changes nothing, but every new entry reopens the settled old entries around it, so the
-store erodes with no fixed point. The fix, built on 2026-06-16, is in the apply layer: an operation
-that would remove one old entry into another is refused, and when an old and a new entry collapse, the
-old one survives (`operations.py::_frozen_old_conflict`, `_resolve_survivor`;
-`tests/memory/test_batch_dedup.py`). Run by hand without incremental mode, the pass has no guard and
-re-judges everything, old against old; that is the mode the second-run test used.
-
-**What the guard depends on (open).** "Old" means created before the store's last dedup run. Two
-things weaken that boundary. A merged survivor does not keep its creation time, and loading a store
-resets every entry's, so the boundary holds within a run, not across runs (the guard's Fix 1, never
-built; moot while nothing merges). The second weakness is fixed. Until 2026-10-26 the guard
-engaged only when the store's folder carried the previous run's time marker
-(`incremental.py::_read_last_dedup_at`), and the learning tick builds a new folder from the database
-each time without one, so its fold would have re-judged the whole store, old against old; a marker
-alone would not have helped, since an extracted observation's creation time can predate it. Now
-both tick steps name their new entries: the fold passes the observations it appended, and the
-lesson dedup the lessons synthesis just wrote (`BatchDedupRunConfig.new_keys`,
-`orchestration.py::incremental_new_keys`; `tests/memory/test_dedup_new_keys.py`). No tick had run on
-ten seats, so the old behaviour was never observed.
+it. The fold, and the lesson dedup when switched on, use its incremental mode, with the new entries named by the caller (above).
 
 ## What dedup cannot do
 
@@ -372,8 +382,8 @@ served games retrieve only lessons; whether the gap is still one of coverage is 
 What the layers rest on:
 
 - **Accuracy on labelled sets**: 65 cases for the one-at-a-time judge, 111 entries for the batch judge,
-  232 cases for the embedding lines. All nine-seat content from May 2026, all scored on Gemini models.
-- **Store-level effect**: one retrieval study, 39 scenarios, one judge model, no significance test.
+  232 cases for the embedding lines. All nine-seat content from May 2026, originally scored on Gemini models. The October Haiku recheck used the historical judge sets.
+- **Store-level effect**: one retrieval study, 40 scenarios, one judge model, no significance test.
 - **Mechanics**: the gate, the embedding lines, survivor choice, count summing, the freeze-old guard
   and dry-run safety are unit-tested (`tests/memory/test_dedup_gate.py`, `test_dedup_thresholds.py`,
   `test_batch_dedup.py`). An aggregate score cannot isolate these bugs, and a unit test cannot judge a
@@ -383,12 +393,15 @@ What has not been checked:
 
 - **The current judges on today's store.** They were scored only on the May sets (2026-10-26, one run
   each). The one-at-a-time
-  judge, Haiku 5.5, scored 52 of 65 (80.0%), level with the May judges' 83.1%. The batch judge, Haiku 5.5
-  as the fold runs it, was right on 84 of 93 keeps but only 11 of 18 discards (Flash-Lite in May: 13 of
-  15), so in the fold and the lesson dedup about one discard in three may delete a distinct entry
+  judge, Haiku 5.5, scored 52 of 65 (80.0%), compared with the May judges' 83.1%; one small-set comparison does not establish equivalence. The batch judge, Haiku 5.5
+  at low thinking, was right on 84 of 93 keeps but only 11 of 18 discards (Flash-Lite in May: 13 of
+  15). All 18 discards, and all 7 wrong ones, were lessons. On the observation clusters it discarded
+  nothing and missed all 6 labelled copies, so the fold deleted nothing distinct but caught no copy.
+  Sonnet 5.5 was right on 8 of 8 discards. On these results the lesson dedup is off until tuned; none
+  of this measures today's ten-seat content
   ([per-extraction log](per_extraction/experiment_log.md), [batch log](batch_dedup/experiment_log.md),
   addenda 2026-10-26).
-- **The current embedding lines** rest on 65 cases; on the 232 they would discard two keeps.
+- **The current embedding lines** were calibrated on 65 cases and rechecked on 232. The inactive lesson threshold would discard two keeps; the active observation thresholds bypassed the judge on only 2 of 116 observation cases.
 - **The gate** has never been scored on a labelled set.
 - **The trace re-check**: every dedup decision logs its similarity scores so the lines could be re-set
   from real decisions; that re-check has not been run.
@@ -400,8 +413,8 @@ What has not been checked:
 |---|---|---|
 | Keep or discard only, no merge | merged text unverified; fabrication in 3 of 9 Pro merges | a check of merged text against its sources, wired before the store is written |
 | Lessons partitioned by direction and honesty | the labels separate rival moves | the dry-run's alternative (honesty and stage) catching more of the readers' groups without cross-stage drops |
-| Haiku 5.5 as judge | cost; level with the May judges one at a time (80% on 65) | its batch discards: 11 of 18 right against Flash-Lite's 13 of 15; a judge or prompt that discards as safely in the fold |
-| Qwen lines from 65 cases | zero errors on those cases | a check on the 232 cases or on logged decisions |
+| Haiku 5.5 as judge | cost; 80% on 65 historical one-at-a-time cases | its batch discards: 11 of 18 right against Flash-Lite's 13 of 15; a judge that discards lessons as safely (Sonnet 5.5 made no wrong discard, 8 of 8) before the lesson dedup is switched back on; for the fold, one that catches copies at all (Haiku caught 0 of 6) |
+| Qwen lines from 65 cases | zero errors on calibration cases; the 232-case recheck found inactive lesson errors and little active observation coverage | recalibration with a separate held-out check, or evaluation on logged current-store decisions |
 | Lean towards keeping | a wrong discard is permanent | a retrieval or play measure showing the duplicates kept cost more than the lessons saved |
 
 ## Records
@@ -412,6 +425,6 @@ What has not been checked:
 | [per_extraction/](per_extraction/experiment_log.md) | the one-at-a-time judge: the 65-case set, prompt versions 1–11b, the end of merge |
 | [batch_dedup/](batch_dedup/experiment_log.md) | the batch pass: clustering, the 111-entry set, the two-pass merge, merge quality, the idempotency test |
 | [embedding_prefilter/](embedding_prefilter/experiment_log.md) | the embedding lines: calibration, the 232 cases, the ceiling, the Qwen re-check |
-| [store_retrieval_impact/](store_retrieval_impact/experiment_log.md) | the retrieval study, five scenarios then 39 |
+| [store_retrieval_impact/](store_retrieval_impact/experiment_log.md) | the retrieval study, five scenarios then 40 |
 | [incremental_convergence.md](incremental_convergence.md) | the non-convergence diagnosis and the two fixes |
 | [dedup_clustering_and_sp_extraction_plan.md](dedup_clustering_and_sp_extraction_plan.md) | the June plan that produced the gate (historical) |

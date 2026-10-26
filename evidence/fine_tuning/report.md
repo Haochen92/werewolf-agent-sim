@@ -8,16 +8,16 @@ that time (wolf, villager, healer, investigator) and the memory store built from
 is in each track's experiment log, linked from its section; labelling quality has its own record in
 [the context-eval log](../evaluation/labeling/context_eval/experiment_log.md).
 
-## In short
+## Results and deployment status
 
 - **Question.** Can small fine-tuned models, cheap enough to run on a CPU, replace the model calls the
   memory pipeline makes to rank retrieved memories and to judge duplicates?
-- **Tests.** Four tracks, each scored on held-out cases from games it was not trained on: a retrieval
+- **Tests.** Four tracks, with task-specific evaluation sets: a retrieval
   reranker (17 test turns, 319 labelled pairs); a duplicate prefilter (65 hand-labelled duplicate cases,
   25 of them strategy points); a duplicate classifier (the same 65 cases); an embedding fine-tune (87
   held-out triplets and 64 of the hand-labelled cases).
-- **Answer.** The reranker matched the LLM reranker it was built to replace (NDCG@5 0.882 against 0.871,
-  intervals overlapping) at no API cost, and a diagnosis of a suspected label leak found the leak small.
+- **Answer.** The reranker scored similarly to the LLM reranker it was built to replace (NDCG@5 0.882 against 0.871,
+  intervals overlapping) at no API cost, and an input/label mismatch diagnostic found a small effect in the checks run.
   The prefilter decided 6 of 25 strategy-point cases alone without error, against 4 of 25 for the
   embedding check, too few cases to act on. The classifier reached 65–69% against the LLM's 83–85%. No
   embedding run improved duplicate separation.
@@ -30,7 +30,7 @@ is in each track's experiment log, linked from its section; labelling quality ha
 - **Strategy point:** a stored lesson, written as a situation and a recommended action. **Observation:**
   a stored record of one past move, written as situation, approach and outcome.
 - **Bi-encoder (embedding) similarity:** each text is turned into a vector separately and the two are
-  compared by cosine similarity, a score between 0 and 1. It is how the store finds candidates.
+  compared by cosine similarity, a score ranging from −1 to 1. It is how the store finds candidates.
 - **Cross-encoder:** a small model that reads the two texts together and gives one score for the pair.
   It is slower per pair than cosine but sees how the texts relate. Both cross-encoders here are
   MiniLM-L6, a 22-million-parameter model.
@@ -50,13 +50,15 @@ is in each track's experiment log, linked from its section; labelling quality ha
 | Dedup classifier | The LLM keep-or-discard call | 65 cases | 4B model 65–69%; LLM 83–85% | Closed |
 | Embedding fine-tune | The embedding model behind the prefilter | 87 triplets; 64 cases | No run widened the duplicate/non-duplicate separation without breaking individual cases | Closed |
 
-The reranker comes first below because it is the one that reached its target.
+The reranker comes first because it produced the most promising task result. The test did not establish equivalence to the LLM or a benefit in play.
+
+**Authorship.** The owner built the labelled datasets; AI coding agents wrote the training code (owner ruling, 2026-10-21). This is a record of dataset work, experiments and deployment decisions. It does not establish personal implementation of the training stack.
 
 ## The retrieval reranker
 
 **Question.** After the store returns the ten memories most similar to the turn's situation, an LLM
 re-orders them and the top three are shown to the player. Can a cross-encoder rank as well as that LLM
-call, without the call? **Answer: on the held-out turns, yes: it scored level with the LLM reranker.**
+call, without the call? **On 17 held-out turns it scored similarly; equivalence was not established.**
 
 **Setup.** A case is one turn: the situation query written for it, and the top ten observations and top
 ten strategy points the May store returned. Each (query, memory) pair was graded 0 (irrelevant), 1
@@ -74,10 +76,11 @@ and v2 shared, both scored 0.777: doubling the data from 20 to 40 cases did not 
 so a third round labelled 109 more turns, of which 68 entered the final set (the log does not say why
 the other 41 were left out). The final set held 108 cases and 1,919 labelled pairs,
 split by case (so no query appears in two splits) and stratified by role and phase into 74 training, 17
-validation and 17 test cases (1,277, 323 and 319 pairs). Training ran on a rented GPU (Modal, one L4) for
+validation and 17 test cases (1,277, 323 and 319 pairs); games were not held out, and every test game also
+supplied training turns. Training ran on a rented GPU (Modal, one L4) for
 20 epochs.
 
-**Result.** On the 17 held-out test cases, v4 matched the LLM reranker and ranked better than the
+**Result.** On the 17 held-out test cases, v4 scored slightly above the LLM reranker and above the
 embedding order it starts from:
 
 | Ranker | NDCG@5 | 95% interval |
@@ -86,23 +89,21 @@ embedding order it starts from:
 | LLM reranker (flash-lite) | 0.871 | 0.800–0.932 |
 | Cross-encoder v4 | 0.882 | 0.822–0.938 |
 
-The 0.011 lead over the LLM is far inside both intervals, so the two are level. Observations ranked
+The 0.011 lead over the LLM is far inside both intervals, but overlapping individual intervals do not establish equivalence. No paired comparison or equivalence test was recorded. Observations ranked
 better than strategy points (0.937 against 0.841, 17 cases each). The weakest cells were the
 investigator's strategy points (0.629, 3 cases) and the healer overall (0.751, 4 cases), the roles with
 the fewest training cases. A model five times larger (BGE-base, 110 million parameters) trained on the
-same data scored 0.839 (0.768–0.907): its validation loss bottomed at epoch 5 and rose after, as it
-memorised 1,277 pairs.
+same data scored 0.839 (0.768–0.907): its validation loss bottomed at epoch 5 and rose after, consistent with overfitting on 1,277 pairs.
 
-**The label-leak diagnosis.** The labellers saw a strategy point in full, situation and action, and were
+**The input/label mismatch diagnosis.** The labellers saw a strategy point in full, situation and action, and were
 asked whether recalling it "would help decide what to do". The reranker scores a strategy point by its
 situation alone. If the labels rewarded good actions, the model was being trained toward something it
-cannot see. Two tests bounded this:
+cannot see. This is an input/target mismatch, distinct from train/test data leakage. Two checks investigated it:
 
 1. **Show the model the action.** Two models were trained identically except that one also saw the
    action. Strategy-point NDCG@5 moved from 0.846 to 0.860 (+0.015), with intervals overlapping
    (0.770–0.917 against 0.782–0.929). Observations, unchanged between the two, stayed level (0.937 and
-   0.931), confirming the strategy-point text was the only thing that moved. The action gave no reliable
-   ranking gain.
+   0.931), consistent with the effect being concentrated in the changed strategy-point input. The small difference did not establish a ranking gain.
 2. **Hide the action from the labellers.** The three automated labellers re-graded 240 sampled
    strategy-point pairs twice, with and without the action. Flash-lite changed 0 of 240 labels, Mistral
    11 of 240 (4.6%), Llama 8B 0 of 160 (its other 80 answers did not parse). No change leaned one way.
@@ -131,7 +132,7 @@ as the way to production. The reranker log's own cost table puts the LLM reranke
 pair and $0.001 per turn.
 
 **How sure we are.**
-- *What it rests on:* one test set of 17 turns from the May game. Per-role figures rest on 3 to 6 turns
+- *What it rests on:* one test set of 17 turns from 6 games, each of which also supplied training turns (the split held out turns, not games). Per-role figures rest on 3 to 6 turns
   each. No paired test between the cross-encoder and the LLM was recorded.
 - *The labels over-credit.* A later check found the merged labels call a memory relevant, where the two
   careful labellers (ChatGPT and Claude Sonnet, which saw full game context) did not, on 514 of 1,848
@@ -145,8 +146,7 @@ pair and $0.001 per turn.
   above the embedding order (13 cases). The LLM reranker was not re-scored on the strict grades, so the
   level result above is on the merged labels only.
 - *The residual in the leak test:* the two careful labellers were not re-tested without the action. The
-  strict-grade re-score above used their action-visible grades and strategy-point ranking held, which
-  the context-eval log reads as making the residual moot for ranking.
+  strict-grade re-score above used their action-visible grades and strategy-point ranking held (the context-eval log reads this as making the residual moot for ranking), but no action-hidden grades from those two labellers exist, so whether hiding the action would change their grades is untested.
 - *Not checked:* any game played with the cross-encoder ranking, and any store after the May store. Today
   a served game retrieves strategy points only, from a different, ten-seat store.
 
@@ -183,7 +183,7 @@ Allowing one error, cosine settled 7 strategy points and 14 observations, the cr
 two methods were good at opposite halves: the cross-encoder found keeps, cosine found discards, so the
 plan was a hybrid, the cross-encoder for strategy-point keeps and cosine for discards. The log also
 reports the gap between average discard and keep scores (2.106 for the cross-encoder, 0.035 for cosine),
-but the two are on different scales (the cross-encoder's score is unbounded, cosine's lies between 0 and
+but the two are on different scales (the cross-encoder's score is unbounded, cosine's lies between −1 and
 1), so that gap does not compare them.
 
 Both methods failed on the same kind of case: same topic, opposite advice. The cross-encoder's most
@@ -195,7 +195,8 @@ A model five times larger (BGE-base, 110 million parameters) overfitted the 861 
 peaked at 0.798 in epoch 5, then fell) and found no zero-error cut-off for either type.
 
 The ONNX benchmark in the reranker section was run on this model: 16.6 ms per pair on one core, 90 MB of
-memory. At the log's 15 prefilter calls a game, about 750 ms per game in total.
+memory. The log estimates about 750 ms a game from 15 dedup calls of 3 pairs each (about 50 ms a call). It
+gives no source for either count; the dedup code of the time compared each new lesson with up to 5 stored ones.
 
 **How sure we are.**
 - *Sample size:* the strategy-point gain is 2 cases out of 25, and the intervals around 24% and 16%
@@ -221,8 +222,7 @@ compares against is in [the embedding prefilter log](../dedup/embedding_prefilte
 **Question.** The uncertain middle band of duplicate decisions goes to an LLM, which answers keep or
 discard. Prompt work had reached 83% agreement with the hand labels and its errors leaned one way (on
 flash-3.5: 9 duplicates kept against 1 new lesson discarded). Can a small open model, fine-tuned on
-labelled decisions, make that call instead? **Answer: no. The best model reached 65–69% against the
-LLM's 83–85%.**
+labelled decisions, make that call instead? **These runs did not reach the LLM baseline: the best checkpoints scored 65–69% against 83–85%.**
 
 **Setup.** No training set existed: only the 65 golden cases had hand labels, and they were kept for
 testing. A training set was built from 1,412 lessons that several models had extracted from 10 game
@@ -256,7 +256,7 @@ The 1.5B model called every strategy point a duplicate and almost every observat
 had learned the item's type, not its text. Its training accuracy of 93.6% hid this, because that figure
 counts every output token, and the decision is one token in about 200 of reasoning. Weighting the
 decision token 100 times tested whether that dilution was the cause; the shortcut became total (every
-strategy point discard, every observation keep), so it was not. The 4B model, on the same weighted
+strategy point discard, every observation keep), so this change did not remedy the shortcut; it does not isolate its cause. The 4B model, on the same weighted
 setup, made real decisions within each type, but found 27–40% of duplicates and got worse with a second
 epoch. Its run was cut off by the GPU provider at about step 330 of 429, so the two saved checkpoints
 were tested instead.
@@ -264,7 +264,7 @@ were tested instead.
 **How sure we are.**
 - *One test set of 65 cases* (25 strategy points, 40 observations).
 - *Size is confounded with model generation:* the 1.5B and 4B models are different Qwen versions (2.5 and
-  3), so "the smaller model lacked capacity" is the likely reading, not an isolated one.
+  3), so the results do not isolate model capacity as the explanation.
 - *Class balance is not ruled out:* the log dismisses it on the grounds that the data is "60% duplicates",
   but the dataset is 45% duplicates (390 of 863), so the 4B model's lean toward keep may be partly the
   data's.
@@ -320,8 +320,7 @@ The cross-encoder track above then met the same ceiling with field-matched text.
 zero-error sweep was not run on these models. The dataset of 861 pairs is small for a 149-million-
 parameter model.
 
-**The call.** Closed. The log puts the limit on similarity methods in general and suggests a revisit only
-with 3,000–5,000 labelled pairs.
+**The call.** Closed. No run separated duplicates well enough to adopt. The log calls the prefilter's ceiling a fundamental limit of similarity methods and suggests a revisit only with 3,000–5,000 labelled pairs; these runs, on 861 situation-only pairs, do not by themselves establish that general limit.
 
 Detail: [embedding log](embedding/experiment_log.md).
 
@@ -384,9 +383,7 @@ in would need a retrain and re-test on today's store first.
 - **The input has to carry what the label judged.** The embedding run trained on situations against
   labels decided on whole lessons, and could not learn them. The reranker's suspected version of the same
   fault (labels that saw the action, a model that does not) was tested and found small.
-- **Model size had to match about a thousand examples.** The 110-million-parameter cross-encoder overfit
-  on both tasks where the 22-million one did not; the 1.5-billion-parameter generative model was too small
-  to read the text at all.
+- **Larger was not better at this data size.** The 110-million-parameter cross-encoder overfit on both tasks and scored below the 22-million one; the 1.5B classifier learned an item-type shortcut. These runs do not establish an optimal model size or a general capacity limit.
 
 Two further ideas, distilling the player model for cheaper dialogue and a learned scorer for which
 memories to show, were written up as designs in June 2026 and never built
