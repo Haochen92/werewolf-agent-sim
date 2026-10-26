@@ -242,6 +242,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
 
     now = datetime.now(timezone.utc)
     added = 0
+    added_keys: list[str] = []
 
     def _run(t):
         role, phase, live, items, tr, tr_keys = t
@@ -282,6 +283,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                                   "dimensions": sp.model_dump(mode="json")},
                     })
                     added += 1
+                    added_keys.append(new_keys[-1])
                 with log_path.open("a", encoding="utf-8") as log:
                     log.write(json.dumps({
                         "at": now.isoformat(), "role": role, "phase": phase,
@@ -294,7 +296,7 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
     # with_track_record = cells synthesized using a realized-credit track record (the credit-AWARE
     # path) — makes the mechanism observable per tick instead of hoped.
     with_tr = len({(r, p) for r, p, _live, _items, tr, _keys in tasks if tr})
-    return ({"added": added, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
+    return ({"added": added, "added_keys": added_keys, "cells_synthed": len({(r, p) for r, p, *_ in tasks}),
              "with_track_record": with_tr, "cells_capped": cells_capped}, obs_counts)
 
 
@@ -321,16 +323,17 @@ def _batch_results(tasks: list, cfg: TickConfig, run_one, pool) -> list:
     return results
 
 
-def _dedup_strategy_points(store_dir: Path, model: str) -> dict:
+def _dedup_strategy_points(store_dir: Path, model: str, new_keys: set[str] | None = None) -> dict:
     """SP KEEP/DISCARD dedup (freeze-old) over the just-synthesized store: collapses near-duplicate
     SPs, keeping the credited OLDER survivor (it absorbs the discarded dup's counts/timestamps).
     SPs NEVER MERGE — combining two directives is incoherent. flash-lite is safe here (KEEP/DISCARD
-    is schema-enforced, no merge text)."""
+    is schema-enforced, no merge text). ``new_keys``: the lessons synthesis just wrote, the only ones
+    judged as new (the tick's working folder has no last-dedup marker to say so)."""
     from Agents.memory.batch_deduplication.config import BatchDedupRunConfig
     from Agents.memory.batch_deduplication.orchestration import run_batch_memory_dedup
     report = run_batch_memory_dedup(BatchDedupRunConfig(
         seed_store_dir=store_dir, dump_store_dir=store_dir, model=model,
-        incremental=True, apply=True, memory_kinds=["strategy_points"]))
+        incremental=True, new_keys=new_keys, apply=True, memory_kinds=["strategy_points"]))
     return {"ran": True, "namespaces": len(getattr(report, "stats", []))}
 
 
@@ -361,8 +364,9 @@ def consolidate(store_dir: str | Path, cfg: TickConfig, prev_obs_counts: dict | 
                                      obs_gen_map=obs_gen_map, current_gen=current_gen)
     sp_path.write_text(json.dumps(store, indent=2))   # persist synth before the SP dedup reads the store
     sd = {}
+    added_keys = set(syn.pop("added_keys", []))
     if cfg.sp_dedup and syn.get("added"):             # only when synthesis added SPs to dedup
-        sd = _dedup_strategy_points(store_dir, cfg.dedup_model)
+        sd = _dedup_strategy_points(store_dir, cfg.dedup_model, new_keys=added_keys)
     # prune LAST, on the post-dedup store (re-read: the dedup mutated the file on disk, not `ns`)
     store = json.loads(sp_path.read_text())
     ns = store.setdefault("namespaces", {})
