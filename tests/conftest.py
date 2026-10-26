@@ -15,6 +15,10 @@ os.environ.setdefault("MEMORY_DEHALO_ENABLED", "false")
 # The model catalogue is rows in the database (Agents/llm_factory/catalog.py); the suite runs on
 # the seed in code, so a test never depends on what the live tables hold.
 os.environ.setdefault("WW_MODEL_CATALOG", "seed")
+# The house list follows the credits at hand; the house tests need several house-funded rows, so the
+# suite pins its own list rather than whatever the seed mirrors today.
+os.environ.setdefault("WW_HOUSE_MODELS",
+                      "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.6-flash,anthropic/claude-haiku-5-5")
 
 pytest_plugins = [
     "tests.fixtures.stream",

@@ -139,3 +139,18 @@ def test_a_game_on_an_unpriced_model_is_reported(caplog):
         meter._add("claude-haiku-5-5", 1.0, {"input_tokens": 10, "output_tokens": 5}, failed=False)
     assert "some-new-model has no price" in caplog.text
     assert "claude-haiku-5-5" not in caplog.text
+
+
+def test_the_seed_funds_what_the_live_table_funds(monkeypatch):
+    """Without WW_HOUSE_MODELS the seed's house list mirrors the live table: Claude Haiku 5.5 only
+    since the Gemini credits ran out (2026-10-15)."""
+    monkeypatch.delenv("WW_HOUSE_MODELS", raising=False)
+    assert [m.model for m in catalog.seed().models if m.house_funded] == ["anthropic/claude-haiku-5-5"]
+
+
+def test_ww_house_models_sets_the_seed_house_list(monkeypatch):
+    monkeypatch.setenv("WW_HOUSE_MODELS", " gemini-3.6-flash , openai/gpt-6-luna ")
+    assert [m.model for m in catalog.seed().models if m.house_funded] == ["gemini-3.6-flash",
+                                                                          "openai/gpt-6-luna"]
+    monkeypatch.setenv("WW_HOUSE_MODELS", "")
+    assert not any(m.house_funded for m in catalog.seed().models)
