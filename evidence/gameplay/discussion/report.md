@@ -692,7 +692,7 @@ opening rule now says a result the morning already made public is not news
 
 - **The opening produced no contest on the nine-seat game:** no evil player claimed in the four test
   games. Evil claims were taken up in the roles work afterwards
-  ([reasoning_failures](../deduction/report.md) §4).
+  ([the deduction report](../deduction/report.md) §5).
 
 - **The closing's effect on voting is unmeasured.** All seven defended players were voted out in
   those games. That does not show whether individual votes changed or what would have happened

@@ -1,139 +1,221 @@
-# The Deduction Engine
+# Helping agents reason from the facts they already have
 
-**Version.** The implementation described here is the 2026-10-26 snapshot at
-`ccaec2f64788c1d3183940dd31a4c93475c164b5`. Against it were rechecked the modes and their per-side
-override, the leak boundary, the guard on unverified roles and limits, where the blocks sit, and the
-test files; the rest of §2 was written against `5574bb11` (2026-10-21). Historical results belong to
-the models, prompts and configurations recorded in each study; they are not all measurements of this
-snapshot.
+Factual errors damage a social-deduction game because other players act on them. An investigator
+inventing a check can get an innocent player voted out; an agent ignoring a decisive result can leave
+the town with nothing useful to discuss. Deliberate deception belongs in Werewolf. Accidental mistakes
+about the game record undermine that experience.
 
-**Scope:** how the harness hands each AI seat the conclusions a careful human would draw from what
-that seat knows, computed by code and injected into its prompt: what the engine may state, where its
-one leak boundary sits, how it is verified, and what the screens showed.
-**First written:** 2026-10-21 against `5574bb11` (the engine as deployed to the server on 2026-10-19
-at `334a56e1`). The specification with every row, the owner's rulings and the slice-by-slice build
-record is [`deduction_catalogue.md`](deduction_catalogue.md); the case register and the experiments
-that led here are [`experiment_log.md`](experiment_log.md).
-**Artifacts (the proof behind §4):** `data/deduction_injection/` (the R1 replay) · `data/deduction_block_census/`
-(block sizes over 278 turns) · `data/deduction_placement/`, `data/deduction_placement_n10/`,
-`data/deduction_ac2_2x2/`, `data/deduction_ac2_closing_fixed/` (the placement and vote screens) ·
-`data/solver_census/` (the solver against the brute-force oracle on random games, and its cost) ·
-`../data/evil_cover_screen/` and `evil_cover_games/` (the evil-seat lines) · `../data/counter_claim_votes/`
-(the dropped counter-claim line).
+The deduction engine grew out of that problem. After fixing missing inputs and trying prompt and
+model changes, the AI seats (Claude Haiku 5.5 at a low thinking budget) still had the relevant
+facts but failed to connect them. The design
+was to **compute supported deductions in code and put them directly into each agent's prompt**.
+The model still decides what to say, whom to trust and how to act.
 
-> **Orientation: one seat's turn.** Every injected line is produced along one path:
->
-> **the seat's payload → `SeatView` → items, by level → two rendered blocks → the prompt**
->
-> The payload is what the information boundary already allows that seat (the public record, its own
-> night records, and for a wolf its pack). `SeatView` is the only thing the engine reads. Items are
-> typed conclusions with a grade and a derivation. The two blocks are the text the seat sees, one
-> shared by every seat and one its own. Every identifier below (`own_results`, `candidates`,
-> `deduction_mode`, the brute-force oracle) hangs somewhere on this path.
+The result is promising but limited: in one frozen failure, all 10 injected replays recorded a
+previously missed conclusion, compared with none without it. All 10 still stayed silent. The engine
+can supply a missing reasoning step; that does not establish better decisions or better whole-game
+play. Its substantial rule and verification machinery is the cost of supplying that help reliably.
 
----
+## 1. Why build this after trying prompts?
 
-## 1. The guarantee (current contract)
+The [factual-error report](../../evaluation/factual_errors/report.md) establishes the wider problem.
+In the July nine-seat census, about 3% of public messages contained a factual error. In an October
+live game, an invented investigation result led to an innocent player's elimination and a serial
+killer win. These observations motivated reliability work; they are not a baseline measurement for
+this deduction engine.
 
-The AI seats run Claude Haiku 5.5 at a low thinking budget. They absorb facts and do not take the
-first inferential step. In the case that opened this work (R1 in the log), a healer was roleblocked on
-night 1, the trailseer reported seeing player_7 go to the healer, and player_7 admitted the visit. Only
-the Chanteuse, a wolf, can roleblock. The healer wrote every premise into its notes three times, never
-named player_7, and passed all three turns. So the contract is:
+That work exposed different causes with different remedies:
 
-**Each AI seat's prompt carries, written by code, every conclusion a careful human would draw from
-what that seat knows, each line graded by how far it holds, and no line ever states as certain what
-some legal game would make false.**
+| Failure | Appropriate response |
+|---|---|
+| A fact is missing or distorted before it reaches the agent | Repair the input, record or summary |
+| A fact is present but worded confusingly | Clarify the prompt and replay the failing turn |
+| The facts are clear, but the agent misses or overstates their implications | Test more reasoning effort, a stronger model, or explicit deductions |
+| The agent understands a fact but follows an outdated plan | Investigate how it carries forward and updates its strategy |
 
-**Three grades, in the wording itself.** The grade is carried by the sentence, never by a header a
-weak model may skip.
+The engine addresses the third row. It cannot substitute for the other fixes.
 
-| Grade | Holds in | Reads as |
+**The earlier methods helped in some places, but did not resolve the remaining failures.** The July
+prompt bundle reduced errors on selected error-prone turns from 48% to 30%. A later nine-seat replay on
+gemini-3.5-flash-lite also found a substantial benefit from more thinking: bad samples fell from 82
+to 27 of 267, at medium against minimal. So “prompt changes did not work” would be too
+broad a claim.
+
+The immediate ten-seat experiments that preceded this engine were less encouraging:
+
+| Attempt | Result on the tested cases | Implication |
 |---|---|---|
-| Certain | every legal game that agrees with what the seat knows at that turn | "You were roleblocked: your protection of player_5 did not happen. Only the Chanteuse could roleblock that night, and a block is a visit, so the Chanteuse, a wolf, came to you that night." |
-| Follows if named claims are true | every such game in which the named claims are also true | "If player_2's watch is true, player_8 is the Healer: no other role still in play could have come to you on night 2." |
-| Possible explanations | a complete list of the branches, one of which is certain | "player_3 says player_7 came to you on night 1, and player_7 agrees. If that is true, either player_7 is the Chanteuse, or player_7 and the Chanteuse both came to you." |
+| Increase Haiku's thinking from low to medium | 98/160 correct votes versus 65/160, at about 2.7× the output tokens; discussion errors barely changed | Useful for votes, but no general reliability fix |
+| Use a stronger day summariser | 18/30 summaries flawed in each arm | No improvement in this screen |
+| Rewrite the private-note prompt to separate changes, reasoning and plans | 27 fact/rule errors versus 15 in 56 samples per arm | Not adopted; asking for more explicit reasoning did not make it more reliable |
+| Take a majority of three low-effort votes | 39% correct versus 41% for one vote | Repeated samples often shared the same mistake |
 
-A conclusion that holds on only some branches of its premises is not stated at all. The first and
-third examples are the two lines the R1 healer now receives; the second is from the day-3 vote in §4.
+These studies used different cases and measures; their percentages should not be compared across
+rows. The setups are in the [experiment log](experiment_log.md).
 
-**Why the bar is absolute.** Injected text is taken up almost every time: on the R1 turn, all ten
-low-effort replays wrote the injected fact into their notes (§4). A wrong line is therefore not an
-occasional error but a deterministic falsehood in every game where its conditions hold. That is why
-the catalogue's rule is *never state as absolute what is not*, and why soundness, not coverage, is
-what the tests prove (§3). Coverage is the owner's standing ruling: inject as much as a careful human
-could deduce, including conditionals and which roles each player could still be, and let the only
-bar be the false absolute.
+The resulting design choice was to move rule-based inference into code. If the same game facts imply
+the same conclusion, computing that conclusion once avoids asking the model to rediscover it on
+every turn. This is a bounded intervention: it supplies logical consequences while leaving uncertain
+social judgments and actions to the model.
 
-**Where it is enforced.** The engine reads one typed object, `SeatView`, built in
-`Agents/deduction/seat_view.py` from the seat's own payload and nothing else. The payload builders
-already give each seat only what its role may know (the information boundary, documented in
-`../../agent_boundaries/report.md`); `SeatView` selects from that payload and adds nothing. So the
-injection sits inside the existing boundary rather than opening a second one, and a metamorphic test
-(§3) checks that a seat's lines do not change when hidden state changes.
+## 2. One example explains both the benefit and the risk
 
-**How much a seat gets.** A per-game setting, `deduction_mode` on `RunConfig` (and the batch
-runner's `--deductions`), chooses `off`, `record` (only the lines beside the seat's own night
-records), `public` (those plus the blocks without any line that rests on a claim) or `full`, with a
-per-side override so one faction can play at a lower level. A human seat gets nothing whatever the setting. A game whose dealt roles or use
-limits are outside what the engine was verified for also gets nothing (`verified.py`): an unverified
-role can make a line that says "only X can…" false in every game that deals it, and silence is the
-safe default.
+A healer was roleblocked on night 1. In this game's cast, only the Chanteuse, a wolf role, could
+perform that block, and blocking requires a visit. The trailseer (player_3) said it had followed
+player_7 to the healer that night; player_7 admitted the visit and claimed no role.
 
-## 2. The engine: what it concludes, level by level
+The healer's notes repeated the premises over three turns without drawing the useful connection.
+It passed all three turns. The engine now supplies the first step explicitly, beside the healer's
+own night record:
 
-The engine is one package, `Agents/deduction/`, with one folder per level of reasoning. Each level
-reads the `SeatView` and the levels below it and emits typed items (`DeductionItem` in
-`Agents/schemas/deduction.py`: subject, night, the conclusion as facts, the text, the grade, the
-premises, the sources and the derivation). The levels, in the order a seat would use them:
+> Night 1 (last night): You were roleblocked: your protection of player_5 did not happen. Only the
+> Chanteuse could roleblock that night, and a block is a visit, so the Chanteuse, a wolf, came to you
+> that night.
 
-| Level | Folder | What it adds | Example |
-|---|---|---|---|
-| Own results | `own_results/` | What the seat's own night record proves, read with the morning. Shown beside the record itself. | the roleblock line in §1 |
-| Public events | `public/` | What the morning announcement, the dead roster and a read-out will prove to everyone. The same for every seat. | "player_3's will shows player_7, the Chanteuse, went to player_8 on night 1. The pack's kill that night was on player_1, so that visit was her block on player_8." |
-| Candidate roles | `candidates/` | Which roles each living player and each hidden body could still hold, by constraint propagation (below). | "The Serial Killer is alive and is one of player_2, player_4, player_6, player_8 and player_10." |
-| Joins | `joins/` | The seat's own results set against another player's claim about the same night. | the "either player_7 is the Chanteuse, or…" line |
-| Conditionals | `conditionals/` | The propagation rerun with a claim assumed true, and its contrapositive on a vote turn. | "player_8 can be the Serial Killer only if player_2's watch is false." |
-| Comparisons | `comparisons/` | Today's claims against the record and against each other: which fit, which cannot both hold, and the status of every role claim. | "player_2 claims the Sentinel. Its report that player_7 came to you on night 2 is true. That does not show that player_2 is the Sentinel." |
-| Explanations | `explanations/` | A claim the morning leaves open, with every branch; budgets that run out across nights. | "player_5's self-bet has saved it twice, so it has none left." |
-| Evil seat lines | `evil/` | For a wolf, the Serial Killer or the Necromancer: which roles it could claim without a public contradiction, which night stories fit the record, and what its own true visits rule out. Facts, never advice. | "player_2's hidden role was the Sentinel: your pack's kill record shows it, and the public record does not. No living player holds the Sentinel, so if you claim it, no one can counter-claim you truthfully." |
+It also connects the reported visit, with the uncertainty preserved:
 
-**The solver, and why it is sound but not complete.** Candidate roles are computed by propagation,
-not search. Each player starts with the census: the dealt roles not yet revealed, minus the seat's own
-role and, for a wolf, its pack's. Every certain fact from the levels above removes candidates. Then
-four rules run until nothing changes: a role with one possible holder leaves everyone else; *k*
-players who can only hold *k* roles between them take those roles from everyone else; when a watch
-saw the visitors to an attacked player and only one of them could have made the attack, it did; and
-the game having continued past every check so far constrains who could have been checked. A role
-whose holder must have been alive on a night also leaves the bodies that died before it. A
-conditional reruns the same propagation
-with a claim added as a premise. Propagation can miss a conclusion a full search would find, which
-only means the seat is told less; it must never remove a candidate that some legal game still allows.
-The exhaustive search exists, but only as the test oracle (§3), never in a game.
+> player_3 says player_7 came to you on night 1, and player_7 agrees. If that is true, either
+> player_7 is the Chanteuse, or player_7 and the Chanteuse both came to you.
 
-Propagation was chosen for its reasons, not its speed: each removal is one named rule resting on
-recorded evidence, which is what the line's wording and the turn's log carry, where a search's
-answer comes without a step a reader can follow. It is also cheap. Building one seat's candidates
-(its constraints, then the solve) took a median 0.45 ms over 3,408 views (p99 1.65 ms), and both
-blocks of acceptance case 2's vote turn, every level included, a median 10.5 ms over 30 builds
-(`data/solver_census/`, one aarch64 host, for scale only). A model call takes seconds.
+Both lines are verbatim from the engine's acceptance test for this turn. Each carries its premises
+in the sentence: the first says why only the Chanteuse fits. **It cannot say “player_7 is the
+Chanteuse.”**
+A second visitor could have performed the block. Nor does a correct report prove the reporter's
+claimed role: a liar can report something that really happened.
 
-**Roles as traits, not names.** The rows ask what a role *is* (night-immune, blockable, whether its
-visits show under its own name, whether it reads Suspicious) from one table,
-`Agents/schemas/role_traits.py`, rather than naming roles. A new role is declared there, the trait
-tests say which rows its traits already cover, and only new behaviour needs a new row.
+This is the central engineering difficulty. Supplying an inference is easy; checking all the ways it
+could be false is harder. Injected text is taken up almost every time: all ten replays in §5 wrote
+the line into their notes. So a wrong line would not be an occasional error. It would be a false
+premise in every game where its conditions hold.
 
-**Two blocks, by cache placement.** The renderer (`render.py`) is a pure function from items to
-text; derivations go to the turn's log, never into the prompt. The public block is built from the
-public record alone, so it is identical for every seat and sits in the shared, cached prefix of the
-prompt; it changes only at a morning, a reveal or a vote. The seat's own block sits after the cache
-boundary, before its carried-forward strategy note. Within a block the order is fixed by seat number,
-never by content, because these models favour the first-named seat: an entry put first because it
-had the most to say would pull votes toward that player.
+Every line therefore needs to communicate one of three things:
 
-What a seat reads, on a real turn. This is AC2, one of four acceptance cases: a known failure from a
-served game, frozen at the turn it went wrong and rebuilt from the seat's payload (§3). The seat is
-the investigator at a day-3 vote; as played, it voted out the healer who had protected it.
+| Kind of statement | What it means |
+|---|---|
+| Certain | Holds in every legal situation compatible with this seat's information |
+| Conditional | Holds if the explicitly named claims are true |
+| Alternatives | Lists the possible branches without promoting one branch to a fact |
+
+The healer's first line is certain; its second lists the alternatives under a named claim. A
+conditional reads, for example: “If player_2's watch is true, player_8 is the Healer: no other role
+still in play could have come to you on night 2.”
+
+These are design requirements, not a claim that testing has proved the entire implementation correct.
+The wording carries the qualification in the sentence itself so that an agent cannot miss it by
+skipping a heading.
+
+## 3. How it works
+
+The path through the system is:
+
+**Information this seat may see → facts and constraints → deductions → prompt text → model decision**
+
+### Start with the seat's information
+
+The engine reads a `SeatView`, built from the same payload already allowed to that player: public
+events, its own role and night results, and pack information if it is a wolf. It does not receive the
+omniscient game state. Public claims are available as claims, not automatically accepted as facts.
+
+This boundary matters as much as the logic. Giving an agent the right answer from a hidden role table
+would defeat the game. The intended help is what a careful player could infer from permitted
+information. The existing [information boundary](../../agent_boundaries/report.md) remains responsible
+for constructing that input correctly.
+
+### Translate game mechanics into constraints
+
+Some conclusions are direct: a roleblock tells the recipient that a blocking visit occurred. Others
+restrict who could hold a role, who could have made an observed visit, or whether an ability still has
+uses left.
+
+Rules ask what a role *is* rather than naming it: night-immune, blockable, whether its visits show
+under its own name, whether it reads Suspicious. One role-trait table answers those questions. A new
+role is declared there, the trait tests show which rules its traits already cover, and only new
+behaviour needs a new rule. The table is checked against the game engine, not just declared (§4).
+
+Each deduction records its premises and supporting events. This allows a rendered line to be traced
+back to the rule and evidence that produced it.
+
+### Narrow candidate roles until nothing changes
+
+The central solver is **constraint propagation**. It keeps a set of possible roles for each player,
+including dead players whose roles were concealed. Known roles are fixed; unknown players start with
+the roles that still have unaccounted-for copies in the dealt cast.
+
+An illustrative example, assuming one copy of each role:
+
+| Player | Before propagation | After propagation |
+|---|---|---|
+| A | Healer or Sentinel | Healer or Sentinel |
+| B | Healer or Sentinel | Healer or Sentinel |
+| C | Healer, Sentinel or Chanteuse | Chanteuse |
+
+A and B must use up the Healer and Sentinel between them. C therefore cannot hold either. We do not
+need to decide which role A holds to deduce C's role.
+
+The implementation repeats four kinds of rule:
+
+1. **Role counts:** if all copies of a role have known holders, remove it elsewhere; if only enough
+   possible holders remain to fill its copies, those holders must have it.
+2. **Closed groups:** if a group of players must use up a group of roles, remove those roles outside
+   the group, as in the example.
+3. **Observed actors:** if an event establishes that one of several players performed an action, and
+   only one can still have the required role, narrow that player's roles accordingly.
+4. **Game continuation:** exclude concealed-body assignments that would have made the game end at an
+   earlier win check, since the game demonstrably continued.
+
+Other constraints are applied before this loop: for example, a role known to have acted on a night
+cannot belong to a concealed body that died before that night.
+
+Every removal may unlock another rule, so the solver repeats until a full pass removes nothing.
+It terminates because candidate sets are finite and only shrink. If the solver detects a contradiction,
+its caller receives no candidate result instead of a forced answer.
+
+**This is not a full search through every complete game state.** The main algorithm propagates
+constraints, although the continuation rule does enumerate combinations for concealed bodies.
+Closed-group checks also examine player subsets, so this is not a claim of cheap scaling to arbitrary
+large games. The separate brute-force role-assignment oracle is used for testing.
+
+The reason for propagation is traceability: each removal has a named rule and evidence. It can miss
+relationships a fuller search would discover. Missing a deduction leaves the model with less help;
+removing a genuinely possible role risks giving it a false conclusion.
+
+### Keep assumptions separate, then render the result
+
+For conditional deductions, the engine reruns propagation with a supported claim premise added for
+that run. A conclusion from that run stays qualified: “If player_2's watch is true…” It does not
+become a fact in the baseline candidate sets.
+
+Additional rules compare claims with the record and with each other, connect private results to
+reported visits, and enumerate explanations where the evidence leaves alternatives. Evil seats also
+get facts about which cover roles and night stories fit the record. Their role cards provide the
+strategic advice; the deduction lines describe consistency.
+
+Altogether the engine works at eight levels, one code folder each, in the order a seat would use them:
+
+| Level | What it adds | Example line |
+|---|---|---|
+| Own results | What the seat's own night record proves, shown beside the record | the healer's roleblock line (§2) |
+| Public events | What the morning, the dead roster and a read-out will prove to everyone | “player_3's will shows player_7, the Chanteuse, went to player_8 on night 1. The pack's kill that night was on player_1, so that visit was her block on player_8.” |
+| Candidate roles | Which roles each player and hidden body could still hold | “The Serial Killer is alive and is one of player_2, player_4, player_6, player_8 and player_10.” |
+| Joins | The seat's own results set against another player's claim | the healer's either/or line (§2) |
+| Conditionals | Propagation rerun with a claim assumed true | “player_8 can be the Serial Killer only if player_2's watch is false.” |
+| Comparisons | Today's claims against the record and each other | “player_2 claims the Sentinel. Its report that player_7 came to you on night 2 is true. That does not show that player_2 is the Sentinel.” |
+| Explanations | Every branch of a claim the morning leaves open; abilities used up across nights | “player_5's self-bet has saved it twice, so it has none left.” |
+| Evil seat facts | For a wolf, the Serial Killer or the Necromancer: which roles it could claim without contradiction, which night stories fit | “No living player holds the Sentinel, so if you claim it, no one can counter-claim you truthfully.” |
+
+The renderer turns the items into two blocks. The public block is built from the public record alone,
+so it is the same for every seat and sits in the cached prompt prefix. The seat block sits after the
+cache boundary, before the agent's carried-forward strategy note. Placement screens found no reliable
+behavioural difference between before and after the note (§5); before is the cache-friendlier order,
+because the note changes every turn and so stays last. Direct consequences of a private result also
+appear beside that result. Derivations are logged rather than printed.
+
+Within a block, entries go in seat order, never by importance. These models favour the first-named
+player in a list, so an entry placed first because it had the most to say would pull votes toward
+that player.
+
+This is the seat block an investigator received at a day-3 vote in one acceptance case. As played,
+before the engine, it voted out the healer who had protected it:
 
 ```
 - If the current role claims are true, the Serial Killer is player_6 or player_10.
@@ -143,190 +225,117 @@ the investigator at a day-3 vote; as played, it voted out the healer who had pro
 - player_8 can be the Serial Killer only if player_2's watch is false.
 ```
 
-Over 278 saved Haiku turns (four games, frozen and captured), the seat block is a median of 4 lines
-and 742 characters (p90 8 lines, 1,778 characters; the longest 12 lines, 2,920 characters) and the
-public block a median of 1 line and 338 characters. Twenty turns got an empty seat block. The
-engine adds roughly a paragraph to the prompt.
+In a census of 278 saved Haiku turns, the median seat block was four lines, or 742 characters; the
+median public block was one line. The engine adds roughly a paragraph to the prompt.
 
-## 3. How we verify: soundness is tested, coverage is not
+Modes allow deductions to be off, limited to private records, extended to facts without claim-based
+inferences, or fully enabled, with faction overrides. Human seats receive none. Games using roles or
+use limits outside the verified set receive none either: adding a second blocking role, for example,
+would invalidate “only the Chanteuse can block.”
 
-The build bar for every row, set by the owner before any row was built, has four parts, and the
-tests in `tests/engine/deduction/` are organised around them. Each level has its own file
-(`test_own_results.py`, `test_skill_results.py` and `test_morning_results.py` for the seat's own
-results; `test_public_events.py`, `test_candidates.py`, `test_joins.py`, `test_conditionals.py`,
-`test_comparisons.py`, `test_explanations.py`; `test_evil_seat.py` and `test_covers.py` for the evil
-seats), and each file holds that level's examples, counterexamples and exact lines. Three files test
-what surrounds the levels: `test_render.py` asserts that the public block is the same for every seat
-and sits before the cache boundary, and that `off`, `record` and a human seat get no block;
-`test_verified.py` asserts that a role or use limit outside the verified set turns the engine off;
-`test_claim_view.py` checks the claims as the engine reads them, from the claim ledger and from
-today's speakers' own fields. The tests are largely AI-written and not yet audited.
+## 4. What makes the implementation credible—and what remains uncertain
 
-**An executable example and counterexample on the real engine.** Each row is exercised by a
-constructed night resolved through the real night rules: one night where it fires and its
-conclusion is true, and one or more where a single condition differs and it must not fire, or must
-fire with the weaker wording. The counterexamples cover the interactions the catalogue lists for the
-row: borrowed actions through a body, blocked attempts, the living against the reanimated
-illusionist's conceal, a fortune teller's self-bet, deaths on the same night.
+The main risk is an unjustified conclusion presented as certain. Verification targets that risk in
+several ways:
 
-**A golden of the exact line.** Every row's rendered text is pinned, so a wording change is
-deliberate. The four acceptance cases (`test_acceptance.py`) go further: for each known failure the
-turn is rebuilt from the frozen payload exactly as the live pipeline builds it, and the whole prompt
-must contain every sentence the case lists and nothing on its "must not say" list. For AC1 the
-forbidden sentence is "player_7 is the Chanteuse", with or without a premise: a second visitor is
-always possible, so it appears only inside the either/or line.
+| Check | What it can catch |
+|---|---|
+| Examples and counterexamples resolved through the real game engine | A rule that misses an interaction such as a block, concealment or borrowed action |
+| Exact rendered-text assertions and four frozen acceptance cases | Wording that loses a qualification, omits a required line or states a forbidden conclusion |
+| Brute-force role assignments on test cases | A candidate removed even though a compatible assignment permits it |
+| Random nights resolved through the real game engine | Deductions that conflict with the actual roles or resolved events |
+| Hidden-state changes with the visible input held equivalent | Output that depends on information the seat should not know |
+| Role-trait checks against resolved nights | A trait table that disagrees with actual game behaviour |
 
-**Two oracles for soundness.** The brute-force oracle (`tests/factories/role_assignments.py`)
-enumerates every deal of the cast that agrees with what the view knows, plus the line's premise if it
-has one, and asserts that every certain or conditional item holds in all of them. The random-night
-oracle (`tests/factories/random_nights.py`) deals a random cast, kills some players on earlier nights
-and days, lets every living role make a random legal choice, resolves it with the real engine, and
-then checks every fact every surviving seat's lines state against the true roles and the resolved
-night. Twenty thousand such nights run in each of `test_own_results.py`, `test_public_events.py`
-and `test_candidates.py`. A rule that says more than the game guarantees fails here.
+The suite includes 20,000 random nights in each of the own-results, public-events and candidate test
+files. The trait check resolves real nights with every role attacked, blocked, watched, followed, checked
+and sigilled; it caught all 168 tested single-trait flips. The deduction suite passed in full on
+2026-10-26.
 
-**A leak test.** The metamorphic form of the boundary in §1: several hidden states compatible with
-what a seat sees (other seats' roles and results permuted within the legal assignments) must render
-identical lines for that seat. It runs per level (for example in `test_own_results.py`,
-`test_morning_results.py`, `test_comparisons.py` and `test_covers.py`).
+A separate census compared propagation with the brute-force oracle on 150 generated games: 3,408 seat
+views and 525 public views. It found no extra candidate roles left by propagation relative to that
+oracle. That is useful evidence of coverage on those inputs, **not a completeness proof**: both
+systems can omit the same game fact, and conditional runs were not included in the census.
 
-**The role-trait table is derived, not declared.** `test_role_traits.py` resolves real nights with
-every role attacked, blocked, watched, followed, checked and sigilled, and fails on any trait the
-engine disagrees with. Each of the 168 single-trait flips is caught.
+The tests were largely AI-written and have not had an independent audit. Examples, random sampling
+and an oracle provide complementary evidence; they do not establish that every legal interaction has
+been checked. The aspiration to supply everything a careful human could deduce exceeds what has
+been demonstrated.
 
-**Completeness of the solver, measured once.** Soundness is tested; whether propagation misses what a
-full search finds was measured separately (`evaluation/experiments/deduction_solver_census.py`,
-output `data/solver_census/`). On 150 random legal games from the suite's generator (seed
-20261018), every view was solved and compared with the brute-force oracle's allowed deals: 3,408
-seat views and 525 public views, and in none did the solver keep a role that no allowed deal gives.
-The oracle builds its conditions from the same knowledge as the engine, so a fact neither encodes is
-invisible to this check: it shows no gap against the oracle, not completeness. One gap is known by
-design: a constraint that depends on a choice nobody sees (a self-bet, which body a borrowed action
-used) keeps both branches. Conditional runs, with a claim added as a premise, were not measured.
+Runtime was small in the recorded sample: candidate construction and solving took a median 0.45 ms
+across 3,408 views; building both blocks for one acceptance-case vote took a median 10.5 ms over 30
+builds. These measurements are from one aarch64 host. The significant cost is maintaining the rules
+and their tests, rather than the measured execution time.
 
-These tests prove that what is built is sound. They do not prove the catalogue is exhaustive; a
-deduction a human would make and the engine does not is a gap in coverage, not a false line, and
-the acceptance cases are the only test of coverage.
+## 5. What improved in the agents?
 
-## 4. Evidence: what changed, and what did not
+**The strongest result is uptake of a supplied conclusion, not improved gameplay overall.** The
+roleblocked-healer failure above was replayed with and without the injected consequence. On the turn
+after player_7's admission:
 
-**Verdict.** The engine removes the inferential step it targets: on the R1 turn, every replay now
-writes the certain conclusion into its notes. It does not by itself change behaviour where a seat's
-own note or a misleading public line pulls the other way. The one whole-game comparison so far is on
-the evil side: with new card text and the engine's lines together, the wolves won 3 of 8 paired
-games, against none before. It is reported in the [roles report](../roles/report.md); the engine's
-share is below. No town-side win-rate claim is made: the engine was assessed on
-reasoning, on frozen turns, at small *n*, by design.
+| Outcome at low thinking effort | Without injection | With injection |
+|---|---|---|
+| Notes record that the Chanteuse visited the healer | 0/10 | 10/10 |
+| Notes identify player_7 as probably the Chanteuse | 0/10 | 2/10 |
+| Agent speaks | 0/10 | 0/10 |
 
-### The levers tried before code (why injection)
+The later suspicion is not a guaranteed deduction. This experiment tested the initial roleblock line,
+not the causal effect of every component in the completed engine.
 
-Four levers were tried against the same failures before the engine was built:
+A follow-up changed the carried-forward strategy note while retaining the injection. With a neutral
+note, the agent spoke in 9/20 samples versus 3/20 with its existing “stay quiet” stance. This small
+screen suggests a separate behavioural obstacle: new knowledge can be absorbed without dislodging an
+old plan. It does not establish a general fix for that obstacle.
 
-- **A higher thinking budget** (Haiku at `medium` against `low`) is the one that moved votes: 98 of
-  160 right against 65 of 160 on sixteen frozen vote cases, better on 12 cases and worse on 1 (sign
-  test p = 0.003), at about 2.7× the output tokens. The notes and the discussion turns stayed within
-  noise: the votes' notes had a fact error in 46% of samples at medium against 50% at low (11 cases
-  better, 5 worse, p = 0.21), and 47 of 115 discussion samples were flawed at medium against 49 at
-  low.
-- **A stronger summariser** (Sonnet 5.5 for the day summary) was not better: 18 of 30 summaries
-  flawed in each arm.
-- **A rewritten private-note prompt** was worse on every judged measure (27 fact errors against 15
-  in 56 samples per arm) and was not adopted.
-- **A majority of three low-effort votes** was right as often as one (39% against 41% of cases).
-  The errors repeat across samples, because the model holds the same wrong belief each time it reads
-  the same context.
+Other screens reinforce the same boundary:
 
-That last result is the case for code. The missing step is deterministic, so it can be written down
-once rather than sampled for.
+- **Vote mistakes persisted.** In an investigator's vote case, the healer still received 33/100 votes
+  across four injection/placement variants. Correcting a misleading moderator closing line reduced
+  healer votes from 9/25 to 5/25 in a follow-up comparison. At that size the difference is suggestive;
+  it is not an isolated estimate of the engine's benefit.
+- **Placement had no clear winner.** Screens on the four acceptance cases (3 and 10 samples per case
+  per arm), then a 2×2 on the investigator's vote case alone (25 per arm), did not establish a
+  reliable before-note versus after-note effect. The implementation uses before-note; it should not
+  be described as a demonstrated behavioural solution.
+- **Evil cover lines looked useful.** With revised role-card advice held constant, one screen of 41
+  pressured evil turns, two samples each (82 per arm), recorded 44 role claims and no denials with a
+  cover line, versus 36 claims and four denials without it. Different judges labelled the arms, so
+  the counts are exploratory.
+- **A true extra line was dropped.** Summarising what competing role claimants had reported did not
+  improve pooled voting in a small screen and moved one target game's votes the wrong way. More
+  information is not automatically more useful to the model.
 
-### R1 replayed: the fact is absorbed, the silence is the note's
+The only whole-game comparison bundled revised evil role cards with deduction lines: wolves won
+3/8 paired games versus none before. The [roles report](../roles/report.md) describes it. The engine's
+contribution cannot be separated from the cards in that comparison. **No paired town-side whole-game
+A/B or post-engine factual-error rate has been measured.**
 
-The healer's three passed turns of day 2 were replayed ten times each, as played and with the
-roleblock line injected, at low and medium effort. On the injected turn all ten low-effort notes
-record that the Chanteuse visited the healer, where none did as played; the second link, that
-player_7 is probably the Chanteuse, appears in 2 of 10 reads against 0 of 10. The seat still spoke in
-0 of 10 (1 of 10 at medium). A 2×2 on the turn's inputs found the cause: with its carried-forward
-note ("stay quiet") replaced by a neutral one, the seat spoke in 9 of 20 samples against 3 of 20
-in this run (p = 0.08), and 3 of 30 pooled with the earlier run (Fisher p = 0.007); removing a
-survival sentence from the role card changed nothing (6 of 20 either way). The block, then, must outrank the note, which is why its
-placement was screened (next) and why the limits in §5 are about behaviour, not facts.
+Two further limits apply to all of the above. The screens were labelled blind by Claude subagents in
+chat sessions (the thinking-budget and summary screens by Sonnet 5.5 in a batch), and agreement
+between judges was not measured. And one level has never fired: the explanation branches for a
+claim the morning leaves open produced no line on any of the 278 census turns. Their conditions are
+real but rare; they are tested like every other rule and cost nothing when silent.
 
-### Placement and the AC2 vote: before the note, and a third of votes still wrong
+## Sources and implementation pointers
 
-The seat block can sit before or after the seat's strategy note. Three screens on the four
-acceptance cases (n = 3 and n = 10 per case per arm, judged blind by chat subagents; then a 2×2 on
-AC2 alone at n = 25 per arm) found no placement difference that survived the sample size: at n = 10,
-AC1 and AC4 favoured `before_note` and AC2 favoured `after_note`; at n = 25 on AC2, player_8 (the
-real healer) got 9, 9, 10 and 5 of 25 votes across the four arms, pooled 33 of 100. `before_note`
-was ruled the default on 2026-10-18; it is also the cache-friendly order, since the note changes
-every turn and the block only at a morning or a vote. The setting has since been removed: the block
-always sits before the note (`Agents/prompts/memory/context.py`, the `deduction_seat_before_note`
-slot). The two sentences about player_8 that the 2×2
-trimmed are kept: they are true and did not move the vote.
+**Version.** This revision describes the implementation at `588a3273` (2026-10-26; since `ccaec2f6`,
+the previous pin, the deduction code is unchanged and one test comment was corrected). Historical experiments keep their original models,
+prompts and configurations; they are not all measurements of this snapshot.
 
-What did move AC2 was outside the engine. The moderator's closing line in the frozen game still read
-"player_8 has been accused by player_2, player_5 and player_4", although one accuser had withdrawn
-and one had only asked a question (R2, fixed in code on 2026-10-16). With today's closing line and
-the block, the vote for player_8 fell from 9 to 5 of 25. At this *n* that is suggestive, not
-decisive; 5 of 25 is the best current estimate of the remaining AC2 failure with the engine in place.
-For scale, before the engine the same seat at low effort voted right in 1 of 10 replays with today's
-closing line (a different setup, so not a paired comparison).
-
-### The evil side: facts for a cover
-
-Since a ruling of 2026-10-18, the evil role cards tell an evil seat to claim a role and never deny a
-sighting. The advice is the cards'. The engine's part is facts only: which roles the seat could
-still claim without a public contradiction, which night stories fit the record, and which of its own
-true visits a story would have to explain.
-
-The engine's share was screened on 41 pressured evil turns from earlier games (Haiku 5.5 at low
-thinking, two samples per turn), with the new card text in every arm. Without the covers line (the
-night stories), the seats claimed a role 36 times and denied 4 times; with the line, after one fix,
-44 and 0. Claims that contradicted a sighting another player had reported fell from 4 to 1. The last
-version of the line cut the Serial Killer's catchable claims (those a careful town could show false)
-from 2 of 15 to 1 of 13, and none of the 42 claims under it contradicted a reported sighting. One
-judge labelled each line, and the arms with and without the line were labelled by different judges,
-so these are counts from one screen, not a measured effect. What the card text did on its own, and what whole games showed, is in
-the [roles report](../roles/report.md) ("The evil contest").
-
-### A dropped line: what each counter-claimant names
-
-Two of the wolves' three wins in the paired games with the new cards were counter-claims the town
-decided wrong: a fake claimant's word against a real one's, and the town sided with the fake. In the
-clearest case, two players claimed the Investigator and the engine said only that at most one of them
-holds it. A follow-up line (catalogue slice 16) spelled out the results each counter-claimant had
-named as the role, for example "As the Investigator, player_1 names a check of player_5 on night 1
-(Not suspicious), which a reveal of player_5's role would test; player_7 names no check result."
-
-It was screened on the 10 town vote turns of those games where the
-line appeared (3 samples per arm, Haiku 5.5 at low thinking, the vote as the measure). Pooled, it
-changed nothing: the votes went 12 to the fake claimant and 16 to the real one without the line, and
-12 and 17 with it. In the one game it was built for it moved votes the wrong way (7 fake and 4 real
-without, 5 and 7 with). One plausible reading: the model follows the seat the line names first and
-longest, rather than the argument it makes. The line was dropped on 2026-10-18 and never committed.
-It was a true fact, but past the facts the block already had, the vote is the model's call.
-
-## 5. Limits: what the evidence does not say
-
-**No town-side outcome effect is claimed.** The engine was assessed on reasoning: frozen turns, exact
-sentences, small *n*. The owner's ruling was that replay measurements do not gate the build, and a
-paired whole-game A/B of town with and without the engine has not been run. The one whole-game
-comparison is the evil-side one in the [roles report](../roles/report.md), which bundles the card
-text with the engine's lines.
-
-**Absorbed is not acted on.** §4 shows a seat writing the injected conclusion into its notes and still
-following an earlier "stay quiet". A later screen placed the block before the note; whether the
-block outranks a contrary note in general was not measured beyond the four acceptance cases.
-
-**One level has never fired.** The explanation branches for a claim the morning leaves open (row F8,
-in `explanations/`) produced no line on any of the 278 census turns. The conditions are real but
-rare; the code is tested like every other row and costs nothing when silent.
-
-**Scope is the standard game.** Twelve roles and the standard use limits (two checks, two watches,
-two sigils, two conceals, two self-bets). Outside that, every seat gets nothing (§1). The vigilante's
-bullet count is deliberately not public, so no line counts bullets.
-
-**Judging was by chat subagents, not an API judge.** The placement and cover screens were labelled
-blind by Claude subagents in chat sessions; the thinking-budget and summary screens by Sonnet 5.5 in
-a Message Batch. Agreement between judges was not measured, and the cover screen's three steps had
-different judges, so its counts are comparable within a step, not across.
+- [Factual-error report](../../evaluation/factual_errors/report.md): motivation, definitions, earlier
+  prompt results and diagnosis workflow.
+- [Experiment log](experiment_log.md): observed failures and the thinking, summary, injection and
+  private-note experiments.
+- [Deduction catalogue](deduction_catalogue.md): detailed rules, owner decisions and build record.
+- [Seat view](../../../Agents/deduction/seat_view.py),
+  [solver](../../../Agents/deduction/candidates/solver.py),
+  [continuation rule](../../../Agents/deduction/candidates/continuation.py),
+  [conditional deductions](../../../Agents/deduction/conditionals/__init__.py), and
+  [block assembly](../../../Agents/deduction/blocks.py): implementation entry points.
+- [Deduction tests](../../../tests/engine/deduction/),
+  [role-assignment oracle](../../../tests/factories/role_assignments.py), and
+  [random-night generator](../../../tests/factories/random_nights.py): verification machinery.
+- Recorded studies: `data/deduction_injection/`, `data/deduction_block_census/`,
+  `data/deduction_placement/`, `data/deduction_placement_n10/`, `data/deduction_ac2_2x2/`,
+  `data/deduction_ac2_closing_fixed/`, `data/solver_census/`, and the sibling gameplay datasets
+  `../data/evil_cover_screen/`, `../data/evil_cover_games/`, `../data/counter_claim_votes/`.

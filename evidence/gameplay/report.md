@@ -74,7 +74,7 @@ gemini-3.5-flash-lite; on Claude Haiku 5.5 it improved votes but not the facts i
 | The July bundle | A printed line of the roles still alive, a board of the dead, and more | Error-prone turns 48% → 30% wrong (p = 0.003) |
 | Each agent's own night record; engine facts labelled apart from summaries (2026-10-03) | The engine writes what each seat did and learned at night | Part of the October fixes: 97 → 82 of 267 bad, a direction (p = 0.14) |
 | The claim ledger, kept by code (October) | The summariser only transcribes claims; code checks them against the engine's facts, and since 2026-10-17 reads each speaker's own claim fields first | The repeated invented claim: 5 of 5 samples → 0 of 5 |
-| The deduction engine (deployed 2026-10-19) | Code works out the conclusions a seat can draw and hands them over | On the replayed turn, every note records the fact, against none as played ([the deduction report](deduction/report.md) §4) |
+| The deduction engine (deployed 2026-10-19) | Code works out the conclusions a seat can draw and hands them over | On the replayed turn, every note records the fact, against none as played ([the deduction report](deduction/report.md) §5) |
 | **Letting it think longer** | | |
 | gemini-3.5-flash-lite: thinking level minimal against medium (nine-seat, 2026-10-04) | At minimal the model reasoned for 0 tokens; at medium it reasons before answering | Bad samples 82 → 27 of 267 (36 cases better, 4 worse), for reasoning slips, at about 2.4 times the cost per turn |
 | Claude Haiku 5.5: thinking level low against medium (ten-seat, October) | Haiku reasons at both levels; medium gives it longer | Votes right 65 → 98 of 160 (12 cases better, 1 worse, p = 0.003); fact errors within noise: in vote notes 50% → 46% of samples (p = 0.21), in discussion turns 49 → 47 of 115 |
@@ -317,7 +317,7 @@ on 10 town vote turns and changed nothing (12 votes for the fake claimant withou
 dropped. No balance batch has run on Haiku 5.5 or on today's rules, so whether evil now wins too often or
 too rarely is unknown. A paragraph on cover risk, added after a served game of 2026-10-19, has been checked
 by prompt tests only. Homes: [the roles report](roles/report.md), "The evil contest"; the engine's share in
-[the deduction report](deduction/report.md) §4.
+[the deduction report](deduction/report.md) §5.
 
 ---
 

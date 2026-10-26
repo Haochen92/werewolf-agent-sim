@@ -57,7 +57,7 @@ list, never the wolf-visible rosters, and every night actor gets its own records
 (`own_night_actions`). The deduction engine, which writes code-derived conclusions into an AI seat's
 prompt, is a consumer of the payload, not a second path: it reads a `SeatView` built only from that
 seat's payload (`Agents/deduction/seat_view.py::seat_view_from_payload`), so it can conclude only
-from what the seat may know ([the deduction report](../gameplay/deduction/report.md) §1).
+from what the seat may know ([the deduction report](../gameplay/deduction/report.md) §3).
 
 **How it is verified.** Eleven `check_*` invariants in `tests/leak_test.py`; nine run on every
 batch game over the prompt-input dict, one layer upstream of rendering, and the batch exits non-zero

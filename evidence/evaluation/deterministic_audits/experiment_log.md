@@ -280,7 +280,7 @@ follow from what that seat knows. Each line has one of three grades:
 - a complete list of *possible explanations*.
 
 **Its rule.** The rule is absolute. No line may state as certain something that some legal game would
-make false ([`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §1). Agents take up
+make false ([`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §2). Agents take up
 injected text almost every time: 10 of 10 replays on the R1 turn. So a false line would be a falsehood in
 every game that meets its conditions.
 
@@ -391,7 +391,7 @@ against the rules as written. It is not proof that the rules are complete.
 
 **Code for 2a–b.** `tests/engine/deduction/`;
 `tests/factories/{random_nights,random_claims,role_assignments}.py`. Record:
-[`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §1 and §3; catalogue "Build
+[`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §2 and §4; catalogue "Build
 verification" and "Build status".
 
 ### 2c. Four real failure cases: 🟡 (the only test of coverage)
@@ -422,7 +422,7 @@ careful person would draw, and not the tempting false ones.
   output.
 
 **Code and record.** `tests/engine/deduction/test_acceptance.py`. Record: catalogue "Acceptance cases";
-[`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §3.
+[`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §4.
 
 ### 2d–e. Solver and prompt-size counts: ✅ / 🟡
 
@@ -458,7 +458,7 @@ folder, and `gameplay/deduction/report.md`.
 - Conditional runs, where a claim is added as a premise, were not measured.
 
 **Code and record.** `evaluation/experiments/deduction_solver_census.py` (untracked on 2026-10-23).
-Record: `gameplay/deduction/report.md` §3; `gameplay/deduction/data/solver_census/census.json`.
+Record: `gameplay/deduction/report.md` §4; `gameplay/deduction/data/solver_census/census.json`.
 
 #### 2e. Prompt-size count: 🟡 (descriptive)
 
@@ -474,7 +474,7 @@ Record: `gameplay/deduction/report.md` §3; `gameplay/deduction/data/solver_cens
 
 - Over the 278 turns, the median combined block was 1,199 characters. The maximum was 3,583.
 - The explanation row F8 fired on none of the 278 turns. This is the basis of the line "one level has
-  never fired" in the reasoning_failures report (§5).
+  never fired" in the deduction report (§5).
 - Full counts are in `census.json`. The three longest blocks are written out in `longest_blocks.md`.
 
 **What it cannot claim.**
@@ -895,9 +895,9 @@ the top open item in `agent_boundaries/report.md` §5. No plan for it was found.
 | Payload leak tests | `tests/engine/test_{round,night}_payload_leaks.py`, `test_wolf_channel_day_visibility.py`, `test_night_whiff_disclosure.py` | `agent_boundaries/report.md` §3, §5 |
 | Live-site leak audit | `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`, `tests/server/test_leak_audit.py` | `agent_boundaries/report.md` §3, §5; `server/README.md`; cron status: `writeup/map.md` (checked 2026-10-23) |
 | What each player is told | `tests/engine/test_information_fidelity.py` | `evidence/gameplay/discussion_evidence.md` §6.4–6.5; `../factual_errors/experiment_log.md` §8 |
-| Deduction soundness and exhaustive check | `tests/engine/deduction/`; `tests/factories/{random_nights,random_claims,role_assignments}.py` | `evidence/gameplay/deduction/report.md` §1, §3; `deduction_catalogue.md` "Build verification", "Build status" |
+| Deduction soundness and exhaustive check | `tests/engine/deduction/`; `tests/factories/{random_nights,random_claims,role_assignments}.py` | `evidence/gameplay/deduction/report.md` §2, §4; `deduction_catalogue.md` "Build verification", "Build status" |
 | Acceptance cases | `tests/engine/deduction/test_acceptance.py` | `deduction_catalogue.md` "Acceptance cases" |
-| Solver count | `evaluation/experiments/deduction_solver_census.py` (untracked 2026-10-23) | `gameplay/deduction/report.md` §3; `data/solver_census/census.json` |
+| Solver count | `evaluation/experiments/deduction_solver_census.py` (untracked 2026-10-23) | `gameplay/deduction/report.md` §4; `data/solver_census/census.json` |
 | Prompt-size count | `evaluation/experiments/deduction_block_census.py` | `deduction_catalogue.md` slice 8; `data/deduction_block_census/` |
 | Speaking-order audit | `evaluation/src/audits/scheduler_access_audit.py`; `tests/evaluation/test_scheduler_access_audit.py` | `evidence/metrics/metrics_audit/scheduler_bias_log.md` §3 A–C; `metrics_audit/data/` |
 | Failed-attack audit | `evaluation/src/audits/whiff_conversion_audit.py`; `tests/evaluation/test_whiff_conversion_audit.py` | `scheduler_bias_log.md` ③.E; `metrics_audit/data/whiff_conversion.json` |

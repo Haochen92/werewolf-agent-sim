@@ -146,7 +146,7 @@ cases. The oracle and the engine share the same written rules, so a rule misread
 passes.
 
 **Code and data.** `tests/engine/deduction/`, `tests/factories/random_nights.py`,
-`role_assignments.py`; [reasoning_failures](../../gameplay/deduction/report.md) §1, §3.
+`role_assignments.py`; [the deduction report](../../gameplay/deduction/report.md) §2, §4.
 
 ## Case 3. Score a model's structured output against the truth: the memory search filters
 
