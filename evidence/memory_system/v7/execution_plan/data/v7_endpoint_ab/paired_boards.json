@@ -1,0 +1,261 @@
+{
+  "pooled_check": {
+    "with_memory": 0.039,
+    "with_memory_decisions": 458,
+    "without_memory": 0.247,
+    "without_memory_decisions": 438,
+    "matches_committed": true
+  },
+  "paired": {
+    "boards": 30,
+    "mean_gap": -0.146,
+    "boards_worse_with_memory": 19,
+    "boards_better_with_memory": 11,
+    "boards_tied": 0,
+    "p_paired_t": 0.065,
+    "p_wilcoxon": 0.105,
+    "p_sign_test": 0.2
+  },
+  "per_board": [
+    {
+      "game_id": "pair_v7_endpoint_ab_g0",
+      "with_memory": 0.2222222222222222,
+      "with_memory_decisions": 9,
+      "without_memory": 0.25,
+      "without_memory_decisions": 12,
+      "gap": -0.028
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g1",
+      "with_memory": 0.35294117647058826,
+      "with_memory_decisions": 17,
+      "without_memory": 0.07142857142857142,
+      "without_memory_decisions": 14,
+      "gap": 0.282
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g2",
+      "with_memory": -0.21428571428571427,
+      "with_memory_decisions": 14,
+      "without_memory": 0.0,
+      "without_memory_decisions": 16,
+      "gap": -0.214
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g3",
+      "with_memory": 0.6363636363636364,
+      "with_memory_decisions": 22,
+      "without_memory": 0.8636363636363636,
+      "without_memory_decisions": 22,
+      "gap": -0.227
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g4",
+      "with_memory": -0.13043478260869565,
+      "with_memory_decisions": 23,
+      "without_memory": 0.3125,
+      "without_memory_decisions": 16,
+      "gap": -0.443
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g5",
+      "with_memory": 0.2857142857142857,
+      "with_memory_decisions": 7,
+      "without_memory": -0.15384615384615385,
+      "without_memory_decisions": 13,
+      "gap": 0.44
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g6",
+      "with_memory": 0.05555555555555555,
+      "with_memory_decisions": 18,
+      "without_memory": 0.64,
+      "without_memory_decisions": 25,
+      "gap": -0.584
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g7",
+      "with_memory": 0.5,
+      "with_memory_decisions": 14,
+      "without_memory": 0.65,
+      "without_memory_decisions": 20,
+      "gap": -0.15
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g8",
+      "with_memory": -0.21428571428571427,
+      "with_memory_decisions": 14,
+      "without_memory": 0.45454545454545453,
+      "without_memory_decisions": 11,
+      "gap": -0.669
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g9",
+      "with_memory": -0.5,
+      "with_memory_decisions": 14,
+      "without_memory": 0.125,
+      "without_memory_decisions": 8,
+      "gap": -0.625
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g10",
+      "with_memory": 0.23809523809523808,
+      "with_memory_decisions": 21,
+      "without_memory": -0.07692307692307693,
+      "without_memory_decisions": 13,
+      "gap": 0.315
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g11",
+      "with_memory": -0.13333333333333333,
+      "with_memory_decisions": 15,
+      "without_memory": -0.5,
+      "without_memory_decisions": 12,
+      "gap": 0.367
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g12",
+      "with_memory": -0.14285714285714285,
+      "with_memory_decisions": 14,
+      "without_memory": 0.6153846153846154,
+      "without_memory_decisions": 13,
+      "gap": -0.758
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g13",
+      "with_memory": 0.45454545454545453,
+      "with_memory_decisions": 11,
+      "without_memory": 0.13333333333333333,
+      "without_memory_decisions": 15,
+      "gap": 0.321
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g14",
+      "with_memory": -0.2857142857142857,
+      "with_memory_decisions": 14,
+      "without_memory": -0.5454545454545454,
+      "without_memory_decisions": 11,
+      "gap": 0.26
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g15",
+      "with_memory": -0.07142857142857142,
+      "with_memory_decisions": 14,
+      "without_memory": -0.36363636363636365,
+      "without_memory_decisions": 11,
+      "gap": 0.292
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g16",
+      "with_memory": 0.3333333333333333,
+      "with_memory_decisions": 12,
+      "without_memory": 0.5,
+      "without_memory_decisions": 10,
+      "gap": -0.167
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g17",
+      "with_memory": -0.2727272727272727,
+      "with_memory_decisions": 11,
+      "without_memory": 0.11764705882352941,
+      "without_memory_decisions": 17,
+      "gap": -0.39
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g18",
+      "with_memory": -0.07142857142857142,
+      "with_memory_decisions": 14,
+      "without_memory": 0.375,
+      "without_memory_decisions": 16,
+      "gap": -0.446
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g19",
+      "with_memory": 0.45,
+      "with_memory_decisions": 20,
+      "without_memory": 0.4166666666666667,
+      "without_memory_decisions": 12,
+      "gap": 0.033
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g20",
+      "with_memory": -0.06666666666666667,
+      "with_memory_decisions": 15,
+      "without_memory": 0.8333333333333334,
+      "without_memory_decisions": 12,
+      "gap": -0.9
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g21",
+      "with_memory": -0.16666666666666666,
+      "with_memory_decisions": 12,
+      "without_memory": -0.4444444444444444,
+      "without_memory_decisions": 9,
+      "gap": 0.278
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g22",
+      "with_memory": 0.14285714285714285,
+      "with_memory_decisions": 14,
+      "without_memory": 0.0,
+      "without_memory_decisions": 15,
+      "gap": 0.143
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g23",
+      "with_memory": -0.07142857142857142,
+      "with_memory_decisions": 14,
+      "without_memory": 0.11764705882352941,
+      "without_memory_decisions": 17,
+      "gap": -0.189
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g24",
+      "with_memory": -0.0625,
+      "with_memory_decisions": 16,
+      "without_memory": 0.14285714285714285,
+      "without_memory_decisions": 14,
+      "gap": -0.205
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g25",
+      "with_memory": -0.043478260869565216,
+      "with_memory_decisions": 23,
+      "without_memory": 0.4666666666666667,
+      "without_memory_decisions": 30,
+      "gap": -0.51
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g26",
+      "with_memory": -0.2,
+      "with_memory_decisions": 20,
+      "without_memory": 0.1,
+      "without_memory_decisions": 10,
+      "gap": -0.3
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g27",
+      "with_memory": -0.23076923076923078,
+      "with_memory_decisions": 13,
+      "without_memory": -0.14285714285714285,
+      "without_memory_decisions": 14,
+      "gap": -0.088
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g28",
+      "with_memory": -0.18181818181818182,
+      "with_memory_decisions": 22,
+      "without_memory": 0.6842105263157895,
+      "without_memory_decisions": 19,
+      "gap": -0.866
+    },
+    {
+      "game_id": "pair_v7_endpoint_ab_g29",
+      "with_memory": 0.6363636363636364,
+      "with_memory_decisions": 11,
+      "without_memory": 0.0,
+      "without_memory_decisions": 11,
+      "gap": 0.636
+    }
+  ]
+}
