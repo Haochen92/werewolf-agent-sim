@@ -581,4 +581,21 @@ summary in `batch.log` (golden keep 77: 61 kept, 9 merged, 7 discarded; golden d
 
 **Reading.** On the keep side Haiku is as reliable as Flash-Lite; on the discard side it is less reliable,
 on 18 discards from one run, so a direction, not a size. It matters for the fold and the lesson dedup,
-where a discard deletes. Not run: a higher thinking level, the anti-merge prompt variant, or Sonnet 5.5.
+where a discard deletes.
+
+**Three alternatives, the same day** (same 11 clusters, same scoring; logs and results in
+`data/haiku_2026_10_26/`; under $1 together):
+
+| Judge | Its discards that were right | Duplicates caught (of 20) | Distinct entries deleted | Single-pass accuracy |
+|---|---|---|---|---|
+| Haiku 5.5, low (today's) | 11 of 18 | 11 | 7 | 73.9% |
+| Haiku 5.5, medium | 13 of 25 | 13 | 12 | 70.3% |
+| Haiku 5.5, low, anti-merge prompt (`lite`) | 13 of 24 | 13 | 11 | 74.8% |
+| Sonnet 5.5, low | 8 of 8 | 8 | 0 | 80.2% |
+| Flash-Lite, May | 13 of 15 | 13 | 2 | 72.1% |
+
+More thinking and the anti-merge prompt made Haiku discard more, and wrongly more often. Sonnet deleted
+no distinct entry but caught 8 of 20 duplicates; the other 12 it kept or proposed to merge (a keep in
+triage-only mode), which leaves recoverable copies. With the project's lean (a wrong discard is
+permanent, a wrong keep is not), Sonnet is the safer batch judge on this set. One run each, 111 entries,
+nine-seat May content.

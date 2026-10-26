@@ -1,0 +1,33 @@
+Running batch dedup eval: anthropic/claude-haiku-5-5 (thinking=low)
+Prompt variant: lite
+Clusters: [0, 4, 11, 14, 16, 21, 25, 28, 33, 5, 20]
+
+  Cluster  0 (obse, size=10)... 80% (8/10)  [2.7s]  golden={'KEEP': 8, 'DISCARD': 2}  model={'KEEP': 10}
+  Cluster  4 (obse, size=23)... 74% (17/23)  [12.8s]  golden={'KEEP': 17, 'DISCARD': 4, 'MERGE': 2}  model={'MERGE': 2, 'KEEP': 21}
+  Cluster 11 (obse, size=10)... 90% (9/10)  [8.1s]  golden={'MERGE': 3, 'KEEP': 7}  model={'MERGE': 2, 'KEEP': 8}
+  Cluster 14 (obse, size=15)... 67% (10/15)  [10.5s]  golden={'KEEP': 8, 'MERGE': 7}  model={'MERGE': 2, 'KEEP': 13}
+  Cluster 16 (obse, size= 8)... 75% (6/8)  [6.8s]  golden={'KEEP': 6, 'MERGE': 2}  model={'KEEP': 8}
+  Cluster 21 (stra, size= 9)... 78% (7/9)  [6.4s]  golden={'KEEP': 5, 'DISCARD': 4}  model={'DISCARD': 6, 'KEEP': 3}
+  Cluster 25 (stra, size=11)... 73% (8/11)  [8.0s]  golden={'KEEP': 5, 'DISCARD': 6}  model={'DISCARD': 7, 'KEEP': 4}
+  Cluster 28 (stra, size=16)... 56% (9/16)  [10.5s]  golden={'DISCARD': 2, 'KEEP': 14}  model={'DISCARD': 9, 'KEEP': 7}
+  Cluster 33 (stra, size= 2)... 100% (2/2)  [2.5s]  golden={'DISCARD': 2}  model={'DISCARD': 2}
+  Cluster  5 (obse, size= 5)... 100% (5/5)  [4.4s]  golden={'KEEP': 5}  model={'KEEP': 5}
+  Cluster 20 (stra, size= 2)... 100% (2/2)  [3.1s]  golden={'KEEP': 2}  model={'KEEP': 2}
+
+============================================================
+Model: anthropic/claude-haiku-5-5 (thinking=low)
+Clusters evaluated: 11
+Overall accuracy: 83/111 = 74.8%
+Total time: 75.8s
+
+Golden distribution: {'KEEP': 77, 'DISCARD': 20, 'MERGE': 14}
+Model distribution:  {'KEEP': 81, 'MERGE': 6, 'DISCARD': 24}
+
+Confusion (28 errors):
+  KEEP -> DISCARD: 11
+  MERGE -> KEEP: 10
+  DISCARD -> KEEP: 5
+  DISCARD -> MERGE: 2
+============================================================
+
+Results saved to evaluation/eval_results/dedup_haiku_2026_10_26/batch_haiku_low_lite.json
