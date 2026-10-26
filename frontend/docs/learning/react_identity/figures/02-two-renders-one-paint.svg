@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" width="980" height="600" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="600" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">Two renders before one paint: lesson 3</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The night gives way to the morning. The host renders with the new props before the body&#x27;s new description arrives.</text>
+<rect x="150" y="84" width="116" height="38" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="208.0" y="108" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">render 1</text>
+<rect x="288" y="84" width="116" height="38" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="346.0" y="108" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">commit 1</text>
+<path d="M268,103 L286,103" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="426" y="84" width="116" height="38" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="484.0" y="108" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">layout effect</text>
+<path d="M406,103 L424,103" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="564" y="84" width="116" height="38" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="622.0" y="108" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">render 2</text>
+<path d="M544,103 L562,103" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="702" y="84" width="116" height="38" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="760.0" y="108" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">commit 2</text>
+<path d="M682,103 L700,103" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="840" y="84" width="116" height="38" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="898.0" y="108" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="middle">paint</text>
+<path d="M820,103 L838,103" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="24" y="150" font-size="13" fill="#4b5563" text-anchor="start">render: React calls the components and gets a description.   commit: React changes the DOM.</text>
+<text x="24" y="169" font-size="13" fill="#4b5563" text-anchor="start">layout effect: runs after the commit, before paint; setting state there renders again first.</text>
+<text x="24" y="210" font-size="12.5" fill="#4b5563" text-anchor="start">what the host holds</text>
+<text x="24" y="243" font-size="13.5" font-weight="bold" fill="#111827" text-anchor="start">host&#x27;s props</text>
+<rect x="150" y="220" width="116" height="36" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="208.0" y="243" font-size="12.5" fill="#1f2937" text-anchor="middle">morning</text>
+<rect x="564" y="220" width="116" height="36" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="622.0" y="243" font-size="12.5" fill="#1f2937" text-anchor="middle">morning</text>
+<text x="24" y="289" font-size="13.5" font-weight="bold" fill="#111827" text-anchor="start">described</text>
+<rect x="150" y="266" width="116" height="36" rx="6" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<text x="208.0" y="289" font-size="12.5" fill="#1f2937" text-anchor="middle">night spec</text>
+<rect x="426" y="266" width="116" height="36" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="484.0" y="289" font-size="12.5" fill="#1f2937" text-anchor="middle">sends morning</text>
+<rect x="564" y="266" width="116" height="36" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="622.0" y="289" font-size="12.5" fill="#1f2937" text-anchor="middle">morning spec</text>
+<text x="24" y="336" font-size="12.5" fill="#4b5563" text-anchor="start">what CarSetSheet is drawn from</text>
+<text x="24" y="370" font-size="13.5" font-weight="bold" fill="#991b1b" text-anchor="start">before the fix</text>
+<text x="24" y="387" font-size="12" fill="#4b5563" text-anchor="start">host&#x27;s props</text>
+<rect x="150" y="352" width="254" height="50" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="277.0" y="372" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="middle">morning view + night spec</text>
+<text x="277.0" y="391" font-size="12" fill="#991b1b" text-anchor="middle">the wing sees a seat just died</text>
+<rect x="564" y="352" width="254" height="50" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="691.0" y="381" font-size="13" fill="#1f2937" text-anchor="middle">morning view + morning spec</text>
+<rect x="840" y="352" width="116" height="50" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="898.0" y="373" font-size="12.5" fill="#1f2937" text-anchor="middle">notes editor</text>
+<text x="898.0" y="390" font-size="12.5" fill="#1f2937" text-anchor="middle">already closed</text>
+<text x="24" y="444" font-size="13.5" font-weight="bold" fill="#14532d" text-anchor="start">after the fix</text>
+<text x="24" y="461" font-size="12" fill="#4b5563" text-anchor="start">described.props</text>
+<rect x="150" y="426" width="254" height="50" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="277.0" y="446" font-size="13" font-weight="bold" fill="#1f2937" text-anchor="middle">night view + night spec</text>
+<text x="277.0" y="465" font-size="12" fill="#14532d" text-anchor="middle">one moment, consistent</text>
+<rect x="564" y="426" width="254" height="50" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="691.0" y="455" font-size="13" fill="#1f2937" text-anchor="middle">morning view + morning spec</text>
+<rect x="840" y="426" width="116" height="50" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="898.0" y="447" font-size="12.5" fill="#1f2937" text-anchor="middle">notes editor</text>
+<text x="898.0" y="464" font-size="12.5" fill="#1f2937" text-anchor="middle">still open</text>
+<rect x="24" y="496" width="932" height="88" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="524" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">The fix in CarScene.tsx: a description travels with the props it was made with</text>
+<text x="44" y="550" font-size="14.5" fill="#1f2937" text-anchor="start">interface Described { spec; props }, and CarSetSheet is drawn from described.props.</text>
+<text x="44" y="573" font-size="14.5" fill="#1f2937" text-anchor="start">Render 1 was never painted, but its commit still reached the wing: each pass sees only its own state.</text>
+</svg>

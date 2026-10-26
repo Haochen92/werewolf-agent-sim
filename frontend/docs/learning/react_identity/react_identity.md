@@ -5,7 +5,7 @@
 How React decides what to keep, what to rebuild and what to run again when something changes, with
 the stage's own mistakes as the worked examples. This is a foundation topic: you need only
 JavaScript and the idea that a component is a function that returns JSX. Its sibling foundation is
-[`rendering_pipeline.md`](rendering_pipeline.md), which starts where this one stops: what the
+[`rendering_pipeline.md`](../rendering_pipeline/rendering_pipeline.md), which starts where this one stops: what the
 browser does once React has changed the page.
 
 Five words used throughout:
@@ -55,6 +55,8 @@ puppet. Now the smallest thing that must restart is keyed:
 - Where only a little state must restart, there is no key. `LynchScene.tsx` holds `told` with the
   beat it belongs to and resets it during render when `beat.seq` moves on (the pattern is in
   section 6).
+
+![Figure 1: one counted chip, before and now; keyed per beat the whole vote scene was rebuilt, keyed on the count only the ballot line is](figures/01-identity-position-type-key.svg)
 
 **Lesson 2, eight scenes, eight types.** The deal, the day, the vote, the lynch, the night's lobby,
 the morning, the game over and the replay's night all stand in the dining car, but each was its own
@@ -118,6 +120,8 @@ wing took it as a seat that had just died and closed the live notes editor. The 
 (`interface Described { spec; props }`), and `CarSetSheet` is drawn from `described.props`, never
 the host's current props.
 
+![Figure 2: from night to morning the host renders twice before one paint; drawn from its own props the first pass mixed two moments and closed the notes editor](figures/02-two-renders-one-paint.svg)
+
 ### See it yourself
 
 React DevTools, Profiler tab: record while stepping a beat in the workbench. Each bar is one commit.
@@ -165,6 +169,8 @@ The split (phone lesson 5) made each scene a stable set that updates in place (`
 three seconds later, transient and not a leak. On the owner's iPhone the page died at two to three
 beats a second before the split; a desktop's slack hides that pressure and a phone's memory cap does
 not.
+
+![Figure 3: what a re-render keeps and a remount replaces, with the day's set and beat split as the worked example](figures/03-rerender-and-remount.svg)
 
 **385 of 388 (rendering audit §2, 2026-10-02).** On a production snapshot (`04005ca0`, headless
 Chromium), the audit counted the elements under the stage's layers before a transition and which
@@ -239,6 +245,8 @@ rendered the host a second time: the "twice". The fixes, in
 `onCard` and `onNext` through `useCallback`; and `memo` on the host, the set and the side slot. The
 typed text also moved into the dock (section 6).
 
+![Figure 4: a prop built anew each render fails memo's reference check and redraws the stage; the same prop through useMemo lets memo hold](figures/04-memo-and-fresh-objects.svg)
+
 Where a description is plain data the code compares by value instead: `Stage.tsx::Camera`,
 `Backdrop.tsx::Backdrop` and `Stage.tsx::Paint` key on `JSON.stringify` of it, so "a new-but-equal
 object changes nothing", in the code's words.
@@ -258,6 +266,8 @@ by the options alone, per generator, and writes each instance's id in on the way
 What it provides, as the code makes it: drawings kept in the page's memory, at most 48 per generator
 (`KEEP`), least recently used dropped first. A repeat skips the tracing only while it is among those
 48, within one page load; writing the id in and setting the markup are still paid.
+
+![Figure 5: with the instance id in the key a remounted light missed and traced again; keyed by the options alone it hits, and the id is written in on the way out](figures/05-the-paint-cache-key.svg)
 
 ### See it yourself
 
@@ -365,6 +375,8 @@ turn, while figures were animating (build_log §8.10). The clock is now split by
 - `useTimeLeft` ticks every 250 ms, but only inside
   `frontend/src/stage/instruments/CountText.tsx::CountText`, the leaf that shows `1:14`, placed in
   the dock, the ballot and the pack's line.
+
+![Figure 6: a countdown ticking in the theatre redrew the whole stage four times a second; ticking in CountText it redraws one piece of text](figures/06-where-state-lives.svg)
 
 **Lesson 34, typed state in the leaf.** The composer's text was the live theatre's state, so each
 letter re-rendered the stage (the table in section 4). Now
