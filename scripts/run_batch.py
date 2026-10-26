@@ -135,7 +135,8 @@ def parse_args() -> argparse.Namespace:
             "JSON file: a list of game_ids (or an object with a 'game_ids' key). "
             "Pins the per-game seed so every selected config plays the SAME role "
             "draws — the paired A/B design. Overrides --runs-per-config to the "
-            "length of the list."
+            "length of the list. One config per process: arms on the same ids must run "
+            "as separate run_batch processes."
         ),
     )
     parser.add_argument(
@@ -486,6 +487,16 @@ def run_batch(args: argparse.Namespace) -> int:
     # game_config seam is kept (recorded + passed to run_game) for future overrides.
     game_config = None
     game_ids = load_game_ids(args.game_ids_file)
+    if game_ids and len(config_names) > 1:
+        # The checkpointer's thread and the node-cache key are both the game id, and both live
+        # for the whole process: a second arm on the same id would resume on top of the first
+        # arm's finished game (the add-reduced transcripts accumulate) and replay its cached turns.
+        print(
+            "error: --game-ids-file pairs arms by game id, so run one process per config "
+            f"(got {len(config_names)}: {', '.join(config_names)})",
+            file=sys.stderr,
+        )
+        return 2
     runs_per_config = len(game_ids) if game_ids else args.runs_per_config
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
