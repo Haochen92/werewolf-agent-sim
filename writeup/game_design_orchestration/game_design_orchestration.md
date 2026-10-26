@@ -92,10 +92,11 @@ evidence/agent_boundaries/report.md §§1–2; conceptual input selection, not t
 Once players have their information, they need opportunities to share evidence, challenge claims and
 answer accusations, without a few players dominating or the vote being delayed indefinitely.
 
-In a human game, the day usually runs on a timer, and anyone can speak whenever they like. That works
-because people listen all the time: they follow the conversation, recognise when a response is
-expected, and jump in when they are accused. A moderator can invite quieter players in or close a
-repetitive argument.
+In a human game, the day usually runs on a timer, and anyone can speak whenever they like. Online games
+such as Town of Salem work the same way in a shared chat: the discussion runs on a countdown, and
+everyone types whenever they want. That works because people listen all the time: they follow the
+conversation, recognise when a response is expected, and jump in when they are accused. At a table, a
+moderator can also invite quieter players in or close a repetitive argument.
 
 A model can do none of that. It exists only while it is being called: it reads one fixed snapshot of
 the conversation, takes a few seconds to answer, then stops until it is called again. It cannot listen
