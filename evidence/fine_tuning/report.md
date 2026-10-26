@@ -360,6 +360,8 @@ Checked against the code on 2026-10-26.
   training on Modal (`training/runner/modal_runner.py`) and CPU evaluation (`training/evaluate.py`). The
   adapters read their training data from this folder. The reranker log records that the CPU evaluation
   reproduces v4's 0.882. The weights live on Modal storage volumes, not in the repository.
+  The training code was written by AI coding agents; the owner built the labelled datasets (owner,
+  2026-10-21).
 - **Neither cross-encoder is in production.** No code in `Agents/` or `server/` loads a cross-encoder or
   an ONNX model. The dedup prefilter is cosine similarity with fixed cut-offs
   (`Agents/memory/deduplication/prefilter.py`); the module docstring of
