@@ -84,7 +84,7 @@ The default fixture can change independently of that historical replay’s beat 
 
 ## Documentation
 
-- [Principles to carry to the next project](docs/principles.md): the general rules this project taught, by topic, with what to read.
+- [Learning](docs/learning/README.md): the general frontend rules this project taught, by topic, each with a tutorial built on its cases, and what to read.
 - [Multiplayer audit, 2026-10-15](docs/multiplayer-audit-2026-10-15.md): what friends at one table could learn, stall or lose, and what was fixed.
 - [How the frontend is tested](docs/testing.md): the test layers, how a browser run is done, and what none of them covers.
 - [Performance and ownership audit, 2026-10-11](docs/frontend-audit-2026-10-11.md): current findings, priorities and proposed tests.
