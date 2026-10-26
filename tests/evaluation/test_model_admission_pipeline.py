@@ -106,7 +106,7 @@ def test_two_arms_are_compared_case_by_case_with_the_sign_test():
 
 
 HAIKU_VOTES = REPO_ROOT / "evaluation/eval_results/hallucination_bench/haiku_effort_votes"
-HAIKU_VOTE_CASES = REPO_ROOT / "evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl"
+HAIKU_VOTE_CASES = REPO_ROOT / "evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl"
 
 
 @pytest.mark.skipif(not (HAIKU_VOTES / "generations_haiku_low.jsonl").exists() or not HAIKU_VOTE_CASES.exists(),

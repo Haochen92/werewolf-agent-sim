@@ -1,5 +1,5 @@
 """What the deduction engine tells a seat: lines computed by code from what the seat knows, never
-from hidden state. Specification: evidence/reasoning_failures/deduction_catalogue.md (Table A is
+from hidden state. Specification: evidence/gameplay/deduction/deduction_catalogue.md (Table A is
 level 1: a seat's own night result and what it implies)."""
 
 from __future__ import annotations

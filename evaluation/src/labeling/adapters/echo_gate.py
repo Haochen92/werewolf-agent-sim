@@ -2,7 +2,7 @@
 moves the game, or a restatement / filler (kinds A–D).
 
 The items are the 65 open-floor lines the silence calibration's blind readers judged and the shipped
-echo gate was checked on (evidence/game_play_enhancement/data/silence_calibration/). The builder
+echo gate was checked on (evidence/gameplay/data/silence_calibration/). The builder
 (`evaluation/experiments/owner_check_echo_gate.py`) writes the candidates file this adapter reads;
 the file holds only what the readers saw, so no rendering here can show a reader's kind or the
 gate's decision.

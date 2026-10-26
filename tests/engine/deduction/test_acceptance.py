@@ -1,5 +1,5 @@
 """The four acceptance cases end to end (catalogue "Acceptance cases" and "Build verification" item 4,
-evidence/reasoning_failures/deduction_catalogue.md).
+evidence/gameplay/deduction/deduction_catalogue.md).
 
 Each case's turn is built from its frozen payload exactly as the live pipeline builds it: the engine's
 own payload builders (`turn_payload`, the replay bench's), `deduction_mode` "full", placement

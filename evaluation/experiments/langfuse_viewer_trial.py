@@ -1,6 +1,6 @@
 """Try Langfuse's dataset-run comparison on the Phase 3 turn replay, before building any viewer.
 
-The ten frozen Phase 3 turns (evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl,
+The ten frozen Phase 3 turns (evidence/gameplay/data/phase3_turn_replay/cases.jsonl,
 the ``pinned`` and ``control`` slices) go up as a Langfuse dataset, and each of the bench's three
 arms becomes one dataset run. Nothing is generated: the task hands back the five samples the bench
 recorded on 2026-10-10 (``runs/phase3_turns/judged_<arm>.jsonl``), so the trial costs no model
@@ -28,7 +28,7 @@ load_project_env()
 
 from langfuse import Evaluation, get_client  # noqa: E402
 
-DATA = Path(__file__).resolve().parents[2] / "evidence/game_play_enhancement/data/phase3_turn_replay"
+DATA = Path(__file__).resolve().parents[2] / "evidence/gameplay/data/phase3_turn_replay"
 RUN = DATA / "runs/phase3_turns"
 DATASET = "phase3_turn_replay"
 EXPERIMENT = "Phase 3 turn replay"

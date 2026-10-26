@@ -147,7 +147,7 @@ from `components/` and `experiments/`, so the whole engine now lives here in one
 | ★ [loop/credit_backfill.py](../../../evaluation/src/loop/credit_backfill.py) (06-19) | The credit primitives: `_decision_credit`, `_vote_credit`, `_night_credit`, `build_ledger`, `compute_base_rates`, `SPCredit` (shrinkage), `_expand_dumps`, `_majority_vote`. The live scoring engine — `credit.py` *and* `measure.py` import from it. **#1 review priority** (filename still legacy; rename pending your review). |
 | ★ [loop/credit.py](../../../evaluation/src/loop/credit.py) (06-19) | `credit_apply` — recompute the de-luck ledger over the rolling window and SET pos/neu/neg/follow on SPs. `_discussion_ledger` (free floor) · `_tagger_ledger` (paid) · `sp_lift` (shrunk lift = the real de-luck signal) · `credit_distribution` (engaged-guard). |
 | ★ [loop/measure.py](../../../evaluation/src/loop/measure.py) (06-19) | `generation_score` — the **headline slope**. Bucketed by ARM (not the per-decision flag), skip-day1, memory-active-only. ON should slope up vs flat OFF. |
-| [loop/discussion_tagger.py](../../../evaluation/src/loop/discussion_tagger.py) (06-19) | The live omniscient per-day flash-lite tagger (`tag_game_cached`, version="v2"); A4 reasoning + role_claims anchoring; the paid credit tier. |
+| [../../../evaluation/src/loop/discussion_tagger.py](../../../evaluation/src/loop/discussion_tagger.py) (06-19) | The live omniscient per-day flash-lite tagger (`tag_game_cached`, version="v2"); A4 reasoning + role_claims anchoring; the paid credit tier. |
 | [loop/cost.py](../../../evaluation/src/loop/cost.py) (06-22) | Post-hoc Langfuse cost capture (report-only, no auto-abort). |
 
 ---

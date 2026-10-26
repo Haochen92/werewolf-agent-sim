@@ -14,7 +14,7 @@ their own (planned_actions), so the ledger can set them beside what the player l
 Each written accusation field is capped at 30 words.
 
 2026-10-16: record_check is gone. The summariser's check of an accusation against the record was wrong
-in all 27 it wrote across 66 replayed summaries (evidence/reasoning_failures/experiment_log.md §3),
+in all 27 it wrote across 66 replayed summaries (evidence/gameplay/deduction/experiment_log.md §3),
 and the claim ledger already checks claims against the record in code.
 """
 

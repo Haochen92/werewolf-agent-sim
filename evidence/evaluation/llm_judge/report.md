@@ -381,7 +381,7 @@ person would read.
 "check:" line in its review sheets is blank. It also knows only the nine-seat roles. The summariser comparison
 has no person's check, and its judge, Sonnet, was one of the two models compared; the decision holds, because
 that bias favours the model that lost. Detail: [the detailed record](experiment_log.md) §8;
-[reasoning_failures](../../reasoning_failures/experiment_log.md) §3.
+[reasoning_failures](../../gameplay/deduction/experiment_log.md) §3.
 
 **What would strengthen it.** Neither is used today. Re-running the discussion-evidence judge would need the
 ten-seat roles and a person's check; a summariser rerun should use a judge from neither model compared.

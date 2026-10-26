@@ -71,13 +71,13 @@ propagating CLAUDE.md + ~15 memories + docs/ in one move):
 
 ### Ch. 1–2 · The game + game design & engine   ← START HERE (tomorrow's scope)
 
-- **`role_set/`** — 3-faction lean-eval casting, abstain voting, SK-as-keystone. *Look for:* the
+- **`gameplay/roles/role_set/`** — 3-faction lean-eval casting, abstain voting, SK-as-keystone. *Look for:* the
   two-casting-targets split (lean-eval vs rich-ship), cause-discipline (sequential fixes discussion,
   not roles), the per-namespace density argument, balance-deprioritized-because-paired-A/B.
   *Tidy:* clean; optional — tuck `smoke_run*` → `smoke_runs/`.  *(calibrated already)*
   → notes: **kind: TBD** (calibrated earlier, not yet kind-classified — likely `record`/design-decision
   with supporting smoke-runs, i.e. borderline `mixed`; confirm on a closer read).
-- **`sequential_discussion/`** (+ `gate/`, `prompt_boundary/`) — concurrent→sequential discussion (Phase A#1),
+- **`gameplay/discussion/`** (+ `gate/`, `prompt_boundary/`) — concurrent→sequential discussion (Phase A#1),
   the silence gate, the prompt/memory boundary. *Look for:* the coordination-failure diagnosis, the
   stateless scheduler, prompt=how-to vs memory=what-signals-mean. *Tidy:* 9 `.py` = study code (stays);
   check for `__pycache__`.

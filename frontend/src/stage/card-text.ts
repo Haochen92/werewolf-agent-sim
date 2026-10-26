@@ -6,7 +6,7 @@
  * copied as they are so the card on the shelf and the card the designs were reviewed with
  * read the same. The kit writes a line break as `<br>`; here it is `\n`, and the card draws
  * each piece on its own line. Where the rules moved after the kit (the role sheet,
- * evidence/game_play_enhancement/role_sheet.md), the words follow the rules.
+ * evidence/gameplay/roles/role_sheet.md), the words follow the rules.
  */
 export interface CardText {
   name: string;

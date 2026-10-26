@@ -1,6 +1,6 @@
 """Level 6 of the deduction engine (slice 11): the claims against the record and against each other
 (Agents/deduction/comparisons/; catalogue Table E, F3's claim status, F7's note for an evil seat, of
-evidence/reasoning_failures/deduction_catalogue.md).
+evidence/gameplay/deduction/deduction_catalogue.md).
 
 - Per comparison, on constructed nights through the real engine and constructed claims: the exact
   line where it fires, and the claims or nights where it must not (a true and a false claim, a whole

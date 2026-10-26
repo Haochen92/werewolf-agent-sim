@@ -1,6 +1,6 @@
 """Level 3 of the deduction engine, the core: the candidate roles of every player and hidden body, and
 the census and per-player items they give (Agents/deduction/candidates/; catalogue Table C, F3, F7
-of evidence/reasoning_failures/deduction_catalogue.md).
+of evidence/gameplay/deduction/deduction_catalogue.md).
 
 Every game here runs through the real engine: each night through the resolution node, each lynch
 through the day-resolution node. Per rule: a game where it narrows, with the exact sentence, and one

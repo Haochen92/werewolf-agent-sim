@@ -21,7 +21,7 @@ from pathlib import Path
 from Agents.prompts.voices import house_puppet
 from Agents.schemas.roles import TOWN, side_of
 
-DATA = Path("evidence/game_play_enhancement/data/persona_voice_games")
+DATA = Path("evidence/gameplay/data/persona_voice_games")
 CONF_P = {"high": 0.85, "low": 0.65}
 """As the read ledger: the read schema's two confidence levels as claimed probabilities."""
 

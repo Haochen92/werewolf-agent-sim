@@ -1,6 +1,6 @@
 """Level 2 of the deduction engine (slice 9b): the seat's own results joined with the players' claims
 (Agents/deduction/joins/; catalogue Table F, F1 and F2, of
-evidence/reasoning_failures/deduction_catalogue.md).
+evidence/gameplay/deduction/deduction_catalogue.md).
 
 - Per family, on constructed nights through the real engine and constructed claims: the exact line
   where it fires, and the claims or nights where it must not (a truthful and a false claim; a second
@@ -306,7 +306,7 @@ def test_a_wills_roleblock_and_a_claimed_visitor():
 
 # --- the acceptance cases, on their frozen payloads ---------------------------------------------------------
 
-FROZEN = Path("evidence/reasoning_failures/data")
+FROZEN = Path("evidence/gameplay/deduction/data")
 
 AC1_LINE_2 = ("player_3 says player_7 came to you on night 1, and player_7 agrees. If that is true, either player_7 is "
               "the Chanteuse, or player_7 and the Chanteuse both came to you.")

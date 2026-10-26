@@ -428,7 +428,7 @@ the Reveal switch and no page errors.
 · **2026-10-03 both containers rebuilt at `9ae5056`** (built with `docker build` from a clean
 detached worktree, then `compose up -d --no-build`; branch not pushed). Server: the
 discussion-evidence prompt pass, switched on by `WW_DISCUSSION_PROMPT=v2` added to
-`.env.production` (evidence/game_play_enhancement/discussion_evidence.md), and the human line cap
+`.env.production` (evidence/gameplay/discussion_evidence.md), and the human line cap
 700 → 500. Frontend: the composer's cap 700 → 500. Pre-flight in the new server image with the
 production env: the switch reads on, the rules carry the turn-order line, the wolf has the
 claiming option, the cap is 500, the summary uses its v2 format. No migration. Rollback = the
@@ -440,7 +440,7 @@ drop the env line and recreate the server. Smoke: `/api` health, models, replays
 information-fidelity pass (private night records, the game master's record shown apart from
 claims), day summary v4 with the code-checked claim ledger, memory instructions only with
 memories, and thinking per game model (3.5 flash-lite medium, 3.1 flash-lite low; rescues get
-their own model's level), all in evidence/game_play_enhancement/discussion_evidence.md §6.4–6.7;
+their own model's level), all in evidence/gameplay/discussion_evidence.md §6.4–6.7;
 plus the cast record and the four new puppets. Frontend: the cast picker and new puppets, and
 the v4 summary in the X-ray brief and the drawer. No migration step: the shared `ww-postgres` was
 already at `0009` (applied for the local server). The images running before this deploy, 16

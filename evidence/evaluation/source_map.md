@@ -40,7 +40,7 @@ no spoke re-rates them.
 `batch_results/` and `evaluation/eval_results/` are gitignored. The outputs the method pages cite were
 copied into `evidence/` on 2026-10-23 (the admission records and replay summaries into
 `evaluation/model_admission/data/`; the R1 samples and note-screen generations into
-`reasoning_failures/data/`), and the files listed as untracked on 2026-10-23 were committed on 2026-10-24.
+`gameplay/deduction/data/`), and the files listed as untracked on 2026-10-23 were committed on 2026-10-24.
 What remains outside git:
 
 | What | Where | Cited by |

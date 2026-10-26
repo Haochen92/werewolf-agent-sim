@@ -3,7 +3,7 @@ echo gate calibrated on them, be trusted to tell a restatement or filler from a 
 
 The echo gate (`Agents/turn/echo_gate.py`) holds an open-floor line it judges a restatement or
 filler. Its bar was set on 65 open-floor lines that four blind Sonnet readers sorted into kinds A–D
-(evidence/game_play_enhancement/data/silence_calibration/, README step 4). The owner labels a
+(evidence/gameplay/data/silence_calibration/, README step 4). The owner labels a
 stratified draw of those same lines, shown exactly as the readers saw them, on the readers' scale.
 Two sources are then compared with the owner's labels:
 - ``readers``: the readers' kind per line (four-way, A / B / C / D);
@@ -38,7 +38,7 @@ from evaluation.src.labeling.exporter import export_for_manual
 from evaluation.src.labeling.pipeline import stage_calibrate
 from evaluation.src.labeling.schemas import StratifiedSample
 
-SOURCE_DIR = Path("evidence/game_play_enhancement/data/silence_calibration")
+SOURCE_DIR = Path("evidence/gameplay/data/silence_calibration")
 """The silence calibration's record: items, blind key, reader verdicts, packets, gate checks."""
 OUT_DIR = Path("evidence/evaluation/labeling/owner_checks/echo_gate")
 """Where the packet is written."""

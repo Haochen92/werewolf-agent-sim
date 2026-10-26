@@ -241,7 +241,7 @@ information-fidelity pass of 2026-10-03.
 code audit followed
 ([`factual_errors/experiment_log.md`](../factual_errors/experiment_log.md) §8). It
 led to the information-fidelity pass: revisions R-a to R-h in
-[`discussion_evidence.md`](../../game_play_enhancement/discussion_evidence.md) §6.4.
+[`discussion_evidence.md`](../../gameplay/discussion_evidence.md) §6.4.
 
 **How it works.** The test asserts that:
 
@@ -280,14 +280,14 @@ follow from what that seat knows. Each line has one of three grades:
 - a complete list of *possible explanations*.
 
 **Its rule.** The rule is absolute. No line may state as certain something that some legal game would
-make false ([`reasoning_failures/report.md`](../../reasoning_failures/report.md) §1). Agents take up
+make false ([`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §1). Agents take up
 injected text almost every time: 10 of 10 replays on the R1 turn. So a false line would be a falsehood in
 every game that meets its conditions.
 
 **What the tests prove.** They are built to prove **soundness**: nothing false is stated. They are not
 built to prove **coverage**: nothing a careful person would conclude is missing. Only the four acceptance
 cases (§2c) test coverage. The owner set a four-part bar for the build on 2026-10-16, in the
-[catalogue](../../reasoning_failures/deduction_catalogue.md) under "Build verification".
+[catalogue](../../gameplay/deduction/deduction_catalogue.md) under "Build verification".
 
 **Two terms from the catalogue.** A *row* is one kind of line the engine can write, with an id such as
 A22(b) or F8. A *slice* is one numbered stage of the engine's build.
@@ -391,7 +391,7 @@ against the rules as written. It is not proof that the rules are complete.
 
 **Code for 2a–b.** `tests/engine/deduction/`;
 `tests/factories/{random_nights,random_claims,role_assignments}.py`. Record:
-[`reasoning_failures/report.md`](../../reasoning_failures/report.md) §1 and §3; catalogue "Build
+[`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §1 and §3; catalogue "Build
 verification" and "Build status".
 
 ### 2c. Four real failure cases: 🟡 (the only test of coverage)
@@ -422,7 +422,7 @@ careful person would draw, and not the tempting false ones.
   output.
 
 **Code and record.** `tests/engine/deduction/test_acceptance.py`. Record: catalogue "Acceptance cases";
-[`reasoning_failures/report.md`](../../reasoning_failures/report.md) §3.
+[`gameplay/deduction/report.md`](../../gameplay/deduction/report.md) §3.
 
 ### 2d–e. Solver and prompt-size counts: ✅ / 🟡
 
@@ -448,7 +448,7 @@ Timings on the host (an aarch64 machine). They give scale only.
 
 **Provenance.** The run was on 2026-10-21. `census.json` records commit `e765a18e`, with a dirty tree
 (uncommitted changes present). On 2026-10-23, three things were untracked in git: the runner, its output
-folder, and `reasoning_failures/report.md`.
+folder, and `gameplay/deduction/report.md`.
 
 **What it cannot claim.**
 
@@ -458,7 +458,7 @@ folder, and `reasoning_failures/report.md`.
 - Conditional runs, where a claim is added as a premise, were not measured.
 
 **Code and record.** `evaluation/experiments/deduction_solver_census.py` (untracked on 2026-10-23).
-Record: `reasoning_failures/report.md` §3; `reasoning_failures/data/solver_census/census.json`.
+Record: `gameplay/deduction/report.md` §3; `gameplay/deduction/data/solver_census/census.json`.
 
 #### 2e. Prompt-size count: 🟡 (descriptive)
 
@@ -486,7 +486,7 @@ Record: `reasoning_failures/report.md` §3; `reasoning_failures/data/solver_cens
 - Four games is a small sample, and all are Haiku games.
 
 **Code and record.** `evaluation/experiments/deduction_block_census.py`. Record: catalogue "Build status",
-slice 8; `reasoning_failures/data/deduction_block_census/`.
+slice 8; `gameplay/deduction/data/deduction_block_census/`.
 
 ---
 
@@ -894,10 +894,10 @@ the top open item in `agent_boundaries/report.md` §5. No plan for it was found.
 | Batch leak checks | `tests/leak_test.py`; `scripts/run_batch.py` (wiring, `leak_check` field); capture runners in `evaluation/experiments/` | `evidence/agent_boundaries/report.md` §3–5; `experiment_log.md`; `leakwire_smoke.log`, `leakfix_smoke.log` |
 | Payload leak tests | `tests/engine/test_{round,night}_payload_leaks.py`, `test_wolf_channel_day_visibility.py`, `test_night_whiff_disclosure.py` | `agent_boundaries/report.md` §3, §5 |
 | Live-site leak audit | `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`, `tests/server/test_leak_audit.py` | `agent_boundaries/report.md` §3, §5; `server/README.md`; cron status: `writeup/map.md` (checked 2026-10-23) |
-| What each player is told | `tests/engine/test_information_fidelity.py` | `evidence/game_play_enhancement/discussion_evidence.md` §6.4–6.5; `../factual_errors/experiment_log.md` §8 |
-| Deduction soundness and exhaustive check | `tests/engine/deduction/`; `tests/factories/{random_nights,random_claims,role_assignments}.py` | `evidence/reasoning_failures/report.md` §1, §3; `deduction_catalogue.md` "Build verification", "Build status" |
+| What each player is told | `tests/engine/test_information_fidelity.py` | `evidence/gameplay/discussion_evidence.md` §6.4–6.5; `../factual_errors/experiment_log.md` §8 |
+| Deduction soundness and exhaustive check | `tests/engine/deduction/`; `tests/factories/{random_nights,random_claims,role_assignments}.py` | `evidence/gameplay/deduction/report.md` §1, §3; `deduction_catalogue.md` "Build verification", "Build status" |
 | Acceptance cases | `tests/engine/deduction/test_acceptance.py` | `deduction_catalogue.md` "Acceptance cases" |
-| Solver count | `evaluation/experiments/deduction_solver_census.py` (untracked 2026-10-23) | `reasoning_failures/report.md` §3; `data/solver_census/census.json` |
+| Solver count | `evaluation/experiments/deduction_solver_census.py` (untracked 2026-10-23) | `gameplay/deduction/report.md` §3; `data/solver_census/census.json` |
 | Prompt-size count | `evaluation/experiments/deduction_block_census.py` | `deduction_catalogue.md` slice 8; `data/deduction_block_census/` |
 | Speaking-order audit | `evaluation/src/audits/scheduler_access_audit.py`; `tests/evaluation/test_scheduler_access_audit.py` | `evidence/metrics/metrics_audit/scheduler_bias_log.md` §3 A–C; `metrics_audit/data/` |
 | Failed-attack audit | `evaluation/src/audits/whiff_conversion_audit.py`; `tests/evaluation/test_whiff_conversion_audit.py` | `scheduler_bias_log.md` ③.E; `metrics_audit/data/whiff_conversion.json` |

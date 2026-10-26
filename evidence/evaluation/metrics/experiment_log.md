@@ -134,7 +134,7 @@ A $0, zero-LLM audit re-ran the incumbent validation discipline on N=180 v6ab (w
 
 **Adoption + tiering (shipped).** The three survivors (`wolf_power_kill_rate`, `town_accusation_precision`, `investigator_find_next_round_convergence`) were adopted into a **`DIAGNOSTIC_METRICS`** tier beside — not inside — `VALIDATED_BASKET_METRICS`, pushed with `tier="diagnostic"` and carrying their caveats as attribute docstrings (A2's `sk_lynched` conditioning, B1's r=+0.558 coupling, C1's refinement status). The `dnu_`-prefixed `DO_NOT_USE_METRICS` (the investigator find-rate cluster + `wolf_steering_rate`) keep them out of any silent average. Basket promotion of the diagnostics remains pending a larger wolf-win N. All $0/zero-LLM, ran at `4b1449e`. Label caveat carried forward: the accusation graph rides `addressed_targets` self-labels (tuned for scheduling, not measurement), whose error rate as measurement input is still uncharacterized.
 
-- *Correction (2026-10-23):* this paragraph first cited test counts. They are dropped here because the tests in `tests/` are largely AI-written and unaudited. The logic is pinned in `tests/engine/test_diagnostic_metrics.py` and `tests/evaluation/test_metrics_audit_proxies.py`, which shows where it is checked, not that it is right. On the label caveat: in October 2026 the speakers' accusation tags agreed with an independent LLM judge on 145 of 183 agent messages (79%), and missed an accusation on 24 of 183 (13%) (`game_play_enhancement/discussion_evidence.md` §7.1). That compares the tags with an uncalibrated judge, not with a human. The scheduler access audit and the whiff conversion audit (`evaluation/src/audits/{scheduler_access_audit,whiff_conversion_audit}.py`) are now catalogued in `../deterministic_audits/`.
+- *Correction (2026-10-23):* this paragraph first cited test counts. They are dropped here because the tests in `tests/` are largely AI-written and unaudited. The logic is pinned in `tests/engine/test_diagnostic_metrics.py` and `tests/evaluation/test_metrics_audit_proxies.py`, which shows where it is checked, not that it is right. On the label caveat: in October 2026 the speakers' accusation tags agreed with an independent LLM judge on 145 of 183 agent messages (79%), and missed an accusation on 24 of 183 (13%) (`gameplay/discussion_evidence.md` §7.1). That compares the tags with an uncalibrated judge, not with a human. The scheduler access audit and the whiff conversion audit (`evaluation/src/audits/{scheduler_access_audit,whiff_conversion_audit}.py`) are now catalogued in `../deterministic_audits/`.
 
 *(Update inspected 2026-07-02 from the metrics-audit logs; findings verified against `proxy_discovery_log.md` §3 and `scheduler_bias_log.md` §3 + the tiering constants in `Agents/compute_metrics.py`. Diagnostic-tier, not basket-promoted — the trustworthy core is unchanged.)*
 
@@ -192,9 +192,9 @@ Credit keeps read accuracy apart from lesson scores on purpose (`credit/report.m
 - That a lower Brier means better play. It has not been tested against win or against a human's reading.
 - Run on a ten-seat record, the nine-seat ledger would score sides with the nine-seat threat set without warning, so ten-seat work must use the re-implementation.
 
-**How far checked.** Exact by construction. No validation against an outcome is recorded. Its one use as a headline: the persona-voice games, Brier 0.155 (off) and 0.129 (on), voices on better in 7 of 8 pairs, sign test p≈0.07, 8 pairs (`game_play_enhancement/data/persona_voice_games/README.md`).
+**How far checked.** Exact by construction. No validation against an outcome is recorded. Its one use as a headline: the persona-voice games, Brier 0.155 (off) and 0.129 (on), voices on better in 7 of 8 pairs, sign test p≈0.07, 8 pairs (`gameplay/data/persona_voice_games/README.md`).
 
-**Code · record.** `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` · `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/`.
+**Code · record.** `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` · `credit/report.md` §1, §4; `gameplay/data/persona_voice_games/`.
 
 ### B3. Vote-target accuracy (nine-seat and ten-seat) — ✅ as a count
 
@@ -207,7 +207,7 @@ Credit keeps read accuracy apart from lesson scores on purpose (`credit/report.m
 
 **What it cannot claim.** Whether the vote was well reasoned on the information the seat had. A lucky vote counts as right, and a sound vote on a well-hidden threat counts as wrong. The nine-seat validation against win is the only evidence that the count tracks skill.
 
-**Code · record.** As above · Part A; `game_play_enhancement/discussion_evidence.md` §8.7; `../evaluation_scopes/turn/`.
+**Code · record.** As above · Part A; `gameplay/discussion_evidence.md` §8.7; `../evaluation_scopes/turn/`.
 
 ### B4. Leverage anchor (June 2026, nine-seat) — 🟡
 
@@ -241,7 +241,7 @@ Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` 
 
 **How far checked.** The record shows why counts of meaning need a read. A first keyword count said 32 summaries named a quiet player. Reading the matches found 4 of 124, because most hits were day-1 lines such as "no players are staying quiet yet" (§2.4). A random 25 of the "behaviour pattern" accusations were read by hand to see what the bucket held.
 
-**Code · record.** `evaluation/experiments/discussion_evidence.py` · `game_play_enhancement/discussion_evidence.md` §2.
+**Code · record.** `evaluation/experiments/discussion_evidence.py` · `gameplay/discussion_evidence.md` §2.
 
 ### B6. Phase 2 step 8 per-day counts (2026-10-07, nine-seat) — ✅ counts · 🟡 reading
 
@@ -253,7 +253,7 @@ Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` 
 
 **What it cannot claim.** Rates. There are four games on `gemini-3.5-flash-lite`. In game 3, 36 of 115 successful calls went to the rescue model, and game 4 was played as its replacement. The evidence-judge labels in the same table come from the uncalibrated judge in `../llm_judge/experiment_log.md` §8.
 
-**Code · record.** `evaluation/experiments/phase2_step8_{capture,counts}.py` · `game_play_enhancement/data/phase2_step8_games/{README,report,counts}.md`; `discussion_evidence.md` §7.3–7.4.
+**Code · record.** `evaluation/experiments/phase2_step8_{capture,counts}.py` · `gameplay/data/phase2_step8_games/{README,report,counts}.md`; `discussion_evidence.md` §7.3–7.4.
 
 ### B7. Balance batches (2026-10-09 and 10, ten-seat) — ✅ counts · 🟡 reading
 
@@ -270,19 +270,19 @@ Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` 
 - Anything stable. Each batch is six games.
 - Balance on today's model. The record states every reading is of flash-lite play, and that "balance has to be re-read on the model the live game uses" (§8.5 item 5). Live seats now default to Claude Haiku 5.5 (`Agents/llm_factory/accessors.py:24`). No balance batch on Haiku is in the record.
 
-**Code · record.** `evaluation/experiments/phase3_capture.py` · `game_play_enhancement/data/phase3_{games,balance,balance_2,balance_3,balance_4}/`; `discussion_evidence.md` §8.3.
+**Code · record.** `evaluation/experiments/phase3_capture.py` · `gameplay/data/phase3_{games,balance,balance_2,balance_3,balance_4}/`; `discussion_evidence.md` §8.3.
 
 ### B8. Prompt-claims audit: the wolf "blend your vote" tactic (2026-06-17, nine-seat) — 🟡
 
 **What it is.** A check on whether a tactic written into the wolf prompt is true. It correlates the validated camouflage proxy `wolf_unconditioned_blending_rate` with wolf win.
 
-**Result** (`generation_prompt/prompt_claims_audit/experiment_log.md`): pooled r=+0.164, p=0.070, n=122. Wolves won 38% at high blend against 25% at low blend. This is consistent with an earlier r=+0.20, p=0.003, n=220. The baseline-only slice (n=22) flips sign and is underpowered.
+**Result** (`gameplay/turn_prompt/prompt_claims_audit/experiment_log.md`): pooled r=+0.164, p=0.070, n=122. Wolves won 38% at high blend against 25% at low blend. This is consistent with an earlier r=+0.20, p=0.003, n=220. The baseline-only slice (n=22) flips sign and is underpowered.
 
 **What it can claim.** A trend in the tactic's favour, leaning on the earlier larger sample for significance.
 
 **What it cannot claim.** Cause. The record says both tested claims are correlational, since blending could co-move with game state.
 
-**Code · record.** `evidence/generation_prompt/prompt_claims_audit/blend_claim_test.py`. This is study code kept inside the evidence folder as a dated artifact; it reuses `evaluation/src/core/stats.py::point_biserial` · the same folder's `experiment_log.md`.
+**Code · record.** `evidence/gameplay/turn_prompt/prompt_claims_audit/blend_claim_test.py`. This is study code kept inside the evidence folder as a dated artifact; it reuses `evaluation/src/core/stats.py::point_biserial` · the same folder's `experiment_log.md`.
 
 ### B9. Investigator transmission (June 2026, nine-seat) — ⚠️
 
@@ -294,7 +294,7 @@ Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` 
 
 **What it cannot claim.** Whether a message actually asserted the read. A keyword match cannot judge meaning, and the record calls the analysis "lexical/qualitative (judge-confirmation pending)". The script's docstring also warns that `transmitted` is post-treatment, so its cross-tab with win is descriptive only.
 
-**Code · record.** `evaluation/src/studies/investigator_transmission.py`. Both records cite it at the old path `evaluation/src/experiments/` · `memory_system/effectiveness/v6_sp_ab/experiment_log.md`; `generation_prompt/prompt_claims_audit/experiment_log.md`.
+**Code · record.** `evaluation/src/studies/investigator_transmission.py`. Both records cite it at the old path `evaluation/src/experiments/` · `memory_system/effectiveness/v6_sp_ab/experiment_log.md`; `gameplay/turn_prompt/prompt_claims_audit/experiment_log.md`.
 
 ### B10. Batch summary (`scripts/analyze_batch.py`) — no trust of its own
 
@@ -321,13 +321,13 @@ Data: the 28 most recent games, four batches of 7, run 2026-09-17 at `e1a2e3dd` 
 | Tiering and the push | `Agents/compute_metrics.py:688-776` | `memory_system/v8/plan.md` §8.4 |
 | Ten-seat metrics | `Agents/ten_seat_metrics.py`; `compute_game_metrics` | `memory_system/v8/{plan.md §8.1–8.4, decisions.md §8}` |
 | Ten-seat decision grades | `Agents/memory/consolidation/grading.py`, `scripts/grade_observations.py` | `memory_system/v8/{plan.md §9.6, decisions.md §12–13, experiment_log.md}`; `credit/report.md` §2 |
-| Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/` |
+| Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `gameplay/data/persona_voice_games/` |
 | Vote-target accuracy | `compute_metrics.py:536`, `Agents/memory/consolidation/decision_scoring.py`, `evaluation/experiments/haiku_vote_score.py` | Part A; `discussion_evidence.md` §8.7 |
 | Leverage anchor | `instrument_validation/proxies/leverage_anchor_separation.py` | `memory_system/v7/plan.md`, `memory_system/v7/experiment_log.md` |
-| Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `game_play_enhancement/discussion_evidence.md` §2 |
-| Phase 2 step 8 counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `game_play_enhancement/data/phase2_step8_games/` |
-| Balance batches | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5 |
-| Blend-tactic check | `evidence/generation_prompt/prompt_claims_audit/blend_claim_test.py` | same folder, `experiment_log.md` |
+| Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `gameplay/discussion_evidence.md` §2 |
+| Phase 2 step 8 counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `gameplay/data/phase2_step8_games/` |
+| Balance batches | `evaluation/experiments/phase3_capture.py` | `gameplay/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5 |
+| Blend-tactic check | `evidence/gameplay/turn_prompt/prompt_claims_audit/blend_claim_test.py` | same folder, `experiment_log.md` |
 | Investigator transmission | `evaluation/src/studies/investigator_transmission.py` | `memory_system/effectiveness/v6_sp_ab/experiment_log.md` |
 | Batch summary | `scripts/analyze_batch.py` | none |
 

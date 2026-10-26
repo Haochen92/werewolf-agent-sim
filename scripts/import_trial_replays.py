@@ -8,7 +8,7 @@ time from its usage, its dates from the capture's own wall times. A game's id is
 capture path, so importing twice changes nothing.
 
     poetry run python scripts/import_trial_replays.py --dry-run \\
-        evidence/game_play_enhancement/data/phase3_balance_4/e0*.chunks.jsonl
+        evidence/gameplay/data/phase3_balance_4/e0*.chunks.jsonl
 """
 
 from __future__ import annotations

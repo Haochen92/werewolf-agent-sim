@@ -5,7 +5,7 @@ production way: stream_mode=["updates", "custom"], subgraphs=True, version="v2")
 three ways: every chunk carries the time it arrived, every model call is logged with its node and
 its start/end times (so calls and seconds can be attributed to days afterwards), and the final
 state is written out as a batch-shaped game record. Memory off, dump off.
-Record: evidence/game_play_enhancement/data/phase2_step8_games/README.md.
+Record: evidence/gameplay/data/phase2_step8_games/README.md.
 
   poetry run python evaluation/experiments/phase2_step8_capture.py --label game1
 """
@@ -47,7 +47,7 @@ from Agents.turn import prompt_log, reads_log  # noqa: E402
 from server.game.usage import UsageMeter, game_cost  # noqa: E402
 from tests.leak_test import leak_inputs, run_leak_tests  # noqa: E402
 
-OUT_DIR = REPO_ROOT / "evidence/game_play_enhancement/data/phase2_step8_games"
+OUT_DIR = REPO_ROOT / "evidence/gameplay/data/phase2_step8_games"
 
 
 class CallLog(BaseCallbackHandler):

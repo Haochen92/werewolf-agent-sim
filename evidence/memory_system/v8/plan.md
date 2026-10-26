@@ -24,8 +24,8 @@ path; do not leave discovering an unusable store until after seeding.
 
 - The ten-seat game draws from twelve roles. The memory cell registries still cover the old cast;
   new roles can silently extract nothing. Start with the role sheet
-  (`evidence/game_play_enhancement/role_sheet.md`) and census §5
-  (`evidence/game_play_enhancement/phase3_wiring_census.md`), then check current code: the census
+  (`evidence/gameplay/roles/role_sheet.md`) and census §5
+  (`evidence/gameplay/roles/phase3_wiring_census.md`), then check current code: the census
   contains historical paths and assumptions.
 - This effort makes the current demo's memory mechanism usable and inspectable. It is **not a new
   effectiveness experiment**. The research closure is

@@ -353,7 +353,7 @@ class RoleClaimV4(LenientToolCallModel):
 
 # Built on the base Accusation, not v3, so it carries no record_check (2026-10-16): the summariser's
 # check against the record was wrong in all 27 it wrote across 66 replayed summaries
-# (evidence/reasoning_failures/experiment_log.md §3); the claim ledger checks claims in code.
+# (evidence/gameplay/deduction/experiment_log.md §3); the claim ledger checks claims in code.
 class AccusationV4(Accusation):
     # Every written field is capped at 30 words (2026-10-04): DeepSeek wrote a median of 40 and up to
     # 92 per field, and agents read all of it every day. 3.5 flash-lite already writes about 20.

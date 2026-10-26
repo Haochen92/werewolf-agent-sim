@@ -91,7 +91,7 @@ nothing, is held back and nobody hears it.
 """
 # No "a pass costs nothing here" (owner, 2026-10-18): that sentence alone halved open-floor speech,
 # holding back new readings as often as repeats; the echo gate does the sorting instead
-# (evidence/game_play_enhancement/data/silence_calibration/).
+# (evidence/gameplay/data/silence_calibration/).
 
 # Town only, on a voting day, after the open-floor block (owner, 2026-10-12: in the first Haiku game
 # half the votes came from players who had not spoken that day). Not for evil seats, for whom

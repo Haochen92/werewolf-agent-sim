@@ -17,8 +17,8 @@ The full guide always; then re-read the type's discipline block ("Discipline for
 
 Writers imitate the prose they see more reliably than the prose they are told to write (the guide says this itself). Exemplars:
 - Reference doc → `evidence/agent_boundaries/report.md`
-- Build-journey log → `evidence/sequential_discussion/experiment_log.md`
-- Experiment report (single-experiment reference pairing) → `evidence/sequential_discussion/report.md`
+- Build-journey log → `evidence/gameplay/discussion/experiment_log.md`
+- Experiment report (single-experiment reference pairing) → `evidence/gameplay/discussion/report.md`
 - Decision record → `evidence/refactor/eval_architecture_convention.md` (tension → principle → rejected alternatives → decision + named tradeoff), with `evidence/refactor/provenance_lineage_rationale.md` as a second design-rationale example.
 - Negative finding → the guide's skeleton (§Document Types) — no single canonical file; imitate the reference-doc exemplar's honesty devices.
 
@@ -96,7 +96,7 @@ functionally a deletion for a busy reader.
   much to trust things they cannot picture.
 
 ### Explanation-completeness rules (added 2026-07-06, from the exemplar comparison — the owner's
-### hand-revised `evidence/sequential_discussion/experiment_log.md` vs the situation-dimensions log)
+### hand-revised `evidence/gameplay/discussion/experiment_log.md` vs the situation-dimensions log)
 
 The exemplar doesn't just narrate the journey; it TEACHES the system while narrating. Imitate these
 moves specifically:

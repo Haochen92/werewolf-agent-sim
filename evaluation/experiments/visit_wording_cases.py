@@ -16,7 +16,7 @@ below are the events table's ``seq``; the day and channel seq come from that eve
   poetry run python evaluation/experiments/visit_wording_cases.py blind [A C dir]  # samples -> blind file
   poetry run python evaluation/experiments/visit_wording_cases.py score [dir]  # judged -> rates
 
-Record and result: evidence/game_play_enhancement/data/visit_wording_ab/README.md.
+Record and result: evidence/gameplay/data/visit_wording_ab/README.md.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from evaluation.experiments.haiku_game_turn_cases import day_states, state_before  # noqa: E402
 from evaluation.src.data.builders.hallucination_bench import _case_id  # noqa: E402
 
-OUT = Path("evidence/game_play_enhancement/data/visit_wording_ab")
+OUT = Path("evidence/gameplay/data/visit_wording_ab")
 
 G_2B29 = "2b29bfe8-714d-4aa8-a4c2-f92b08d02aa5"   # DeepSeek V4.1 Flash, the owner's complaint
 G_2500 = "25003626-2d0f-4150-9e3b-1f828d53a149"   # Claude Haiku 5.5

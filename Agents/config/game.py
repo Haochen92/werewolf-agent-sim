@@ -55,7 +55,7 @@ class GameConfig(BaseModel):
     # decided by surviving-faction size (tie -> draw).
 
     # --- Sequential discussion scheduler (Phase 0) -------------------------------
-    # All deterministic, pure-function knobs; tune later. See evidence/sequential_discussion/.
+    # All deterministic, pure-function knobs; tune later. See evidence/gameplay/discussion/.
     discussion_utterance_multiplier: float = Field(default=3.0, gt=0)
     # global hard cap on real utterances/day = ceil(multiplier * surviving players),
     # floored by min_discussion_utterances. Backstop only — pass_turn does the real

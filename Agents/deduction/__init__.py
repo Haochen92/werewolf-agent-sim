@@ -1,7 +1,7 @@
 """The deduction engine: lines computed by code from what one seat knows, so that a weak model is
 handed the conclusions a careful human would draw instead of having to draw them itself.
 
-Specification, build order and status: evidence/reasoning_failures/deduction_catalogue.md.
+Specification, build order and status: evidence/gameplay/deduction/deduction_catalogue.md.
 - Every line holds in every legal game that agrees with what the seat knows, or names the claims it
   assumes, or lists every explanation. Nothing rests on hidden state: the engine reads only a
   SeatView (seat_view.py), built from the seat's own payload.
@@ -33,7 +33,7 @@ name, except where a row is about one role and its wording names it. To add a ro
 2. Run tests/engine/deduction/test_role_traits.py: it resolves real nights and fails on any trait
    the engine disagrees with, and on a second role with a trait a row assumes only one role has
    ("only the Chanteuse blocks"); such a role needs new rows first.
-3. Add catalogue rows (evidence/reasoning_failures/deduction_catalogue.md) and code only for what
+3. Add catalogue rows (evidence/gameplay/deduction/deduction_catalogue.md) and code only for what
    is new in its behaviour; what its traits already describe, the rows already cover.
 4. Run the deduction tests and oracles with it dealt, then add it to VERIFIED_ROLES (verified.py).
    Until then a game that deals it gets no deduction.

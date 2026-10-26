@@ -5,9 +5,9 @@ matters, the two questions the methods answer, where they were used, and how far
 trusted. How this fits with the other ways the project evaluates is in [the hub](../report.md). The full
 detail (every count, commit and correction, plus the October code audit and its fix check) is in
 [the detailed record](experiment_log.md). What was tried against the errors, and what worked, is in
-[the gameplay report](../../game_play_enhancement/report.md); the full detail is in the design records:
-the [July validation plan](../../generation_prompt/validation_plan.md) and
-[discussion_evidence](../../game_play_enhancement/discussion_evidence.md) §6 and §8.
+[the gameplay report](../../gameplay/report.md); the full detail is in the design records:
+the [July validation plan](../../gameplay/turn_prompt/validation_plan.md) and
+[discussion_evidence](../../gameplay/discussion_evidence.md) §6 and §8.
 
 ## Why factual errors
 
@@ -198,7 +198,7 @@ It gives no rate.
 
 Inventing facts had become rare on the ten-seat game. The commonest errors were bad reasoning about what
 an ability can see, and the summariser distorting plain claims
-([discussion_evidence](../../game_play_enhancement/discussion_evidence.md) §8.4, §8.6).
+([discussion_evidence](../../gameplay/discussion_evidence.md) §8.4, §8.6).
 
 **How far to trust it.** Playing finds the errors that cost the most, but only in the games that were
 played, and only what caught the owner's eye. Ten audited games are too few for a rate, and the readers
@@ -287,12 +287,12 @@ the healer"*.
 
 | Symptom | How often | Possible causes | How it was told apart | Cause found | Fix (where recorded) |
 |---|---|---|---|---|---|
-| **A wrong count of who is left** ("the remaining wolf") | 221 of 368 (July census) | A reasoning slip; losing track | The count was not in the prompt, only workable out from the list of deaths. The board of the dead alone did not stop the one recurring case (July replay); the July bundle, which also printed the count, took error-prone turns from 48% to 30% wrong; more thinking cut bad samples from 82 to 27 of 267 | A reasoning slip | A printed line of which roles are still alive; a higher thinking budget ([validation plan](../../generation_prompt/validation_plan.md); log §2, §4) |
+| **A wrong count of who is left** ("the remaining wolf") | 221 of 368 (July census) | A reasoning slip; losing track | The count was not in the prompt, only workable out from the list of deaths. The board of the dead alone did not stop the one recurring case (July replay); the July bundle, which also printed the count, took error-prone turns from 48% to 30% wrong; more thinking cut bad samples from 82 to 27 of 267 | A reasoning slip | A printed line of which roles are still alive; a higher thinking budget ([validation plan](../../gameplay/turn_prompt/validation_plan.md); log §2, §4) |
 | **A dead player treated as alive, or a dead player's role misstated** | 57 and 13 of 368 (July) | Losing track; the fact not given | Not told apart: the board of the dead shipped in the July bundle as cheap hygiene, not as a tested fix | Not established | A board of the dead with their revealed roles in every prompt (validation plan) |
 | **A claim credited to the wrong player** ("player_2 claimed chanteuse") | 18 of 368 (July); within the 22 summary errors in ten ten-seat games | The player made it up; the day summary did, and players repeated it | The summary was read against the transcript: the summariser had turned "I was roleblocked" into a chanteuse claim, and two players repeated it. In replay, the fix took the repeat from 5 of 5 samples to 0 | Wrong input (a summary error) | The summariser is told what is not a claim; the claim ledger, kept by code, drops a claim that can only come from a block (discussion_evidence §6.6, §8.4) |
 | **An invented result or action** ("I investigated player_9") | 59 inventions of 368 (July); 2 in ten ten-seat games | The model made it up; a misleading wording; its own previous note | Replay with one change each (the worked example) | A misleading wording | The results reworded (discussion_evidence §6.2) |
 | **A visit read the wrong way round** ("I visited nobody" taken as "nobody visited me"; an empty watch read as an empty house) | The commonest player error in the ten-seat audit, within the 28 bad conclusions | Misreading; the rule not stated | The prompts were read: they defined a visit only by implication and never said what a watch cannot see | Misreading, invited by an unstated rule | The rules now state which way a visit goes and what a watch cannot see (discussion_evidence §8.4, §8.6) |
-| **A conclusion that does not follow from correct facts** ("a watch and a protection prove my results") | 28 in ten ten-seat games | A reasoning slip; a corrupted summary underneath | Replay of ten frozen turns on the same prompts: 6 bad samples in 40 on flash-lite, 1 on gemini-3.5-flash; flash-lite made them as often on the control turns | A reasoning slip | A stronger model or more thinking; the deduction engine, which hands the player the conclusion (discussion_evidence §8.4; [reasoning_failures](../../reasoning_failures/report.md)) |
+| **A conclusion that does not follow from correct facts** ("a watch and a protection prove my results") | 28 in ten ten-seat games | A reasoning slip; a corrupted summary underneath | Replay of ten frozen turns on the same prompts: 6 bad samples in 40 on flash-lite, 1 on gemini-3.5-flash; flash-lite made them as often on the control turns | A reasoning slip | A stronger model or more thinking; the deduction engine, which hands the player the conclusion (discussion_evidence §8.4; [reasoning_failures](../../gameplay/deduction/report.md)) |
 | **A fact the agent should have known, stated wrongly or not used** (private information cited as public; a rule the engine applied) | 12 holes in the code audit; two ten-seat games turned on unstated rules | The fact not given, or given in a confusing form | Reading the code that builds each prompt, and the prompts of the two games | Missing or confusing input | Each agent's own night record; engine facts labelled apart from summaries; the missing rules written in (discussion_evidence §6.4–6.5, §8.4; the detailed record §8–9) |
 
 **The causes, across all rows.** Five causes cover what was found: *making things up* (hallucination in
@@ -351,7 +351,7 @@ Haiku 5.5, which has no recorded check against people.
 
 **What reduced the errors** (telling the model to take care did not; giving it the fact, or moving the check
 into code, did) is the problem side, not the measurement, and is in
-[the gameplay report](../../game_play_enhancement/report.md), problem 1.
+[the gameplay report](../../gameplay/report.md), problem 1.
 
 ## What the labels can and cannot say
 

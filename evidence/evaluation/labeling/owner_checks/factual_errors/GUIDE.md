@@ -8,7 +8,7 @@ The hallucination bench decides, for every statement a player model writes in a 
 
 The items come from:
 
-- `evaluation/eval_results/hallucination_bench/shared_prefix_luna_2026_10_13/` (run 2026-10-13; arms luna_today, luna_shared_enforced, luna_shared_unenforced; cases `evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl`; judges: expectation_judge = anthropic/claude-haiku-5-5, census_reader_recall = anthropic/claude-haiku-5-5, census_reader_precision = anthropic/claude-haiku-5-5)
+- `evaluation/eval_results/hallucination_bench/shared_prefix_luna_2026_10_13/` (run 2026-10-13; arms luna_today, luna_shared_enforced, luna_shared_unenforced; cases `evidence/gameplay/data/phase3_turn_replay/cases.jsonl`; judges: expectation_judge = anthropic/claude-haiku-5-5, census_reader_recall = anthropic/claude-haiku-5-5, census_reader_precision = anthropic/claude-haiku-5-5)
 
 There are 80 items from 18 bench cases. They were drawn so that both of the judge's answers are well represented, so do not aim for any particular share of errors: judge each item on its own.
 

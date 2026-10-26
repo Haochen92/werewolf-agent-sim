@@ -1,6 +1,6 @@
 """Phase 2 step 8: counts per game and per day for the comparison games, and the judge pass.
 
-Record: evidence/game_play_enhancement/data/phase2_step8_games/ (README.md, report.md). The
+Record: evidence/gameplay/data/phase2_step8_games/ (README.md, report.md). The
 questions are discussion_evidence.md §7.3's. Everything structural is counted from the records
 with no model; the judge is discussion_evidence.py's evidence judge, reused as it is (read_messages
 and score), run only with --judge and cached in the output folder.
@@ -34,7 +34,7 @@ from evaluation.src.core.settings import REPO_ROOT  # noqa: E402
 from evaluation.src.data.sources.replay_api import LIVE_SERVER, get_json, record_from_replay  # noqa: E402
 from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL  # noqa: E402
 
-DATA = REPO_ROOT / "evidence/game_play_enhancement/data"
+DATA = REPO_ROOT / "evidence/gameplay/data"
 OUT = DATA / "phase2_step8_games"
 STEP8_LABELS = ["game1", "game2", "game3", "game4"]
 BASELINE_V2 = "832404e9-a5f2-434e-8484-5bb953718a8f"

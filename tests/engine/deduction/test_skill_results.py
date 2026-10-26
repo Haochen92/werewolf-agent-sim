@@ -1,7 +1,7 @@
 """Level 1 of the deduction engine, slice 3: what a check, a watch, a follow, a sigil, a block and a
 scored bet imply (Agents/deduction/own_results/checks.py, sightings.py, sigils.py, blocks.py,
 bets.py; rows A21–A27, A32–A35, A37–A43, A49, A50 of
-evidence/reasoning_failures/deduction_catalogue.md, Table A).
+evidence/gameplay/deduction/deduction_catalogue.md, Table A).
 
 Every night here runs through the real engine. Per row: a night where it fires and is true, with the
 exact line; nights that differ in one respect where it must not fire or must weaken (bodies, blocks,

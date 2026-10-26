@@ -1,6 +1,6 @@
 """Freeze the day votes of the owner's first Haiku 5.5 game as hallucination-bench cases.
 
-Record: evidence/game_play_enhancement/discussion_evidence.md §8.7. Game 403f4dbc's day-5 vigilante
+Record: evidence/gameplay/discussion_evidence.md §8.7. Game 403f4dbc's day-5 vigilante
 voted out the real sentinel because its claim was "unverified" (data/haiku_sentinel_vote/), and on
 day 6 the Necromancer's late, uncontested sigilist claim carried the vote onto the town's speculator.
 These cases test a read that compares the candidates against each other: the two day-5 ballots that
@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from evaluation.experiments.haiku_game_turn_cases import GAME, _D3_FACTS, day_states  # noqa: E402
 from evaluation.src.data.builders.hallucination_bench import _case_id  # noqa: E402
 
-OUT = Path("evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl")
+OUT = Path("evidence/gameplay/data/haiku_vote_replay/cases.jsonl")
 
 _D4_VOTE = (
     "Facts on this turn: on day 3 player_1 and player_6 voted to eliminate player_4, and the other seven voted "

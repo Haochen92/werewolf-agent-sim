@@ -1,6 +1,6 @@
 """The night, resolved once for every role.
 
-Rules located at ``evidence/game_play_enhancement/role_sheet.md``.
+Rules located at ``evidence/gameplay/roles/role_sheet.md``.
 """
 
 from __future__ import annotations

@@ -74,7 +74,7 @@ skeleton. The Core Principle above and the Tone rules below apply to all of them
 
   This is the journey genre's fullest form, the inverse of the reference doc, which distils the *same*
   workstream destination-first. **Menu, not mandate:** a short log might be just ①②④. Exemplar:
-  `evidence/sequential_discussion/experiment_log.md` (its `report.md` is the paired reference doc).
+  `evidence/gameplay/discussion/experiment_log.md` (its `report.md` is the paired reference doc).
 - **Decision / design record.** You made an architectural or methodological choice, not a
   measurement — there is no dataset or results table, and forcing one is filler. Skeleton: *the
   tension* (the gap or conflict) → *the principle / design* → *alternatives considered and rejected,

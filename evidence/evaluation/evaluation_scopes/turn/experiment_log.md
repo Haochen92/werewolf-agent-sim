@@ -35,8 +35,8 @@ as which fix shipped or which idea was dropped. That is answered in the design f
 [credit blind-spot fix](../../../credit/blindspot_fix/experiment_log.md),
 [tell extraction](../../../extraction/tell_extraction/report.md),
 [ten-seat memory (v8)](../../../memory_system/v8/experiment_log.md),
-[discussion evidence](../../../game_play_enhancement/discussion_evidence.md) and its `data/` folders,
-and [reasoning failures](../../../reasoning_failures/experiment_log.md). How all the evaluation reports
+[discussion evidence](../../../gameplay/discussion_evidence.md) and its `data/` folders,
+and [reasoning failures](../../../gameplay/deduction/experiment_log.md). How all the evaluation reports
 fit together: [the hub](../../report.md). The list of every source behind these reports:
 [the source map](../../source_map.md).
 
@@ -87,7 +87,7 @@ today's template. Engine-written text in an old state, such as ballot lines or t
 updated to today's wording (`_engine_wording`). Text that players and the summariser wrote stays as it
 was. The capture-based screens re-render the seat's deduction blocks from the rebuilt payload. That
 rebuild reproduced all 41 captured seat blocks exactly on the evil cover turns
-([`evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md), step 2).
+([`evil_cover_screen/README.md`](../../../gameplay/data/evil_cover_screen/README.md), step 2).
 
 **An arm is a process.** Prompt versions are switches read when the code loads. So each arm runs in
 its own process, and usually from its own git worktree on a tag or commit (`visit-wording-baseline`,
@@ -117,12 +117,12 @@ below.
 
 - **One case sampled ten times shows the spread of answers to one prompt, not ten situations.** The
   same AC2 vote prompt went to the real Healer in 8 of 10 samples on one run and 1 of 10 on the next
-  ([`deduction_placement_n10/results.md`](../../../reasoning_failures/data/deduction_placement_n10/results.md)).
+  ([`deduction_placement_n10/results.md`](../../../gameplay/deduction/data/deduction_placement_n10/results.md)).
   At n = 25 per arm, with all arms shuffled into one schedule, the rate was about one in three in
-  every arm ([`deduction_ac2_2x2/results.md`](../../../reasoning_failures/data/deduction_ac2_2x2/results.md)).
+  every arm ([`deduction_ac2_2x2/results.md`](../../../gameplay/deduction/data/deduction_ac2_2x2/results.md)).
   In the Haiku vote replay, adding only true facts to earlier ballots moved single cases from 4 to 9
   and from 6 to 2 of 10. That is more than any effect the replay was testing
-  ([`discussion_evidence.md`](../../../game_play_enhancement/discussion_evidence.md) §8.7). The tell-book
+  ([`discussion_evidence.md`](../../../gameplay/discussion_evidence.md) §8.7). The tell-book
   screen's no-book arm scored 18 and then 20 of 40 on the same cases. **What follows:** a difference of
   a few samples on one case is noise. The two habits that addressed this were running the unchanged arm
   twice (the persona line's plain-against-plain baseline) and interleaving all arms in one shuffled
@@ -187,7 +187,7 @@ below.
   > correction of 2026-10-22). So the screen converges with June's decision measures, not with a
   > win-rate gain. Both anchors belong to one June epoch. The v6 store did not repeat the town gain
   > (+6 points, p = 0.77), and the July v7 endpoint was 0.147 lower with memory (19 of 30 boards,
-  > p ≈ 0.06; [`memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §5). The screen was
+  > p ≈ 0.06; [`../../../memory_system/v7/execution_plan/report.md`](../../../memory_system/v7/execution_plan/report.md) §5). The screen was
   > validated as a direction-finder on one epoch; it says nothing about whether memory helps today.
 - **The cheap-lever ladder screened clean.** Every cheap way to make the agent *use* memory better
   came back null-or-harmful, tier *suggestive*: emitting reasoning before the vote synced
@@ -309,8 +309,8 @@ below.
   seat number, not the list order. The effect is far larger than any sampling noise. It was measured on
   the nine-seat boards and one model, and has not been re-run on the ten-seat game.
 - **Code and record.** `evaluation/experiments/night1_target_bias_check.py`;
-  [`data/night1_target_bias/README.md`](../../../game_play_enhancement/data/night1_target_bias/README.md);
-  [`discussion_evidence.md`](../../../game_play_enhancement/discussion_evidence.md) §7.5.
+  [`data/night1_target_bias/README.md`](../../../gameplay/data/night1_target_bias/README.md);
+  [`discussion_evidence.md`](../../../gameplay/discussion_evidence.md) §7.5.
 
 ### Evil cover screen 🟡 (ten-seat, 2026-10-18)
 
@@ -331,7 +331,7 @@ below.
   public record, so a claim that contradicts the sighting it answers was added as a label only in
   step 2. The seats' notes in the captured inputs were written under the old card.
 - **Code and record.** `evaluation/experiments/evil_cover_screen.py`;
-  [`data/evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md)
+  [`data/evil_cover_screen/README.md`](../../../gameplay/data/evil_cover_screen/README.md)
   (packets, keys, verdicts per step). The paired games that followed are in
   [`../game/`](../game/report.md).
 
@@ -347,11 +347,11 @@ below.
   rose from 15 to 27, and the healer still passed in 7 of 8 samples under both wordings.
 - **How far it was checked.** The blinding was partial: the new note's layout is visible, and both
   judges noticed it. No significance test. The generations were copied on 2026-10-23 from the gitignored
-  `eval_results/` into [`reasoning_failures/data/note_prompt/generations/`](../../../reasoning_failures/data/note_prompt/generations/README.md);
+  `eval_results/` into [`gameplay/deduction/data/note_prompt/generations/`](../../../gameplay/deduction/data/note_prompt/generations/README.md);
   the cases, packets and verdicts are in the record.
 - **Code and record.** `evaluation/experiments/note_prompt_cases.py`;
-  [`reasoning_failures/experiment_log.md`](../../../reasoning_failures/experiment_log.md) §6;
-  `reasoning_failures/data/note_prompt/`.
+  [`gameplay/deduction/experiment_log.md`](../../../gameplay/deduction/experiment_log.md) §6;
+  `gameplay/deduction/data/note_prompt/`.
 
 ### Haiku vote replay 🟡 (ten-seat, 2026-10-16)
 
@@ -373,7 +373,7 @@ below.
   ambiguous expectation and were discarded as false positives.
 - **Code and record.** `evaluation/experiments/haiku_vote_cases.py`, `haiku_vote_score.py`; configs
   `evaluation/config/hallucination_bench_haiku_vote_compare.json`, `_haiku_game_vote_v2.json`;
-  [`discussion_evidence.md`](../../../game_play_enhancement/discussion_evidence.md) §8.7;
+  [`discussion_evidence.md`](../../../gameplay/discussion_evidence.md) §8.7;
   `data/haiku_vote_replay/` (every sample's vote and reads in `votes.jsonl`),
   `data/haiku_sentinel_vote/`. As of 2026-10-23 the two runners, the vote-compare config and both data
   folders are untracked in git.
@@ -395,7 +395,7 @@ below.
   p = 0.29) is direction only. The record notes that the reply slice understates the fix, because the
   original denial is still in every replayed transcript.
 - **Code and record.** `evaluation/experiments/visit_wording_cases.py`;
-  [`data/visit_wording_ab/README.md`](../../../game_play_enhancement/data/visit_wording_ab/README.md)
+  [`data/visit_wording_ab/README.md`](../../../gameplay/data/visit_wording_ab/README.md)
   (`arm_b.diff`, `judge_rubric.md`, `key.jsonl`, `deepseek/`, `deduction_ac/`).
 
 ### Persona line screen 🟡 (ten-seat, 2026-10-18)
@@ -411,7 +411,7 @@ below.
   design: the plain-against-plain pairs. The baseline is only 10 pairs, so a modest content effect
   could hide in it.
 - **Code and record.** `evaluation/experiments/persona_line_screen.py`;
-  [`data/persona_line/README.md`](../../../game_play_enhancement/data/persona_line/README.md).
+  [`data/persona_line/README.md`](../../../gameplay/data/persona_line/README.md).
 
 ### Voice rewrite screen 🟡 (ten-seat, 2026-10-18)
 
@@ -426,13 +426,13 @@ below.
 - **How far it was checked.** All 19 "changed" verdicts were read and confirmed against the originals.
   That check also measured the gate: it caught 1 of the 19.
 - **Code and record.** `evaluation/experiments/voice_rewrite_screen.py`;
-  [`data/voice_rewrite/README.md`](../../../game_play_enhancement/data/voice_rewrite/README.md).
+  [`data/voice_rewrite/README.md`](../../../gameplay/data/voice_rewrite/README.md).
 
 ## Deduction-engine replays
 
 These screens test lines that the deduction engine writes into a seat's prompt. They use the four
 acceptance cases (AC1–AC4) from two ten-seat Haiku games, as listed in
-[`reasoning_failures/deduction_catalogue.md`](../../../reasoning_failures/deduction_catalogue.md). The
+[`gameplay/deduction/deduction_catalogue.md`](../../../gameplay/deduction/deduction_catalogue.md). The
 engine's own correctness is checked by code, not by replay; see
 [`../../deterministic_audits/`](../../deterministic_audits/).
 
@@ -453,10 +453,10 @@ engine's own correctness is checked by code, not by replay; see
 - **How far it was checked.** Whether a message ties player_7 to the block was read by hand. One case,
   one game. The frozen cases are in the record. The samples (judged files and summaries) were graduated
   on 2026-10-23 from the gitignored `eval_results/` into
-  [`reasoning_failures/data/deduction_injection/runs/{deduction_injection,healer_silence}/`](../../../reasoning_failures/data/deduction_injection/runs/README.md).
+  [`gameplay/deduction/data/deduction_injection/runs/{deduction_injection,healer_silence}/`](../../../gameplay/deduction/data/deduction_injection/runs/README.md).
 - **Code and record.** `evaluation/experiments/deduction_injection_{cases,score}.py`;
-  [`reasoning_failures/experiment_log.md`](../../../reasoning_failures/experiment_log.md) §4–§5;
-  `reasoning_failures/data/deduction_injection/`.
+  [`gameplay/deduction/experiment_log.md`](../../../gameplay/deduction/experiment_log.md) §4–§5;
+  `gameplay/deduction/data/deduction_injection/`.
 
 ### Deduction placement and the AC2 series 🟡 (ten-seat, 2026-10-17 to 18)
 
@@ -481,7 +481,7 @@ engine's own correctness is checked by code, not by replay; see
   after another session had begun editing `Agents/`; the human message was checked byte-identical, the
   system message was not.
 - **Code and record.** `evaluation/experiments/deduction_placement_screen.py`,
-  `deduction_ac2_{ablation,2x2,closing_fixed}.py`; `reasoning_failures/data/deduction_placement/`,
+  `deduction_ac2_{ablation,2x2,closing_fixed}.py`; `gameplay/deduction/data/deduction_placement/`,
   `deduction_placement_n10/`, `deduction_ac2_ablation/`, `deduction_ac2_2x2/`,
   `deduction_ac2_closing_fixed/` (prompts, samples, verdicts, keys).
 
@@ -498,7 +498,7 @@ engine's own correctness is checked by code, not by replay; see
 - **How far it was checked.** 10 turns, 3 samples, one model. The engine change was never committed,
   so at HEAD the runner finds no turns and cannot be rerun.
 - **Code and record.** `evaluation/experiments/counter_claim_vote_screen.py`;
-  [`data/counter_claim_votes/README.md`](../../../game_play_enhancement/data/counter_claim_votes/README.md).
+  [`data/counter_claim_votes/README.md`](../../../gameplay/data/counter_claim_votes/README.md).
 
 ## L1/L2 — the per-day replay (design only)
 
@@ -563,16 +563,16 @@ trusting a single ON-vs-OFF number.
 | Checkpoint replay | `evaluation/src/replay/decision_screen/checkpoint_replay.py` (`eval-checkpoint-replay`) | [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md) ④–④d; `replay/`, `replay_onepoch/`, `replay_obs/` |
 | Tell-book screen | `evaluation/src/replay/decision_screen/tell_book_screen.py` | [`tell_extraction/experiment_log.md`](../../../extraction/tell_extraction/experiment_log.md) ⑫; `outputs/book_screen*.json` |
 | Stage-filter replay | `evaluation/experiments/v8_stage_filter_replay.py` | [`memory_system/v8/experiment_log.md`](../../../memory_system/v8/experiment_log.md); `data/gate/stage_filter{,_40games}/` |
-| Night-1 target check | `evaluation/experiments/night1_target_bias_check.py` | [`data/night1_target_bias/`](../../../game_play_enhancement/data/night1_target_bias/README.md); `discussion_evidence.md` §7.5 |
-| Evil cover screen | `evaluation/experiments/evil_cover_screen.py` | [`data/evil_cover_screen/`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Private-note screen | `evaluation/experiments/note_prompt_cases.py` | `reasoning_failures/experiment_log.md` §6; `reasoning_failures/data/note_prompt/` |
+| Night-1 target check | `evaluation/experiments/night1_target_bias_check.py` | [`data/night1_target_bias/`](../../../gameplay/data/night1_target_bias/README.md); `discussion_evidence.md` §7.5 |
+| Evil cover screen | `evaluation/experiments/evil_cover_screen.py` | [`data/evil_cover_screen/`](../../../gameplay/data/evil_cover_screen/README.md) |
+| Private-note screen | `evaluation/experiments/note_prompt_cases.py` | `gameplay/deduction/experiment_log.md` §6; `gameplay/deduction/data/note_prompt/` |
 | Haiku vote replay | `evaluation/experiments/haiku_vote_{cases,score}.py` (untracked) | `discussion_evidence.md` §8.7; `data/haiku_vote_replay/`, `data/haiku_sentinel_vote/` (untracked) |
-| Visit-wording A/B | `evaluation/experiments/visit_wording_cases.py` | [`data/visit_wording_ab/`](../../../game_play_enhancement/data/visit_wording_ab/README.md) |
-| Persona line screen | `evaluation/experiments/persona_line_screen.py` | [`data/persona_line/`](../../../game_play_enhancement/data/persona_line/README.md) |
-| Voice rewrite screen | `evaluation/experiments/voice_rewrite_screen.py` | [`data/voice_rewrite/`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Deduction injection (R1) | `evaluation/experiments/deduction_injection_{cases,score}.py` | `reasoning_failures/experiment_log.md` §4–§5; `data/deduction_injection/` |
-| Placement and AC2 series | `evaluation/experiments/deduction_placement_screen.py`, `deduction_ac2_{ablation,2x2,closing_fixed}.py` | `reasoning_failures/data/deduction_placement{,_n10}/`, `deduction_ac2_*/` |
-| Counter-claim vote screen | `evaluation/experiments/counter_claim_vote_screen.py` | [`data/counter_claim_votes/`](../../../game_play_enhancement/data/counter_claim_votes/README.md) |
+| Visit-wording A/B | `evaluation/experiments/visit_wording_cases.py` | [`data/visit_wording_ab/`](../../../gameplay/data/visit_wording_ab/README.md) |
+| Persona line screen | `evaluation/experiments/persona_line_screen.py` | [`data/persona_line/`](../../../gameplay/data/persona_line/README.md) |
+| Voice rewrite screen | `evaluation/experiments/voice_rewrite_screen.py` | [`data/voice_rewrite/`](../../../gameplay/data/voice_rewrite/README.md) |
+| Deduction injection (R1) | `evaluation/experiments/deduction_injection_{cases,score}.py` | `gameplay/deduction/experiment_log.md` §4–§5; `data/deduction_injection/` |
+| Placement and AC2 series | `evaluation/experiments/deduction_placement_screen.py`, `deduction_ac2_{ablation,2x2,closing_fixed}.py` | `gameplay/deduction/data/deduction_placement{,_n10}/`, `deduction_ac2_*/` |
+| Counter-claim vote screen | `evaluation/experiments/counter_claim_vote_screen.py` | [`data/counter_claim_votes/`](../../../gameplay/data/counter_claim_votes/README.md) |
 | Per-day replay (design) | none | [`day_replay/design.md`](../../../memory_system/effectiveness/day_replay/design.md) |
 | Shared replay engine (October screens) | `evaluation/src/replay/hallucination_bench.py` (`turn_payload`, `turn_template`, `hydrate_state`); checkpoint reader `evaluation/experiments/haiku_game_turn_cases.py` (`day_states`); capture rebuild `evaluation/experiments/deduction_block_census.py` (`_payload_at`) | [`../../factual_errors/report.md`](../../factual_errors/report.md) |
 

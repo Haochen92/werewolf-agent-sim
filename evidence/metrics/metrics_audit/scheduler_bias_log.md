@@ -6,7 +6,7 @@
 > metric nulls scheduler-shaped rather than agent-shaped. Later entries supersede earlier ones.
 > Sibling workstream: [`proxy_discovery_log.md`](proxy_discovery_log.md) (the metrics themselves).
 > Companion: the scheduler's own reference doc
-> ([`../../sequential_discussion/report.md`](../../sequential_discussion/report.md)) — read its
+> ([`../../gameplay/discussion/report.md`](../../gameplay/discussion/report.md)) — read its
 > "reactive turns" section and decision 12 (the June open floor and novelty judge this log audits) before
 > this log. *(Pointer updated 2026-10-26, when that report was rewritten.)*
 >

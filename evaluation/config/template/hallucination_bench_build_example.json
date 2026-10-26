@@ -5,8 +5,8 @@
   "census": {
     "runs_glob": "evidence/memory_system/v7/runs/v2_full/gen*_o*.jsonl",
     "sidecars": "batch_results/v2_full/eval_cases",
-    "stage1": "evidence/generation_prompt/validation/hallucination_verdicts.jsonl",
-    "stage2": "evidence/generation_prompt/validation/hallucination_verdicts_stage2.jsonl",
+    "stage1": "evidence/gameplay/turn_prompt/validation/hallucination_verdicts.jsonl",
+    "stage2": "evidence/gameplay/turn_prompt/validation/hallucination_verdicts_stage2.jsonl",
     "n_positive": null,
     "n_control": 40,
     "seed": 11

@@ -4,7 +4,7 @@ deny? Arm "before" is the cards as they were ("Unclaimed is a fine cover; do not
 until you need one", "or deny it"); arm "card" is R11's card text. Slice 14's covers (the night
 stories that fit) come later as a third arm.
 
-Record: evidence/game_play_enhancement/data/evil_cover_screen/ (README there). Turns: every discuss
+Record: evidence/gameplay/data/evil_cover_screen/ (README there). Turns: every discuss
 turn of an evil seat with no role claim yet, on a day when an earlier line accused it or claimed a
 sighting of its visit (the first such turn of each seat's day), from the persona voice games and the silence calibration games (captured
 prompt inputs). Each turn is replayed SAMPLES times per arm; the lines then go to blind judges.
@@ -27,10 +27,10 @@ from pathlib import Path
 from evaluation.experiments import silence_calibration
 
 SOURCES = {
-    "persona": Path("evidence/game_play_enhancement/data/persona_voice_games"),
-    "silence": Path("evidence/game_play_enhancement/data/silence_calibration/games"),
+    "persona": Path("evidence/gameplay/data/persona_voice_games"),
+    "silence": Path("evidence/gameplay/data/silence_calibration/games"),
 }
-OUT = Path("evidence/game_play_enhancement/data/evil_cover_screen")
+OUT = Path("evidence/gameplay/data/evil_cover_screen")
 EVIL = {"chanteuse", "illusionist", "serial_killer", "necromancer"}
 SEED = 20261018
 SAMPLES = 2
@@ -263,7 +263,7 @@ def score(prefix: str = "", files: str = "samples.jsonl") -> None:
     print(json.dumps(report, indent=1))
 
 
-GAMES = Path("evidence/game_play_enhancement/data/evil_cover_games")
+GAMES = Path("evidence/gameplay/data/evil_cover_games")
 """Step 4: whole games. after/: R11's card, slice 13b and 14 (deals voices-01..08, voices on). before/:
 the same deals at c61fa762 (the silence build: old evil cards, no covers); deals 01-04 are the silence
 calibration games (SOURCES["silence"]), run from that same code."""

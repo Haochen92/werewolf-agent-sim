@@ -52,7 +52,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 | 38 | `model_selection` | July seat-model choice by cost, latency and reads | **MERGE INTO cost and latency → block 96 (ruled 2026-10-22)** | Design · One model per job (live seat = latency, bulk = cheapest, extraction = quality), with public benchmarks as a shortlist only. Tell it with today's slots from `accessors.py`. — *One Design block: one model per job by its binding constraint (latency for live seats, quality for extraction, cost for bulk). At most one Design block, framed on today's defaults. The July rankings are superseded and rest on unblinded N=1–2 reads.* |
 | 39 | `refactor` | June structure audit, node collapse, and the code-versus-record rule | **MERGE (ruled 2026-10-22)** | Verification · A refactor meant to change nothing was accepted only on passing tests and an identical runtime fingerprint (goes under the fingerprint lines); Design · The research record points at the code that produced it by version and never copies it (goes under the fingerprint lines) — *The code-versus-record rule is live in the project instructions, but the factories are superseded and the skills are general software practice, so its lines belong under the fingerprint and instruments topics.* |
 | 40 | `retrieval/capacity_limits` | The observation cap that never shipped | **MERGE INTO the lessons layer (block 44 only)** | Gaps / Lesson · a decision recorded in a report but missing from the prompt, found by re-checking (block 44). — *Block 43's +0.07 is too small, untested and unused to defend. Block 44 is an honest instance of a lesson, not a retrieval finding.* |
-| 41 | `retrieval/context_eval` | Auditing the retrieval labels | **MERGE INTO `fine_tuning/cross_encoder/`** | Verification · a 5-model vote inherited the generous models' bias (514 of 1,848 pairs). — *It audits that model's training labels, which is where a reader would look for it. The majority-vote finding can also serve lesson 15.* |
+| 41 | `evaluation/labeling/context_eval` | Auditing the retrieval labels | **MERGE INTO `fine_tuning/cross_encoder/`** | Verification · a 5-model vote inherited the generous models' bias (514 of 1,848 pairs). — *It audits that model's training labels, which is where a reader would look for it. The majority-vote finding can also serve lesson 15.* |
 | 42 | `retrieval/filtering` | — | **MERGE (as filed) (final check, accepted 2026-10-22)** | Problem · Similarity search returns many versions of one lesson, up to 12 observations for one investigator turn (block 40); Design · The retrieval judge contradicted itself until it grouped items by lesson before scoring (block 45); Verification · Caveat for block 45: the same retrieval scored relevance 4.30 under one judge model and 3.00 under another, so score levels do not carry across judges — *Blocks 40 and 45 are already filed from this folder. The judge-level caveat (4.30 vs 3.00) becomes a clause in 45. 42 folds into 38 and 46 into 27, as the card says.* |
 | 43 | `retrieval/per_day_discussion` | Look up lessons once a day? | **MERGE INTO `memory_system/v8/` (D4)** | Design · one sentence under D4: a July recompute had shown that per-turn lookups changed mostly through rewording. — *The design it argued for is live, but the ruling rests on its own count.* |
 | 44 | `retrieval/reranking` | — | **MERGE (as filed) (final check, accepted 2026-10-22)** | Design · A model that re-orders strategy-point candidates by situation raised efficiency from 1.80 to 3.60 and cut redundancy from 72% to 40%, while filtering plus re-ordering scored lower (block 41); Case study · On the uncleaned store, re-ordering matched the cleaned store for strategy points, so the reranker made store cleaning matter less (one clause in block 41) — *Block 41 already holds it. The dirty-store result becomes one clause in 41.* |
@@ -260,7 +260,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 
 **How sure.** About 4 games, plus offline checks of the gate on 146 June lines.
 
-**Overlap.** `sequential_discussion/` (pending), lesson 16 (the lot), block 45 (judge design).
+**Overlap.** `gameplay/discussion/` (pending), lesson 16 (the lot), block 45 (judge design).
 
 **Skill it would add.** Designing turn-taking among several agents. Diagnosing a positional bias in a model's choices.
 
@@ -398,7 +398,7 @@ come last, as in the walk. Calls: 19 KEEP, 36 MERGE, 10 SKIP.
 
 **How sure.** Two games per side, not paired. The markers are a lower bound (they miss paraphrase). The policing drop is confounded by an easy board. It was kept on principle, and the log says so: the numbers corroborate the change, they do not justify it.
 
-**Overlap.** Memory note on the prompt boundary; `sequential_discussion/` §10 points here.
+**Overlap.** Memory note on the prompt boundary; `gameplay/discussion/` §10 points here.
 
 **Skill it would add.** Removing a source of bias at the generator, before measuring the memory built from its games.
 
@@ -923,7 +923,7 @@ New, small:
 
 **Call: MERGE INTO the lessons layer (block 44 only).** Block 43's +0.07 is too small, untested and unused to defend. Block 44 is an honest instance of a lesson, not a retrieval finding.
 
-### 41. `retrieval/context_eval` — Auditing the retrieval labels
+### 41. `evaluation/labeling/context_eval` — Auditing the retrieval labels
 
 **What it is.** Late May 2026, nine-seat. Retrieval labels said whether a lesson matched the search text. Would they change if the labeller saw the game itself? A cheap check re-labelled 1,848 lesson–turn pairs. The two new label sets it then designed were deferred on 2026-06-01, and no labelling ran.
 
@@ -1044,7 +1044,7 @@ New, small:
 
 **How sure.** The scheduler has unit tests (22 at the time). The acceptance test was 4 new games against 8 older ones, unpaired, judged by the implementer, with a word-level metric. The judge's own effect was never isolated.
 
-**Overlap.** Lessons 15 and 16; `game_play_enhancement/` (the echo gate's recalibration).
+**Overlap.** Lessons 15 and 16; `gameplay/` (the echo gate's recalibration).
 
 **Skill it would add.** Deterministic orchestration: a scheduler with no model call, rebuilt from the transcript each turn.
 
@@ -1332,7 +1332,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **How sure.** The judge was right on 10 of 12 hand-checked verdicts. These are selected cases, not a population rate (the census is about 3% of messages). Day turns only.
 
-**Overlap.** Block 9 (layout check on the bench), blocks 70–71 (frozen regression), 49 (facts as data); `game_play_enhancement/discussion_evidence.md` §6.
+**Overlap.** Block 9 (layout check on the bench), blocks 70–71 (frozen regression), 49 (facts as data); `gameplay/discussion_evidence.md` §6.
 
 **Skill it would add.** Hallucination evaluation against a fact sheet built by code; screening for failures that repeat; a data-flow audit of the prompt path.
 
@@ -1442,7 +1442,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 
 **In today's design?** LIVE in part. Every run is stamped with model, backend and prompt hash (`Agents/run_fingerprint.py`). An embedding drift check now runs at the start of every batch (`scripts/run_batch.py:551`). The arm check lives only in the finished v7 loop. `run_batch` still does not alternate arms.
 
-**How sure.** The drift result is 10 games against an earlier baseline. The numbers live in `model_drift/drift_surfaces_and_guards.md`, not here.
+**How sure.** The drift result is 10 games against an earlier baseline. The numbers live in `evaluation/experimental_controls/drift_surfaces_and_guards.md`, not here.
 
 **Overlap.** 63–65 (power, paired design); `model_drift/` holds the source.
 
@@ -1635,7 +1635,7 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 | 6 | The role-blind detector was checked on 40 cases labelled by blind model adjudicators. A fix could help one channel and hurt the other; combining two views of the record recovered missed multi-day patterns | First detector: discussion 10 of 11 right, vote 7 of 10, found 67% / 54%. Combined: discussion 0.93 / 87%, vote 0.77 / 77% (0.83 / 77% cached). Half the cases came from the detector's own detections; about 36 calls a game | OFF | golden-set construction, blind annotation | KEEP | experiment_log.md ⑧; report.md §4 |
 | 7 | Owner check: a two-phase protocol. First a blind read; then every tool's candidates are pooled, shuffled and shown with no source, so agreement cannot sway the owner, and recall is bounded by the pool. Only 1 of 6 games was done | 7 of 8 detections upheld (one rejected for "at the last moment"); four IDs described one event; the sampler's seeded picks shifted when the code changed, so the players were written into the bundle | RECORD | golden-set construction, pooled adjudication (pairs with block 93) | KEEP | outputs/owner_golden/README.md; owner_verdicts.json; experiment_log.md ⑪ |
 | 8 | On 60 games the miner never saw, some behaviours separated roles strongly | 2,160 calls, 5,151 detections; counter-accuses using a role claim as a distraction 27 of 30 evil; discourages relying on vote records 41 of 48; calls accusations a diversion 60 of 76; publicly claims a role 0 of 28; refuses to give a source 10 of 11 investigator. About 96 behaviours scanned, 12 deals shared, no significance test | OFF | held-out validation of mined patterns | KEEP | report.md §4; experiment_log.md ⑨; heldout/provisional_lift_table.json |
-| 9 | The paired memory arms reuse game IDs, so counting by ID alone merged distinct games. Fixed by keying on arm plus game. The same trap refuted one case of the old hallucination baseline (`generation_prompt/` F3) | 5 arms × 12 deals; this restores distinct games, not independent ones | RECORD | data provenance, join-key hygiene | KEEP (small; a cross-folder pair) | experiment_log.md ⑨; scripts/heldout_lift.py |
+| 9 | The paired memory arms reuse game IDs, so counting by ID alone merged distinct games. Fixed by keying on arm plus game. The same trap refuted one case of the old hallucination baseline (`gameplay/turn_prompt/` F3) | 5 arms × 12 deals; this restores distinct games, not independent ones | RECORD | data provenance, join-key hygiene | KEEP (small; a cross-folder pair) | experiment_log.md ⑨; scripts/heldout_lift.py |
 | 10 | The detection pass cost several times its estimate | $13 billed against $1.50–2.50 estimated (thinking tokens, old prices) | RECORD | cost attribution | MERGE→block 10 | experiment_log.md ⑨ |
 | 11 | Caching made the detector less repeatable but no less accurate. Even uncached it was not exactly repeatable, which corrected an earlier "deterministic" reading. So every evaluation keeps the stored output, and a rerun counts as a new sample | Rows matched 0.56–0.83 between identical cached runs, against 0.90–1.00 uncached; minimum thinking found 0 of the labelled days against 2 (six cases) | OFF | reproducibility of a non-deterministic instrument | MERGE→`caching/` §4.7 (cost topic) | experiment_log.md ⑩; report.md §4 |
 | 12 | Never merge a narrow behaviour that predicts roles into a broad one that does not | 7 broad behaviours with near-zero association contained narrower ones that had one | RECORD (not in `tell_fold.py`) | — | MERGE→`store_curation/tells.md` | experiment_log.md ⑪; granularity_screen.json |
@@ -1785,144 +1785,144 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 #### Files
 | File | What it is (≤10 words) | Role |
 |---|---|---|
-| `evidence/game_play_enhancement/discussion_evidence.md` | Three-phase running log of the discussion fixes | F1–F19, F22–F38, F46 |
-| `evidence/game_play_enhancement/phase3_wiring_census.md` | Nine-seat assumptions census and the wiring plan | F20 |
-| `evidence/game_play_enhancement/role_sheet.md` | Ten-seat rules with a change log of rulings | F19, F20, F22, F23, F29 |
-| `evidence/game_play_enhancement/data/baseline_smoke/reads.jsonl` | Judge reads, one baseline game | data for F5 |
-| `evidence/game_play_enhancement/data/baseline_smoke/review.md` | Judge review sheet for hand-checking labels | F5 |
-| `evidence/game_play_enhancement/data/baseline_smoke/summary.json` | Judge summary, one baseline game | data for F5 |
-| `evidence/game_play_enhancement/data/counter_claim_votes/README.md` | Counter-claim line vote replay and drop decision | F44 |
-| `evidence/game_play_enhancement/data/counter_claim_votes/samples.jsonl` | Vote samples per arm | data for F44 |
-| `evidence/game_play_enhancement/data/counter_claim_votes/scores.json` | Vote tallies per arm | data for F44 |
-| `evidence/game_play_enhancement/data/evil_cover_games/README.md` | Paired games before/after evil covers | F43 |
-| `evidence/game_play_enhancement/data/evil_cover_games/after/*` | Eight game captures and manifests, covers on | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_games/before/*` | Four game captures and manifests, old cards | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_games/games_scores.json` | Scored outcomes of the paired games | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_screen/README.md` | Evil cover replay screen, steps 1–5 | F43 |
-| `evidence/game_play_enhancement/data/evil_cover_screen/*blind_key.json` | Blinding keys, four judging rounds | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_screen/*packet_*.md` | Blind judge packets, 20 files | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_screen/samples*.jsonl` | Replayed samples, four steps | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_screen/*scores.json` | Scored tables, four rounds | data for F43 |
-| `evidence/game_play_enhancement/data/evil_cover_screen/*verdicts_*.jsonl` | Blind judge verdicts, four rounds | data for F43 |
-| `evidence/game_play_enhancement/data/haiku_sentinel_vote/README.md` | Investigation of the vigilante's vote on the sentinel | F38 |
-| `evidence/game_play_enhancement/data/haiku_sentinel_vote/source_excerpt.json` | Selected event and checkpoint records | data for F38 |
-| `evidence/game_play_enhancement/data/haiku_turn_replay/README.md` | 18 Haiku turns replayed before/after the fixes | F33, F34, F35 |
-| `evidence/game_play_enhancement/data/haiku_turn_replay/bench_summary*.json` | Bench summaries, two arms | data for F33–F35 |
-| `evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl` | Frozen turn cases with expectations | data for F33–F35 |
-| `evidence/game_play_enhancement/data/haiku_vote_replay/README.md` | 11 votes replayed across five code arms | F36, F37 |
-| `evidence/game_play_enhancement/data/haiku_vote_replay/bench_summary*.json` | Bench summaries, discussion and votes | data for F36, F37 |
-| `evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl` | Frozen vote cases | data for F36, F37 |
-| `evidence/game_play_enhancement/data/haiku_vote_replay/votes.jsonl` | Every sample's vote, reads, note | data for F36, F37 |
-| `evidence/game_play_enhancement/data/investigator_replay/prompt_*.txt` | The four replay prompt variants | data for F6 |
-| `evidence/game_play_enhancement/data/investigator_replay/samples_*.jsonl` | 20 samples per variant | data for F6 |
-| `evidence/game_play_enhancement/data/investigator_replay/summary.json` | Replay counts per variant | data for F6 |
-| `evidence/game_play_enhancement/data/line_echo_check/README.md` | Echo gate offline check, three prompt versions | F14 |
-| `evidence/game_play_enhancement/data/line_echo_check/report.md` | Held lines beside the lines they repeat | F14 |
-| `evidence/game_play_enhancement/data/line_echo_check/results.jsonl` | Kept/held lines per day | data for F14 |
-| `evidence/game_play_enhancement/data/live_baseline/reads.jsonl` | Judge reads, three pre-switch site games | data for F4, F5 |
-| `evidence/game_play_enhancement/data/live_baseline/review.md` | Judge review sheet, baseline games | F4, F5 |
-| `evidence/game_play_enhancement/data/live_baseline/summary.json` | Judge summary, baseline games | data for F4, F5 |
-| `evidence/game_play_enhancement/data/live_v2/reads.jsonl` | Judge reads, first v2 game | data for F4, F5 |
-| `evidence/game_play_enhancement/data/live_v2/review.md` | Judge review sheet, first v2 game | F4, F5 |
-| `evidence/game_play_enhancement/data/live_v2/summary.json` | Judge summary, first v2 game | data for F4, F5 |
-| `evidence/game_play_enhancement/data/live_v2_game2/reads.jsonl` | Judge reads, second v2 game | data for F4 |
-| `evidence/game_play_enhancement/data/live_v2_game2/review.md` | Judge review sheet, second v2 game | F4 |
-| `evidence/game_play_enhancement/data/live_v2_game2/summary.json` | Judge summary, second v2 game | data for F4 |
-| `evidence/game_play_enhancement/data/night1_target_bias/README.md` | Night-1 target bias: shuffle run, lot run | F18 |
-| `evidence/game_play_enhancement/data/night1_target_bias/results*.jsonl` | One row per call, both runs | data for F18 |
-| `evidence/game_play_enhancement/data/night1_target_bias/summary.md` | Runner tables, plain vs lot | F18 |
-| `evidence/game_play_enhancement/data/night1_target_bias/summary_order_check.md` | Runner tables, seat order vs shuffle | F18 |
-| `evidence/game_play_enhancement/data/persona_line/README.md` | Persona line screen: naturalness and stance | F40 |
-| `evidence/game_play_enhancement/data/persona_line/blind_key.json` | Blinding key | data for F40 |
-| `evidence/game_play_enhancement/data/persona_line/*_packet_*.md` | Blind judge packets, naturalness and stance | data for F40 |
-| `evidence/game_play_enhancement/data/persona_line/samples.jsonl` | Sampled lines per arm | data for F40 |
-| `evidence/game_play_enhancement/data/persona_line/verdicts_*.jsonl` | Blind judge verdicts | data for F40 |
-| `evidence/game_play_enhancement/data/persona_voice_games/README.md` | Eight paired games, voices off vs on | F41 |
-| `evidence/game_play_enhancement/data/persona_voice_games/scores.json` | Read accuracy, Brier, votes per arm | data for F41 |
-| `evidence/game_play_enhancement/data/persona_voice_games/voices-*.capture.json.gz` | Sixteen game captures | data for F41, F42 |
-| `evidence/game_play_enhancement/data/persona_voice_games/voices-*.manifest.json` | Sixteen game manifests | data for F41, F42 |
-| `evidence/game_play_enhancement/data/phase2_step4_smoke_game_2026-10-07.json` | First game on opening/closing rounds | data for F12 |
-| `evidence/game_play_enhancement/data/phase2_step4b_smoke_game_2026-10-07.json` | Parallel proactive round smoke game | data for F13 |
-| `evidence/game_play_enhancement/data/phase2_step4c_day_rerun_2026-10-07.json` | Sequential sweep day rerun | data for F13 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/README.md` | File guide for the four step 8 games | F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/report.md` | Step 8 reading and the investigator chain | F15, F16, F17 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/counts.md` | Per-day counts table, games and baselines | F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/counts.json` | Per-day counts, machine form | data for F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/baselines/replay_832404e9.json` | Cached v2 game replay | data for F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/game*` | Four games' calls, chunks, manifests, records | data for F15, F16, F17 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/*/reads.jsonl` | Judge reads, five games | data for F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/*/summary.json` | Judge summaries, five games | data for F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/step8_game1/review.md` | Judge review sheet, game 1 | F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/step8_game2/review.md` | Judge review sheet, game 2 | F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/step8_game3/review.md` | Judge review sheet, game 3 | F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/step8_game4/review.md` | Judge review sheet, game 4 | F15 |
-| `evidence/game_play_enhancement/data/phase2_step8_games/judge/v2-832404e9/review.md` | Judge review sheet, v2 game re-read | F15 |
-| `evidence/game_play_enhancement/data/phase3_balance/README.md` | First balance batch: town 10 of 10 | F21, F22 |
-| `evidence/game_play_enhancement/data/phase3_balance/b*.*` | Ten games' calls, chunks, manifests, records | data for F22, F25 |
-| `evidence/game_play_enhancement/data/phase3_balance/logs/*.log` | Run logs and timings | data for F21 |
-| `evidence/game_play_enhancement/data/phase3_balance/logs/*.sh` | Run scripts | data for F21 |
-| `evidence/game_play_enhancement/data/phase3_balance/logs/failed_first_attempt/*.log` | Crashed first-attempt logs (overload) | data for F21 |
-| `evidence/game_play_enhancement/data/phase3_balance_2/README.md` | Second batch: sigil ruling and caps | F22 |
-| `evidence/game_play_enhancement/data/phase3_balance_2/c*.*` | Six games' captures | data for F22, F25 |
-| `evidence/game_play_enhancement/data/phase3_balance_2/logs/*` | Run logs, script, timings | data for F22 |
-| `evidence/game_play_enhancement/data/phase3_balance_3/README.md` | Third batch: necromancer and conceal buffs | F23 |
-| `evidence/game_play_enhancement/data/phase3_balance_3/d*.*` | Six games' captures | data for F23, F25 |
-| `evidence/game_play_enhancement/data/phase3_balance_3/logs/*` | Run logs, script, timings | data for F23 |
-| `evidence/game_play_enhancement/data/phase3_balance_4/README.md` | Fourth batch: cover story epoch | F23 |
-| `evidence/game_play_enhancement/data/phase3_balance_4/e*.*` | Six games' captures | data for F23, F25, F26 |
-| `evidence/game_play_enhancement/data/phase3_balance_4/logs/*` | Run logs, script, timings | data for F23 |
-| `evidence/game_play_enhancement/data/phase3_flash_games/README.md` | Six games on Gemini 3.5 Flash, audited | F27, F31, F32 |
-| `evidence/game_play_enhancement/data/phase3_flash_games/f*.*` | Six games' captures | data for F27, F31 |
-| `evidence/game_play_enhancement/data/phase3_flash_games/logs/*` | Run logs, script, timings | data for F31 |
-| `evidence/game_play_enhancement/data/phase3_games/README.md` | First three ten-seat games | F19, F21 |
-| `evidence/game_play_enhancement/data/phase3_games/game*` | Three games' captures | data for F21 |
-| `evidence/game_play_enhancement/data/phase3_luna_games/README.md` | Four games on GPT-6 Luna, audited | F29, F31 |
-| `evidence/game_play_enhancement/data/phase3_luna_games/l*.*` | Four games' captures | data for F29, F31 |
-| `evidence/game_play_enhancement/data/phase3_luna_games/logs/*` | Run logs, script, timings, two stopped games | data for F31 |
-| `evidence/game_play_enhancement/data/phase3_reads/README.md` | Fifteen games read by rubric; odd votes | F25, F26, F32 |
-| `evidence/game_play_enhancement/data/phase3_reads/transcripts/*.md` | 25 rendered game transcripts | data for F25, F27, F29 |
-| `evidence/game_play_enhancement/data/phase3_reads/votes/dossiers.md` | Eleven odd votes against voters' reasoning | F32 |
-| `evidence/game_play_enhancement/data/phase3_summary_replay/README.md` | Summary replays: ledger, retention, roleblocks | F26, F30 |
-| `evidence/game_play_enhancement/data/phase3_summary_replay/generations_*.jsonl` | Summariser samples per arm | data for F26, F30 |
-| `evidence/game_play_enhancement/data/phase3_summary_replay/*.log` | Replay run logs | data for F30 |
-| `evidence/game_play_enhancement/data/phase3_turn_replay/README.md` | Frozen turn replays: capability, rule cascades | F27, F28, F29 |
-| `evidence/game_play_enhancement/data/phase3_turn_replay/bench_summary*.json` | Bench summaries, seven arms | data for F27–F29 |
-| `evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl` | Frozen turn cases with expectations | data for F27–F29 |
-| `evidence/game_play_enhancement/data/round_echo_check/README.md` | Parallel round echo filter offline check | F13 |
-| `evidence/game_play_enhancement/data/round_echo_check/report.md` | Held round lines beside their repeats | F13 |
-| `evidence/game_play_enhancement/data/round_echo_check/results.jsonl` | Kept/held lines per round | data for F13 |
-| `evidence/game_play_enhancement/data/silence_calibration/README.md` | Silence calibration steps 1–5 | F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/blind_key.json` | Blinding key | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/games/*` | Four game captures and manifests | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/games_scores.json` | Open-floor counts, before/after | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/gate_check*.jsonl` | Gate verdicts per candidate bar | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/gate_check*scores.json` | Gate hold tables | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/items.jsonl` | Drawn turns and forced lines | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/lever_samples.jsonl` | Samples with one lever removed | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/lever_scores.json` | Lever tables | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/packet_*.md` | Blind judge packets | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/variant_samples.jsonl` | Samples under the rewritten silence rule | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/variant_scores.json` | Rule-rewrite tables | data for F42 |
-| `evidence/game_play_enhancement/data/silence_calibration/verdicts_*.jsonl` | Blind judge verdicts by kind | data for F42 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/README.md` | Visit-wording replay A/B and arm C | F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/judge_rubric.md` | Rubric for the blind judges | F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/case_context.md` | Per-case true roles and night records | F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/arm_b.diff` | Arm B's wording edits against the tag | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/cases.jsonl` | Nineteen frozen turns | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/blind.jsonl` | Shuffled lines, no arm | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/key.jsonl` | Opaque id to arm key | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/samples_*.jsonl` | Haiku samples, arms A, B, C | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/judge_batch_*.jsonl` | Judge input batches (Haiku run) | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/judged_*.jsonl` | Judge verdicts (Haiku run) | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/haiku_run_*.log` | Generation logs per arm | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/deduction_ac/*` | Arm A vs C blind judging set | data for F45 |
-| `evidence/game_play_enhancement/data/visit_wording_ab/deepseek/*` | DeepSeek run samples and verdicts | data for F45 |
-| `evidence/game_play_enhancement/data/voice_rewrite/README.md` | Voice rewrite screen: naturalness and fidelity | F39 |
-| `evidence/game_play_enhancement/data/voice_rewrite/blind_key.json` | Blinding key | data for F39 |
-| `evidence/game_play_enhancement/data/voice_rewrite/*_packet_*.md` | Blind judge packets, fidelity and naturalness | data for F39 |
-| `evidence/game_play_enhancement/data/voice_rewrite/lines.jsonl` | Thirty source lines | data for F39 |
-| `evidence/game_play_enhancement/data/voice_rewrite/rewrites.jsonl` | Ninety rewrites with gate result | data for F39 |
-| `evidence/game_play_enhancement/data/voice_rewrite/verdicts_*.jsonl` | Blind judge verdicts | data for F39 |
+| `evidence/gameplay/discussion_evidence.md` | Three-phase running log of the discussion fixes | F1–F19, F22–F38, F46 |
+| `evidence/gameplay/roles/phase3_wiring_census.md` | Nine-seat assumptions census and the wiring plan | F20 |
+| `evidence/gameplay/roles/role_sheet.md` | Ten-seat rules with a change log of rulings | F19, F20, F22, F23, F29 |
+| `evidence/gameplay/data/baseline_smoke/reads.jsonl` | Judge reads, one baseline game | data for F5 |
+| `evidence/gameplay/data/baseline_smoke/review.md` | Judge review sheet for hand-checking labels | F5 |
+| `evidence/gameplay/data/baseline_smoke/summary.json` | Judge summary, one baseline game | data for F5 |
+| `evidence/gameplay/data/counter_claim_votes/README.md` | Counter-claim line vote replay and drop decision | F44 |
+| `evidence/gameplay/data/counter_claim_votes/samples.jsonl` | Vote samples per arm | data for F44 |
+| `evidence/gameplay/data/counter_claim_votes/scores.json` | Vote tallies per arm | data for F44 |
+| `evidence/gameplay/data/evil_cover_games/README.md` | Paired games before/after evil covers | F43 |
+| `evidence/gameplay/data/evil_cover_games/after/*` | Eight game captures and manifests, covers on | data for F43 |
+| `evidence/gameplay/data/evil_cover_games/before/*` | Four game captures and manifests, old cards | data for F43 |
+| `evidence/gameplay/data/evil_cover_games/games_scores.json` | Scored outcomes of the paired games | data for F43 |
+| `evidence/gameplay/data/evil_cover_screen/README.md` | Evil cover replay screen, steps 1–5 | F43 |
+| `evidence/gameplay/data/evil_cover_screen/*blind_key.json` | Blinding keys, four judging rounds | data for F43 |
+| `evidence/gameplay/data/evil_cover_screen/*packet_*.md` | Blind judge packets, 20 files | data for F43 |
+| `evidence/gameplay/data/evil_cover_screen/samples*.jsonl` | Replayed samples, four steps | data for F43 |
+| `evidence/gameplay/data/evil_cover_screen/*scores.json` | Scored tables, four rounds | data for F43 |
+| `evidence/gameplay/data/evil_cover_screen/*verdicts_*.jsonl` | Blind judge verdicts, four rounds | data for F43 |
+| `evidence/gameplay/data/haiku_sentinel_vote/README.md` | Investigation of the vigilante's vote on the sentinel | F38 |
+| `evidence/gameplay/data/haiku_sentinel_vote/source_excerpt.json` | Selected event and checkpoint records | data for F38 |
+| `evidence/gameplay/data/haiku_turn_replay/README.md` | 18 Haiku turns replayed before/after the fixes | F33, F34, F35 |
+| `evidence/gameplay/data/haiku_turn_replay/bench_summary*.json` | Bench summaries, two arms | data for F33–F35 |
+| `evidence/gameplay/data/haiku_turn_replay/cases.jsonl` | Frozen turn cases with expectations | data for F33–F35 |
+| `evidence/gameplay/data/haiku_vote_replay/README.md` | 11 votes replayed across five code arms | F36, F37 |
+| `evidence/gameplay/data/haiku_vote_replay/bench_summary*.json` | Bench summaries, discussion and votes | data for F36, F37 |
+| `evidence/gameplay/data/haiku_vote_replay/cases.jsonl` | Frozen vote cases | data for F36, F37 |
+| `evidence/gameplay/data/haiku_vote_replay/votes.jsonl` | Every sample's vote, reads, note | data for F36, F37 |
+| `evidence/gameplay/data/investigator_replay/prompt_*.txt` | The four replay prompt variants | data for F6 |
+| `evidence/gameplay/data/investigator_replay/samples_*.jsonl` | 20 samples per variant | data for F6 |
+| `evidence/gameplay/data/investigator_replay/summary.json` | Replay counts per variant | data for F6 |
+| `evidence/gameplay/data/line_echo_check/README.md` | Echo gate offline check, three prompt versions | F14 |
+| `evidence/gameplay/data/line_echo_check/report.md` | Held lines beside the lines they repeat | F14 |
+| `evidence/gameplay/data/line_echo_check/results.jsonl` | Kept/held lines per day | data for F14 |
+| `evidence/gameplay/data/live_baseline/reads.jsonl` | Judge reads, three pre-switch site games | data for F4, F5 |
+| `evidence/gameplay/data/live_baseline/review.md` | Judge review sheet, baseline games | F4, F5 |
+| `evidence/gameplay/data/live_baseline/summary.json` | Judge summary, baseline games | data for F4, F5 |
+| `evidence/gameplay/data/live_v2/reads.jsonl` | Judge reads, first v2 game | data for F4, F5 |
+| `evidence/gameplay/data/live_v2/review.md` | Judge review sheet, first v2 game | F4, F5 |
+| `evidence/gameplay/data/live_v2/summary.json` | Judge summary, first v2 game | data for F4, F5 |
+| `evidence/gameplay/data/live_v2_game2/reads.jsonl` | Judge reads, second v2 game | data for F4 |
+| `evidence/gameplay/data/live_v2_game2/review.md` | Judge review sheet, second v2 game | F4 |
+| `evidence/gameplay/data/live_v2_game2/summary.json` | Judge summary, second v2 game | data for F4 |
+| `evidence/gameplay/data/night1_target_bias/README.md` | Night-1 target bias: shuffle run, lot run | F18 |
+| `evidence/gameplay/data/night1_target_bias/results*.jsonl` | One row per call, both runs | data for F18 |
+| `evidence/gameplay/data/night1_target_bias/summary.md` | Runner tables, plain vs lot | F18 |
+| `evidence/gameplay/data/night1_target_bias/summary_order_check.md` | Runner tables, seat order vs shuffle | F18 |
+| `evidence/gameplay/data/persona_line/README.md` | Persona line screen: naturalness and stance | F40 |
+| `evidence/gameplay/data/persona_line/blind_key.json` | Blinding key | data for F40 |
+| `evidence/gameplay/data/persona_line/*_packet_*.md` | Blind judge packets, naturalness and stance | data for F40 |
+| `evidence/gameplay/data/persona_line/samples.jsonl` | Sampled lines per arm | data for F40 |
+| `evidence/gameplay/data/persona_line/verdicts_*.jsonl` | Blind judge verdicts | data for F40 |
+| `evidence/gameplay/data/persona_voice_games/README.md` | Eight paired games, voices off vs on | F41 |
+| `evidence/gameplay/data/persona_voice_games/scores.json` | Read accuracy, Brier, votes per arm | data for F41 |
+| `evidence/gameplay/data/persona_voice_games/voices-*.capture.json.gz` | Sixteen game captures | data for F41, F42 |
+| `evidence/gameplay/data/persona_voice_games/voices-*.manifest.json` | Sixteen game manifests | data for F41, F42 |
+| `evidence/gameplay/data/phase2_step4_smoke_game_2026-10-07.json` | First game on opening/closing rounds | data for F12 |
+| `evidence/gameplay/data/phase2_step4b_smoke_game_2026-10-07.json` | Parallel proactive round smoke game | data for F13 |
+| `evidence/gameplay/data/phase2_step4c_day_rerun_2026-10-07.json` | Sequential sweep day rerun | data for F13 |
+| `evidence/gameplay/data/phase2_step8_games/README.md` | File guide for the four step 8 games | F15 |
+| `evidence/gameplay/data/phase2_step8_games/report.md` | Step 8 reading and the investigator chain | F15, F16, F17 |
+| `evidence/gameplay/data/phase2_step8_games/counts.md` | Per-day counts table, games and baselines | F15 |
+| `evidence/gameplay/data/phase2_step8_games/counts.json` | Per-day counts, machine form | data for F15 |
+| `evidence/gameplay/data/phase2_step8_games/baselines/replay_832404e9.json` | Cached v2 game replay | data for F15 |
+| `evidence/gameplay/data/phase2_step8_games/game*` | Four games' calls, chunks, manifests, records | data for F15, F16, F17 |
+| `evidence/gameplay/data/phase2_step8_games/judge/*/reads.jsonl` | Judge reads, five games | data for F15 |
+| `evidence/gameplay/data/phase2_step8_games/judge/*/summary.json` | Judge summaries, five games | data for F15 |
+| `evidence/gameplay/data/phase2_step8_games/judge/step8_game1/review.md` | Judge review sheet, game 1 | F15 |
+| `evidence/gameplay/data/phase2_step8_games/judge/step8_game2/review.md` | Judge review sheet, game 2 | F15 |
+| `evidence/gameplay/data/phase2_step8_games/judge/step8_game3/review.md` | Judge review sheet, game 3 | F15 |
+| `evidence/gameplay/data/phase2_step8_games/judge/step8_game4/review.md` | Judge review sheet, game 4 | F15 |
+| `evidence/gameplay/data/phase2_step8_games/judge/v2-832404e9/review.md` | Judge review sheet, v2 game re-read | F15 |
+| `evidence/gameplay/data/phase3_balance/README.md` | First balance batch: town 10 of 10 | F21, F22 |
+| `evidence/gameplay/data/phase3_balance/b*.*` | Ten games' calls, chunks, manifests, records | data for F22, F25 |
+| `evidence/gameplay/data/phase3_balance/logs/*.log` | Run logs and timings | data for F21 |
+| `evidence/gameplay/data/phase3_balance/logs/*.sh` | Run scripts | data for F21 |
+| `evidence/gameplay/data/phase3_balance/logs/failed_first_attempt/*.log` | Crashed first-attempt logs (overload) | data for F21 |
+| `evidence/gameplay/data/phase3_balance_2/README.md` | Second batch: sigil ruling and caps | F22 |
+| `evidence/gameplay/data/phase3_balance_2/c*.*` | Six games' captures | data for F22, F25 |
+| `evidence/gameplay/data/phase3_balance_2/logs/*` | Run logs, script, timings | data for F22 |
+| `evidence/gameplay/data/phase3_balance_3/README.md` | Third batch: necromancer and conceal buffs | F23 |
+| `evidence/gameplay/data/phase3_balance_3/d*.*` | Six games' captures | data for F23, F25 |
+| `evidence/gameplay/data/phase3_balance_3/logs/*` | Run logs, script, timings | data for F23 |
+| `evidence/gameplay/data/phase3_balance_4/README.md` | Fourth batch: cover story epoch | F23 |
+| `evidence/gameplay/data/phase3_balance_4/e*.*` | Six games' captures | data for F23, F25, F26 |
+| `evidence/gameplay/data/phase3_balance_4/logs/*` | Run logs, script, timings | data for F23 |
+| `evidence/gameplay/data/phase3_flash_games/README.md` | Six games on Gemini 3.5 Flash, audited | F27, F31, F32 |
+| `evidence/gameplay/data/phase3_flash_games/f*.*` | Six games' captures | data for F27, F31 |
+| `evidence/gameplay/data/phase3_flash_games/logs/*` | Run logs, script, timings | data for F31 |
+| `evidence/gameplay/data/phase3_games/README.md` | First three ten-seat games | F19, F21 |
+| `evidence/gameplay/data/phase3_games/game*` | Three games' captures | data for F21 |
+| `evidence/gameplay/data/phase3_luna_games/README.md` | Four games on GPT-6 Luna, audited | F29, F31 |
+| `evidence/gameplay/data/phase3_luna_games/l*.*` | Four games' captures | data for F29, F31 |
+| `evidence/gameplay/data/phase3_luna_games/logs/*` | Run logs, script, timings, two stopped games | data for F31 |
+| `evidence/gameplay/data/phase3_reads/README.md` | Fifteen games read by rubric; odd votes | F25, F26, F32 |
+| `evidence/gameplay/data/phase3_reads/transcripts/*.md` | 25 rendered game transcripts | data for F25, F27, F29 |
+| `evidence/gameplay/data/phase3_reads/votes/dossiers.md` | Eleven odd votes against voters' reasoning | F32 |
+| `evidence/gameplay/data/phase3_summary_replay/README.md` | Summary replays: ledger, retention, roleblocks | F26, F30 |
+| `evidence/gameplay/data/phase3_summary_replay/generations_*.jsonl` | Summariser samples per arm | data for F26, F30 |
+| `evidence/gameplay/data/phase3_summary_replay/*.log` | Replay run logs | data for F30 |
+| `evidence/gameplay/data/phase3_turn_replay/README.md` | Frozen turn replays: capability, rule cascades | F27, F28, F29 |
+| `evidence/gameplay/data/phase3_turn_replay/bench_summary*.json` | Bench summaries, seven arms | data for F27–F29 |
+| `evidence/gameplay/data/phase3_turn_replay/cases.jsonl` | Frozen turn cases with expectations | data for F27–F29 |
+| `evidence/gameplay/data/round_echo_check/README.md` | Parallel round echo filter offline check | F13 |
+| `evidence/gameplay/data/round_echo_check/report.md` | Held round lines beside their repeats | F13 |
+| `evidence/gameplay/data/round_echo_check/results.jsonl` | Kept/held lines per round | data for F13 |
+| `evidence/gameplay/data/silence_calibration/README.md` | Silence calibration steps 1–5 | F42 |
+| `evidence/gameplay/data/silence_calibration/blind_key.json` | Blinding key | data for F42 |
+| `evidence/gameplay/data/silence_calibration/games/*` | Four game captures and manifests | data for F42 |
+| `evidence/gameplay/data/silence_calibration/games_scores.json` | Open-floor counts, before/after | data for F42 |
+| `evidence/gameplay/data/silence_calibration/gate_check*.jsonl` | Gate verdicts per candidate bar | data for F42 |
+| `evidence/gameplay/data/silence_calibration/gate_check*scores.json` | Gate hold tables | data for F42 |
+| `evidence/gameplay/data/silence_calibration/items.jsonl` | Drawn turns and forced lines | data for F42 |
+| `evidence/gameplay/data/silence_calibration/lever_samples.jsonl` | Samples with one lever removed | data for F42 |
+| `evidence/gameplay/data/silence_calibration/lever_scores.json` | Lever tables | data for F42 |
+| `evidence/gameplay/data/silence_calibration/packet_*.md` | Blind judge packets | data for F42 |
+| `evidence/gameplay/data/silence_calibration/variant_samples.jsonl` | Samples under the rewritten silence rule | data for F42 |
+| `evidence/gameplay/data/silence_calibration/variant_scores.json` | Rule-rewrite tables | data for F42 |
+| `evidence/gameplay/data/silence_calibration/verdicts_*.jsonl` | Blind judge verdicts by kind | data for F42 |
+| `evidence/gameplay/data/visit_wording_ab/README.md` | Visit-wording replay A/B and arm C | F45 |
+| `evidence/gameplay/data/visit_wording_ab/judge_rubric.md` | Rubric for the blind judges | F45 |
+| `evidence/gameplay/data/visit_wording_ab/case_context.md` | Per-case true roles and night records | F45 |
+| `evidence/gameplay/data/visit_wording_ab/arm_b.diff` | Arm B's wording edits against the tag | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/cases.jsonl` | Nineteen frozen turns | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/blind.jsonl` | Shuffled lines, no arm | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/key.jsonl` | Opaque id to arm key | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/samples_*.jsonl` | Haiku samples, arms A, B, C | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/judge_batch_*.jsonl` | Judge input batches (Haiku run) | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/judged_*.jsonl` | Judge verdicts (Haiku run) | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/haiku_run_*.log` | Generation logs per arm | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/deduction_ac/*` | Arm A vs C blind judging set | data for F45 |
+| `evidence/gameplay/data/visit_wording_ab/deepseek/*` | DeepSeek run samples and verdicts | data for F45 |
+| `evidence/gameplay/data/voice_rewrite/README.md` | Voice rewrite screen: naturalness and fidelity | F39 |
+| `evidence/gameplay/data/voice_rewrite/blind_key.json` | Blinding key | data for F39 |
+| `evidence/gameplay/data/voice_rewrite/*_packet_*.md` | Blind judge packets, fidelity and naturalness | data for F39 |
+| `evidence/gameplay/data/voice_rewrite/lines.jsonl` | Thirty source lines | data for F39 |
+| `evidence/gameplay/data/voice_rewrite/rewrites.jsonl` | Ninety rewrites with gate result | data for F39 |
+| `evidence/gameplay/data/voice_rewrite/verdicts_*.jsonl` | Blind judge verdicts | data for F39 |
 
 ### `generation_prompt`
 
@@ -1943,39 +1943,39 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 | 12 | Hand-written prose drifts. Four copies of the rules (some for eight players) became one, 17 near-duplicate templates became factories (output byte-identical), and the threat brief was generated from the role list after the wolf's copy left out the Serial Killer | — | LIVE in form (`game_rules.py`, `compose.py`); no threat brief in today's prompts | single source of truth | MERGE→parked "conditional prompt composition" | experiment_log.md §5, §8 |
 | 13 | Asking for a commitment first changed the action, not just the label. Integer indexes replaced long ID strings. Added DO/DON'T rules gave no gain | adoption 4.00 → 4.38, action quality +0.50; ID strings corrupted ~30% | LIVE | field ordering, indexed references | MERGE→`memory_system/strategy_adoption/` (blocks 20, 32) | experiment_log.md §3 |
 | 14 | Reasoning before the vote, plus one forced verdict per lesson, opened a channel from memory to the vote. The instruction's placement decided whether it was obeyed | agreement 75% → 92.5%; verdict coverage 0.27 → 0.97; `follow` on an abstain lesson → abstains 77% vs 32% | LIVE | field ordering, instruction placement | MERGE→`memory_system/effectiveness/decision_replay/` | experiment_log.md §7 |
-| 15 | Required booleans beat optional fields; `pass_turn` comes before the message, because an agent that has written a message will not then decline to send it | — | LIVE (`DayDiscussOutput`) | structured output | MERGE→`sequential_discussion/` F7 | experiment_log.md §4 |
+| 15 | Required booleans beat optional fields; `pass_turn` comes before the message, because an agent that has written a message will not then decline to send it | — | LIVE (`DayDiscussOutput`) | structured output | MERGE→`gameplay/discussion/` F7 | experiment_log.md §4 |
 | 16 | The free gameplay-caching bet died at the first measurement | 0 cached tokens on 4 identical 15k-token sends; 2 hits in 600 generations | SUPERSEDED (Claude prefix layout since) | — | MERGE→block 9 | experiment_log.md §6 |
 | 17 | The record is a reconstruction; early wordings are lost; schema changes are covered only by the git SHA, not the prompt hash | — | RECORD | — | SKIP | experiment_log.md §13 |
 
 #### Files
 | File | What it is (≤10 words) | Role |
 |---|---|---|
-| `evidence/generation_prompt/experiment_log.md` | Reconstructed history of the action prompt | index; F1, F4–F8, F12–F17 |
-| `evidence/generation_prompt/validation_plan.md` | Pre-registered tests T1–T5 with dated amendments | F2, F4, F8, F9 |
-| `evidence/generation_prompt/prompt_boundary/experiment_log.md` | Tactics removed from role text, marker counts | F10 |
-| `evidence/generation_prompt/prompt_boundary/markers.py` | Word-marker counter for policing and canned phrasing | F10 |
-| `evidence/generation_prompt/prompt_boundary/pre_markers.txt` | Marker output, old prompts | data for F10 |
-| `evidence/generation_prompt/prompt_boundary/post_markers.txt` | Marker output, new prompts | data for F10 |
-| `evidence/generation_prompt/prompt_boundary/post_run.log` | Run log of the two post games | data for F10 |
-| `evidence/generation_prompt/prompt_boundary/post_seq.jsonl` | Two post-change game records | data for F10 |
-| `evidence/generation_prompt/prompt_claims_audit/experiment_log.md` | Audit of tactical claims in role text | F11 |
-| `evidence/generation_prompt/prompt_claims_audit/blend_claim_test.py` | Wolf blending against wolf wins | F11 |
-| `evidence/generation_prompt/validation/hallucination_baseline.md` | The 50-game fact-error census | F1, F2, F3 |
-| `evidence/generation_prompt/validation/hallucination_candidates.jsonl` | 2,461 code-screened candidates | data for F1, F2 |
-| `evidence/generation_prompt/validation/hallucination_verdicts.jsonl` | Cheap reader's verdicts (recall pass) | data for F1, F2 |
-| `evidence/generation_prompt/validation/hallucination_verdicts_stage2.jsonl` | Stronger reader's re-read of 641 positives | data for F1, F2 |
-| `evidence/generation_prompt/validation/hallucination_flags.jsonl` | Old manual baseline's 171 windows | superseded (F3) |
-| `evidence/generation_prompt/validation/hallucination_cases.jsonl` | Old manual baseline's read cases | superseded (F3) |
-| `evidence/generation_prompt/validation/t1b_results.md` | Replay with the board added | F4 |
-| `evidence/generation_prompt/validation/t1b_replay.py` | Replay script, board arms | F4 |
-| `evidence/generation_prompt/validation/t1b_outputs.jsonl` | 72 replay outputs | data for F4 |
-| `evidence/generation_prompt/validation/t2_results.md` | Non-regression, reads soundness, order A/B | F5, F6, F7 |
-| `evidence/generation_prompt/validation/regression_replay.py` | Four-arm replay script | F5, F6, F7 |
-| `evidence/generation_prompt/validation/t2_outputs.jsonl` | 200 four-arm replay outputs | data for F5, F6, F7 |
-| `evidence/generation_prompt/validation/t2_enum_outputs.jsonl` | 40 outputs with listed read names | data for F6 |
-| `evidence/generation_prompt/validation/t1c_ab_replay.py` | Ship-test replay script | F8 |
-| `evidence/generation_prompt/validation/t1c_outputs.jsonl` | Ship test run 1 outputs | data for F8 |
-| `evidence/generation_prompt/validation/t1c2_outputs.jsonl` | Ship test run 2 outputs (fresh cases) | data for F8 |
+| `evidence/gameplay/turn_prompt/experiment_log.md` | Reconstructed history of the action prompt | index; F1, F4–F8, F12–F17 |
+| `evidence/gameplay/turn_prompt/validation_plan.md` | Pre-registered tests T1–T5 with dated amendments | F2, F4, F8, F9 |
+| `evidence/gameplay/turn_prompt/prompt_boundary/experiment_log.md` | Tactics removed from role text, marker counts | F10 |
+| `evidence/gameplay/turn_prompt/prompt_boundary/markers.py` | Word-marker counter for policing and canned phrasing | F10 |
+| `evidence/gameplay/turn_prompt/prompt_boundary/pre_markers.txt` | Marker output, old prompts | data for F10 |
+| `evidence/gameplay/turn_prompt/prompt_boundary/post_markers.txt` | Marker output, new prompts | data for F10 |
+| `evidence/gameplay/turn_prompt/prompt_boundary/post_run.log` | Run log of the two post games | data for F10 |
+| `evidence/gameplay/turn_prompt/prompt_boundary/post_seq.jsonl` | Two post-change game records | data for F10 |
+| `evidence/gameplay/turn_prompt/prompt_claims_audit/experiment_log.md` | Audit of tactical claims in role text | F11 |
+| `evidence/gameplay/turn_prompt/prompt_claims_audit/blend_claim_test.py` | Wolf blending against wolf wins | F11 |
+| `evidence/gameplay/turn_prompt/validation/hallucination_baseline.md` | The 50-game fact-error census | F1, F2, F3 |
+| `evidence/gameplay/turn_prompt/validation/hallucination_candidates.jsonl` | 2,461 code-screened candidates | data for F1, F2 |
+| `evidence/gameplay/turn_prompt/validation/hallucination_verdicts.jsonl` | Cheap reader's verdicts (recall pass) | data for F1, F2 |
+| `evidence/gameplay/turn_prompt/validation/hallucination_verdicts_stage2.jsonl` | Stronger reader's re-read of 641 positives | data for F1, F2 |
+| `evidence/gameplay/turn_prompt/validation/hallucination_flags.jsonl` | Old manual baseline's 171 windows | superseded (F3) |
+| `evidence/gameplay/turn_prompt/validation/hallucination_cases.jsonl` | Old manual baseline's read cases | superseded (F3) |
+| `evidence/gameplay/turn_prompt/validation/t1b_results.md` | Replay with the board added | F4 |
+| `evidence/gameplay/turn_prompt/validation/t1b_replay.py` | Replay script, board arms | F4 |
+| `evidence/gameplay/turn_prompt/validation/t1b_outputs.jsonl` | 72 replay outputs | data for F4 |
+| `evidence/gameplay/turn_prompt/validation/t2_results.md` | Non-regression, reads soundness, order A/B | F5, F6, F7 |
+| `evidence/gameplay/turn_prompt/validation/regression_replay.py` | Four-arm replay script | F5, F6, F7 |
+| `evidence/gameplay/turn_prompt/validation/t2_outputs.jsonl` | 200 four-arm replay outputs | data for F5, F6, F7 |
+| `evidence/gameplay/turn_prompt/validation/t2_enum_outputs.jsonl` | 40 outputs with listed read names | data for F6 |
+| `evidence/gameplay/turn_prompt/validation/t1c_ab_replay.py` | Ship-test replay script | F8 |
+| `evidence/gameplay/turn_prompt/validation/t1c_outputs.jsonl` | Ship test run 1 outputs | data for F8 |
+| `evidence/gameplay/turn_prompt/validation/t1c2_outputs.jsonl` | Ship test run 2 outputs (fresh cases) | data for F8 |
 
 ### `memory_system/effectiveness`
 
@@ -2409,28 +2409,28 @@ Neither hinting at pivotal turns nor an "exhaustive" pass helped Flash-Lite: 3 o
 #### Files
 | File | What it is (≤10 words) | Role |
 |---|---|---|
-| `evidence/sequential_discussion/report.md` | Destination-first design report, status 2026-10-07 | F1, F3, F7, F8, F12, F14, F15, F17–F19 |
-| `evidence/sequential_discussion/experiment_log.md` | Build journey from design to gate | F1, F3–F13, F15–F19 |
-| `evidence/sequential_discussion/quality_gate/experiment_log.md` | Acceptance test, concurrent vs sequential | F2, F14 |
-| `evidence/sequential_discussion/quality_gate/rubric.md` | Human scoring guide for the gate | F14 |
-| `evidence/sequential_discussion/quality_gate/scripts/metrics.py` | Word-level repeat and fairness counts | F14 |
-| `evidence/sequential_discussion/quality_gate/data/gate_sequential.jsonl` | Four sequential gate games | data for F14 |
-| `evidence/sequential_discussion/quality_gate/data/gate_sequential_memon_retry.jsonl` | Retried memory-on gate game | data for F14 |
-| `evidence/sequential_discussion/quality_gate/data/seq_run.log` | Gate run log | data for F14 |
-| `evidence/sequential_discussion/quality_gate/data/seq_retry.log` | Gate retry log | data for F14 |
-| `evidence/sequential_discussion/scripts/smoke_act_fields.py` | Smoke 1: speech-act tagging | F4 |
-| `evidence/sequential_discussion/scripts/smoke_act_2d.py` | Smoke 1b: form × stance tagging | F5 |
-| `evidence/sequential_discussion/scripts/smoke_act_2d_distribution.py` | Stance distribution, stratified by round | F5 |
-| `evidence/sequential_discussion/scripts/smoke_novelty.py` | Smoke 2: standalone novelty judge | F6 |
-| `evidence/sequential_discussion/scripts/smoke_novelty_temp.py` | Smoke 3: temperature effect on judge | F6 |
-| `evidence/sequential_discussion/scripts/smoke_situation_novelty.py` | Smoke 4: self-judged novelty | F7 |
-| `evidence/sequential_discussion/scripts/smoke_discussion.py` | Live tuning harness, domination diagnostics | F11 |
-| `evidence/sequential_discussion/data/smoke_act_results.jsonl` | Smoke 1 per-case results | data for F4 |
-| `evidence/sequential_discussion/data/smoke_act_2d_results.jsonl` | Smoke 1b per-case results | data for F5 |
-| `evidence/sequential_discussion/data/smoke_act_2d_distribution_results.jsonl` | 48 stratified labelled messages | data for F5 |
-| `evidence/sequential_discussion/data/smoke_novelty_results.jsonl` | Smoke 2 per-case results | data for F6 |
-| `evidence/sequential_discussion/data/smoke_novelty_temp_results.jsonl` | Smoke 3 per-case results | data for F6 |
-| `evidence/sequential_discussion/data/smoke_situation_novelty_results.jsonl` | Smoke 4 per-case results | data for F7 |
+| `evidence/gameplay/discussion/report.md` | Destination-first design report, status 2026-10-07 | F1, F3, F7, F8, F12, F14, F15, F17–F19 |
+| `evidence/gameplay/discussion/experiment_log.md` | Build journey from design to gate | F1, F3–F13, F15–F19 |
+| `evidence/gameplay/discussion/quality_gate/experiment_log.md` | Acceptance test, concurrent vs sequential | F2, F14 |
+| `evidence/gameplay/discussion/quality_gate/rubric.md` | Human scoring guide for the gate | F14 |
+| `evidence/gameplay/discussion/quality_gate/scripts/metrics.py` | Word-level repeat and fairness counts | F14 |
+| `evidence/gameplay/discussion/quality_gate/data/gate_sequential.jsonl` | Four sequential gate games | data for F14 |
+| `evidence/gameplay/discussion/quality_gate/data/gate_sequential_memon_retry.jsonl` | Retried memory-on gate game | data for F14 |
+| `evidence/gameplay/discussion/quality_gate/data/seq_run.log` | Gate run log | data for F14 |
+| `evidence/gameplay/discussion/quality_gate/data/seq_retry.log` | Gate retry log | data for F14 |
+| `evidence/gameplay/discussion/scripts/smoke_act_fields.py` | Smoke 1: speech-act tagging | F4 |
+| `evidence/gameplay/discussion/scripts/smoke_act_2d.py` | Smoke 1b: form × stance tagging | F5 |
+| `evidence/gameplay/discussion/scripts/smoke_act_2d_distribution.py` | Stance distribution, stratified by round | F5 |
+| `evidence/gameplay/discussion/scripts/smoke_novelty.py` | Smoke 2: standalone novelty judge | F6 |
+| `evidence/gameplay/discussion/scripts/smoke_novelty_temp.py` | Smoke 3: temperature effect on judge | F6 |
+| `evidence/gameplay/discussion/scripts/smoke_situation_novelty.py` | Smoke 4: self-judged novelty | F7 |
+| `evidence/gameplay/discussion/scripts/smoke_discussion.py` | Live tuning harness, domination diagnostics | F11 |
+| `evidence/gameplay/discussion/data/smoke_act_results.jsonl` | Smoke 1 per-case results | data for F4 |
+| `evidence/gameplay/discussion/data/smoke_act_2d_results.jsonl` | Smoke 1b per-case results | data for F5 |
+| `evidence/gameplay/discussion/data/smoke_act_2d_distribution_results.jsonl` | 48 stratified labelled messages | data for F5 |
+| `evidence/gameplay/discussion/data/smoke_novelty_results.jsonl` | Smoke 2 per-case results | data for F6 |
+| `evidence/gameplay/discussion/data/smoke_novelty_temp_results.jsonl` | Smoke 3 per-case results | data for F6 |
+| `evidence/gameplay/discussion/data/smoke_situation_novelty_results.jsonl` | Smoke 4 per-case results | data for F7 |
 
 ### `store_curation`
 

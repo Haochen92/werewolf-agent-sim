@@ -32,9 +32,9 @@ There are five groups:
 
 This page rates **how far each check can be trusted**. The choices these checks fed into are made
 in the design folders. Prompt layout and caching are in [the caching report](../../caching/report.md).
-The thinking budget is in [the reasoning-failures log](../../reasoning_failures/experiment_log.md)
+The thinking budget is in [the reasoning-failures log](../../gameplay/deduction/experiment_log.md)
 §2–3. The agents' missing reasoning step and the ten-seat games are in
-[the discussion evidence](../../game_play_enhancement/discussion_evidence.md) §6.7 and §8.4. The
+[the discussion evidence](../../gameplay/discussion_evidence.md) §6.7 and §8.4. The
 extraction model is in [the v8 memory log](../../memory_system/v8/experiment_log.md). The July
 choice is in [the July model selection](model_selection.md). The bench itself is rated
 in [factual_errors](../factual_errors/report.md). How all the evaluation reports fit
@@ -238,7 +238,7 @@ differ (`summarize` in `cli_runner/regen_replay/both/hallucination_bench.py`). T
   (`gemini-3.1-flash-lite` reads, `gemini-3.5-flash` re-reads its positives) and the golden judge
   (`gemini-3.1-flash-lite`), the code defaults on that date.
 - **Ten-seat, 2026-10-10 to 10-12.** The fourteen Phase 3 frozen turns
-  (`evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl`): eight reasoning failures, two
+  (`evidence/gameplay/data/phase3_turn_replay/cases.jsonl`): eight reasoning failures, two
   controls and four turns from game f02 on the illusionist rule. 5 samples a case (70 per arm), each
   checked against a hand-written expectation. The configs name the judges: `gemini-3.1-flash-lite`
   reads, `gemini-3.5-flash` re-reads and judges the goldens.
@@ -309,7 +309,7 @@ claim.** A ranking between close arms, or play quality beyond factual errors on 
 **What it is.** Haiku 5.5 at thinking `low` against `medium` on frozen turns of two served ten-seat
 games (`evaluation/experiments/haiku_effort_{cases,score}.py`, configs
 `hallucination_bench_haiku_effort_{votes,turns}.json`, cases in
-`reasoning_failures/data/haiku_effort_replay/`). It ran in October 2026.
+`gameplay/deduction/data/haiku_effort_replay/`). It ran in October 2026.
 
 **How it works.** A vote is scored by its target, an exact match on a structured field. "Right" means
 the vote lands on an evil player. That is an outcome measure, not a judgment of the vote, and the cases
@@ -341,7 +341,7 @@ on condition that a prompt change was tried first (log §6). No vote-specific th
 
 **What it is.** Haiku 5.5 against Sonnet 5.5 for the day summary
 (`evaluation/experiments/haiku_summary_compare.py`; data in
-`reasoning_failures/data/haiku_summary_compare/`, October 2026). Every day with a spoken line in two
+`gameplay/deduction/data/haiku_summary_compare/`, October 2026). Every day with a spoken line in two
 games (6 days) was re-summarised 5 times per model from its own checkpoint. The live summary was kept
 as a third arm. Sonnet 5.5 judged every summary in one Message Batch.
 
@@ -359,7 +359,7 @@ as a third arm. Sonnet 5.5 judged every summary in one Message Batch.
 
 **What it is.** One model in every seat and as the summariser, AI-only ten-seat games, memory off,
 captured by `evaluation/experiments/phase3_capture.py` on 2026-10-10: six games on Gemini 3.5 Flash
-(`game_play_enhancement/data/phase3_flash_games/`) and four on GPT-6 Luna at medium (`phase3_luna_games/`).
+(`gameplay/data/phase3_flash_games/`) and four on GPT-6 Luna at medium (`phase3_luna_games/`).
 Each game's cost comes from its usage meter. Readers audited each game against the
 `phase3_reads/README.md` rubric: three Opus agents for Flash, two for Luna. The transcripts show the
 true roles, so the reads are not blind.
@@ -477,9 +477,9 @@ Cheapest upgrades (not scheduled):
 | Admission run | `evaluation/src/cli_runner/model_admission.py` (`eval-model-admission`), `evaluation/src/model_admission/{probes,seat_schemas}.py` | [`data/<label>/`](data/README.md) (20 records, 2026-10-04/11/13, graduated 2026-10-23); configs `evaluation/config/model_admission/*.json` | yes |
 | Live schema gate | `tests/live/test_model_structured_output.py` | none (docstring note of 2026-09-10) | — |
 | Admission bench arms | `evaluation/src/cli_runner/regen_replay/both/hallucination_bench.py` (`eval-hallucination-bench`) | [`data/`](data/README.md)`{admission_bench_2026_10_04,admission_bench_glm_2026_10_04,phase3_luna,phase3_haiku,phase3_haiku_low,phase3_luna_haiku,phase3_haiku_summary,shared_prefix_luna_2026_10_13}/eval_results/` (`summary.json` and judged files, graduated 2026-10-23); configs `evaluation/config/model_admission/bench_*.json`, `evaluation/config/hallucination_bench_phase3_*.json`, `hallucination_bench_shared_prefix_luna.json` | yes |
-| Thinking budget | `evaluation/experiments/haiku_effort_{cases,score}.py` | `reasoning_failures/experiment_log.md` §2; `reasoning_failures/data/haiku_effort_replay/` | yes |
-| Summariser model | `evaluation/experiments/haiku_summary_compare.py` | `reasoning_failures/experiment_log.md` §3; `reasoning_failures/data/haiku_summary_compare/` | yes |
-| Seat-model games | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{flash,luna}_games/README.md`; `discussion_evidence.md` §8.4 | yes |
+| Thinking budget | `evaluation/experiments/haiku_effort_{cases,score}.py` | `gameplay/deduction/experiment_log.md` §2; `gameplay/deduction/data/haiku_effort_replay/` | yes |
+| Summariser model | `evaluation/experiments/haiku_summary_compare.py` | `gameplay/deduction/experiment_log.md` §3; `gameplay/deduction/data/haiku_summary_compare/` | yes |
+| Seat-model games | `evaluation/experiments/phase3_capture.py` | `gameplay/data/phase3_{flash,luna}_games/README.md`; `discussion_evidence.md` §8.4 | yes |
 | Extraction and de-halo models | `evaluation/experiments/{claude_extraction_compare,dehalo_compare}.py`; v5 `evaluation/src/studies/extraction_model_comparison.py` | `memory_system/v8/experiment_log.md` (2026-10-11); `memory_system/v8/data/{extraction_model_comparison,dehalo_compare}/`; v5: `memory_system/v7/extraction_screens/` | yes |
 | July selection | none | `model_selection/report.md` | yes |
 | Cost and cache accounting | `Agents/llm_factory/{pricing,catalog}.py`, `server/game/usage.py`, `evaluation/src/core/costs.py`, `evaluation/src/loop/cost.py`, `evaluation/experiments/game_cache_share.py`, `scripts/model_catalog.py` | `caching/report.md` §4–5; `caching/experiment_log.md` §11 | yes |

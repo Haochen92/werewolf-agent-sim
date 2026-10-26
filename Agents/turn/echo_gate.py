@@ -13,7 +13,7 @@ request and filler; it keeps a new fact, a reading of the seat's own with its re
 the table), and a question or test nobody has asked. A player's claim about their own role or night
 action, or confirming or denying what was said about themselves, is always kept. On the open-floor
 lines judged blind in the silence calibration, it held 12 of 29 restatements and none of 36
-worthwhile lines (evidence/game_play_enhancement/data/silence_calibration/). The judge never weighs
+worthwhile lines (evidence/gameplay/data/silence_calibration/). The judge never weighs
 truth. It fails open: any error keeps the line. One cheap call per sweep turn at low thinking
 (Agents/llm_factory.get_llm_judge; minimal held 9 of 29).
 """

@@ -1,5 +1,5 @@
 """Level 5 of the deduction engine: public events and what they imply (Agents/deduction/public/;
-rows B1–B33 of evidence/reasoning_failures/deduction_catalogue.md, Table B).
+rows B1–B33 of evidence/gameplay/deduction/deduction_catalogue.md, Table B).
 
 Every game here runs through the real engine: each night through the resolution node, each lynch
 through the day-resolution node, so the mornings and the wills are the ones a game commits. Per row:

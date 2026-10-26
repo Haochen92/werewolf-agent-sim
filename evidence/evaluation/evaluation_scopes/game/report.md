@@ -245,8 +245,8 @@ code.
 
 **Code and data.** `evaluation/experiments/persona_voice_games.py`, `persona_voice_games_score.py`,
 `evil_cover_screen.py`;
-[persona_voice_games](../../../game_play_enhancement/data/persona_voice_games/README.md),
-[evil_cover_games](../../../game_play_enhancement/data/evil_cover_games/README.md).
+[persona_voice_games](../../../gameplay/data/persona_voice_games/README.md),
+[evil_cover_games](../../../gameplay/data/evil_cover_games/README.md).
 
 ---
 

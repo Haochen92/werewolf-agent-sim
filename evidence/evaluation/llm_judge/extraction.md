@@ -41,7 +41,7 @@ and, for v7, *"is a credit-aware synthesised strategy-point any good?"*
   enforce all **8**, so output is unaffected (schema is the contract) — but the prompt disagrees with itself.
 - **v7 SYNTHESIS quality has NO judge.** Zero references to `ExtractionScores`/`run_extraction_judge` in
   `evaluation/src/loop/`. Synthesised SPs are measured only by (a) the loop's **outcome** slope
-  (`measure.py`) and (b) one **underpowered** offline lexical probe (`v7_final/sp_synthesis_quality_check.py`,
+  (`measure.py`) and (b) one **underpowered** offline lexical probe (`memory_system/v7/sp_synthesis_quality_check.py`,
   token-Jaccard, self-reports "UNDERPOWERED"). An in-pipeline `with_track_record` counter flags credit-blind
   (halo-only) synthesis — honesty hook, not a quality measure.
 
@@ -131,7 +131,7 @@ exists; it's simply never aimed at synthesis (which is currently outcome-only).
 - **Code:** `evaluation/src/judges/extraction.py`, `archive/per_role_extraction.py` (archived 2026-07-04, unwired),
   `judges/prompts/extraction.py`, `experiments/extraction_eval.py`, `experiments/extraction_builder.py`,
   `core/schemas.py::{ExtractionScores,PerRoleExtractionScores}`; v7 probes
-  `../../v7_final/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.
+  `../../memory_system/v7/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.
 - **L2 artifacts (no golden — the gap; results pointed-at):** `../../extraction/post_game/eval_results/*.jsonl`
   (Runs 1-3), `../../extraction/post_game/model_comparison/` (May study) + `.../model_comparison/v7_refresh/`
   (v7 model-A/B generated obs on v6_1) + `../../memory_system/v7/extraction_coverage_ab_spec.md` (v7 spec/tables), the

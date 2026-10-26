@@ -379,11 +379,11 @@ more games.
 | Ten-seat metrics | `Agents/ten_seat_metrics.py`; `compute_game_metrics` | `memory_system/v8/{plan.md §8.1–8.4, decisions.md §8}`; log B1 |
 | Ten-seat decision grades | `Agents/memory/consolidation/grading.py`, `scripts/grade_observations.py` | `memory_system/v8/{plan.md §9.6, decisions.md §12–13, experiment_log.md 2026-10-13}`; log B1 |
 | The save verdict | `Agents/rules/night.py` (the verdict step) | log, 2026-10-24 |
-| Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `game_play_enhancement/data/persona_voice_games/`; log B2 |
+| Read Brier | `evaluation/src/loop/read_ledger.py`, `evaluation/experiments/persona_voice_games_score.py` | `credit/report.md` §1, §4; `gameplay/data/persona_voice_games/`; log B2 |
 | Vote-target accuracy | `Agents/compute_metrics.py`, `Agents/memory/consolidation/decision_scoring.py`, `evaluation/experiments/haiku_vote_score.py` | log B3; [turn replays](../evaluation_scopes/turn/report.md) |
-| Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `game_play_enhancement/discussion_evidence.md` §2; log B5 |
-| Phase 2 per-day counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `game_play_enhancement/data/phase2_step8_games/`; log B6 |
-| Balance batches | `evaluation/experiments/phase3_capture.py` | `game_play_enhancement/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5; log B7 |
+| Discussion census | `evaluation/experiments/discussion_evidence.py` (`census`) | `gameplay/discussion_evidence.md` §2; log B5 |
+| Phase 2 per-day counts | `evaluation/experiments/phase2_step8_{capture,counts}.py` | `gameplay/data/phase2_step8_games/`; log B6 |
+| Balance batches | `evaluation/experiments/phase3_capture.py` | `gameplay/data/phase3_{games,balance*}/`; `discussion_evidence.md` §8.3, §8.5; log B7 |
 | Batch summary | `scripts/analyze_batch.py` | log B10 |
 
 *Rewritten 2026-10-24 as a plain summary of the 2026-10-23 trust write-up, which is kept whole as the

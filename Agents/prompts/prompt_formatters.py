@@ -285,7 +285,7 @@ def format_investigator_results(results: list[InvestigatorResult], current_day: 
     The old line, "Day 3: player_5 was revealed as healer", read like a public death reveal
     (the same word, and that night's target had died and been revealed). Replaying a live turn
     20 times, the investigator invented an unchecked result in 20 of 20 samples on that wording
-    and in 0 of 20 on this one (evidence/game_play_enhancement/discussion_evidence.md §6.2).
+    and in 0 of 20 on this one (evidence/gameplay/discussion_evidence.md §6.2).
     `current_day` tags the previous night's check as "(last night)"; None leaves it untagged.
     """
     if not results:

@@ -1,7 +1,7 @@
 """Before/after games for the speaking voices (RunConfig.persona_voices; owner, 2026-10-18): do the AI
 seats still reason as well when every AI seat talks in its puppet's voice?
 
-Record: evidence/game_play_enhancement/data/persona_voice_games/ (README there). One game per call, in
+Record: evidence/gameplay/data/persona_voice_games/ (README there). One game per call, in
 its own process: the in-memory checkpointer is keyed by the game id, and a pair's two arms share it,
 so both deal the same roles and seats (the game id is the deal's seed). Memory off, deductions "full"
 (the default), the live site's model and thinking level.
@@ -38,7 +38,7 @@ from Agents.turn import prompt_log, reads_log
 from server.game.usage import UsageMeter, game_cost
 from tests.leak_test import leak_inputs, run_leak_tests
 
-OUT_DIR = REPO_ROOT / "evidence/game_play_enhancement/data/persona_voice_games"
+OUT_DIR = REPO_ROOT / "evidence/gameplay/data/persona_voice_games"
 
 
 def main() -> None:

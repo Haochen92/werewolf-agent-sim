@@ -103,4 +103,4 @@ planned `playbook.md` (both in the proposal).
 | Document | What it is | Feeds |
 |---|---|---|
 | `../../writeup/server_talking_points.md` | The server as the owner would tell it in an interview, 2026-09-13; three answers need the October rulings and the authorship wording | 2, 3, 4, 5, 6, 9 |
-| `../../evidence/game_play_enhancement/` | The gameplay record the ten-seat pass and the role sheet rest on | — |
+| `../../evidence/gameplay/` | The gameplay record the ten-seat pass and the role sheet rest on | — |

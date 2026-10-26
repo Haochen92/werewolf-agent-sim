@@ -377,7 +377,7 @@ zero reasoning tokens. The arms were matched, so each memory-on against memory-o
 stands on its own terms. But every result above, the +17→+33pp town gain and the v7 null alike, is
 a result for players that did not reason.
 
-*Source: `game_play_enhancement/discussion_evidence.md` §6.7; `memory_system/v7/report.md`, scope addendum.*
+*Source: `gameplay/discussion_evidence.md` §6.7; `memory_system/v7/report.md`, scope addendum.*
 
 ### v8 — memory rebuilt for the ten-seat game
 

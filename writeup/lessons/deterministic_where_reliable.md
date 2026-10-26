@@ -1,7 +1,7 @@
 # Deterministic where reliable
 
 **The lesson.** Where a rule could be code, it became code; the model kept only what no reliable rule
-could do: "deterministic where reliable; LLM only where necessary" (`sequential_discussion/experiment_log.md`,
+could do: "deterministic where reliable; LLM only where necessary" (`gameplay/discussion/experiment_log.md`,
 header). The rule replaced a decision, supplied a fact or default, held or overrode output, or graded a
 decision afterwards. No rule is free of error: each inherits its inputs' errors, and some are unvalidated.
 
@@ -23,7 +23,7 @@ Recorded 2026-10-14, from a review of the write-up plan.
 ## 1. The discussion scheduler
 
 **Problem.** A weighted score with one model term could not guarantee that a questioned player answered
-next, and its weights had nothing to be tuned against (`sequential_discussion/experiment_log.md` §6).
+next, and its weights had nothing to be tuned against (`gameplay/discussion/experiment_log.md` §6).
 **Rule.** Who speaks is a pure function of the transcript: a `question` or `accusation` opens an
 obligation, any engagement of the creditor discharges it, the freshest debtor speaks first, a per-pair cap
 ends feuds (`Agents/turn/scheduler.py`, `build_reactive_queue`; `Agents/nodes/day/flow.py`). The model
@@ -36,14 +36,14 @@ open; the human's debts are cleared from `firing_reason.owes` in code either way
 confidence on the structure, low on any quantitative delta (§9). **Not fixed.** The rules are only as good
 as the tags: a seat that owed A but tagged its reply a `mention` was picked 7 times running, twice word for
 word, until discharge was widened (§8); on 24 of 183 messages the tags missed an accusation a judge saw,
-and once named one it did not (`game_play_enhancement/discussion_evidence.md` §7.1). **Live.** Yes; the
-quiet-turn tier is now a seat-order sweep, also code (`sequential_discussion/report.md`, status note).
+and once named one it did not (`gameplay/discussion_evidence.md` §7.1). **Live.** Yes; the
+quiet-turn tier is now a seat-order sweep, also code (`gameplay/discussion/report.md`, status note).
 
 ## 2. The night record and the dead roster
 
 **Problem.** Agents re-derived who had died, and as what, from the game master's prose each turn: on the
 nine-seat game about 3% of messages, 4% of notes and 10% of night notes carried a role-fact error, mostly
-survivor arithmetic (`generation_prompt/experiment_log.md` §10.1). The healer's only record of its own
+survivor arithmetic (`gameplay/turn_prompt/experiment_log.md` §10.1). The healer's only record of its own
 protections was its prose note (`evaluation/factual_errors/experiment_log.md` §8, finding 1).
 **Rule.** Each death appends a `DeathRecord`; the dead-roster board and the alive-roles line (the public
 census `cast_role_counts` minus revealed deaths) are rendered from them (`Agents/schemas/game_events.py`;
@@ -51,7 +51,7 @@ census `cast_role_counts` minus revealed deaths) are rendered from them (`Agents
 record with a fixed result word (`Agents/rules/night_record.py`, `Agents/nodes/night/resolution.py`).
 
 **Evidence.** With a correct board showing no wolf alive, the model still hunted "the remaining wolf" (2
-and 1 of 6 against 0 of 6 without, N=6) (`generation_prompt/validation/t1b_results.md`). With the reads
+and 1 of 6 against 0 of 6 without, N=6) (`gameplay/turn_prompt/validation/t1b_results.md`). With the reads
 list, the bundle cut bad outputs on 100 error-prone contexts from 48% to 30%, one-sided p = 0.003 (§12):
 the bundle, not the board. The night record shipped with seven other fidelity changes: bad note statements
 50% → 44%, 24 cases better, 14 worse, p = 0.14 (`discussion_evidence.md` §6.4–6.5). **Not fixed.** Facts

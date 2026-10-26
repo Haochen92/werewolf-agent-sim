@@ -20,7 +20,7 @@ important the thing it judges feels:
 |---|---|---|
 | **A — directional dev-aid** | rank prompt v1 vs v2, pick the better wording, iterate | none beyond cheap hygiene |
 | **B — reported comparative claim** | "config X applies strategy more than config Y" | this protocol |
-| **C — gold** | ground-truth labels other evals are scored against | full panel + human anchor (see `retrieval/context_eval`) |
+| **C — gold** | ground-truth labels other evals are scored against | full panel + human anchor (see `evaluation/labeling/context_eval`) |
 
 The strategy-adoption judge is **bucket B**: it makes an **absolute** claim that gets quoted
 ("agents apply a useful strategy N% of the time"). Absolute claims need a calibration anchor.

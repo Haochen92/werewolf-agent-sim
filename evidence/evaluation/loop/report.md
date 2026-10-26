@@ -107,7 +107,7 @@ graded by these rules, and no control for how hard the board was. Runner
 **What they can and cannot claim.** In the June epoch the grade carried signal for some channels and lesson
 scores repeated, which justified pruning on credit and ruled out two shortcuts. They do not show that pruning
 improves play, and the blind-spot case below shows a repeatable score can still miss a harm. The separability
-correlations are recorded without their decision counts. Record: [v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md)
+correlations are recorded without their decision counts. Record: [../../memory_system/v7/experiment_log.md](../../memory_system/v7/experiment_log.md)
 §1–2, §6 (its `review_map.md` mislabels the override check as "tagger verdict validity").
 
 ## Blind-spot fix check
@@ -160,7 +160,7 @@ read scale is coarse. It also cannot tell persuading the room from reading it ju
 
 **Trust: ⚠️.** The synthesis verdict is the author's unblinded read of two cells, with no rubric; the prune
 study's outcome is a count. Neither shows a store that plays better. Records:
-`../../memory_system/v7/runs/synth_deluck_ab/` and `synth_deluck_ab_flite/`; [v7_final/experiment_log.md](../../memory_system/v7/experiment_log.md) §3–4.
+`../../memory_system/v7/runs/synth_deluck_ab/` and `synth_deluck_ab_flite/`; [../../memory_system/v7/experiment_log.md](../../memory_system/v7/experiment_log.md) §3–4.
 
 ## Bottom line
 

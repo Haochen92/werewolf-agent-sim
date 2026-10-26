@@ -1,6 +1,6 @@
 """Level 7 of the deduction engine (slice 12): possible explanations of a claim (F8) and the budgets the
 public counts across nights (F9) (Agents/deduction/explanations/; catalogue Table F, §0 grade 3, of
-evidence/reasoning_failures/deduction_catalogue.md); and AC2 line 3, a sighting of the known
+evidence/gameplay/deduction/deduction_catalogue.md); and AC2 line 3, a sighting of the known
 Chanteuse read with the morning (Agents/deduction/comparisons/block_visits.py).
 
 - Per form, on constructed nights through the real engine and constructed claims: the exact line, and

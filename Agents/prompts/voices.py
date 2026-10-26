@@ -4,7 +4,7 @@ part of every spoken-round prompt (day_discuss.py).
 
 A voice says how a seat sounds, never what it thinks: no voice may lean on suspicion, firmness or a
 side, or hint at a role, as no costume may (server/game/cast.py). The persona screen
-(evidence/game_play_enhancement/data/persona_line/) found such lines read more like people (25 of 30
+(evidence/gameplay/data/persona_line/) found such lines read more like people (25 of 30
 blind) and moved the argument no more than sampling noise does.
 """
 

@@ -50,7 +50,7 @@ class CaseSet(BaseModel):
     set tests the summariser; the summary runs on the arm's own model and level, as in a game."""
     dataset: str
     """The frozen cases file, relative to the repo root, e.g.
-    "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl"."""
+    "evidence/gameplay/data/phase3_turn_replay/cases.jsonl"."""
     slices: list[str] | None = None
     """Only cases in these slices (the bench's ``slices``), e.g. ["pinned", "control"]; None = all."""
     n: int | None = None

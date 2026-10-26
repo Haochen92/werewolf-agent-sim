@@ -1,5 +1,5 @@
 """Level 4 of the deduction engine (slice 10): conditionals (Agents/deduction/conditionals/; catalogue
-Table F, F4 to F6, of evidence/reasoning_failures/deduction_catalogue.md).
+Table F, F4 to F6, of evidence/gameplay/deduction/deduction_catalogue.md).
 
 - Constructed games through the real engine, with constructed claims: a watch that pins its visitor
   (AC2 constructed), a claim that only narrows (a check: "is a wolf"), the Vigilante at the Serial
@@ -251,7 +251,7 @@ def test_the_one_role_claim_left_is_named_ac4_constructed():
     assert _lines(_ac4(), "player_2", 5, _said(5, "player_9", claim="sentinel")) == [AC4_LINE_4]
 
 
-FROZEN = Path("evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl")
+FROZEN = Path("evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl")
 
 
 def _frozen(case_id: str) -> dict:

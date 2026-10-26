@@ -29,8 +29,8 @@ the record is, and how it would be shown:
 - **Number:** public messages that read a visit the wrong way, 16 of 35 → 5 of 35. A few dollars of
   Claude, no new games.
 - **Caveat:** a replay is a regression check on known failures, not a rate; full games come next.
-- **Record:** `evidence/game_play_enhancement/discussion_evidence.md` §8.6;
-  `evidence/game_play_enhancement/data/haiku_turn_replay/`.
+- **Record:** `evidence/gameplay/discussion_evidence.md` §8.6;
+  `evidence/gameplay/data/haiku_turn_replay/`.
 - **Show:** export (a before/after viewer over the samples of two or three hand-picked turns), plus a
   link to the game's replay.
 
@@ -113,7 +113,7 @@ the record is, and how it would be shown:
   reasoning tokens; arms were matched, so the comparison stands, but every memory verdict is scoped to
   "a non-reasoning player", and the record says so.
 - **Record:** `evidence/memory_system/v7/execution_plan/report.md`, `evidence/memory_system/v7/report.md`
-  (addendum), `evidence/game_play_enhancement/discussion_evidence.md` §6.7.
+  (addendum), `evidence/gameplay/discussion_evidence.md` §6.7.
 - **Show:** content.
 
 ### 9. An outcome halo in the extractor's verdicts, and the pass that corrects it

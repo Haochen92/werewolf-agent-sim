@@ -4,7 +4,7 @@
 prompts build from it, how it runs today, how it has been checked, and the October case where one
 summary error decided a game. It describes the ten-seat, twelve-role game.
 **Revised against the code:** 2026-10-22 at `c0732f88` (the summary's files have no uncommitted edits).
-**Companion docs:** [the build journey](experiment_log.md) · [the information-fidelity record](../../game_play_enhancement/discussion_evidence.md) §6.4–6.6 and §8.4 (where the current design was built and tested) · [the reasoning-failures log](../../reasoning_failures/experiment_log.md) §3 (the summary on a stronger model) · [the old judge's write-up](../../evaluation/llm_judge/day_summary.md) (the May quality judge).
+**Companion docs:** [the build journey](experiment_log.md) · [the information-fidelity record](../../gameplay/discussion_evidence.md) §6.4–6.6 and §8.4 (where the current design was built and tested) · [the reasoning-failures log](../../gameplay/deduction/experiment_log.md) §3 (the summary on a stronger model) · [the old judge's write-up](../../evaluation/llm_judge/day_summary.md) (the May quality judge).
 
 > **Orientation: one day's path.**
 >
@@ -156,9 +156,9 @@ These are regression checks on known failures, five samples a case, not error ra
 | The "Previous days" section | `Agents/prompts/prompt_formatters.py` (`format_day_summaries`); placed in the shared public part of every seat prompt by `Agents/prompts/layout.py` |
 | The ledger for the replay page | `server/game/ledger.py` |
 | Tests | `tests/engine/test_claim_ledger.py`, `tests/engine/test_information_fidelity.py`, `tests/engine/test_model_fallback.py` |
-| Bench results for the attributed and transcribe-only summaries | [discussion_evidence.md](../../game_play_enhancement/discussion_evidence.md) §6.5–6.6 |
-| The ten-seat audit, the `e06` case and the replays | discussion_evidence.md §8.4; `evidence/game_play_enhancement/data/phase3_reads/`, `data/phase3_summary_replay/` (runner: `evaluation/experiments/summary_claim_replay.py`) |
-| The Haiku-against-Sonnet test and the record-check removal | [reasoning_failures/experiment_log.md](../../reasoning_failures/experiment_log.md) §3; `evidence/reasoning_failures/data/haiku_summary_compare/` (runner: `evaluation/experiments/haiku_summary_compare.py`) |
-| The example summary (`2f19d908` day 2) | `evidence/reasoning_failures/data/haiku_summary_compare/summaries.jsonl`, live arm |
-| The example "Previous days" section (`2f19d908` day 3) | `evidence/reasoning_failures/data/deduction_placement_n10/prompts/AC2_before_note.txt` |
+| Bench results for the attributed and transcribe-only summaries | [discussion_evidence.md](../../gameplay/discussion_evidence.md) §6.5–6.6 |
+| The ten-seat audit, the `e06` case and the replays | discussion_evidence.md §8.4; `evidence/gameplay/data/phase3_reads/`, `data/phase3_summary_replay/` (runner: `evaluation/experiments/summary_claim_replay.py`) |
+| The Haiku-against-Sonnet test and the record-check removal | [gameplay/deduction/experiment_log.md](../../gameplay/deduction/experiment_log.md) §3; `evidence/gameplay/deduction/data/haiku_summary_compare/` (runner: `evaluation/experiments/haiku_summary_compare.py`) |
+| The example summary (`2f19d908` day 2) | `evidence/gameplay/deduction/data/haiku_summary_compare/summaries.jsonl`, live arm |
+| The example "Previous days" section (`2f19d908` day 3) | `evidence/gameplay/deduction/data/deduction_placement_n10/prompts/AC2_before_note.txt` |
 | The May prompt series and judge runs (history) | this folder: `prompt_versions/`, `eval_summary*.txt`, `eval_results*.jsonl`, `regen_comparison.json`; judge in `evaluation/src/judges/day_summary.py` |

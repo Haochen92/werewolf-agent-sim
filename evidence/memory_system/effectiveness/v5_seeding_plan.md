@@ -257,6 +257,6 @@ validate + freeze before labelling.
    yields a per-game cost + cache-saving estimate.
 3. **30-game seeding batch** → `v5.0` store + memory-off baseline.
 4. (Phase B) labelling on v5 — reranker NDCG cases (~40) + panel-validation human judgments
-   (~96); see `retrieval/context_eval/`.
+   (~96); see `evaluation/labeling/context_eval/`.
 5. (Phase C) paired A/B sized from the seeding baseline; headline win-rate, power on dense
    proxies.

@@ -1,6 +1,6 @@
 """Score the replayed votes of game 403f4dbc by their outcome: no judge.
 
-Record: evidence/game_play_enhancement/discussion_evidence.md §8.7. The vote is a structured field
+Record: evidence/gameplay/discussion_evidence.md §8.7. The vote is a structured field
 (``vote_target``, limited to the legal targets), so a vote is right when it names the actual threat:
 player_6 (illusionist) on day 3, player_1 (chanteuse) on day 4, player_3 (the Necromancer) on days 5
 and 6. Beside it, a regex count over the free-text reads of the evidence each vote rests on (a mention
@@ -18,7 +18,7 @@ from collections import Counter
 from pathlib import Path
 
 RESULTS = Path("evaluation/eval_results/hallucination_bench/haiku_vote_compare")
-CASES = Path("evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl")
+CASES = Path("evidence/gameplay/data/haiku_vote_replay/cases.jsonl")
 RIGHT = {3: "player_6", 4: "player_1", 5: "player_3", 6: "player_3"}
 ARMS = ["haiku_pre_fixes", "haiku_layout_baseline", "haiku_current", "haiku_read_compare", "haiku_ballot_tag"]
 

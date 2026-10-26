@@ -7,8 +7,8 @@
 > **Companion docs.** The current design, stated destination-first: [`report.md`](report.md).
 > This log condenses the folder's earlier `experiment_log.md` (the May series, with its raw notebook)
 > and the October entries of
-> [`../../game_play_enhancement/discussion_evidence.md`](../../game_play_enhancement/discussion_evidence.md)
-> (§6.4–6.6, §8.4) and [`../../reasoning_failures/experiment_log.md`](../../reasoning_failures/experiment_log.md)
+> [`../../gameplay/discussion_evidence.md`](../../gameplay/discussion_evidence.md)
+> (§6.4–6.6, §8.4) and [`../../gameplay/deduction/experiment_log.md`](../../gameplay/deduction/experiment_log.md)
 > (§3). The earlier versions of this folder's log and report are in git history at `2382b34c`. The commit messages quoted below are in git history.
 >
 > **A naming note.** The May prompts were numbered v1 to v4b. The October schemas restart at v3 and
@@ -218,7 +218,7 @@ remains the last resort. Deployed the same day.
 `eval_summary*.txt`, `eval_results*.jsonl`, `regen_comparison.json`, `prompt_versions/` ·
 discussion_evidence.md §6.4 (game `46355b89`), §6.5 (attributed summary on the bench), §6.6 (transcription
 and the ledger), §6.7 (reasoning), §8.4 (the ten-seat audit and replays) ·
-`../../game_play_enhancement/data/phase3_reads/README.md` · `../../game_play_enhancement/data/phase3_summary_replay/README.md` ·
+`../../gameplay/data/phase3_reads/README.md` · `../../gameplay/data/phase3_summary_replay/README.md` ·
 reasoning_failures/experiment_log.md §3 and `data/haiku_summary_compare/` · the change history in
 `Agents/prompts/extraction/day_summary.py` · commits `c9dbc79b`, `2b24936c`, `ace0cf6e`, `d78c0bb3`,
 `a3fb32fd`, `6248fc58`, `0c605e89`, `d066d1b3`, `d4f14fa7`, `c957fdb5`, `cc4977ea`, `957d0b2e`.

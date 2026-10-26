@@ -1,8 +1,8 @@
 """Screen: a persona line in the seat's own discussion prompt, so the model that reasons also speaks
 in a voice (2026-10-18; the follow-up to the voice rewrite screen, which drifted the facts in about one
-rewrite in five: evidence/game_play_enhancement/data/voice_rewrite/README.md).
+rewrite in five: evidence/gameplay/data/voice_rewrite/README.md).
 
-Record: evidence/game_play_enhancement/data/persona_line/ (README there). Generation only; the
+Record: evidence/gameplay/data/persona_line/ (README there). Generation only; the
 samples are judged blind, separately.
 
 The day-discussion cases of the frozen Haiku turn bench (haiku_effort_replay/turn_cases.jsonl),
@@ -29,8 +29,8 @@ from pathlib import Path
 
 from evaluation.src.replay.hallucination_bench import _usage_totals, turn_payload, turn_template
 
-OUT = Path("evidence/game_play_enhancement/data/persona_line")
-CASES = Path("evidence/reasoning_failures/data/haiku_effort_replay/turn_cases.jsonl")
+OUT = Path("evidence/gameplay/data/persona_line")
+CASES = Path("evidence/gameplay/deduction/data/haiku_effort_replay/turn_cases.jsonl")
 N_CASES = 15
 SEED = 20261018
 MAX_CALLS = 90

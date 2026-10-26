@@ -1,6 +1,6 @@
 """AC2 ablation: which added sentences in player_8's seat-block entry move the day-3 vote.
 
-Record: evidence/reasoning_failures/data/deduction_ac2_ablation/ (README there). Generation only. Wraps
+Record: evidence/gameplay/deduction/data/deduction_ac2_ablation/ (README there). Generation only. Wraps
 deduction_placement_screen.py (its AC2 case, chain and settings; arm "before_note") and removes
 sentences from the RENDERED human message by exact string removal, each checked to occur exactly once.
 

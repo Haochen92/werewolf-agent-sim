@@ -499,7 +499,7 @@ schemas order their fields so a seat commits before it speaks. Checked on the re
 
 **Decision (owner): reads first in every seat schema.** The shared base of all 16 seat schemas now orders
 reads → strategy verdicts → memory verdicts → strategy note → decision, and the discussion prompt's
-examples follow. The July reads work (T1c, `../generation_prompt/validation_plan.md`) tested reads
+examples follow. The July reads work (T1c, `../gameplay/turn_prompt/validation_plan.md`) tested reads
 *before the strategy note and the action*; that order is kept, and the position of the memory verdicts
 relative to reads was not what it tested. **Result: Haiku unenforced, the same 24 real turns, 24/24 in
 schema order and no failures.** This changes every seat's prompt in both modes, so it is a new prompt

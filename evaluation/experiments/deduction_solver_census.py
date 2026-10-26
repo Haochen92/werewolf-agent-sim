@@ -1,7 +1,7 @@
 """How complete and how fast the deduction engine's candidate-role solver is, on random legal games.
 
-Record: evidence/reasoning_failures/report.md (§3, §5) and the output folder
-evidence/reasoning_failures/data/solver_census/. No model call.
+Record: evidence/gameplay/deduction/report.md (§3, §5) and the output folder
+evidence/gameplay/deduction/data/solver_census/. No model call.
 
 The solver (Agents/deduction/candidates/solver.py) is sound by construction and propagates without
 search, so it may in principle keep a role a full search would rule out. This measures how often
@@ -30,7 +30,7 @@ import statistics
 import time
 from pathlib import Path
 
-OUT = Path("evidence/reasoning_failures/data/solver_census")
+OUT = Path("evidence/gameplay/deduction/data/solver_census")
 SEED = 20261018
 AC2_ID = "9b827b695a61ece9"
 

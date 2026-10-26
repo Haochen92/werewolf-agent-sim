@@ -1,6 +1,6 @@
 """AC2 current/before_note re-sampled with the closing call in today's wording (no accuser list).
 
-Record: evidence/reasoning_failures/data/deduction_ac2_closing_fixed/ (README there). Generation only.
+Record: evidence/gameplay/deduction/data/deduction_ac2_closing_fixed/ (README there). Generation only.
 A sibling of deduction_ac2_2x2.py: one arm of that 2x2 (block "current", placement "before_note"),
 rendered fresh from the tree, where the replay bench now rewrites the old closing call to today's
 ("Before the vote: player_8 gets a last word."). Before any call the render is checked to differ from

@@ -1,6 +1,6 @@
 """AC2 2x2, interleaved: seat block (current / trimmed of player_8's two sentences) x deduction_placement.
 
-Record: evidence/reasoning_failures/data/deduction_ac2_2x2/ (README there). Generation only. Reuses
+Record: evidence/gameplay/deduction/data/deduction_ac2_2x2/ (README there). Generation only. Reuses
 deduction_placement_screen.py (AC2 case, ``_turn``, legal-target schema, cost accounting, SDK-retry
 counter) and deduction_ac2_ablation.py (the removed strings E1 and WILL, ``_ablate``). The four prompts
 are rendered ONCE, verified and saved to prompts/; every call then sends those saved texts (system +

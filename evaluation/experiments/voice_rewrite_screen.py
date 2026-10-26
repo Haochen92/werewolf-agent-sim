@@ -1,7 +1,7 @@
 """Screen: a second model pass that rewrites a seat's spoken line in a persona's voice, keeping the
 argument (owner's idea, 2026-10-18). Does it read better, and how often does it change the facts?
 
-Record: evidence/game_play_enhancement/data/voice_rewrite/ (README there). Generation and the
+Record: evidence/gameplay/data/voice_rewrite/ (README there). Generation and the
 deterministic fact gate only; naturalness and argument fidelity are judged blind, separately.
 
 Thirty real lines: twenty AI lines from the two captured Haiku games (645228e7, 88aee4e4; the human
@@ -31,8 +31,8 @@ from pydantic import BaseModel, Field
 
 from evaluation.src.replay.hallucination_bench import _usage_totals
 
-OUT = Path("evidence/game_play_enhancement/data/voice_rewrite")
-SCREEN = Path("evidence/reasoning_failures/data/deduction_placement_n10/samples.jsonl")
+OUT = Path("evidence/gameplay/data/voice_rewrite")
+SCREEN = Path("evidence/gameplay/deduction/data/deduction_placement_n10/samples.jsonl")
 GAMES = {"645228e7-a75b-4a57-a6e2-1a569838bf31": 6, "88aee4e4-8cd0-4031-b5e7-d8dc7a770abe": 14}
 """Each captured game and how many of its AI lines to draw."""
 SCREEN_LINES = 10

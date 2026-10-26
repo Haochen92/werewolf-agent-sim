@@ -97,7 +97,7 @@ and whether anyone checked the labelling itself.
 | **A written expectation** | Pinned cases in the nine-seat test set | Known factual failures stay fixed | 5 | nine-seat · Oct 2026 | Hand check: 10 of 12 verdicts upheld | Current | case 4 |
 | | Ten-seat pinned cases | Known ten-seat failures | 47 | ten-seat · Oct 2026 | Every verdict read by hand | Current | case 4 |
 | | Summary-claim patterns | The summariser and the claim ledger, scored by code | — | ten-seat · Oct 2026 | Caught one regression before it shipped | Current | case 4 |
-| | Novelty probes | The standalone novelty label | 20 | eight-seat · June 2026 | Answer fixed by how the probes were made; extreme cases only | Retired | [sequential_discussion log](../../sequential_discussion/experiment_log.md) |
+| | Novelty probes | The standalone novelty label | 20 | eight-seat · June 2026 | Answer fixed by how the probes were made; extreme cases only | Retired | [sequential_discussion log](../../gameplay/discussion/experiment_log.md) |
 
 **What the table shows.** Every gold set is from the nine-seat game, May to July 2026. Every ten-seat
 set is silver (labelled by model readers) or is a hand-written expectation, and none of the

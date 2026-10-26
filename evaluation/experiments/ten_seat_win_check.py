@@ -38,22 +38,22 @@ from evaluation.src.core.stats import pearson, point_biserial
 # Only games whose every night carries its full record are kept (`has_night_records`).
 BATCHES: list[tuple[str, str, str]] = [
     ("ten_seat_pilot", "batch_results/ten_seat_pilot/**/*.jsonl", "gemini-3.5-flash-lite"),
-    ("phase3_games", "evidence/game_play_enhancement/data/phase3_games/*.record.json", "gemini-3.5-flash-lite"),
-    ("phase3_balance", "evidence/game_play_enhancement/data/phase3_balance/*.record.json", "gemini-3.5-flash-lite"),
-    ("phase3_balance_2", "evidence/game_play_enhancement/data/phase3_balance_2/*.record.json", "gemini-3.5-flash-lite"),
-    ("phase3_balance_3", "evidence/game_play_enhancement/data/phase3_balance_3/*.record.json", "gemini-3.5-flash-lite"),
-    ("phase3_balance_4", "evidence/game_play_enhancement/data/phase3_balance_4/*.record.json", "gemini-3.5-flash-lite"),
-    ("phase3_flash_games", "evidence/game_play_enhancement/data/phase3_flash_games/*.record.json", "gemini-3.5-flash"),
-    ("phase3_luna_games", "evidence/game_play_enhancement/data/phase3_luna_games/*.record.json", "openai/gpt-6-luna"),
+    ("phase3_games", "evidence/gameplay/data/phase3_games/*.record.json", "gemini-3.5-flash-lite"),
+    ("phase3_balance", "evidence/gameplay/data/phase3_balance/*.record.json", "gemini-3.5-flash-lite"),
+    ("phase3_balance_2", "evidence/gameplay/data/phase3_balance_2/*.record.json", "gemini-3.5-flash-lite"),
+    ("phase3_balance_3", "evidence/gameplay/data/phase3_balance_3/*.record.json", "gemini-3.5-flash-lite"),
+    ("phase3_balance_4", "evidence/gameplay/data/phase3_balance_4/*.record.json", "gemini-3.5-flash-lite"),
+    ("phase3_flash_games", "evidence/gameplay/data/phase3_flash_games/*.record.json", "gemini-3.5-flash"),
+    ("phase3_luna_games", "evidence/gameplay/data/phase3_luna_games/*.record.json", "openai/gpt-6-luna"),
     ("v8_smoke", "batch_results/v8_smoke/**/*.jsonl", "gemini-3.5-flash-lite"),
     ("v8_seeding", "batch_results/v8_seed_[abcd]/games/*.jsonl", "recorded"),
     ("v8_demo", "batch_results/v8_demo/games_*.jsonl", "anthropic/claude-haiku-5-5"),
     ("v8_gate_haiku", "batch_results/v8_gate_haiku/games_*.jsonl", "anthropic/claude-haiku-5-5"),
     ("v8_luna_memory", "batch_results/v8_luna_memory/**/*.jsonl", "openai/gpt-6-luna"),
     ("cache_ab_2026_10_13", "batch_results/cache_ab_2026_10_13/**/*.jsonl", "openai/gpt-6-luna"),
-    ("evil_cover_games", "evidence/game_play_enhancement/data/evil_cover_games/*/*.capture.json.gz", "anthropic/claude-haiku-5-5"),
-    ("persona_voice_games", "evidence/game_play_enhancement/data/persona_voice_games/*.capture.json.gz", "anthropic/claude-haiku-5-5"),
-    ("silence_calibration", "evidence/game_play_enhancement/data/silence_calibration/games/*.capture.json.gz", "anthropic/claude-haiku-5-5"),
+    ("evil_cover_games", "evidence/gameplay/data/evil_cover_games/*/*.capture.json.gz", "anthropic/claude-haiku-5-5"),
+    ("persona_voice_games", "evidence/gameplay/data/persona_voice_games/*.capture.json.gz", "anthropic/claude-haiku-5-5"),
+    ("silence_calibration", "evidence/gameplay/data/silence_calibration/games/*.capture.json.gz", "anthropic/claude-haiku-5-5"),
 ]
 
 TOWN = "town"

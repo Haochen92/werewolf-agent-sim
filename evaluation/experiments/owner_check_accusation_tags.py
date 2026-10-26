@@ -43,7 +43,7 @@ from evaluation.src.labeling.exporter import export_for_manual
 from evaluation.src.labeling.pipeline import stage_calibrate
 from evaluation.src.labeling.schemas import StratifiedSample
 
-GAME_DATA = Path("evidence/game_play_enhancement/data")
+GAME_DATA = Path("evidence/gameplay/data")
 GAME_DIRS = [
     GAME_DATA / "phase3_flash_games",
     GAME_DATA / "phase3_balance",

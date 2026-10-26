@@ -198,7 +198,7 @@ read card (guess, how sure, why, the truth with ● ◐ ○), a paper index card
 | 6 | `day.agent-spoke-for-you` | my `speech` arriving with my request unanswered at its deadline (client-known) | S only | the puppet talks the agent's line; the plaque's tag and the box say "your seat's agent spoke for you" | D: the line with the tag | speech |
 | — | `day.summary` | `day_summary` (28, 79, 218, 360) | — | **no beat here.** Public on the wire but the live stage has no beat for it; the replay plays it at the Dawn after the same day (§8 row 8) | — | — |
 
-**The rounds (Phase 2, 2026-10-07; `evidence/game_play_enhancement/discussion_evidence.md` §7).** A
+**The rounds (Phase 2, 2026-10-07; `evidence/gameplay/discussion_evidence.md` §7).** A
 day opens with every living seat writing an opening at once, and on a voting day it ends with the
 most-accused given a last word before the vote; the discussion between them is the scheduler's
 turns as above (the sweep's turns, where a quiet seat is given the floor, are ordinary turns on the

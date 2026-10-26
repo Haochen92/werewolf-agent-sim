@@ -1,5 +1,5 @@
 """Level 1 of the deduction engine: what a seat's own night records imply
-(Agents/deduction/own_results/; rows in evidence/reasoning_failures/deduction_catalogue.md, Table A).
+(Agents/deduction/own_results/; rows in evidence/gameplay/deduction/deduction_catalogue.md, Table A).
 
 Every night here runs through the real engine (resolve_night, night_action_records). Three kinds of
 test, per the catalogue's build bar:

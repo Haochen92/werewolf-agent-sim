@@ -1,7 +1,7 @@
 """Freeze the bench cases for the Haiku effort replay: thinking low (live) against medium, on the
 failures of both Haiku 5.5 games.
 
-Record: evidence/reasoning_failures/experiment_log.md. The turns and votes of 403f4dbc
+Record: evidence/gameplay/deduction/experiment_log.md. The turns and votes of 403f4dbc
 (§8.6, §8.7) are taken as frozen. Added here from 2f19d908 (2026-10-14, Haiku in all ten seats,
 memory on, town won day 3), whose day 3 turned on the healer (seat 8):
 
@@ -33,10 +33,10 @@ from evaluation.experiments.haiku_vote_cases import pre_vote_state  # noqa: E402
 from evaluation.src.data.builders.hallucination_bench import _case_id  # noqa: E402
 
 GAME = "2f19d908-a6b3-4faf-8f16-c2a009bb0428"
-OUT = Path("evidence/reasoning_failures/data/haiku_effort_replay")
+OUT = Path("evidence/gameplay/deduction/data/haiku_effort_replay")
 FROZEN_403F = {
-    "turn_cases.jsonl": Path("evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl"),
-    "vote_cases.jsonl": Path("evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl"),
+    "turn_cases.jsonl": Path("evidence/gameplay/data/haiku_turn_replay/cases.jsonl"),
+    "vote_cases.jsonl": Path("evidence/gameplay/data/haiku_vote_replay/cases.jsonl"),
 }
 CLOSING_NOW = "Before the vote: player_8 gets a last word."
 

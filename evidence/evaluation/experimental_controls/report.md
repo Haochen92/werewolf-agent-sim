@@ -235,7 +235,7 @@ loop, and checking that a setting did what it names.
 | Seedability | `Agents/nodes/orchestrator.py` (`initialize_game`); `tests/engine/test_seedability.py` |
 | Prompt golden | `tests/fixtures/day_discuss_prompt_golden.{py,json}`; `tests/engine/test_draft_preview.py` |
 | Run graduation | `eval-graduate` → `evaluation/src/cli_runner/graduate_run.py`; `tests/evaluation/test_graduate.py`; `evaluation/README.md` (Data plane) |
-| Reasoning-token scope | [`../../credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §⑦; [`../../game_play_enhancement/discussion_evidence.md`](../../game_play_enhancement/discussion_evidence.md) §6.7; test-set token recording `3e05e8a7` |
+| Reasoning-token scope | [`../../credit/blindspot_fix/experiment_log.md`](../../credit/blindspot_fix/experiment_log.md) §⑦; [`../../gameplay/discussion_evidence.md`](../../gameplay/discussion_evidence.md) §6.7; test-set token recording `3e05e8a7` |
 | Noise floor; run-to-run spread | [factual_errors](../factual_errors/report.md), step 4; [model_admission](../model_admission/report.md) |
 
 *Rewritten 2026-10-23 and checked against the code of that date; reorganised on 2026-10-24 around the

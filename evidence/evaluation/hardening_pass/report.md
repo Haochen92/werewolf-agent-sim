@@ -108,7 +108,7 @@ authorized by the rule but awaits spend sign-off.
 5. **Town-only compounding rerun (~$65)** — instrument gates cleared by §4; *held indefinitely by
    user decision.*
 6. **Phase 7 verdict propagation** — updating `source_map.md` reliability tags and the
-   `store_progression.md` Era-4 row waits on the user's review of this pass (and moves further if
+   `memory_system/report.md` Era-4 row waits on the user's review of this pass (and moves further if
    the held screens run).
 
 ## Provenance

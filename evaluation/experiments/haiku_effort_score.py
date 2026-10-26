@@ -1,6 +1,6 @@
 """Score the Haiku effort replay's votes by their target: no judge.
 
-Record: evidence/reasoning_failures/experiment_log.md. A vote is right when it names the
+Record: evidence/gameplay/deduction/experiment_log.md. A vote is right when it names the
 actual threat (``vote_target`` is limited to the legal targets, so this is an exact match): in
 403f4dbc as in haiku_vote_score.py, in 2f19d908 player_6 (the serial killer) on day 3. Cases come
 from evaluation/experiments/haiku_effort_cases.py; the arms are thinking low (live) and medium.
@@ -15,7 +15,7 @@ from collections import Counter
 from pathlib import Path
 
 RESULTS = Path("evaluation/eval_results/hallucination_bench/haiku_effort_votes")
-CASES = Path("evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl")
+CASES = Path("evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl")
 RIGHT = {("403f4dbc", 3): "player_6", ("403f4dbc", 4): "player_1", ("403f4dbc", 5): "player_3",
          ("403f4dbc", 6): "player_3", ("2f19d908", 3): "player_6"}
 ARMS = ["haiku_low", "haiku_medium"]

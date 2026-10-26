@@ -1,5 +1,5 @@
 """Slice 8: the deduction blocks (Agents/deduction/render.py, blocks.py, raised.py; catalogue
-"Rendering: what the seat reads" of evidence/reasoning_failures/deduction_catalogue.md).
+"Rendering: what the seat reads" of evidence/gameplay/deduction/deduction_catalogue.md).
 
 - The fold rules, one at a time, on constructed items and on constructed nights through the real
   engine (the Illusionist's A45 beside the pack's A13 or A11 on the same target).
@@ -390,7 +390,7 @@ def test_the_public_block_does_not_change_with_anything_private():
 
 # --- the acceptance cases, on their own frozen payloads -----------------------------------------------
 
-FROZEN = Path("evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl")
+FROZEN = Path("evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl")
 
 
 def _frozen(case_id: str) -> dict:

@@ -9,7 +9,7 @@
   "caching": {
     "floor_sizes": [256, 512, 1024, 2048],
     "wait_s": 5,
-    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "dataset": "evidence/gameplay/data/phase3_turn_replay/cases.jsonl",
     "cases": 2
   },
   "notes": "Claude Haiku 5.5 (Anthropic API, Max-plan credits): forced_tool (thinking off), json_schema and auto_tool with adaptive thinking at effort medium. Cache marks on the system message and the transcript's last line (Agents/llm_factory/claude.py); a smoke test read 9,258 of 10,206 tokens from cache on the same seat's next turn. Real-prompt cases from the ten-seat Phase 3 turns."

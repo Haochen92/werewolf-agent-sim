@@ -4,8 +4,8 @@ living players claim a role dealt once, the seat block now says which results ea
 player_5's role would test; player_7 names no check result."). Does a town seat's vote move toward the
 fake claimant?
 
-Record: evidence/game_play_enhancement/data/counter_claim_votes/ (README there). Turns: every town seat's
-vote on a day of the evil cover games (evidence/game_play_enhancement/data/evil_cover_games/after/) whose
+Record: evidence/gameplay/data/counter_claim_votes/ (README there). Turns: every town seat's
+vote on a day of the evil cover games (evidence/gameplay/data/evil_cover_games/after/) whose
 re-rendered seat block has the sentence. Both arms re-render the blocks with the checked-out engine from
 the turn's rebuilt payload (the block census's rebuild); arm "without" removes the sentence. The rest of
 the prompt input is the captured one. No judge: the vote is the measure.
@@ -24,8 +24,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-GAMES = Path("evidence/game_play_enhancement/data/evil_cover_games/after")
-OUT = Path("evidence/game_play_enhancement/data/counter_claim_votes")
+GAMES = Path("evidence/gameplay/data/evil_cover_games/after")
+OUT = Path("evidence/gameplay/data/counter_claim_votes")
 ARMS = ("without", "with")
 SAMPLES = 3
 MAX_CALLS = 160

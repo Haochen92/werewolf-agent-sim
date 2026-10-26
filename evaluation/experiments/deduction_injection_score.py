@@ -1,7 +1,7 @@
 """Score case R1's replay: does the healer reason through once its night record states the roleblock's
 certain consequence?
 
-Record: evidence/reasoning_failures/experiment_log.md (case R1). The measures were fixed before the
+Record: evidence/gameplay/deduction/experiment_log.md (case R1). The measures were fixed before the
 run, per arm, variant (as_played / injected) and turn:
 
 - spoke: the turn produced a public message (the game's healer passed all three);
@@ -26,7 +26,7 @@ from collections import defaultdict
 from pathlib import Path
 
 RESULTS = Path("evaluation/eval_results/hallucination_bench")
-DATA = Path("evidence/reasoning_failures/data/deduction_injection")
+DATA = Path("evidence/gameplay/deduction/data/deduction_injection")
 RUNS = {  # run label -> (its cases, its arms)
     "deduction_injection": (DATA / "cases.jsonl", ["haiku_low", "haiku_medium"]),
     "healer_silence": (DATA / "silence_cases.jsonl", ["card_as_is", "card_no_survival"]),

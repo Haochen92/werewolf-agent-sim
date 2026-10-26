@@ -17,7 +17,7 @@ rules that govern adding a new block. Per-module detail lives in the code docstr
 [`Agents/prompts/prompt_inputs.py`](../Agents/prompts/prompt_inputs.py)). **How the prompt got this
 shape** — the origin, the caching bet that died, the reason-before-act reordering, the flash-lite
 all-required rule — is the journey log at
-[`evidence/generation_prompt/experiment_log.md`](../evidence/generation_prompt/experiment_log.md).
+[`evidence/gameplay/turn_prompt/experiment_log.md`](../evidence/gameplay/turn_prompt/experiment_log.md).
 
 ---
 
@@ -90,7 +90,7 @@ single-actor roles share `_night_template`; the 2-round wolf night discussion is
    construction is the boundary; templates are not trusted to filter.
 2. **Content boundary.** Prompt = rules + deterministic public facts + how-to-behave. Interpretations
    ("what signals mean") belong to memory, never hardcoded into prompts —
-   [`evidence/generation_prompt/prompt_boundary/`](../evidence/generation_prompt/prompt_boundary/experiment_log.md). The dead roster passes
+   [`evidence/gameplay/turn_prompt/prompt_boundary/`](../evidence/gameplay/turn_prompt/prompt_boundary/experiment_log.md). The dead roster passes
    this test (deterministic public fact); a "who is suspicious" hint would not.
 3. **Stable-early, volatile-late.** Static role-agnostic text at the head, per-turn content at the tail.
    Implicit caching currently doesn't fire on the game backend (see

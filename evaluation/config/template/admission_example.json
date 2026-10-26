@@ -14,7 +14,7 @@
     {
       "name": "discussion",
       "kind": "discussion",
-      "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "dataset": "evidence/gameplay/data/phase3_turn_replay/cases.jsonl",
       "slices": ["pinned", "control", "f02_rule"],
       "n": 5,
       "speed": {"max_p50_seconds": 5.5, "max_p95_seconds": 11.0}
@@ -22,7 +22,7 @@
     {
       "name": "votes",
       "kind": "vote",
-      "dataset": "evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl",
+      "dataset": "evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl",
       "slices": ["vote_compare", "vote"],
       "n": 10,
       "speed": {"max_p50_seconds": null, "max_p95_seconds": 11.0},

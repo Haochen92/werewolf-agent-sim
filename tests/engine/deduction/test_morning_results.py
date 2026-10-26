@@ -1,7 +1,7 @@
 """Level 1 of the deduction engine, slice 5: the rows that read a seat's own result together with the
 public morning announcement (Agents/deduction/morning.py): A22 conditions b and c (checks.py), A28–A31
 (own_results/at_the_door.py, shown with the watch), A36's concealed case (sigils.py) and A45
-(conceals.py), rows of evidence/reasoning_failures/deduction_catalogue.md, Table A.
+(conceals.py), rows of evidence/gameplay/deduction/deduction_catalogue.md, Table A.
 
 Every night here runs through the real engine, the resolution node included: the morning a seat
 reads is the one the node committed. Per row: a night where it fires, with the exact line; nights

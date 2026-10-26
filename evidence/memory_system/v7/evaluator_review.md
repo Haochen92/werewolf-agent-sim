@@ -164,7 +164,7 @@ per pair); skipped-row counters in every credit function.
 ### Phase 0 — zero-spend, before anything else
 
 1. **Claim-hygiene edits (F7):** correct the p-value fusion in `memory_system/v7/report.md` +
-   `store_progression.md`; one line reconciling §11g/§12b pairing claims.
+   `memory_system/report.md`; one line reconciling §11g/§12b pairing claims.
 2. **Stratified-baseline sensitivity study (F5):** offline recompute of lift / held-out
    reproduction / b1 drop set with dim-stratified base rates on the existing v6ab + v2 ledgers.
 3. **Accumulate-only store reconstruction (F3.3):** replay v2 per-gen dumps through merge+dedup

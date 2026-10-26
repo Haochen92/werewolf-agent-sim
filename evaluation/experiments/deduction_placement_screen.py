@@ -1,7 +1,7 @@
 """OQ21 screen: the seat's deduction block before or after its carried-forward strategy note.
 
-Record: evidence/reasoning_failures/data/deduction_placement/ (README there; catalogue OQ21 in
-evidence/reasoning_failures/deduction_catalogue.md). Generation only: the samples are judged blind,
+Record: evidence/gameplay/deduction/data/deduction_placement/ (README there; catalogue OQ21 in
+evidence/gameplay/deduction/deduction_catalogue.md). Generation only: the samples are judged blind,
 separately. The four acceptance cases (AC1-AC4) on their frozen states, rebuilt by the replay bench
 (evaluation/src/replay/hallucination_bench.py ``turn_payload`` / ``turn_template``) with
 ``deduction_mode`` "full" and the arm's ``deduction_placement``, then sampled on the process's game
@@ -32,7 +32,7 @@ from typing import Any
 
 from evaluation.src.replay.hallucination_bench import _usage_totals, turn_payload, turn_template
 
-DATA = Path("evidence/reasoning_failures/data")
+DATA = Path("evidence/gameplay/deduction/data")
 OUT = DATA / "deduction_placement"
 ARMS = ("before_note", "after_note")
 MAX_CALLS = 30

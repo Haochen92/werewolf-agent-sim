@@ -1,6 +1,6 @@
 """Why did the investigator invent a result? Resample its exact turn under prompt variants.
 
-Record: evidence/game_play_enhancement/discussion_evidence.md §6.2. In live game 832404e9 (day 4,
+Record: evidence/gameplay/discussion_evidence.md §6.2. In live game 832404e9 (day 4,
 channel entry 8) the investigator said "I investigated player_9 last night, and they are the
 remaining wolf" — it never checked player_9 (its checks: player_1 wolf, player_4 villager, player_5
 healer). This rebuilds that turn's payload from the game's LangGraph checkpoint (read-only), with the
@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 GAME = "832404e9-a5f2-434e-8484-5bb953718a8f"
 DAY, SPEAKER, CHANNEL_SEQ = 4, "player_7", 8
 MODEL = "gemini-3.5-flash-lite"  # the live game's seat model; temperature/thinking stay at defaults
-OUT = Path("evidence/game_play_enhancement/data/investigator_replay")
+OUT = Path("evidence/gameplay/data/investigator_replay")
 
 
 def load_state() -> dict:

@@ -24,7 +24,7 @@ Pointers only, not yet checked against their sources. Verify each instance befor
   a rule was not: the discussion scheduler's firing rules, the vote-endpoint credit, the night record
   and the dead roster (built from records, not parsed from the game master's prose), the addressing
   discharge, the deterministic situation dimensions overriding the model's, the eliminated-player
-  check. Sources: `sequential_discussion/experiment_log.md` (the guiding principle), `credit/`,
+  check. Sources: `gameplay/discussion/experiment_log.md` (the guiding principle), `credit/`,
   `extraction/situation_dimensions/`, `agent_boundaries/experiment_log.md` §6; the closing bullet of
   `separating_generation_from_checking.md`. Written 2026-10-14 (above).
 - **Grade the decision, not the result.** The de-lucked metrics, the credit grading rule (luck-dependent

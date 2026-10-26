@@ -16,7 +16,7 @@ either too hard to build or too costly to verify — we **stop** (then freeze �
 > Reads alongside: the literature v7 report (external, literature-grounded — keep its synthesis, apply
 > the corrections below); `evidence/memory_system/effectiveness/v6_sp_ab/procedural_memory_experiment.md` (other agent's
 > overlapping design); `evidence/memory_system/effectiveness/decision_replay/` (the harness);
-> `evidence/generation_prompt/prompt_claims_audit/` + `evidence/extraction/observation_quality/` (the prompt-audit and extraction-selection findings).
+> `evidence/gameplay/turn_prompt/prompt_claims_audit/` + `evidence/extraction/observation_quality/` (the prompt-audit and extraction-selection findings).
 
 ---
 
@@ -118,7 +118,7 @@ measurement of whether credit has recoverable signal before consolidation is bui
 
 ## 2. What was VALIDATED (the findings v7 builds on)
 
-- **Prompt-claims audit** (`evidence/generation_prompt/prompt_claims_audit/`): the hand-authored PLAYSTYLE tactics were
+- **Prompt-claims audit** (`evidence/gameplay/turn_prompt/prompt_claims_audit/`): the hand-authored PLAYSTYLE tactics were
   never held to the facts-only bar. Tested two: **investigator "conceal / let consensus build" =
   FALSIFIED** (caps the investigator→lynch transmission chain; provenance-suppression watched
   directly); **wolf "blend with majority" = VALIDATED** (r=+0.20 p=.003 n=220 prior; +0.16 p=.07 v6ab).

@@ -1,7 +1,7 @@
 """Silence calibration, step 1: how often does a silent turn hide a line worth hearing, and how often
 is a spoken line noise? (owner, 2026-10-18: "a more principled way of calibrating the silence rule").
 
-Record: evidence/game_play_enhancement/data/silence_calibration/ (README there). Turns come from the
+Record: evidence/gameplay/data/silence_calibration/ (README there). Turns come from the
 persona voice games (evaluation/experiments/persona_voice_games.py), where every turn's prompt input
 was captured: each discuss prompt is paired with the channel entry it produced (in order, per day and
 player). Three kinds of turn are drawn, seeded:
@@ -42,8 +42,8 @@ from pathlib import Path
 
 from langchain_core.messages import HumanMessage
 
-GAMES = Path("evidence/game_play_enhancement/data/persona_voice_games")
-OUT = Path("evidence/game_play_enhancement/data/silence_calibration")
+GAMES = Path("evidence/gameplay/data/persona_voice_games")
+OUT = Path("evidence/gameplay/data/silence_calibration")
 SEED = 20261018
 DRAW = {"pass:opening": 40, "pass:proactive": 40, "posted:opening": 25, "posted:proactive": 25,
         "posted:discussion": 25}

@@ -187,16 +187,16 @@ where a label needs judgment, the next step is a second reader and an owner-labe
 | What | Code | Record |
 |---|---|---|
 | Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/triage.md` (row 68); [log](experiment_log.md), Instrument 1 |
-| Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `reasoning_failures/data/deduction_placement{,_n10}/` |
-| Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `reasoning_failures/data/note_prompt/judging/`; `reasoning_failures/experiment_log.md` §6 |
-| Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../game_play_enhancement/data/silence_calibration/README.md) |
-| Evil-cover screen read | `evaluation/experiments/evil_cover_screen.py` (`packets`, `score`) | [`evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Voice rewrite read | `evaluation/experiments/voice_rewrite_screen.py` | [`voice_rewrite/README.md`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Persona line read | `evaluation/experiments/persona_line_screen.py` | [`persona_line/README.md`](../../../game_play_enhancement/data/persona_line/README.md) |
-| Visit-wording read | `evaluation/experiments/visit_wording_cases.py` (`blind`, `score`) | [`visit_wording_ab/README.md`](../../../game_play_enhancement/data/visit_wording_ab/README.md) |
+| Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `gameplay/deduction/data/deduction_placement{,_n10}/` |
+| Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `gameplay/deduction/data/note_prompt/judging/`; `gameplay/deduction/experiment_log.md` §6 |
+| Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../gameplay/data/silence_calibration/README.md) |
+| Evil-cover screen read | `evaluation/experiments/evil_cover_screen.py` (`packets`, `score`) | [`evil_cover_screen/README.md`](../../../gameplay/data/evil_cover_screen/README.md) |
+| Voice rewrite read | `evaluation/experiments/voice_rewrite_screen.py` | [`voice_rewrite/README.md`](../../../gameplay/data/voice_rewrite/README.md) |
+| Persona line read | `evaluation/experiments/persona_line_screen.py` | [`persona_line/README.md`](../../../gameplay/data/persona_line/README.md) |
+| Visit-wording read | `evaluation/experiments/visit_wording_cases.py` (`blind`, `score`) | [`visit_wording_ab/README.md`](../../../gameplay/data/visit_wording_ab/README.md) |
 | Decision-tag read | `scripts/tag_observation_decisions.py`, `evaluation/experiments/v8_decision_tag_check.py` | `memory_system/v8/experiment_log.md` ("Reopened", 2026-10-13); `memory_system/v8/data/decision_tags/`; log, Instrument 4 |
-| Phase 3 game reads | `evaluation/experiments/phase3_render_transcript.py` | [`phase3_reads/README.md`](../../../game_play_enhancement/data/phase3_reads/README.md) |
-| Discussion-quality gate | `evidence/sequential_discussion/quality_gate/scripts/metrics.py` (study code in the record) | [`quality_gate/experiment_log.md`](../../../sequential_discussion/quality_gate/experiment_log.md), [`rubric.md`](../../../sequential_discussion/quality_gate/rubric.md) |
+| Phase 3 game reads | `evaluation/experiments/phase3_render_transcript.py` | [`phase3_reads/README.md`](../../../gameplay/data/phase3_reads/README.md) |
+| Discussion-quality gate | `evidence/gameplay/discussion/quality_gate/scripts/metrics.py` (study code in the record) | [`quality_gate/experiment_log.md`](../../../gameplay/discussion/quality_gate/experiment_log.md), [`rubric.md`](../../../gameplay/discussion/quality_gate/rubric.md) |
 | Credit spot-check | — (sampling recorded in the file) | [`credit/attribution_spot_check.json`](../../../credit/attribution_spot_check.json), [`credit/report.md`](../../../credit/report.md) §5 |
 | Owner-check packets | `evaluation/src/labeling/{anchor,calibration}.py`, `pipeline calibrate` | [`../owner_checks/`](../owner_checks/) |
 

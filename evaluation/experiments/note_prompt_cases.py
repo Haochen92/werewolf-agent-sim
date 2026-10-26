@@ -1,6 +1,6 @@
 """Select the screening cases for the private-note rewrite: the current note wording against the new one.
 
-Record: evidence/reasoning_failures/experiment_log.md §6. The new wording (Agents/prompts/memory/context.py,
+Record: evidence/gameplay/deduction/experiment_log.md §6. The new wording (Agents/prompts/memory/context.py,
 2026-10-16) splits the note into Changed / Reasoning / Plan, treats reads as hypotheses and asks whether
 an updated conclusion changes the value of speaking, voting or acting. The arms are the prompt (the current
 wording runs from a worktree); the cases are taken from earlier frozen sets, unchanged, so the frozen
@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-DATA = Path("evidence/reasoning_failures/data")
+DATA = Path("evidence/gameplay/deduction/data")
 OUT = DATA / "note_prompt/screen_cases.jsonl"
 
 # (source file, game, slice, phase, day, speaker, entry seq or None for a vote, screen role, why)

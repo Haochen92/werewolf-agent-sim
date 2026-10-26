@@ -29,7 +29,7 @@ Two words come up throughout.
 - A **frozen turn** (also called a **case**) is one agent turn, stored as the game state the engine held when the agent spoke. Because the state is stored, the turn can be re-run under another prompt or model.
 - An **arm** is one setup under test. Usually it is a model plus a prompt version. Sometimes it is an older version of the engine, checked out from git.
 
-Many design verdicts below sit in [discussion_evidence](../../game_play_enhancement/discussion_evidence.md). This file cites it by section number.
+Many design verdicts below sit in [discussion_evidence](../../gameplay/discussion_evidence.md). This file cites it by section number.
 
 ---
 
@@ -93,7 +93,7 @@ Two kinds of agent text are counted:
 - The fact sheet lists deaths only. So a claim about a failed night attack cannot be checked.
 - Claims made earlier on the same day are not yet in the claims log. That makes a claim credited to the wrong player the weakest class.
 - **Nine-seat only.** The screen knows the six nine-seat roles (`ROLE_ALIASES`: wolf, serial killer, villager, healer, investigator, vigilante). It cannot pick up a ten-seat role word such as the necromancer or the sentinel.
-- **Never re-run.** The plan pre-registered a second measurement on the first batch after the prompt change of 2026-07-09 ([`validation_plan.md`](../../generation_prompt/validation_plan.md), "T1-improvement"). No record of it was found. On 2026-10-10, running the census on ten-seat games was listed as open, at an estimated $2 to $3 (discussion_evidence §8.5, last paragraph).
+- **Never re-run.** The plan pre-registered a second measurement on the first batch after the prompt change of 2026-07-09 ([`validation_plan.md`](../../gameplay/turn_prompt/validation_plan.md), "T1-improvement"). No record of it was found. On 2026-10-10, running the census on ten-seat games was listed as open, at an estimated $2 to $3 (discussion_evidence §8.5, last paragraph).
 
 **The only error count on the ten-seat game** is a hand audit of ten games, about 345 heard lines. Model readers did the reading against a rubric (discussion_evidence §8.4). It is a sampled read, not a census. It is catalogued in [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md).
 
@@ -101,7 +101,7 @@ Two kinds of agent text are counted:
 
 - Screen: `eval-role-hallucination`, in `evaluation/src/audits/role_hallucination_screen.py`.
 - Reader: `eval-role-hallucination-read`, in `evaluation/src/judges/role_fact_read.py`.
-- Record: [`generation_prompt/validation/hallucination_baseline.md`](../../generation_prompt/validation/hallucination_baseline.md). Next to it are `hallucination_candidates.jsonl` and `hallucination_verdicts{,_stage2}.jsonl`.
+- Record: [`gameplay/turn_prompt/validation/hallucination_baseline.md`](../../gameplay/turn_prompt/validation/hallucination_baseline.md). Next to it are `hallucination_candidates.jsonl` and `hallucination_verdicts{,_stage2}.jsonl`.
 
 ---
 
@@ -113,7 +113,7 @@ A **replay** re-runs a saved agent turn under a new prompt or model. These three
 - a line giving the roles still alive;
 - a list of per-player reads.
 
-All three replays were pre-registered in [`validation_plan.md`](../../generation_prompt/validation_plan.md). Their scripts are study code. They are kept inside the evidence folder as frozen records: `generation_prompt/validation/{t1b_replay,regression_replay,t1c_ab_replay}.py`.
+All three replays were pre-registered in [`validation_plan.md`](../../gameplay/turn_prompt/validation_plan.md). Their scripts are study code. They are kept inside the evidence folder as frozen records: `gameplay/turn_prompt/validation/{t1b_replay,regression_replay,t1c_ab_replay}.py`.
 
 ### T1b, the counterfactual case replay (2026-07-07)
 
@@ -121,14 +121,14 @@ All three replays were pre-registered in [`validation_plan.md`](../../generation
 - **How it works.** Each error was replayed 6 times under three arms, 72 calls in all.
 - **What it showed.** Three of the four never came back in any arm. That includes the arm with no change. They were one-off slips at temperature 1.0. The fourth came back even with a correct board in the prompt.
 - **What it showed about the method.** A replay of errors that rarely come back has no power to show a fix working. That lesson set how the bench picks its cases (§3).
-- **Record.** [`t1b_results.md`](../../generation_prompt/validation/t1b_results.md).
+- **Record.** [`t1b_results.md`](../../gameplay/turn_prompt/validation/t1b_results.md).
 
 ### T2, the regression replay (2026-07-07)
 
 - **What it is.** A check that the added fields did not break schema validity or the memory verdicts.
 - **How it works.** 60 frozen decisions, each with its original retrieved memories, were replayed under four arms, 200 calls in all.
 - **What it showed.** Comparing a replayed action with the action first recorded is mostly noise. About half the actions flipped even in the arm with no change. The record recommends measuring that floor first, with pairs of resamples from the same arm. Only then read flips between arms.
-- **Record.** [`t2_results.md`](../../generation_prompt/validation/t2_results.md).
+- **Record.** [`t2_results.md`](../../gameplay/turn_prompt/validation/t2_results.md).
 
 ### T1c, the ship test (2026-07-08)
 
@@ -139,7 +139,7 @@ All three replays were pre-registered in [`validation_plan.md`](../../generation
   - The old prompt was bad on 48%. The new bundle was bad on 30%.
   - 29 pairs were better and 11 worse.
   - A one-sided sign test gave p=0.003. A **sign test** counts the pairs where the new prompt did better and the pairs where it did worse, ignoring ties. It then asks how likely a split that uneven would be by chance.
-- **Record.** [`generation_prompt/experiment_log.md`](../../generation_prompt/experiment_log.md) §12. Outputs: `validation/t1c_outputs.jsonl` and `t1c2_outputs.jsonl`.
+- **Record.** [`gameplay/turn_prompt/experiment_log.md`](../../gameplay/turn_prompt/experiment_log.md) §12. Outputs: `validation/t1c_outputs.jsonl` and `t1c2_outputs.jsonl`.
 
 **How far to trust T1c.** Its strength is that the main metric was fixed before its data existed. Three limits apply:
 
@@ -289,7 +289,7 @@ They established three things about the bench itself.
 
 **Code and record.**
 
-- The run outputs (summaries and judged samples) were copied on 2026-10-23 into [`game_play_enhancement/data/october_bench_arms/`](../../game_play_enhancement/data/october_bench_arms/README.md).
+- The run outputs (summaries and judged samples) were copied on 2026-10-23 into [`gameplay/data/october_bench_arms/`](../../gameplay/data/october_bench_arms/README.md).
 - discussion_evidence carries the counts.
 - Templates: `evaluation/config/template/hallucination_bench_{fidelity_pass,summary_v4,vote_history,record_citation,thinking}.json`. Their judges were edited after the runs (§3, correction of 2026-10-23).
 - Bench arms run to admit a new seat model are catalogued in [`../model_admission/`](../model_admission/report.md).
@@ -327,7 +327,7 @@ It cannot say how often this situation comes up across games. And the rewording 
 **Code and record.**
 
 - Runner: `evaluation/experiments/investigator_claim_replay.py`.
-- Every prompt and sample: [`game_play_enhancement/data/investigator_replay/`](../../game_play_enhancement/data/investigator_replay/) (no README).
+- Every prompt and sample: [`gameplay/data/investigator_replay/`](../../gameplay/data/investigator_replay/) (no README).
 - Record: discussion_evidence §6.2.
 
 ---
@@ -380,7 +380,7 @@ They are not rates. The records say so: "0 of 10" means the failure stopped happ
 |---|---|---|
 | Runner | `evaluation/experiments/phase3_turn_cases.py` | `evaluation/experiments/haiku_game_turn_cases.py` |
 | Configs | `evaluation/config/hallucination_bench_phase3_{turns,f02_rule,f02_hierarchy,f02_wording,sentinel_before,sentinel_after}.json` | `evaluation/config/hallucination_bench_haiku_game.json`, `hallucination_bench_haiku_game_vote_v2.json` |
-| Record and per-case tables | [`data/phase3_turn_replay/README.md`](../../game_play_enhancement/data/phase3_turn_replay/README.md) | [`data/haiku_turn_replay/README.md`](../../game_play_enhancement/data/haiku_turn_replay/README.md) |
+| Record and per-case tables | [`data/phase3_turn_replay/README.md`](../../gameplay/data/phase3_turn_replay/README.md) | [`data/haiku_turn_replay/README.md`](../../gameplay/data/haiku_turn_replay/README.md) |
 
 ---
 
@@ -421,7 +421,7 @@ The arm is the checkout. So each arm runs its own prompt, schema and ledger.
 **Code and record.**
 
 - Runner: `evaluation/experiments/summary_claim_replay.py`.
-- Record: [`data/phase3_summary_replay/README.md`](../../game_play_enhancement/data/phase3_summary_replay/README.md); discussion_evidence §8.4.
+- Record: [`data/phase3_summary_replay/README.md`](../../gameplay/data/phase3_summary_replay/README.md); discussion_evidence §8.4.
 
 ---
 
@@ -764,18 +764,18 @@ These passing tests cover existing behaviour. They do not cancel out the omissio
 |---|---|
 | Census screen | `eval-role-hallucination`; `evaluation/src/audits/role_hallucination_screen.py` |
 | Census reader | `eval-role-hallucination-read`; `evaluation/src/judges/role_fact_read.py` |
-| Census record (2026-07-08) | [`generation_prompt/validation/hallucination_baseline.md`](../../generation_prompt/validation/hallucination_baseline.md); `hallucination_candidates.jsonl`, `hallucination_verdicts{,_stage2}.jsonl` beside it |
-| Pre-registration for T1, T1b, T1c, T2 | [`generation_prompt/validation_plan.md`](../../generation_prompt/validation_plan.md) |
-| T1b and T2 (2026-07-07) | `generation_prompt/validation/{t1b_replay,regression_replay}.py` (frozen); [`t1b_results.md`](../../generation_prompt/validation/t1b_results.md), [`t2_results.md`](../../generation_prompt/validation/t2_results.md) |
-| T1c (2026-07-08) | `generation_prompt/validation/t1c_ab_replay.py` (frozen); [`generation_prompt/experiment_log.md`](../../generation_prompt/experiment_log.md) §12; `validation/t1c{,2}_outputs.jsonl` |
+| Census record (2026-07-08) | [`gameplay/turn_prompt/validation/hallucination_baseline.md`](../../gameplay/turn_prompt/validation/hallucination_baseline.md); `hallucination_candidates.jsonl`, `hallucination_verdicts{,_stage2}.jsonl` beside it |
+| Pre-registration for T1, T1b, T1c, T2 | [`gameplay/turn_prompt/validation_plan.md`](../../gameplay/turn_prompt/validation_plan.md) |
+| T1b and T2 (2026-07-07) | `gameplay/turn_prompt/validation/{t1b_replay,regression_replay}.py` (frozen); [`t1b_results.md`](../../gameplay/turn_prompt/validation/t1b_results.md), [`t2_results.md`](../../gameplay/turn_prompt/validation/t2_results.md) |
+| T1c (2026-07-08) | `gameplay/turn_prompt/validation/t1c_ab_replay.py` (frozen); [`gameplay/turn_prompt/experiment_log.md`](../../gameplay/turn_prompt/experiment_log.md) §12; `validation/t1c{,2}_outputs.jsonl` |
 | The bench | `eval-hallucination-bench` (`evaluation/src/cli_runner/regen_replay/both/hallucination_bench.py`), `eval-build-hallucination-bench` (`evaluation/src/data/builders/hallucination_bench.py`), replay `evaluation/src/replay/hallucination_bench.py`, judges `role_fact_read.py` and `golden_expectation.py`; `evaluation/README.md`, *Hallucination bench* |
 | Frozen sets | `evaluation/frozen_eval_sets/hallucination_bench_v1.jsonl` (125), `_v2.jsonl` (129) |
 | Bench build and audits (2026-10-03, 04) | §3 of this file; the code audit and the fix check, §8 and §9 of this file; provenance commits `a14de67`..`ab48570`; screen run [`data/screen_v1/`](data/screen_v1/eval_results/summary.json) (graduated 2026-10-23) |
-| October arms (nine-seat) | discussion_evidence §6.5–6.7; run outputs [`game_play_enhancement/data/october_bench_arms/`](../../game_play_enhancement/data/october_bench_arms/README.md); templates `evaluation/config/template/hallucination_bench_{fidelity_pass,summary_v4,vote_history,record_citation,thinking}.json` (judges edited after the runs, see §3) |
-| Invented-check replay | `evaluation/experiments/investigator_claim_replay.py`; `game_play_enhancement/data/investigator_replay/`; discussion_evidence §6.2 |
-| Phase 3 turn cases | `evaluation/experiments/phase3_turn_cases.py`; `evaluation/config/hallucination_bench_phase3_*.json`; `game_play_enhancement/data/phase3_turn_replay/` |
-| Haiku game cases | `evaluation/experiments/haiku_game_turn_cases.py`; `evaluation/config/hallucination_bench_haiku_game{,_vote_v2}.json`; `game_play_enhancement/data/haiku_turn_replay/` |
-| Summary-claim replay | `evaluation/experiments/summary_claim_replay.py`; `game_play_enhancement/data/phase3_summary_replay/` |
-| Ten-seat hand audit (a sampled read, not here) | discussion_evidence §8.4; `game_play_enhancement/data/phase3_reads/`; [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md) |
+| October arms (nine-seat) | discussion_evidence §6.5–6.7; run outputs [`gameplay/data/october_bench_arms/`](../../gameplay/data/october_bench_arms/README.md); templates `evaluation/config/template/hallucination_bench_{fidelity_pass,summary_v4,vote_history,record_citation,thinking}.json` (judges edited after the runs, see §3) |
+| Invented-check replay | `evaluation/experiments/investigator_claim_replay.py`; `gameplay/data/investigator_replay/`; discussion_evidence §6.2 |
+| Phase 3 turn cases | `evaluation/experiments/phase3_turn_cases.py`; `evaluation/config/hallucination_bench_phase3_*.json`; `gameplay/data/phase3_turn_replay/` |
+| Haiku game cases | `evaluation/experiments/haiku_game_turn_cases.py`; `evaluation/config/hallucination_bench_haiku_game{,_vote_v2}.json`; `gameplay/data/haiku_turn_replay/` |
+| Summary-claim replay | `evaluation/experiments/summary_claim_replay.py`; `gameplay/data/phase3_summary_replay/` |
+| Ten-seat hand audit (a sampled read, not here) | discussion_evidence §8.4; `gameplay/data/phase3_reads/`; [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md) |
 
 *The bench sections were written 2026-10-03. The record was widened on 2026-10-23 against the code and records above, and the code audit and fix check were folded in that day. This file rates how far each method can be trusted. Whether each fix worked is for the design records to say.*

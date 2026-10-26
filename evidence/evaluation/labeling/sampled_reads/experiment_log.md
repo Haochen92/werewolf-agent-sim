@@ -184,13 +184,13 @@ A *blind read* in this file means steps 3–5: the reader does not know which ar
 
 | Read (2026-10) | Readers | Items | Record |
 |---|---|---|---|
-| Deduction-block placement (10-17) | 1 subagent, measures fixed in the README before the run | 24 samples | [`reasoning_failures/data/deduction_placement/`](../../../reasoning_failures/data/deduction_placement/results.md) |
-| Private-note rewrite (10-16/17) | 2 Claude subagents, the owner's rubric | 56 samples per arm | `reasoning_failures/data/note_prompt/judging/`; [`reasoning_failures/experiment_log.md`](../../../reasoning_failures/experiment_log.md) §6 |
-| Silence calibration, step 1 (10-18) | 4 Sonnet subagents, kinds A–D plus "worth hearing" | 156 lines | [`silence_calibration/README.md`](../../../game_play_enhancement/data/silence_calibration/README.md) |
-| Evil-cover screen, steps 1–5 (10-18) | 4, 8, 4 and 4 Sonnet subagents | 41 turns × 2 samples per arm | [`evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Voice rewrite (10-18) | 4 Sonnet subagents (2 naturalness, 2 fidelity) | 90 rewrites | [`voice_rewrite/README.md`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Persona line (10-18) | 4 Sonnet subagents | 30 voiced pairs + 10 plain pairs | [`persona_line/README.md`](../../../game_play_enhancement/data/persona_line/README.md) |
-| Visit wording, arms A/B and A/C (10-21) | 8 subagents, then 4 fresh ones | 95 lines per arm per model | [`visit_wording_ab/README.md`](../../../game_play_enhancement/data/visit_wording_ab/README.md) |
+| Deduction-block placement (10-17) | 1 subagent, measures fixed in the README before the run | 24 samples | [`gameplay/deduction/data/deduction_placement/`](../../../gameplay/deduction/data/deduction_placement/results.md) |
+| Private-note rewrite (10-16/17) | 2 Claude subagents, the owner's rubric | 56 samples per arm | `gameplay/deduction/data/note_prompt/judging/`; [`gameplay/deduction/experiment_log.md`](../../../gameplay/deduction/experiment_log.md) §6 |
+| Silence calibration, step 1 (10-18) | 4 Sonnet subagents, kinds A–D plus "worth hearing" | 156 lines | [`silence_calibration/README.md`](../../../gameplay/data/silence_calibration/README.md) |
+| Evil-cover screen, steps 1–5 (10-18) | 4, 8, 4 and 4 Sonnet subagents | 41 turns × 2 samples per arm | [`evil_cover_screen/README.md`](../../../gameplay/data/evil_cover_screen/README.md) |
+| Voice rewrite (10-18) | 4 Sonnet subagents (2 naturalness, 2 fidelity) | 90 rewrites | [`voice_rewrite/README.md`](../../../gameplay/data/voice_rewrite/README.md) |
+| Persona line (10-18) | 4 Sonnet subagents | 30 voiced pairs + 10 plain pairs | [`persona_line/README.md`](../../../gameplay/data/persona_line/README.md) |
+| Visit wording, arms A/B and A/C (10-21) | 8 subagents, then 4 fresh ones | 95 lines per arm per model | [`visit_wording_ab/README.md`](../../../gameplay/data/visit_wording_ab/README.md) |
 
 These screens are catalogued as replays in [`../../evaluation_scopes/turn/report.md`](../../evaluation_scopes/turn/report.md);
 this section rates only their read. The decision-tag check (one Sonnet reader per game naming each
@@ -228,7 +228,7 @@ Five games were read for what decided them (Claude read one; four Opus agents re
 audited by five Opus agents, two games each, on a five-way rubric: invented fact, summary error, invalid
 deduction, evil deception (deliberate or self-misunderstood), night error. Six Flash and four Luna games
 followed on the same rubric, and eleven odd votes were read against each voter's own reasoning.
-Record: [`phase3_reads/README.md`](../../../game_play_enhancement/data/phase3_reads/README.md).
+Record: [`phase3_reads/README.md`](../../../gameplay/data/phase3_reads/README.md).
 - **Checked:** the main session checked the readers' decisive and spot quotes against the transcripts
   before use. The README's review note (2026-10-10) names three ways the counts mislead: invalid
   deductions made on top of a corrupted summary are not separated from reasoning errors; defeasible
@@ -240,10 +240,10 @@ Record: [`phase3_reads/README.md`](../../../game_play_enhancement/data/phase3_re
   that a failure happens. The per-game counts come from different readers with no agreement check.
 
 **Discussion-quality gate (eight-seat, 2026-06-05).** A hand-judged comparison of four concurrent and
-four sequential discussion games against [`rubric.md`](../../../sequential_discussion/quality_gate/rubric.md)
+four sequential discussion games against [`rubric.md`](../../../gameplay/discussion/quality_gate/rubric.md)
 (redundancy, responsiveness, dogpiling, turn fairness), with deterministic counts from
 `quality_gate/scripts/metrics.py` (lexical echo rate, top speaker's share, longest same-speaker run).
-Record: [`quality_gate/experiment_log.md`](../../../sequential_discussion/quality_gate/experiment_log.md).
+Record: [`quality_gate/experiment_log.md`](../../../gameplay/discussion/quality_gate/experiment_log.md).
 - **Limits it states:** the reader was the implementer, who had a stake in the outcome, and knew the
   arm; N=4 per arm, unpaired; the concurrent games' backend and temperature were not recorded.
 - **Checks it states:** the scored claims are deterministic counts; every qualitative call quotes a
@@ -357,14 +357,14 @@ one model reader's label per item, with no measured agreement and no human ancho
 | What | Code | Record |
 |---|---|---|
 | Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/triage.md` (row 68) |
-| Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `reasoning_failures/data/deduction_placement{,_n10}/` |
-| Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `reasoning_failures/data/note_prompt/judging/`; [`reasoning_failures/experiment_log.md`](../../../reasoning_failures/experiment_log.md) §6 |
-| Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../game_play_enhancement/data/silence_calibration/README.md), `packet_*.md`, `blind_key.json`, `verdicts_*.jsonl` |
-| Evil-cover screen read | `evaluation/experiments/evil_cover_screen.py` (`packets`, `score`) | [`evil_cover_screen/README.md`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Voice rewrite read | `evaluation/experiments/voice_rewrite_screen.py` | [`voice_rewrite/README.md`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Persona line read | `evaluation/experiments/persona_line_screen.py` | [`persona_line/README.md`](../../../game_play_enhancement/data/persona_line/README.md) |
-| Visit-wording read | `evaluation/experiments/visit_wording_cases.py` (`blind`, `score`) | [`visit_wording_ab/README.md`](../../../game_play_enhancement/data/visit_wording_ab/README.md), `judge_rubric.md`, `key.jsonl` |
-| Phase 3 game reads | `evaluation/experiments/phase3_render_transcript.py` | [`phase3_reads/README.md`](../../../game_play_enhancement/data/phase3_reads/README.md), `transcripts/`, `votes/dossiers.md` |
-| Discussion-quality gate | `evidence/sequential_discussion/quality_gate/scripts/metrics.py` (study code in the record) | [`quality_gate/experiment_log.md`](../../../sequential_discussion/quality_gate/experiment_log.md), [`rubric.md`](../../../sequential_discussion/quality_gate/rubric.md) |
+| Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `gameplay/deduction/data/deduction_placement{,_n10}/` |
+| Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `gameplay/deduction/data/note_prompt/judging/`; [`gameplay/deduction/experiment_log.md`](../../../gameplay/deduction/experiment_log.md) §6 |
+| Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../gameplay/data/silence_calibration/README.md), `packet_*.md`, `blind_key.json`, `verdicts_*.jsonl` |
+| Evil-cover screen read | `evaluation/experiments/evil_cover_screen.py` (`packets`, `score`) | [`evil_cover_screen/README.md`](../../../gameplay/data/evil_cover_screen/README.md) |
+| Voice rewrite read | `evaluation/experiments/voice_rewrite_screen.py` | [`voice_rewrite/README.md`](../../../gameplay/data/voice_rewrite/README.md) |
+| Persona line read | `evaluation/experiments/persona_line_screen.py` | [`persona_line/README.md`](../../../gameplay/data/persona_line/README.md) |
+| Visit-wording read | `evaluation/experiments/visit_wording_cases.py` (`blind`, `score`) | [`visit_wording_ab/README.md`](../../../gameplay/data/visit_wording_ab/README.md), `judge_rubric.md`, `key.jsonl` |
+| Phase 3 game reads | `evaluation/experiments/phase3_render_transcript.py` | [`phase3_reads/README.md`](../../../gameplay/data/phase3_reads/README.md), `transcripts/`, `votes/dossiers.md` |
+| Discussion-quality gate | `evidence/gameplay/discussion/quality_gate/scripts/metrics.py` (study code in the record) | [`quality_gate/experiment_log.md`](../../../gameplay/discussion/quality_gate/experiment_log.md), [`rubric.md`](../../../gameplay/discussion/quality_gate/rubric.md) |
 | v8 relevance and store reads | `evaluation/experiments/v8_gate_lookups.py`, `v8_reextract_reads.py` | [`memory_system/v8/experiment_log.md`](../../../memory_system/v8/experiment_log.md), `memory_system/v8/data/{gate,reextract}/` |
 | Credit attribution spot-check | — (sampling recorded in the file) | [`credit/attribution_spot_check.json`](../../../credit/attribution_spot_check.json), [`credit/report.md`](../../../credit/report.md) §5 |

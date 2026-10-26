@@ -153,7 +153,7 @@ def test_a_morning_the_reader_does_not_recognise_is_left_out_not_misread():
     assert public_data_from_summaries([DaySummary(day=2, summary=garbled, source="game_master")]) == ([], [])
 
 
-FROZEN = Path("evidence/reasoning_failures/data")
+FROZEN = Path("evidence/gameplay/deduction/data")
 FROZEN_FILES = ["haiku_effort_replay/turn_cases.jsonl", "haiku_effort_replay/vote_cases.jsonl",
                 "deduction_injection/cases.jsonl", "deduction_injection/silence_cases.jsonl"]
 

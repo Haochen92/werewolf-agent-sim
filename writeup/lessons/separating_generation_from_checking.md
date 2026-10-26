@@ -70,7 +70,7 @@ point's novelty inside its own call, which costs nothing extra. As a standalone 
 candidate the label separated cleanly (20/20 on both polar sets). Asked of the agent's own point it
 failed both ways: framed against the situation it called almost everything repeated, framed against its
 contribution almost everything new ("self-authorship optimism")
-(`sequential_discussion/experiment_log.md:289-307`).
+(`gameplay/discussion/experiment_log.md:289-307`).
 
 **Check.** After the line is written, a separate call with the game's own model, at minimal thinking,
 states the line's point and what it adds, and may name a repeated line only when it adds nothing. Code
@@ -80,9 +80,9 @@ human seats and for replies to a player who named the speaker. Proactive turns o
 
 **Result.** On 146 offline lines the shipped prompt held 27 (18%), down from 43 (29%) for the first
 form; by hand about half the holds are clear repeats
-(`game_play_enhancement/data/line_echo_check/README.md:16-34`). In four live games (2026-10-07) it held
+(`gameplay/data/line_echo_check/README.md:16-34`). In four live games (2026-10-07) it held
 19 lines in the three games read by hand; about 12 were clear repeats
-(`game_play_enhancement/data/phase2_step8_games/report.md:20-26`).
+(`gameplay/data/phase2_step8_games/report.md:20-26`).
 
 **Not fixed.** The judge errs toward holding: it reads crediting an earlier speaker as a repeat, which is
 why code, not the judge's naming alone, decides. Once it held an accused villager's only defence, who

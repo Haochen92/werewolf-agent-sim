@@ -1,6 +1,6 @@
 """Freeze the turns that went wrong in the owner's first Haiku 5.5 game as hallucination-bench cases.
 
-Record: evidence/game_play_enhancement/discussion_evidence.md §8.6. Game 403f4dbc (2026-10-12, live
+Record: evidence/gameplay/discussion_evidence.md §8.6. Game 403f4dbc (2026-10-12, live
 site, Claude Haiku 5.5 in every AI seat, the owner as the Necromancer) showed three discussion faults:
 
 - visit: a visit read the wrong way round ("I visited nobody" answered as "no one visited you"; a
@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from evaluation.src.data.builders.hallucination_bench import _case_id  # noqa: E402
 
 GAME = "403f4dbc-4a16-45fc-bb22-1c5e67bd5936"
-OUT = Path("evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl")
+OUT = Path("evidence/gameplay/data/haiku_turn_replay/cases.jsonl")
 
 _ONLY_MESSAGE = (" This expectation is about the public chat message only: a private strategy note or a read "
                  "meets it whatever it says.")

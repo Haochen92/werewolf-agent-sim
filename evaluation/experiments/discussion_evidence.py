@@ -1,6 +1,6 @@
 """What does the day discussion rest on? Two reads of finished games, for the discussion-evidence work.
 
-Record: evidence/game_play_enhancement/discussion_evidence.md (§2 = the census, §4 = the judge).
+Record: evidence/gameplay/discussion_evidence.md (§2 = the census, §4 = the judge).
 
   census — free. Counts the evidence label the in-game day summary already attaches to every
            accusation (voting record / behaviour / communication style / concrete claim), plus the
@@ -50,7 +50,7 @@ from evaluation.src.loop.decision_scoring import THREAT_ROLES  # noqa: E402
 
 # The wolves' and the lone killer's roles, nine-seat and ten-seat alike.
 EVIL = THREAT_ROLES
-DEFAULT_OUT = "evidence/game_play_enhancement/data"
+DEFAULT_OUT = "evidence/gameplay/data"
 
 Basis = Literal[
     "own_night_result", "role_claim", "night_events", "voting_record",

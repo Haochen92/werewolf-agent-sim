@@ -213,16 +213,16 @@ sizes without a noise floor, and they cannot show what happens later in the day.
 | Checkpoint replay | `evaluation/src/replay/decision_screen/checkpoint_replay.py` (`eval-checkpoint-replay`) | [`credit/blindspot_fix/experiment_log.md`](../../../credit/blindspot_fix/experiment_log.md) ④–④d |
 | Tell-book screen | `evaluation/src/replay/decision_screen/tell_book_screen.py` | [`tell_extraction/experiment_log.md`](../../../extraction/tell_extraction/experiment_log.md) ⑫ |
 | Stage-filter replay | `evaluation/experiments/v8_stage_filter_replay.py` | [`memory_system/v8/experiment_log.md`](../../../memory_system/v8/experiment_log.md); `data/gate/stage_filter{,_40games}/` |
-| Night-1 target check | `evaluation/experiments/night1_target_bias_check.py` | [`data/night1_target_bias/`](../../../game_play_enhancement/data/night1_target_bias/README.md); `discussion_evidence.md` §7.5 |
-| Evil cover screen | `evaluation/experiments/evil_cover_screen.py` | [`data/evil_cover_screen/`](../../../game_play_enhancement/data/evil_cover_screen/README.md) |
-| Private-note screen | `evaluation/experiments/note_prompt_cases.py` | `reasoning_failures/experiment_log.md` §6; `reasoning_failures/data/note_prompt/` |
-| Haiku vote replay | `evaluation/experiments/haiku_vote_{cases,score}.py`; configs `evaluation/config/hallucination_bench_haiku_vote_compare.json`, `_haiku_game_vote_v2.json` | `discussion_evidence.md` §8.7; `game_play_enhancement/data/haiku_vote_replay/`, `data/haiku_sentinel_vote/` (committed `516318c9`) |
-| Visit-wording A/B | `evaluation/experiments/visit_wording_cases.py` | [`data/visit_wording_ab/`](../../../game_play_enhancement/data/visit_wording_ab/README.md) |
-| Persona line screen | `evaluation/experiments/persona_line_screen.py` | [`data/persona_line/`](../../../game_play_enhancement/data/persona_line/README.md) |
-| Voice rewrite screen | `evaluation/experiments/voice_rewrite_screen.py` | [`data/voice_rewrite/`](../../../game_play_enhancement/data/voice_rewrite/README.md) |
-| Deduction injection (R1) | `evaluation/experiments/deduction_injection_{cases,score}.py` | `reasoning_failures/experiment_log.md` §4–§5; `reasoning_failures/data/deduction_injection/` |
-| Placement and AC2 series | `evaluation/experiments/deduction_placement_screen.py`, `deduction_ac2_{ablation,2x2,closing_fixed}.py` | `reasoning_failures/data/deduction_placement{,_n10}/`, `deduction_ac2_*/` |
-| Counter-claim vote screen | `evaluation/experiments/counter_claim_vote_screen.py` | [`data/counter_claim_votes/`](../../../game_play_enhancement/data/counter_claim_votes/README.md) |
+| Night-1 target check | `evaluation/experiments/night1_target_bias_check.py` | [`data/night1_target_bias/`](../../../gameplay/data/night1_target_bias/README.md); `discussion_evidence.md` §7.5 |
+| Evil cover screen | `evaluation/experiments/evil_cover_screen.py` | [`data/evil_cover_screen/`](../../../gameplay/data/evil_cover_screen/README.md) |
+| Private-note screen | `evaluation/experiments/note_prompt_cases.py` | `gameplay/deduction/experiment_log.md` §6; `gameplay/deduction/data/note_prompt/` |
+| Haiku vote replay | `evaluation/experiments/haiku_vote_{cases,score}.py`; configs `evaluation/config/hallucination_bench_haiku_vote_compare.json`, `_haiku_game_vote_v2.json` | `discussion_evidence.md` §8.7; `gameplay/data/haiku_vote_replay/`, `data/haiku_sentinel_vote/` (committed `516318c9`) |
+| Visit-wording A/B | `evaluation/experiments/visit_wording_cases.py` | [`data/visit_wording_ab/`](../../../gameplay/data/visit_wording_ab/README.md) |
+| Persona line screen | `evaluation/experiments/persona_line_screen.py` | [`data/persona_line/`](../../../gameplay/data/persona_line/README.md) |
+| Voice rewrite screen | `evaluation/experiments/voice_rewrite_screen.py` | [`data/voice_rewrite/`](../../../gameplay/data/voice_rewrite/README.md) |
+| Deduction injection (R1) | `evaluation/experiments/deduction_injection_{cases,score}.py` | `gameplay/deduction/experiment_log.md` §4–§5; `gameplay/deduction/data/deduction_injection/` |
+| Placement and AC2 series | `evaluation/experiments/deduction_placement_screen.py`, `deduction_ac2_{ablation,2x2,closing_fixed}.py` | `gameplay/deduction/data/deduction_placement{,_n10}/`, `deduction_ac2_*/` |
+| Counter-claim vote screen | `evaluation/experiments/counter_claim_vote_screen.py` | [`data/counter_claim_votes/`](../../../gameplay/data/counter_claim_votes/README.md) |
 | Per-day replay (design) | none | [`day_replay/design.md`](../../../memory_system/effectiveness/day_replay/design.md) |
 | Shared replay engine | `evaluation/src/replay/hallucination_bench.py` (`turn_payload`, `turn_template`, `hydrate_state`); `evaluation/experiments/haiku_game_turn_cases.py` (`day_states`); `evaluation/experiments/deduction_block_census.py` (`_payload_at`) | [factual_errors](../../factual_errors/report.md) |
 

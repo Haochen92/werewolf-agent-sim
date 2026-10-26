@@ -1,7 +1,7 @@
 """Level 1 of the deduction engine: what each of a seat's own night records implies.
 
 One line per record at most, shown beside that record (or in its place, for the roleblock). Rows:
-evidence/reasoning_failures/deduction_catalogue.md, Table A. Each module here covers one kind of
+evidence/gameplay/deduction/deduction_catalogue.md, Table A. Each module here covers one kind of
 result and names its rows.
 """
 

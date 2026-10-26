@@ -333,7 +333,7 @@ and *unattributable confounds* — exactly why win-rate alone can mislead. Concr
 store/namespace change underneath it — invisible without a stamp. The honest boundary: this buys
 *traceability and drift-detection, not byte-reproducibility* — LLM output isn't byte-reproducible (temp-0
 even differs across backends), so the target is statistical equivalence from a provably-identical setup
-(`tracing/fingerprinting/report.md`, `model_drift/drift_surfaces_and_guards.md`).
+(`tracing/fingerprinting/report.md`, `evaluation/experimental_controls/drift_surfaces_and_guards.md`).
 
 The mechanism produces four terms, easily confused:
 

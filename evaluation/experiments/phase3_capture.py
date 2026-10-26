@@ -2,7 +2,7 @@
 the final record (Phase 3, the first games after the wiring; the Phase 2 step 8 capture with the
 ten-seat record fields).
 
-Writes, under --out (evidence/game_play_enhancement/data/phase3_games/ by default):
+Writes, under --out (evidence/gameplay/data/phase3_games/ by default):
   <label>.chunks.jsonl    every stream chunk (updates + custom, subgraphs, v2), with arrival times
   <label>.record.json     the final game record: roles, lineup, the neutral's result, the night
                           records, the day channel and summaries, the resolutions, the leak check
@@ -49,7 +49,7 @@ from Agents.turn import prompt_log, reads_log  # noqa: E402
 from server.game.usage import UsageMeter, game_cost  # noqa: E402
 from tests.leak_test import leak_inputs, run_leak_tests  # noqa: E402
 
-OUT_DIR = REPO_ROOT / "evidence/game_play_enhancement/data/phase3_games"
+OUT_DIR = REPO_ROOT / "evidence/gameplay/data/phase3_games"
 
 
 class CallLog(BaseCallbackHandler):

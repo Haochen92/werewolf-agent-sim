@@ -1,6 +1,6 @@
 """Replay the day summaries that went wrong in the Phase 3 games, without playing new games.
 
-Each case is one day of one captured game (evidence/game_play_enhancement/data/phase3_*): the
+Each case is one day of one captured game (evidence/gameplay/data/phase3_*): the
 summariser is handed exactly what production handed it that day (the day's lines, the earlier
 summaries, the dead roster, the cast and lineup, the earlier days' spoken claims) and run ``n``
 times. The checks are on the structured output and the ledger built from it, so they are field
@@ -34,7 +34,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 MAIN = Path(__file__).resolve().parents[2]
-DATA = MAIN / "evidence/game_play_enhancement/data"
+DATA = MAIN / "evidence/gameplay/data"
 OUT_DIR = DATA / "phase3_summary_replay"
 
 # The cases, by hand from the reads and the scan of all 31 games (phase3_reads/README.md).

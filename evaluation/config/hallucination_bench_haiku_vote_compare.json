@@ -1,6 +1,6 @@
 {
   "label": "haiku_vote_compare",
-  "dataset": "evidence/game_play_enhancement/data/haiku_vote_replay/cases.jsonl",
+  "dataset": "evidence/gameplay/data/haiku_vote_replay/cases.jsonl",
   "n": 10,
   "workers": 3,
   "arms": [

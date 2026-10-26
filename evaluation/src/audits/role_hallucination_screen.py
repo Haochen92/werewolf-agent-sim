@@ -26,7 +26,7 @@ a vote for a dead player, and a question/response addressed to one.
 Known out-of-scope (stated, not hidden): anchor-less fabrications — pronoun/description references
 ("the guy we lynched"), misquotes, invented vote history — carry no id or role word to anchor on.
 
-Console: ``eval-role-hallucination``. Record home: ``evidence/generation_prompt/validation/``.
+Console: ``eval-role-hallucination``. Record home: ``evidence/gameplay/turn_prompt/validation/``.
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ from evaluation.src.core.settings import REPO_ROOT
 from evaluation.src.data.sources.batch_records import load_batch_records
 
 DEFAULT_RECORDS_GLOB = "evidence/memory_system/v7/runs/v2_full/gen*_o*.jsonl"
-DEFAULT_OUT = "evidence/generation_prompt/validation/hallucination_candidates.jsonl"
+DEFAULT_OUT = "evidence/gameplay/turn_prompt/validation/hallucination_candidates.jsonl"
 
 # alias regex -> canonical role
 ROLE_ALIASES: list[tuple[re.Pattern, str]] = [

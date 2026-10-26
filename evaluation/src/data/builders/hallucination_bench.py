@@ -8,7 +8,7 @@ database is read after the build.
 
 Two sources:
 
-- census: the July role-fact census (evidence/generation_prompt/validation/), whose stage-2 reader
+- census: the July role-fact census (evidence/gameplay/turn_prompt/validation/), whose stage-2 reader
   confirmed hallucinations on 50 batch games. Positives are confirmed turns; controls are turns the
   same screen anchored (they touch a checkable fact) but the reader judged consistent. A turn's
   state comes from its game record plus the per-turn sidecar (what the agent was shown privately).

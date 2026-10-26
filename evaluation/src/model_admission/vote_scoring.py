@@ -219,7 +219,7 @@ def load_vote_cases(dataset: str | Path, slices: list[str] | None = None) -> dic
 
     Args:
         dataset: the frozen cases file, absolute or relative to the repo root, e.g.
-            "evidence/reasoning_failures/data/haiku_effort_replay/vote_cases.jsonl".
+            "evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl".
         slices: keep only cases whose ``slice`` is listed, e.g. ["vote_compare", "vote"]; None keeps all.
 
     Returns:

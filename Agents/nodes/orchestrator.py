@@ -203,7 +203,7 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         span.update(metadata=metric.model_dump())
 
     # "voted for X" reads as support in everyday English; agents misread a ballot to eliminate a
-    # player as defending them (evidence/game_play_enhancement/discussion_evidence.md §6.4).
+    # player as defending them (evidence/gameplay/discussion_evidence.md §6.4).
     vote_summary = "\n".join(
         f"  {v.voter} voted to abstain" if v.votee == "abstain" else f"  {v.voter} voted to eliminate {v.votee}"
         for v in day_votes

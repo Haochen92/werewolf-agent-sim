@@ -1,14 +1,14 @@
 """How long the deduction blocks are (slice 8 of the deduction engine), over every turn of the saved
 Haiku games, before any model sees them.
 
-Record: evidence/reasoning_failures/deduction_catalogue.md ("Build status", slice 8) and the output
-folder evidence/reasoning_failures/data/deduction_block_census/. No model call: the renderer
+Record: evidence/gameplay/deduction/deduction_catalogue.md ("Build status", slice 8) and the output
+folder evidence/gameplay/deduction/data/deduction_block_census/. No model call: the renderer
 (Agents/deduction/render.py) runs on each turn's payload as the checked-out engine builds it, in
 "full" mode, and the public block and the seat block are measured apart (lines are the "- " lines
 under the heading; characters are the whole block, heading included).
 
 Two sources of turns:
-- the frozen cases (evidence/reasoning_failures/data/haiku_effort_replay/, deduction_injection/):
+- the frozen cases (evidence/gameplay/deduction/data/haiku_effort_replay/, deduction_injection/):
   each turn's own payload, rebuilt by the replay bench (`turn_payload`);
 - captured server games (--captures): every prompt a seat was sent, its payload rebuilt from the
   game's final state as of that turn (the roster, mornings and wills up to it, the seat's own records
@@ -41,7 +41,7 @@ from Agents.rules.seats import seat_order
 from Agents.schemas.game_events import DayChannel, DaySummary, DeathRecord, NightActionRecord
 from Agents.schemas.roles import ROLE_SPECS, cast_role_counts
 
-FROZEN = Path("evidence/reasoning_failures/data")
+FROZEN = Path("evidence/gameplay/deduction/data")
 FROZEN_FILES = ["haiku_effort_replay/turn_cases.jsonl", "haiku_effort_replay/vote_cases.jsonl",
                 "deduction_injection/cases.jsonl", "deduction_injection/silence_cases.jsonl"]
 OUT = FROZEN / "deduction_block_census"

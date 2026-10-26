@@ -324,7 +324,7 @@ inspector + replay viewer + playable game), not as a memory-wins product claim.
 
 **What was missed.** Game turns run at the thinking level "minimal", which the code turns into a
 128-token thinking budget on Vertex. A probe made for the hallucination bench on 2026-10-04
-(`evidence/game_play_enhancement/discussion_evidence.md` §6.7) found that `gemini-3.1-flash-lite`,
+(`evidence/gameplay/discussion_evidence.md` §6.7) found that `gemini-3.1-flash-lite`,
 asked for the game's structured output at that budget, reasons for 0 tokens. It starts reasoning only
 at "low" (1,024). Every run record stamped the thinking level in its runtime fingerprint, but nobody
 checked whether that level produced any reasoning. So every game behind the memory verdicts was
