@@ -44,7 +44,7 @@ carry no fingerprint, so their thinking level is not recorded.
   from the first game to the last.
 - An **arm** is one condition of the comparison, for example memory on for the town's four roles only.
   The **raw** arm used plain retrieval (the five most similar observations, about 3.4 shown per decision
-  after near-repeats collapse). The **reranked** arm fetched about ten candidates and let a model reranker
+  after the cap of three per situation, with an item found by both situations kept once). The **reranked** arm fetched about ten candidates and let a model reranker
   keep the best three. The **all-on** arm gave every role memory, with plain retrieval.
 - A **board** is one fixed deal: the role draw and the seed that sets the turn order.
 - An **epoch** is a stretch of runs over which the model service and the prompts behave the same. Runs
