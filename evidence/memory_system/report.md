@@ -28,34 +28,37 @@ one kind of situation, written by a model from a cluster of observations ("Illus
 conceal only on an unclaimed victim"). The store is partitioned by role and phase (day discussion, day
 vote, night), each partition a **cell**.
 
-- **Reading lessons in a game.** With memory on, every AI seat looks up lessons before its decisions:
-  a short model call describes the seat's situation, the cell is searched by similarity, five lessons
+- **Reading lessons in a game.** With memory on, every AI seat looks up lessons before its decisions
+  from day 2 on (nothing on day 1 or the night after it): a short model call describes the seat's situation, the cell is searched by similarity, five lessons
   are fetched and three kept. A seat reuses one lookup through a day's discussion (refreshed when
   someone makes a new role claim) and one through a night; a vote always looks up afresh. Served games
   retrieve strategy points only, never observations, and a town seat gets no lessons on day turns:
   town day lessons are written but never served. For each lesson shown, the seat reports a verdict:
-  follow, override, or not relevant. Four optional retrieval stages are built and off: a filter that
+  follow, override, or not relevant. Those verdicts also add to counters on each lesson in the live
+  store, in games with a human seat too, until the next publish replaces them with the credit pass's
+  counts; lessons with a good credit record are placed first. Four optional retrieval stages are built
+  and off: a filter that
   drops near-repeats, a model reranker, a filter that drops lessons learned at another stage of the
   game, and a tilt by matching situation fields.
 - **Writing lessons after a game.** Extraction never runs inside a game. A game saves its extraction
   input when it ends, and an offline batch job extracts observations per cell. A second model (Claude
   Haiku 5.5) then re-reads each observation's verdict against the game record, because extraction's
-  verdicts lean toward the side that won (the **halo**). A served game's lessons are extracted, if at
-  all, only for its replay to show; they are never written into the live store.
+  verdicts lean toward the side that won (the **halo**). The server itself extracts nothing: a served
+  game saves its input, but no job yet extracts served games, even for their replays. The published
+  store does include 16 AI-only games played through the server on 2026-10-10, extracted offline by
+  hand.
 - **Keeping the store.** Two passes. The **credit pass** (no model call) grades
   each decision at which a seat followed a lesson, using a fixed rule per role and action, and compares
   the lesson's grades with memory-off play of the same kind. It then prunes a lesson whose grades
   fall more than 0.15 below memory-off play over at least eight follows, and evicts one shown at least
-  eight times and never followed, where seats mostly overrode it rather than finding it not relevant.
+  eight times, never followed, and overridden at least as often as judged not relevant.
   The thresholds are carried over from the nine-seat loop and not validated for ten seats. The pass
   reads only games in which every seat was an AI. The **learning tick** folds new observations in
-  (duplicates are kept or discarded, never rewritten), synthesises new lessons with Claude Sonnet 5.5,
-  and never prunes. Both are run by hand (no schedule is in the repository), and both publish the
+  (duplicates are kept or discarded, never rewritten), lets old observations age out, synthesises new
+  lessons with Claude Sonnet 5.5, and never prunes lessons. Both are run by hand (no schedule is in the repository), and both publish the
   store to the Postgres database the server reads.
 
-How v8 got here, and what each stage's checks showed, is in the [v8 folder](v8/README.md)
-([decisions](v8/decisions.md), [plan](v8/plan.md) §9, [log](v8/experiment_log.md)); its report is
-being written.
+What each stage does, why, and what its checks showed is in the [v8 report](v8/report.md).
 
 ## The versions and campaigns
 
@@ -67,12 +70,12 @@ memory and without, so both copies start with the same luck.
 | When | What changed, and why | What it found (N and scope) | Home |
 |---|---|---|---|
 | Before June 2026 | A single strategy document per role, injected whole, was replaced by lessons retrieved by situation, after transcript reading found agents applying old advice where it did not fit. Duplicate lessons were then removed from the store | On the earlier game, memory for every role raised the villagers' win rate from 70% to 96.7% in one unpaired batch of about 30 games a condition (Fisher p = 0.012, the best of six comparisons); the same condition fell back to 73.3% (p = 1.0) on the next store and layout. Removing duplicates did not reduce the repetition among strategy points shown (about 59% across stores), which read as missing lessons for some situations | [Effectiveness](effectiveness/report.md), the pre-rebuild batches; [dedup](../dedup/report.md) |
-| May 2026 | Can an agent say which lessons it acted on? A field listing the followed lessons, placed before the action | With the chosen prompt, 72% of the agents' claims were judged accurate and 8% over-claimed (120 replayed turns, one model judge). In June, a screen asking for one verdict per lesson found the instruction ignored while it sat only in the output schema (168 of 300 verdicts given) and followed once it was also stated in the prompt (302 of 300); today's follow / override / not relevant field descends from that screen | [Strategy adoption](strategy_adoption/report.md); [forced-verdict screen](strategy_adoption/forced_schema_screen/experiment_log.md) |
-| May 2026 | Do strategy points add anything beyond observations? | On 120 replayed turns under three conditions (both, observations only, strategy points only), the judge's scores differed by 0.04–0.17 on a 1–5 scale: no condition was better. Observations alone were chosen then; served games now retrieve strategy points only | [Ablation](ablation/report.md) |
+| May 2026 | Can an agent say which lessons it acted on? A field listing the followed lessons, placed before the action | With the chosen prompt, the agents' claims were judged accurate on 72% of turns and over-claimed on 8% (120 replayed turns, one model judge). In June, a screen asking for one verdict per lesson found the instruction ignored while it sat only in the output schema (168 of 300 verdicts given) and followed once it was also stated in the prompt (302 of 300); today's follow / override / not relevant field descends from that screen | [Strategy adoption](strategy_adoption/report.md); [forced-verdict screen](strategy_adoption/forced_schema_screen/experiment_log.md) |
+| May 2026 | Do strategy points add anything beyond observations? | On 120 replayed turns under three conditions (both, observations only, strategy points only), the judge's scores differed by at most 0.17 on a 1–5 scale: no condition was better. Observations alone were chosen then; served games now retrieve strategy points only | [Ablation](ablation/report.md) |
 | June 2026 | The game was rebuilt (nine seats, three sides, turn-by-turn discussion) and extraction rebuilt per role, so earlier numbers no longer compare. An early pilot with a growing store suggested memory hurt the villagers (−32 points, p = 0.043, unpaired), so a clean test followed | **The June static A/B.** On a frozen store (`v5_0`) and 30 paired boards with plain retrieval, selected town decision measures improved: the healer saved the real target 37% → 60% (p = 0.005); town eliminations hit an enemy 47% → 64% (p = 0.028). Town win rate rose 27% → 43%, not significant (p = 0.27). Wolves and the lone killer gained nothing. The pilot's harm did not reappear | [Effectiveness](effectiveness/report.md) |
 | June 2026 | v6: the store rebuilt around structured situation fields (players alive, how close a side is to winning), to test whether finding better-fitting lessons was the lever | Ranking lessons by those fields showed no reliable effect (125 held-out votes), and a field-matching tilt was screened with no benefit and left off. A paired A/B on the v6 store (30 boards, its own baseline) found no town effect (+6 points, p = 0.77); it was not a replication of the June test: a different store, changed prompts, and a no-memory baseline that had risen (town win 27% → 37%). On its decisions, agents followed about 99% of the lessons they judged applicable | [Situation fields](../extraction/situation_dimensions/report.md); [effectiveness](effectiveness/report.md), "Why the v6 A/B found no town effect" |
 | June–July 2026 | v7: a loop that plays games in generations, credits each followed lesson by the decisions it led to, rewrites and prunes the store, to ask whether memory improves over time | Two June loop runs were invalid (a biased memory-off baseline; then every side given memory instead of the town only). The July test was pre-registered: after four learning generations, 30 boards played with the final memory and without. The town's decision score was 0.147 lower with memory, worse on 19 of 30 boards (p ≈ 0.06). As committed, it was reported as "no compounding detected" | [v7](v7/report.md) |
-| October 2026 | v8: memory rebuilt for the ten-seat game; extraction moved offline; the halo re-read; lessons tagged with their decision; credit ported to the new roles | Checks of the mechanism, not of play: lessons shown that fitted the decision rose from 15% to 24–27% (96 lookups, model readers; a larger store and the stage filter together, readers not the same, so approximate); lessons stating a wrong rule fell from 11% to 6.1%; a demonstration credit pass over 20 memory-on games credited 148 of 498 lessons, pruned 4 and evicted 4, a demonstration of the pass, not estimates. No memory-on vs memory-off run | [v8](v8/README.md) |
+| October 2026 | v8: memory rebuilt for the ten-seat game; extraction moved offline; the halo re-read; lessons tagged with their decision; credit ported to the new roles | Checks of the mechanism, not of play: lessons shown that fitted the decision rose from 15% to 24–27% (96 lookups, model readers; a larger store and the stage filter together, readers not the same, so approximate); lessons stating a wrong rule fell from 11% to 6.1%; a demonstration credit pass over 20 memory-on games credited 148 of 498 lessons, pruned 4 and evicted 4, a demonstration of the pass, not estimates. No memory-on vs memory-off run | [v8](v8/report.md) |
 
 **How the campaigns connect.** Each version answered a question the last one left. Retrieval by
 situation replaced a document that overfit; the unstable pre-rebuild batches led to the paired,
@@ -86,7 +89,7 @@ comparison was compared with zero, so a lesson telling the vigilante to abstain 
 never pruned. The scoring was fixed and checked on recorded games; the fixed loop was never played.
 v8 carries the fixed scoring into the ten-seat game. The reading that content was the limit is the
 reason v7 was built, not a tested finding: on the v6 A/B's own decisions, seats judged 30–62% of the
-lessons shown not relevant, and v8's fit checks still find about three in four lessons shown misfit
+lessons shown not relevant, and v8's fit checks still find about three in four lessons shown do not fully fit
 the decision. Finding the right lesson remained a limit too.
 
 ## What is established, and what is not

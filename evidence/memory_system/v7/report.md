@@ -333,8 +333,9 @@ parts:
 (`frontend/src/app/(site)/_components/ticket/TicketOffice.tsx`); whether a deployment offers it at all
 is a setting (`server/config.py`, `WW_MEMORY_ENABLED`). With it on, every AI seat retrieves strategy
 points only, never observations (`server/game/run_config.py::game_run_config`). Lessons are extracted
-offline after a game, never during it, and a served game is never mined into the live store. The
-ten-seat memory has not been tested against no memory; see [`../v8/`](../v8/).
+offline after a game, never during it; the server itself extracts nothing (the published store does
+include 16 AI-only games played through the server on 2026-10-10, extracted offline by hand). The
+ten-seat memory has not been tested against no memory; see the [v8 report](../v8/report.md).
 
 **One June gap, and what became of it.** In the second June run, the counts of how often each lesson
 was retrieved, overridden or judged not relevant were written in each game's own copy of the memory but
