@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from Agents.llm_factory import create_chat_model
+from Agents.llm_factory import get_llm_batch_dedup
 from Agents.memory.batch_deduplication import (
     ObservationBatchDedupOutput,
     StrategyBatchDedupOutput,
@@ -21,7 +21,7 @@ from Agents.prompts.dedup import (
     BATCH_OBSERVATION_CLUSTER_DEDUP_PROMPT_LITE,
     BATCH_STRATEGY_CLUSTER_DEDUP_PROMPT,
 )
-from Agents.prompts.standards import EPISTEMIC_STATUS_RULE, SITUATION_STANDARDS
+from Agents.prompts.standards import SITUATION_QUALITY_STANDARDS
 
 PROMPT_VARIANTS = {
     "default": {
@@ -90,7 +90,9 @@ def _invoke_model(
     index_to_key: dict[str, str],
     prompt_variant: str = "default",
 ):
-    llm = create_chat_model(model, temperature=0.0, thinking_level=thinking_level)
+    # The production builder and prompt fields (Agents/memory/batch_deduplication/cluster_agent.py),
+    # so a replay scores the judge the live pass runs.
+    llm = get_llm_batch_dedup(model, thinking_level)
     ns = cluster["namespace"]
     role = ns[1] if isinstance(ns, list) else ns.split("/")[1]
     action_phase = ns[2] if isinstance(ns, list) else ns.split("/")[2]
@@ -103,8 +105,7 @@ def _invoke_model(
             role=role,
             action_phase=action_phase,
             entries=entries,
-            situation_standards=SITUATION_STANDARDS,
-            epistemic_status_rule=EPISTEMIC_STATUS_RULE,
+            situation_quality=SITUATION_QUALITY_STANDARDS,
         )
         schema = StrategyBatchDedupOutput
     else:
@@ -112,7 +113,7 @@ def _invoke_model(
             role=role,
             action_phase=action_phase,
             entries=entries,
-            situation_standards=SITUATION_STANDARDS,
+            situation_quality=SITUATION_QUALITY_STANDARDS,
         )
         schema = ObservationBatchDedupOutput
 

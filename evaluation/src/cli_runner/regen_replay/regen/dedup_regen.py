@@ -18,7 +18,6 @@ import argparse
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from Agents.schemas.evaluation import DedupCase
 from evaluation.src.core.io import write_jsonl
@@ -69,12 +68,11 @@ def main() -> None:
     if args.max_cases:
         records = records[: args.max_cases]
 
-    llm_kwargs: dict[str, Any] = {}
-    if args.thinking_mode:
-        llm_kwargs["model_kwargs"] = {
-            "thinking_config": {"mode": args.thinking_mode}
-        }
-    llm = make_dedup_llm(args.model, args.temperature, **llm_kwargs)
+    # Built as the production judge is (Agents/llm_factory/accessors.py::get_llm_dedup): thinking_level,
+    # not the Gemini-only thinking_config that other providers silently ignored, and a Claude model
+    # answering with the schema as text (json_mode), as it does in the offline jobs.
+    claude = {"structured_mode": "json_mode"} if args.model.startswith("anthropic/") else {}
+    llm = make_dedup_llm(args.model, args.temperature, thinking_level=args.thinking_mode, **claude)
 
     eval_set_id = args.eval_set_id or f"dedup_replay_{args.model}"
     out = output_path(args, args.model)
