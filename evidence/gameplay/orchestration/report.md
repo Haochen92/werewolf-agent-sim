@@ -517,7 +517,10 @@ not yet audited.
 - **The October cache fix is not yet verified in served games.** It was committed on 2026-10-26
   (`fd07c0f8`) and deployed the same day (server image `2ecec0cc`: the live `dd985ebe` plus the fix),
   after a pre-flight in the production image found two dealt games' opening keys apart; no game has
-  been served on it yet. The real-game cache verification is from August.
+  been served on it yet. Two games played back to back in one process on Claude Haiku 5.5 (2026-10-26),
+  on deals chosen to share six seats' roles, each made all ten day-1 opening calls. The same two deals
+  with the test suite's scripted model, run on the code before the fix, served five of the second
+  game's openings from the first game's cache; on the fixed code, none.
 - **The parent's recursion limit is the root default of 100**, not derived from the game's length.
 
 ## When to revisit the design
