@@ -193,8 +193,11 @@ against its own design and owns it.
 | Town | Win +17 and +23 points | Net value +0.078 on day 2, +0.117 in the endgame |
 | Wolf and serial killer | No effect | No effect |
 
-Both contradict an earlier "town collapse" of −40 points. That collapse proved to be model drift, not
-memory.
+Both contradict an earlier "town collapse" of −40 points. That collapse proved to be model drift, not memory.
+
+> *Correction 2026-10-26.* "Proved to be model drift" overstates it. The collapse was put down to a
+> suspected change in the model service; that was not established. See the correction notes of
+> 2026-10-25 in `evidence/memory_system/effectiveness/paired_ab/experiment_log.md`.
 
 **Drift control.** This is the strongest step the harness took.
 

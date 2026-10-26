@@ -38,6 +38,12 @@ CE dedup prefilter + CE reranker (MiniLM, ONNX, weights on our disk) and any loc
 They change only when WE retrain. Portfolio sentence: *the components we fine-tuned are the only
 ones the vendor can't move under us* — distillation buys pinned behavior, not just cost.
 
+> *Correction 2026-10-26.* Neither cross-encoder is deployed. No code in `Agents/` or `server/` loads
+> either one: the dedup prefilter is a static bi-encoder, and `Agents/memory/deduplication/pipeline.py`
+> calls the cross-encoder "the planned swap-in here … not yet wired in". The live reranker is an LLM
+> call (`Agents/memory/retrieval/rerank_agent.py`). So the sentence above describes components that do
+> not run in the game.
+
 ### Most exposed (and silent): the EMBEDDING model
 
 Unique asymmetry the LLM calls don't have: **store vectors were embedded at time T; every runtime
@@ -99,6 +105,13 @@ Checked every factor across baseline/arms/canaries/nh runs:
 Conclusion: the Jun-12 shift has **no surviving internal explanation** — endpoint drift by
 elimination, not by assumption. Also note the nh arms vs Jun-11 comparators differ ONLY by store
 content + the postgame extraction prompt (the treatment itself) → verdicts unconfounded.
+
+> *Correction 2026-10-26.* "Endpoint drift by elimination" overstates it. The audit found no internal
+> explanation for the shift; it did not show the provider changed the model. Provider drift is suspected,
+> not established. The correction after the 2026-06-12 drift exhibit in
+> `evidence/memory_system/effectiveness/paired_ab/experiment_log.md` leaves this shift's cause open. The
+> earlier 2026-06-11 baseline shift, re-tested as pairs on its 20 shared deals, gave villager wins
+> 12 → 7, exact McNemar p = 0.18 (same log, note near the top).
 
 **Fingerprint gaps to close (cheap, provenance-only, freeze-safe):**
 1. Record the dirty **file list**, not just a bool — kills the last unfalsifiable cell above.

@@ -25,12 +25,14 @@ The two layers were built independently and agree:
 
 | | paired A/B (whole-game, N=30) | decision-replay (per-decision) |
 |---|---|---|
-| town | +17 / +23 pp win (helps) | +0.078 net-value day-2, +0.117 endgame (helps) |
+| town | decision-quality basket significant on the raw arm (healer saves p=0.005, correct eliminations p=0.028); win +17 / +23 pp, not significant (p=0.267 / 0.167), direction only | +0.078 net-value day-2, +0.117 endgame (helps) |
 | wolf / SK | null | null |
 
-*Takeaway: town memory helps and deceiver memory is null by both a powered whole-game test and a
-drift-immune per-decision test — and both contradict an earlier −40 pp "town collapse" that later proved to
-be model drift, not memory.* That agreement is the point: the screen's role is convergent mechanism, not a
+*Takeaway: town memory helps and deceiver memory is null by both a whole-game test at N=30 (the proxy
+basket significant, win rate the underpowered direction) and a drift-immune per-decision test — and both
+contradict an earlier −40 pp "town collapse" that was later put down to model drift, not memory (the drift
+is suspected, not established; see the 2026-10-25 correction notes in
+[`../paired_ab/experiment_log.md`](../paired_ab/experiment_log.md)).* That agreement is the point: the screen's role is convergent mechanism, not a
 standalone verdict, so its small per-cell N never has to carry the headline.
 
 ## The cheap-lever ladder

@@ -140,7 +140,8 @@ the engine's answer can be compared with it.
 **Result.** No false line in any run. The engine's quick solver never kept an impossible role on 150
 random games (3,408 player views). All four failure cases pass.
 
-**How far to trust it.** ✅ for soundness: nothing false is said. 🟡 for coverage, which rests on four
+**How far to trust it.** ✅ for soundness within what was tested: no line contradicted the oracle in
+the runs and the four failure cases above. 🟡 for coverage, which rests on four
 cases. The oracle and the engine share the same written rules, so a rule misread the same way in both
 passes.
 

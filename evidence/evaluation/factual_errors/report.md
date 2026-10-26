@@ -267,14 +267,16 @@ can be a slip in counting or a fact the agent was never given.
 3. **If the fact was there and correct**, the model failed on good input, and reading cannot say why:
    it may have slipped in reasoning, misread the fact, or been misled by its wording. The turn is
    rebuilt from the game's saved state and replayed many times with one thing changed per version.
-   If rewording the fact fixes it, the cause was the wording; if more thinking or a stronger model
-   fixes it, a reasoning slip.
+   If rewording the fact fixes it, that points to the wording; if more thinking or a stronger model
+   fixes it, to a reasoning slip. A fix that works points to a cause for that turn; it does not by
+   itself establish the cause in general.
 
 **The worked example.** In game `832404e9` the investigator announced a check it never made. Its input
 listed all its real checks, so the fact was given, and reading alone could not say whether the model
 made the claim up or was misled. The turn was replayed 20 times under four versions. As played, 20 of 20
 samples invented the check; with the results reworded, 0 of 20; removing its previous note changed
-nothing. So the cause was the wording. Its real night-3 check was on player_5, who was also killed that
+nothing. So on that one turn the wording caused it. The rewording changed two things at once, the
+description of the action and its dating, and the replay does not say which mattered. Its real night-3 check was on player_5, who was also killed that
 night with the healer role announced, and the prompt listed the check as *"Day 3: player_5 was revealed
 as healer"*: the word used for roles shown at death, dated by day, with no "you investigated". It read
 as public news, so the agent, which had promised to share last night's check, saw nothing to share and

@@ -8,7 +8,7 @@ interleaved raw arm, while the win-rate direction is consistent but underpowered
 corroborates the direction rather than proving the magnitude. **Companion docs:** the store's
 version-by-version arc is
 [`../store_progression.md`](../store_progression.md); the full A/B statistics and design are in
-[`paired_ab/`](paired_ab/report.md); the open *compounding* question lives in
+[`paired_ab/`](paired_ab/report.md); the closed *compounding* question lives in
 [`../../execution_plan/report.md`](../../execution_plan/report.md).
 
 **Provenance.** The A/B arms ran 2026-06-11 on `gemini-3.1-flash-lite` / Vertex, prompt_bundle
@@ -23,13 +23,14 @@ separate stats path).
   Win-rate direction is consistent across every town arm, though win rate alone is underpowered at this N.
 - ⚪ **No detectable wolf or serial-killer (SK) benefit in this A/B.** At N=30 the wolf and SK arms are
   null on win rate and proxies. Not the final word: a later v7 loop run gave a tentative wolf-side
-  positive for *compounding* memory (from a run invalidated for its own primary question, so tentative
-  only), and a dedicated wolf arm is planned in the compounding measurement plan (linked above).
-- ⚠️ **The benefit is epoch-sensitive, not store-fragile.** A later run on the v6 store did not
-  replicate the town lift; the cause is a risen no-memory baseline between epochs, not a broken store
-  (a same-epoch control exonerates the store).
-- ❓ **Whether memory *compounds* across games is open.** Owned by the compounding measurement plan
-  (linked above), not this report.
+  positive for *compounding* memory, from a run invalidated for its own primary question, so tentative
+  only.
+- ⚠️ **The benefit may be epoch-sensitive rather than store-fragile.** A later A/B on a different store
+  (v6), run against a higher no-memory baseline, found no town effect; it was not a replication of this
+  test. One plausible reading is a risen no-memory baseline between epochs, not a broken store (a
+  same-epoch control found the two stores alike).
+- ⚪ **No compounding was detected.** The pre-registered v7 endpoint run found none (see *Compounding:
+  closed* below). That question is owned by the pre-registration report (linked above), not this one.
 
 ## The instruments — how we measure "outcome"
 
@@ -137,26 +138,28 @@ tighter.
 sequential scheduler), so comparing any Batch A/B figure to a `v5` figure is a category error. They are
 context, never a comparator.
 
-## Why the v6 store did not replicate the town lift
+## Why the v6 A/B found no town effect
 
 A later paired A/B on the v6 dimension store (2026-06-17, N=30, its *own* fresh same-epoch baseline)
 found town-obs **flat** (villager win +6pp, p=0.77; decision-quality basket Δ≈0), which reads at first
-like the store broke the benefit. It did not: the v5 (06-11) and v6 (06-17) runs sit in **different
-epochs**, and the confound is a risen baseline, not a degraded store.
+like the store broke the benefit. It was not a replication of the June test: the v5 (06-11) and v6
+(06-17) runs sit in **different epochs**, with a different store and a changed prompt bundle, so the two
+cannot be compared directly. The evidence below favours a risen baseline over a degraded store.
 
-**The dominant cause — the no-memory baseline rose to memory's old ceiling.** Between the two runs the
-prompt bundle changed (`16f7f700`→`1cb76993`, Phase-B prompt fixes), on top of the backend drift the
-06-11 epoch-shift finding already demonstrated. The no-memory town proxies jumped accordingly: vote
+**One plausible reading: the no-memory baseline rose to memory's old ceiling.** Between the two runs the
+prompt bundle changed (`16f7f700`→`1cb76993`, Phase-B prompt fixes), on top of the backend drift
+suspected, not established, in the 06-11 epoch shift (re-tested as pairs: exact McNemar p = 0.18; see
+[`paired_ab/experiment_log.md`](paired_ab/experiment_log.md)). The no-memory town proxies jumped accordingly: vote
 accuracy 0.560→0.674, correct-elimination 0.470→0.622, mislynch rate 0.530→0.378, win 27%→37%
 (06-17 values recompute from `batch_results/v6ab_*.jsonl` `all_disabled`, N=30, re-verified 2026-07-05).
 The 06-17 *no-memory* baseline already plays at roughly the level `v5` memory had lifted town *to*, so
 there was no headroom left to show — flat, not harmful.
 
-**A same-epoch control exonerates the store.** An off-policy replay screen
+**A same-epoch control finds the two stores alike.** An off-policy replay screen
 ([`../strategy_adoption/forced_schema_screen/`](../strategy_adoption/forced_schema_screen/experiment_log.md)) scores
 both stores in *one* epoch: v5-store 0.625 ≈ v6-store 0.604, both below the no-memory floor 0.667
-(McNemar p=1.0). Even the `v5_0` store that "worked" reads flat in the later epoch — the flatness is the
-epoch, not the schema.
+(McNemar p=1.0). Even the `v5_0` store that "worked" reads flat in the later epoch, which fits the epoch
+reading better than a fault in the v6 schema.
 
 **One real but mild bug.** v6 applies net-first outcome framing to *town* as well as the deceivers
 (`_compose_outcome`, `Agents/schemas/memory.py:41-49`), and v5 evidence shows that hurts town. But
@@ -170,8 +173,10 @@ Three investigation threads sit behind the results; they set method rules but do
 
 **The discarded historical-epoch baseline (a standing rule).** The original memory-off baseline
 (villagers 67% / SK 27% / wolves 7%) came from an earlier epoch, and a fresh 10-game re-run of it
-shifted systematically (Fisher **p=0.0028**) despite byte-identical play prompts — most likely silent
-Vertex-side model drift. We discarded it and re-ran the baseline fresh inside the A/B's own epoch
+shifted systematically (Fisher **p=0.0028**) despite byte-identical play prompts. Silent Vertex-side
+model drift was suspected, not established: on the 20 deals both baselines shared, tested as pairs,
+villager wins fell from 12 to 7 (exact McNemar p = 0.18; see the re-test note in
+[`paired_ab/experiment_log.md`](paired_ab/experiment_log.md)). We discarded it and re-ran the baseline fresh inside the A/B's own epoch
 (villagers 27% / SK 40% / wolves 33%), which is the off-control every table above uses. The rule this
 set: never pair against a historical-epoch baseline.
 
@@ -186,13 +191,17 @@ suggested memory *hurt* town by −32pp (p=0.043). The paired A/B refuted it: th
 confound, a moving store and an old-epoch baseline, not memory. See
 [`v5_baseline_proxy_analysis.md`](v5_baseline_proxy_analysis.md).
 
-## What remains open
+## Compounding: closed
 
-Whether memory that *compounds* across generations helps *more over time* is a different, unresolved
-question. Two paid loop runs meant to answer it were both invalidated (a biased de-lucked baseline in
-one, a config slip that ran the wrong arm in the other), so the magnitude is open, not negative. The
-plan of record (claim ladder, power/MDE calc, and the readout redesign that gates any further paid runs)
-is [`../../execution_plan/report.md`](../../execution_plan/report.md).
+Whether memory that *compounds* across generations helps *more over time* is a different question. Two
+paid loop runs meant to answer it were both invalidated (a biased de-lucked baseline in one, a config
+slip that ran the wrong arm in the other). A pre-registered endpoint run then tested it: 30 boards, each
+played once with the loop's final memory and once without. The town's decision score was 0.147 lower
+with memory (p ≈ 0.06), and, as committed, this was reported as "no compounding detected", with the
+estimate leaning toward harm. The owner closed the memory research on 2026-07-21 without a further run.
+Closed is not disproved: the run detected no compounding, at this size and with players that answered
+without a reasoning step. The pre-registration and result are in
+[`../../execution_plan/report.md`](../../execution_plan/report.md) §4–5.
 
 ## Artifacts
 

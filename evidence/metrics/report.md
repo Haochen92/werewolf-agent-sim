@@ -99,7 +99,7 @@ that holds only pooled is weaker.
 
 These eleven fields are the trusted core — the set tagged `VALIDATED_BASKET_METRICS` in
 [`compute_metrics.py`](../../Agents/compute_metrics.py) (line 622), the proxies that measure the memory
-effect on decisions and that powered the static-memory proof. **Two validation campaigns stand behind the
+effect on decisions and that powered the June static-memory result. **Two validation campaigns stand behind the
 figures, and each row's entry names its source.** The 2026-06-11 v5 check
 ([`proxy_win_monotonicity.md`](proxy_win_monotonicity.md)) ran on **50 games** — 30 memory-off plus 20
 memory-on; its paired figures are *nested views of that one batch* (pooled n=50, and the 30 memory-OFF games

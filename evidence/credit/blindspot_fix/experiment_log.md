@@ -182,6 +182,11 @@ vote-grain metrics as the endpoint forensics:
 | raw obs (n=447) | **55%** (z=+4.0) | 22% (z=−0.8) | **23%** (z=−3.7) |
 | reranked (n=433) | **53%** (z=+3.4) | 26% (z=+0.6) | **21%** (z=−4.4) |
 
+> *Correction 2026-10-26.* "+17/+33pp" above joins two arms of the June A/B. The raw arm rose +17 points
+> (McNemar p = 0.267, not significant); the reranked arm rose +33 points (p = 0.013) and carries a
+> drift caveat. The joined figure is recorded as a fusion error in `evidence/v7_final/evaluator_review.md`
+> F7; the scoped result is in `evidence/memory_system/effectiveness/report.md`.
+
 **The obs benefit rode the INFERENCE lever, not the caution lever** — abstains flat, discrimination
 sharply up: the mirror-opposite of the v7 SP signature (hit 50→35, abstain 23→31, townmate-vote
 27→34). Also the structural reason obs escaped the Goodhart dynamic: descriptive content with no
@@ -297,6 +302,11 @@ compounding: pre-registered negative-leaning (primary −0.147, p≈.06; decisio
 screen-grade). Consequences: no store promotion · live ships memory-OFF · the roadmap's freeze gate
 has nothing to certify (consistent) · every positive claim carries its epoch stamp.
 
+> *Correction 2026-10-26.* In (a), "+17/+33pp; reranked p=0.013" joins two arms. The raw arm's +17
+> points had p = 0.267 (not significant); p = 0.013 belongs to the reranked arm's +33 points, which
+> carries a drift caveat. See the fusion note in `evidence/v7_final/evaluator_review.md` F7 and the
+> scoped result in `evidence/memory_system/effectiveness/report.md`.
+
 **Not conceded:** the June result within its epoch; the mechanism findings (inference-vs-caution
 lever, the blind-spot forensics, Goodhart selection under a partial measure, the self-correction-lag
 hypothesis, the night-channel placebo); the fix pair's instrument-grain validation. These are the
@@ -342,6 +352,10 @@ negative are both results for a player that does not reason. The framing adopted
 flash-lite class models", should read "gemini flash-lite class models, with no reasoning on game
 turns". No game in this program says whether memory would help, hurt, or do nothing for a player that
 reasons first.
+
+> *Correction 2026-10-26.* "The June +17/+33pp result" joins two arms: +17 points on the raw arm
+> (p = 0.267, not significant) and +33 points on the reranked arm (p = 0.013, with a drift caveat). See
+> `evidence/v7_final/evaluator_review.md` F7 and `evidence/memory_system/effectiveness/report.md`.
 
 **Why it might matter.** These are hypotheses. None was tested.
 

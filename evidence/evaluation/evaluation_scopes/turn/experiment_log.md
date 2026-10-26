@@ -175,6 +175,10 @@ below.
   also contradict an earlier −40pp "town collapse" that later proved to be model drift, not memory —
   the convergence is the validity anchor, not the small per-cell N.
 
+  > *Correction 2026-10-26.* "Proved to be model drift" overstates it. The collapse was put down to a
+  > suspected change in the model service; that was not established. See the correction notes of
+  > 2026-10-25 in `evidence/memory_system/effectiveness/paired_ab/experiment_log.md`.
+
   > **Correction (2026-10-23).** The two whole-game figures are win-rate arms, and neither was
   > significant: +17 points on the raw arm (p = 0.267) and +23 points with everything on (p = 0.167).
   > What the June A/B did establish is better town *decisions* on the raw arm. On 30 paired boards the
