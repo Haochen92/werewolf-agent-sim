@@ -435,7 +435,7 @@ strength varies: a rule can be tested deterministically while its effect on disc
   on volunteer turns only, never on an answer. An echo-heavy day's second round fell from 24 turns to 9.
 
 - *What it cost, found in October:* that judge was the main source of silence. Of 517 passes in 28
-  June games, 367 were the judge holding a line, and nobody at the table could tell
+  nine-seat games on the June design (played 2026-09-17), 367 were the judge holding a line, and nobody at the table could tell
   (discussion_evidence §2.4). Today's echo gate is its descendant, with a narrower scope (sweep lines
   only).
 
@@ -499,7 +499,7 @@ strength varies: a rule can be tested deterministically while its effect on disc
   player's role. It is stated as a fact about the game, not as an instruction, because the discussion
   prompt's existing instruction not to read suspicion into how quiet someone is had not held.
 
-- *How much it mattered:* less than expected. Of 517 passes in the June games, 71% were the engine's;
+- *How much it mattered:* less than expected. Of 517 passes in those 28 games, 71% were the engine's;
   quietness drove something like one accusation in eight; and a keyword search found speaking order
   cited as evidence on only 5 of 95 days, never checked by a judge (discussion_evidence §2.4).
 
@@ -510,8 +510,9 @@ strength varies: a rule can be tested deterministically while its effect on disc
 #### 16. An opening round for every player, at once and restricted.
 
 - *Why a round:* in the June design a day ended after three passes in a row. On day 1 almost everyone
-  passed, so the day ended after three players: in 28 of 28 June games, and 8 of 9 games on the
-  website. On 8 of 96 June voting days a living player was never offered a turn. The opening round
+  passed, so the day ended after three players: in 28 of 28 nine-seat games on that design (played
+  2026-09-17), and 8 of 9 games on the website. On 8 of their 96 voting days a living player was never
+  offered a turn. The opening round
   asks every player at the start of every day, so a player with a result gets an opportunity to
   submit it. Publication still depends on the opening filter.
   Informal game readings also suggested that the order of result declarations might affect trust;
@@ -567,10 +568,10 @@ opening rule now says a result the morning already made public is not news
   without adding a trial mechanism or a second round of voting to every day.
 
 - *Trigger:* the one or two players with the most different accusers, at least two. "An accusation
-  still unanswered" was the first idea, but in the June records, open accusation debts at day end
-  occurred only on capped days. This counts tagged debts, not whether every accusation received
-  a substantive answer. Accuser count was a useful proxy for the likely elimination target in that sample: the lynched player was among the day's most-accused on 61 of
-  67 June voting days.
+  still unanswered" was the first idea, but in those 28 games, open accusation debts at day end occurred only
+  on capped days. This counts tagged debts, not whether every accusation received a substantive
+  answer. Accuser count was a useful proxy for the likely elimination target in that sample: the
+  lynched player was among the day's most-accused on 61 of 67 voting days.
 
 - *Picked from the tags, not the players' private reads:* private reads could expose suspicions
   players had not voiced. Because the choice of closing speakers is public, using those reads would

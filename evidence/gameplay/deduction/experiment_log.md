@@ -332,6 +332,9 @@ Two directions follow from the reading:
 2. **Medium thinking for votes.** The owner approved it once a prompt attempt had been tried first; this
    was that attempt.
 
+   > *Note 2026-10-26.* Not applied: the change is parked. Every Haiku seat turn, votes included, runs at
+   > `low` (the live model catalogue, read 2026-10-26).
+
 ---
 
 ## §7 The game: 645228e7 (2026-10-16)
