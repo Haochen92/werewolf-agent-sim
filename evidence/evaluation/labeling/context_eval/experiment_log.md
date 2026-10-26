@@ -87,7 +87,7 @@ Given the golden relevant memories (the "right inputs"), does the agent actually
 
 ### Relationship to current work
 
-The reranker cross-encoder training (see `evidence/fine_tuning/cross_encoder/experiment_log.md`) trains on (query, memory, relevance) pairs. This is unaffected — the reranker scores relevance to a query regardless of how the query was generated. The two efforts are complementary:
+The reranker cross-encoder training (see `evidence/fine_tuning/cross_encoder/reranker/experiment_log.md`) trains on (query, memory, relevance) pairs. This is unaffected — the reranker scores relevance to a query regardless of how the query was generated. The two efforts are complementary:
 
 - **Reranker CE**: improves scoring given a fixed query
 - **Context-based eval**: evaluates whether the query itself is good

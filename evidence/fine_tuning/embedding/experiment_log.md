@@ -312,6 +312,6 @@ Every model improved either triplet accuracy or gap on average, but worsened ove
 
 **Root cause identified:** All training pairs used **situation text only**, but D/K labels were determined by comparing **all fields** (situation + action/approach/outcome). This creates contradictory training signal — cases with identical situations but different approaches are labeled K, while the model sees only the identical situations. ~19 K cases in the dataset have situation similarity > 0.88, making the signal inherently noisy for situation-only models.
 
-This root cause was confirmed when pivoting to the cross-encoder experiments (see `evidence/fine_tuning/cross_encoder/experiment_log.md`), which tested full-field and field-matched text and found the same fundamental ceiling.
+This root cause was confirmed when pivoting to the cross-encoder experiments (see `evidence/fine_tuning/cross_encoder/dedup_prefilter/experiment_log.md`), which tested full-field and field-matched text and found the same fundamental ceiling.
 
 **Recommendation:** Embedding fine-tuning is not viable with the current dataset size (861 examples) for improving auto-dedup. The ~15-30% auto-rate ceiling identified in the prior embedding pre-filter calibration work (`evidence/dedup/embedding_prefilter/experiment_log.md`) is a fundamental limit of similarity-based approaches, not a model quality issue. Further embedding work should only be revisited with 3-5k+ labeled pairs.
