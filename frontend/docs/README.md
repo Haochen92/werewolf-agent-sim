@@ -74,7 +74,7 @@ planned `playbook.md` (both in the proposal).
 | `frontend_lessons.md` | The log of lessons: 50 numbered (29 used twice) plus 23 small things, 2026-10-02 to 10-22; living | What general frontend rule did each mistake teach, and where in the code can I see it? | every learning topic; 10 |
 | `phone_lessons.md` | Twelve lessons (head says eleven), 2026-10-01 to 10-02; the walk form the topic docs adopt; the first crash is told wrong | Why did the stage die on an iPhone, what was the browser doing, how do I see it myself? | 10; learning rendering_pipeline, memory_and_pictures, performance_method |
 | [`learning/README.md`](learning/README.md) | The learning index, from `principles.md` (2026-10-15) on 2026-10-26: one section per tutorial, every lesson placed, reading lists kept | What general rules did this project teach, by topic, and what should I read? | the learning track |
-| [`playbook/playbook.md`](playbook/playbook.md) | Draft 2026-10-26, awaiting the owner's review of its working rules: the end-to-end workflow in eight stages, what was done here and the (next time) steps a team would add | How was this built with AI tools, and how would I do it again? | the interview's process answer; the next project |
+| [`playbook/playbook.md`](playbook/playbook.md) | Draft 2026-10-26, working rules confirmed by the owner the same day: the end-to-end workflow in eight stages, what was done here and the (next time) steps a team would add | How was this built with AI tools, and how would I do it again? | the interview's process answer; the next project |
 
 ## Dated audits
 

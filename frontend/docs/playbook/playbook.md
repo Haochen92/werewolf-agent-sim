@@ -1,9 +1,10 @@
 # Playbook: building a frontend with AI builders, end to end
 
-Status (2026-10-26): draft, for the owner's review. The working rules quoted under the stages were
-recorded from session memories, each on the day the owner ruled it; the owner has not yet re-read
-them, and strikes any no longer held. Rows marked **(next time)** were not done here: they are what a
-product team would add, placed beside the step they extend.
+Status (2026-10-26): draft. The owner's working rules were re-read and confirmed on 2026-10-26;
+five that apply to every stage are folded into the four "Practices that run through every stage",
+and one (the costume rule) is kept as the example of a design rule in a brief. Rows marked
+**(next time)** were not done here: they are what a product team would add, placed beside the step
+they extend.
 
 This is the workflow the site was built with, written so that a person or an agent can follow it on
 the next project. The owner ruled and AI tools did most of the making: Claude chat for ideas and
@@ -20,6 +21,35 @@ is accepted or sent back.
 **Who does what.** Self-contained, well-specified work goes to agents. Rulings, mapping a design onto
 the code, and the wording of any claim stay with the owner and the main session (owner, 2026-07-14
 and 2026-10-10).
+
+## Practices that run through every stage
+
+**Write it down as you go: the files are the agents' memory.** An agent starts every session
+knowing nothing of the last one, so what was decided, learned or broken is written into the repo the
+day it happens, in a fixed shape, and the next session (an agent's or the owner's) starts from it.
+Here: the rulings convention (stage 1), status lines updated in the commit that ships, the lesson log
+and the challenge record (stage 8), and the agents' own memory notes. It doubles as the owner's
+learning material and the interview record. (Working rule, owner, 2026-10-02: general lessons are
+recorded as they happen.)
+
+**Scope the checks to the change.** While iterating, run only the tests the change can affect; run
+the whole suite once at the end, and again only before a deploy. A picture swap runs only the specs
+whose screenshots show that picture. The full browser suite takes about 15 minutes and every run
+costs tokens, so a loop that reruns everything is the slow and expensive way to the same answer.
+(Working rules, owner, 2026-09-28 and 2026-10-18.)
+
+**Budget the machine and the session.** Agents, dev servers, builds and test runs share one machine
+and one usage allowance. Use known ports only; start a test server per batch and stop it when the
+batch lands; check whose build answers on a port before trusting a run; no production build while
+other sessions are busy; never stop another session's process without the owner. Plan parallel
+agents within the usage limit: on 2026-10-26 four of twelve agents launched together hit it, and
+their work had to be checked by hand. (Working rule, owner, 2026-09-27 and 2026-10-15: stray
+servers had filled memory and crashed the machine.)
+
+**Use the library's own way first.** Change a library's behaviour through the extension points it
+offers before working around it, so the code reads as if someone who knows the library wrote it.
+Here: Mantine's `styles`, `classNames`, `vars` and theme, never a selector that out-specifies its CSS
+(owner, 2026-10-01).
 
 Each stage below has a table: the step, what a team does, what was done here, and the checkpoint
 that ends it.
@@ -60,20 +90,11 @@ it is not told.
 
 | Step | A team does | Done here | Checkpoint |
 |---|---|---|---|
-| Write the brief | An art brief with a style guide | **The asset brief**: rulings first; the house style read off the approved pieces (for audio: key, tempo, loudness, measured); what the asset must never carry, with the reason; a lineup sheet first, then one item per call with the last approval attached. Exemplars: [`cast_expansion_brief.md`](../cast_expansion_brief.md) (the template), [`role_cards_brief.md`](../role_cards_brief.md) §0, §1, §5, [`music_brief.md`](../music_brief.md) | The brief names what is forbidden and why |
+| Write the brief | An art brief with a style guide | **The asset brief**: rulings first; the house style read off the approved pieces (for audio: key, tempo, loudness, measured); what the asset must never carry, with the reason (here: no costume may hint at a role, because characters are dealt to seats at random and a doctor would read as the healer); a lineup sheet first, then one item per call with the last approval attached. Exemplars: [`cast_expansion_brief.md`](../cast_expansion_brief.md) (the template), [`role_cards_brief.md`](../role_cards_brief.md) §0, §1, §5, [`music_brief.md`](../music_brief.md) | The brief names what is forbidden and why |
 | Generate and iterate | An illustrator's rounds | Claude drew vectors and mockups; ChatGPT turned them into raster images and iterated the asset mockups, since Claude does not make raster images | The owner approves each asset |
 | Gate each one | Art review | A measured gate in the brief (sizes, colours, what must not appear); a negative moved out of the prompt into the gate, because naming an object summons it | |
 | Prepare for the web | An export pipeline | Scripts bake and shrink: `scripts/bake-sets.mjs`, `scripts/small-sprites.mjs`; picture sizes chosen from the pixels they are drawn at ([memory_and_pictures](../learning/memory_and_pictures/memory_and_pictures.md)) | |
 | *(next time)* Keep provenance | An asset register | Prompts live in the briefs; not every shipped file names its prompt | Each shipped asset names the prompt and approval that made it |
-
-> **Working rule (owner, 2026-09-28): no costume may hint at a role.** Characters are dealt to seats at
-> random, so a doctor would read as the healer and a detective as the investigator. Costumes come from
-> 1920s train and travel life; role-coded props, numerals and the factions' colours are out. The art
-> must never leak or fake hidden information.
-
-> **Working rule (owner, 2026-10-18): a picture swap runs only the specs that show the picture.** Redraw
-> those goldens, look at each by eye, build and deploy. The full suite is for changes beyond the
-> picture's own numbers.
 
 ## 4. Spec and handoff
 
@@ -91,22 +112,12 @@ The step that made an AI build checkable: the code is judged against a written s
 
 | Step | A team does | Done here | Checkpoint |
 |---|---|---|---|
-| Brief the builder | A ticket with acceptance criteria | A brief to Claude in VS Code naming the spec sections to read, the affected tests, and the views to check | |
+| Brief the builder | A ticket with acceptance criteria | A brief to Claude in VS Code naming the spec sections to read (not "read it all"), the affected tests, and one screenshot sheet per changed state. A tightly scoped visual task took 9 minutes and 18 calls where a loose one took an hour (owner, 2026-09-28) | |
 | Give the builder eyes | A component workshop (Storybook) | **The workbench**: one route mounts the real scenes on a recorded game, the URL holds the whole state, phone frames on a desktop, and Playwright screenshots each named URL. Exemplar: [`stage_architecture.md`](../stage_architecture.md) §1 ruling 1, §7 | If a view cannot be named in a URL, an agent cannot check it |
 | Review in pictures | Design QA | Temporary artifacts and screenshots the owner looked at, discarded once accepted | The owner accepts the look |
 | *(next time)* A bench per component | Storybook stories with live controls | The workbench benches whole scenes; nothing lets the owner tweak one component (a button, the turn dock, a card) live and see its code | The owner can tweak a component without asking an agent |
 | *(next time)* Variants in the product | A variant switch (flag, URL parameter, dev toolbar) | Done twice by hand: the typography mock's switches and the temporary `?smooth=1` | One list of variants read by the bench and the live page, so any variant is seen inside a real game |
 | Re-own what was built | Code review | **The code walk**: read one module a day after it is written; ask what it guarantees; record the answer as a dated ruling with the rejected alternatives. Exemplar: [`server_design_notes.md`](../server_design_notes.md) §10 to §12 | Naming a layer does not make anyone ask what it guarantees |
-
-> **Working rule (owner, 2026-09-28): lean briefs for visual tasks.** Run only the affected specs while
-> adjusting and one full run at the end; one screenshot sheet per changed state; name the sections of
-> a document to read instead of "read it all". A tightly scoped task took 9 minutes and 18 calls where
-> a loose one took an hour.
-
-> **Working rule (owner, 2026-10-01): library overrides go through the library's own API.** Change a
-> Mantine default through `styles`, `classNames`, `vars` or the theme, never by out-specifying it in a
-> CSS module, and check layout at the real container widths. Agent-written code must read as if
-> someone who knows the library wrote it.
 
 ## 6. Test and verify
 
@@ -121,6 +132,7 @@ itself is [`testing.md`](../testing.md). Here, the order of work.
 | Visual regression | Screenshot tests | Playwright, 8 specs and 99 screenshot goldens, desktop Chrome at 1600×900, the server faked, animations off, 0.5% of pixels allowed to differ | |
 | The agent looks first | | The agent reads its own screenshot before handing over (how the figures in these docs were checked) | No visual change reaches the owner unseen by the agent |
 | The owner sees before and after | Visual review in a tool (Chromatic, Percy, the Playwright report) | The agent crops before-and-after pictures and shows them | The owner approves the look |
+| *(next time)* Look only where it changed | Review the diff, not the page: the tool's pixel diff says where the change is, and only that region is looked at | Whole or cropped screenshots, judged by eye | No one reads a full-page picture to find a small change |
 | *(next time)* Pin the renderer | Screenshots taken in a fixed Docker image | Taken on whichever machine ran them | Font or OS changes cannot fail a test |
 | A platform you cannot run | Device testing | **Census, one batch, a gate**: probes that remove one kind of work each; list every instance of the broken rule; fix the list in one batch; make the rule a test (`e2e/phone-rule.spec.ts`); measure before and after the same way. Exemplars: [`build_log.md`](../build_log.md) §8.7, §8.9 | The owner on a real phone |
 | *(next time)* The engines your users have | A WebKit and mobile project; a device farm | Only desktop Chrome is in the suite, though the worst bugs were iOS Safari's | |
@@ -144,6 +156,8 @@ itself is [`testing.md`](../testing.md). Here, the order of work.
 > **Working rule (owner, 2026-10-18): every visual change comes with a before-and-after picture,** cropped
 > to what changed, before asking to commit. The owner judges looks from pictures, not from a
 > description or a passing test.
+> Cropping is also the token-efficient way to look: an image costs roughly its pixel area, so a crop
+> of a tenth of the area costs about a tenth, and a component's picture far less than a scene's.
 
 > **Working rule (owner, 2026-10-15): sweep, not whack-a-mole.** When one rule is broken in many places,
 > build the census first, fix the whole list in one batch, and keep the gate running. Never ship a
@@ -161,11 +175,6 @@ itself is [`testing.md`](../testing.md). Here, the order of work.
 | Watch errors | Monitoring | Sentry since 2026-10-17, on the server and in the browser, errors only; keys and typed text never sent | |
 | *(next time)* Deploy from CI | Deploy after the checks pass | Deployed by hand by an agent | |
 
-> **Working rule (owner, 2026-09-27 and 2026-10-15): servers and builds on a shared box.** Known ports
-> only; one Playwright server per batch, killed by its process id when the batch lands; check whose
-> build answers on a port before trusting a run; no production build while other sessions are busy
-> without asking; never kill another session's process without the owner.
-
 ## 8. Learn and iterate
 
 | Step | A team does | Done here | Checkpoint |
@@ -173,10 +182,6 @@ itself is [`testing.md`](../testing.md). Here, the order of work.
 | Record the lesson | A retrospective | **The lesson log**: the general lesson the day it is learned, in one shape (the mistake, the rule, where to see it). [`frontend_lessons.md`](../frontend_lessons.md), 50 lessons and 23 small things; taught as tutorials in [`learning/`](../learning/README.md) | |
 | Record the incident | A postmortem | **The challenge record**, written to be read cold: the story with the wrong first diagnosis kept, the decisive evidence, the fix with its test, "what to know". Exemplar: [`server_encountered_challenges.md`](../server_encountered_challenges.md) | |
 | Loop back | | A finding sends the work back to design, build or test (figure 1) | |
-
-> **Working rule (owner, 2026-10-02): general lessons are recorded as they happen,** in
-> `frontend_lessons.md`; the dated numbers stay in `build_log.md` and the phone's story in
-> `phone_lessons.md`. They are interview material and carry to the next project.
 
 ---
 
