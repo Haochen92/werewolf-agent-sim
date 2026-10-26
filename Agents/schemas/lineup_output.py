@@ -7,8 +7,9 @@ Three fields list role names: the role guess in a read, the role a player claims
 message, and the role the fortune teller names on a bet. A game must name only the roles it dealt
 (a game that drew the speculator never shows the fortune teller), so each class below is written
 once with its role list left open, as ``ReadRole`` or ``NamedRole``, and the functions at the
-bottom fill it with the dealt roles. The field order verdicts -> reads -> strategy -> action
-is the tested lever (output.py, PlayerRead) and is kept on every turn.
+bottom fill it with the dealt roles. The field order reads -> verdicts -> strategy -> action is
+kept on every turn: a commitment before the act (output.py, PlayerRead). Reads moved first on
+2026-10-13, when unenforced Haiku put them there on its own (evidence/caching/experiment_log.md §12).
 """
 
 from __future__ import annotations

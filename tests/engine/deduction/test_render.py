@@ -5,7 +5,7 @@
   engine (the Illusionist's A45 beside the pack's A13 or A11 on the same target).
 - "Raised today", from the transcript alone.
 - Placement: the public block before the cache boundary and the same for every seat, in a whole game
-  on the real graph; the seat block after it, before or after the strategy note by the setting; the
+  on the real graph; the seat block after it, always before the strategy note (since 2026-10-24); the
   modes "off" and "record" and a human seat get no block.
 - The log: every shown line's derivation goes with the prompt capture, never into the text.
 - The acceptance cases AC2 and AC4, on their own frozen payloads: the exact blocks, the census and

@@ -63,8 +63,9 @@ DEFAULT_SP_EXPLORATION_SLOT = True
 DEFAULT_STAGE_FILTER = False
 # The deduction engine (Agents/deduction/; owner, 2026-10-16): how much of it the AI seats get, set
 # once per game so a game can be an A/B arm. "off" = none, "record" = the lines beside each seat's
-# own night records (level 1), "full" = those plus the deduction blocks (public and own). A human
-# seat never gets any.
+# own night records (level 1), "public" = those plus what the record alone works out (level 2),
+# "full" = those plus the claims, conditionals, explanations and evil covers (level 3); the levels are
+# defined on DeductionMode (Agents/schemas/deduction.py). A human seat never gets any.
 DEFAULT_DEDUCTION_MODE: DeductionMode = "full"
 # A side's own level (owner, 2026-10-18: a difficulty setting for experiments, e.g. the town at level 3
 # and the wolves at level 1): {"town" | "wolves" | "lone_killer" | "neutral": mode}, overriding

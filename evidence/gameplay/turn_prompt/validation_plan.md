@@ -1,5 +1,8 @@
 # Validation plan — dead-roster board + alive-roles + suspicion read list
 
+> *Graduated (dated note 2026-10-26):* the ship test's method now runs as the authoritative
+> hallucination bench, `eval-hallucination-bench` (`evaluation/`); this plan stays as the dated record.
+>
 > **What this is.** The pre-registered test suite for the §9 board-state additions to the
 > generation prompt ([experiment_log.md](experiment_log.md) §9): the dead-roster block, the
 > alive-roles line, and the suspicion read list with per-read `why` (all three SHIPPED 2026-07-09 —
