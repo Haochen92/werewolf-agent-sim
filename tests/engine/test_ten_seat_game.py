@@ -3,7 +3,8 @@
 A whole game runs on the real parent graph with a scripted model that fills whatever schema it
 is bound to, streamed through the server's translator and the pacing units, for both drawn
 lineups. The rules the random play cannot be relied on to reach (a borrowed kill, a self-bet, a
-pick, the uses spent once per night) are pinned on the night layer and the resolution node.
+pick, the uses spent once per night) are pinned on the night layer and the resolution node. One
+game pauses a human Vigilante at its night turn and resumes it, to check the bullet is spent once.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import pytest
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel
 from pydantic_core import to_jsonable_python
+from langgraph.types import Command
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.graphs.parent import parent_graph_compiled
@@ -71,13 +73,18 @@ class _FakeLLM:
         return RunnableLambda(lambda prompt: _fill(schema, self.rng))
 
 
-def _play(monkeypatch, game: dict, seed: int, sink: EvalCaseSink | None = None) -> tuple[dict, list, set[str]]:
+def _script_the_model(monkeypatch, seed: int) -> None:
+    """Every model call answered by the scripted model, and the helper calls stubbed."""
     rng = random.Random(seed)
     monkeypatch.setattr(agent_player, "get_llm", lambda: _FakeLLM(rng))
     monkeypatch.setattr(agent_player, "get_llm_game_fallback", lambda: None)
     monkeypatch.setattr(flow, "run_day_summary_agent", lambda day, messages, max_retries=1, **kw: ("summary", "fake", {}))
     monkeypatch.setattr(flow, "filter_openings", lambda entries: entries)
     monkeypatch.setattr(resolve, "line_echo_of", lambda message, player, earlier: "")
+
+
+def _play(monkeypatch, game: dict, seed: int, sink: EvalCaseSink | None = None) -> tuple[dict, list, set[str]]:
+    _script_the_model(monkeypatch, seed)
     # One thread per game: the checkpointer keys on the game id, and a second game under the same
     # id resumes on top of the first's final state (the add-reduced lists accumulate).
     game_id = f"offline-{game['lone_killer']}-{game['neutral']}-{seed}"
@@ -140,6 +147,42 @@ def test_every_day_turn_reaches_the_replay_and_every_wolf_turn_says_what_it_deci
     assert {"chat", "kill"} <= kinds["chanteuse"] | kinds["illusionist"]
     assert kinds["chanteuse"] <= {"chat", "kill", "block"}
     assert kinds["illusionist"] <= {"chat", "kill", "conceal", "declined"}
+
+
+def _shots_fired(state: dict, vigilante: str) -> int:
+    """The vigilante's shots that went ahead: a blocked shot was never fired."""
+    return sum(1 for r in state.get("night_actions", [])
+               if r.actor == vigilante and r.action == "shoot" and r.result != "roleblocked")
+
+
+def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(monkeypatch):
+    # The night's turns pause for the human and are re-run on resume; the bullet is spent only
+    # in NIGHT_RESOLUTION, the barrier after every night turn, so the pause always comes first.
+    _script_the_model(monkeypatch, seed=5)
+    game = {"lone_killer": "serial_killer", "neutral": "speculator"}
+    run = normalize_run_config(RunConfig(game_id="offline-human-vigilante-5", game=game, human_player=1,
+                                         human_role="vigilante", memory_persistence={"dump_enabled": False}))
+    config = build_runnable_config(run)
+    context = {"metrics": Metrics()}
+    result = parent_graph_compiled.invoke(fresh_game_state(), config=config, context=context)
+    shot_turns = 0
+    while "__interrupt__" in result:
+        request = result["__interrupt__"][0].value
+        state = parent_graph_compiled.get_state(config).values
+        if request["phase"] != "vigilante_target":
+            answer = {"delegate": True}
+        elif _shots_fired(state, request["player_id"]) == 0:
+            # One shot only: a second could hide a double spend behind the count's floor of zero.
+            answer = {"target": next(t for t in request["valid_targets"] if t.startswith("player_"))}
+            shot_turns += 1
+        else:
+            answer = {"target": "hold_fire"}
+        result = parent_graph_compiled.invoke(Command(resume=answer), config=config, context=context)
+    final = parent_graph_compiled.get_state(config).values
+    vigilante = final["human_players"][0]
+    assert final["roles"][vigilante] == "vigilante"
+    assert shot_turns >= 1 and _shots_fired(final, vigilante) == 1
+    assert final["uses_left"]["vigilante"] == 1
 
 
 # --- the rules random play cannot be relied on to reach ----------------------------------------
