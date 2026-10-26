@@ -48,31 +48,24 @@ private results and a public morning report.*
 #### Keeping each player's information separate
 
 For this game to work, players must have different information while sharing the same rules. Each
-player knows their own role and private results, but learns about other players through public events
-and claims that may be false. The game system therefore has to control who receives each piece of
-information: public events go to everyone, private results only to the player or faction entitled to
-them.
+player knows their own role and private results, but learns about others through public events and
+claims that may be false. The game system therefore has to control who receives each piece of
+information.
 
-At a human table, the separation is physical. Role cards are dealt face down. At night everyone
-closes their eyes, and the moderator wakes each role in turn: the wolves open their eyes to recognise
-each other and point at a victim, and the Seer points at a player and the moderator silently shows
-whether they are a wolf. What a player learns stays in their head. If they share it, the others hear
-only a claim they cannot check. Online games such as Town of Salem do the same in software: each
-screen shows only that player's role and results, and the Mafia talk in a private night chat.
+In a human game, that separation comes from how information is delivered. Players receive their own
+role cards, the moderator gives night results privately, and public announcements reach the whole
+table. A player may reveal or lie about what they know, but the others have no direct access to it.
 
-AI agents have no heads to keep secrets in. The whole game lives in one program, and a model call
-knows only what its input contains: it starts every turn with nothing. So before every turn, the
-system has to rebuild what that player knows, and nothing more.
+With agents, the system holds everyone's roles, actions and results in order to run the game, and a
+model call knows only what its input contains. So for every turn, I build a restricted view from that
+complete record: the public record, the player's own role and results, and anything shared within its
+faction. Wolves, for example, receive their faction's private conversation; town players do not. One
+private result in the wrong prompt would hand that agent information it could never have obtained in
+play. This is **context isolation**: controlling which information enters each agent's context.
 
-I construct a separate input for each turn: the public record, the player's own role and night
-results, and any information its faction is allowed to share. For example, wolves receive their
-private faction conversation, while a town player does not.
-
-This is **context isolation**: controlling which game information enters each agent's context. The
-boundary sits in the code that selects the input, before the prompt is formatted. I also use checks
-on the assembled inputs to look for private fields reaching the wrong player. The aim is to keep
-unauthorised information out of the input, rather than depend on an agent ignoring a secret it has
-already received.
+I enforce the boundary when the input is selected, before the prompt is formatted, and check the
+assembled inputs for private information reaching the wrong player. Keeping secrets out of the input
+means I never rely on an agent ignoring something it has already seen.
 
 ```mermaid
 flowchart TB
@@ -94,12 +87,13 @@ evidence/agent_boundaries/report.md §§1–2; conceptual input selection, not t
 
 #### Giving players opportunities to discuss and respond
 
-Once players have their information, they need chances to share evidence, challenge claims and
-answer accusations. The discussion also has to end, so the game can move on to a vote.
+Once players have their information, they need opportunities to share evidence, challenge claims and
+answer accusations, without a few players dominating or the vote being delayed indefinitely.
 
-In a human game, the day usually runs on a timer, and anyone can speak whenever they like, especially
-online. That works because people listen all the time: they hear each line as it is said, notice when
-someone else starts talking, and jump in when they are accused.
+In a human game, the day usually runs on a timer, and anyone can speak whenever they like. That works
+because people listen all the time: they follow the conversation, recognise when a response is
+expected, and jump in when they are accused. A moderator can invite quieter players in or close a
+repetitive argument.
 
 A model can do none of that. It exists only while it is being called: it reads one fixed snapshot of
 the conversation, takes a few seconds to answer, then stops until it is called again. It cannot listen
@@ -114,31 +108,27 @@ want" has to be imitated, and the obvious ways fail:
   calls for every line spoken.
 - **Run the day on a clock.** How much a player said would then depend on how fast its model answers,
   not on what it has to say.
+- **Go round the table in a fixed order.** Everyone gets a turn, but an accusation can sit unanswered
+  while unrelated speeches continue.
 
-So I let code decide who speaks next, from the conversation itself. I built a turn scheduler that
-imitates the shape of a human discussion. In a real conversation, a question gets an answer before the
-talk moves on, someone accused defends themselves straight away, and a person who has not said
-anything is eventually asked what they think. The scheduler turns each of those habits into a rule.
+I built a turn scheduler around the patterns of a real conversation instead. Each agent tags its
+response with whom it addresses and whether it is questioning, accusing, defending or agreeing. A
+question or accusation leaves the named player owing a reply, which takes priority over ordinary turns.
+This produces a back-and-forth: A accuses B, B responds, and later speakers hear both. A player accused
+by several others answers them together.
 
-Every AI player tags its own line: whom it addresses, and whether it is questioning, accusing,
-defending or agreeing. A question or an accusation creates a debt: the player named owes an answer and
-speaks next, before anyone else, the most recent debt first. That gives the day its back-and-forth: A
-accuses B, B answers, and the others hear the exchange before they join in. A player accused by three
-others is asked to answer all three in one turn. When nobody owes anything, the floor goes round the
-players who have not spoken yet, like a moderator asking the quiet ones, so a player sitting on a night
-result still gets a turn.
+When no replies are owed, the scheduler offers turns to players who have not yet spoken, so someone
+holding private evidence gets a chance to share it. Repeated pressure on a player who has not yet
+answered adds no extra turns, and a limit on exchanges between the same pair stops one argument from
+taking over the day.
 
-Other rules stop a few players from taking over. Pressing a player again before they have answered
-creates no new debt. After two rounds of back-and-forth between the same two players, they stop
-creating debts for each other for a while, so one feud cannot fill the day. The discussion ends when
-nobody owes an answer and the floor has gone round, at most twice, and the whole day is capped at three
-lines per living player. If the cap is reached first, open questions get one last answer and the
-discussion closes. The one or two players accused by at least two others then get a last word in
-their defence, and everyone votes at the same time, without seeing each other's votes.
+Discussion closes once owed replies are answered and the floor has gone round, under an overall cap of
+three lines per living player; if the cap comes first, open questions get one last answer. Players
+accused by at least two others then get a closing defence before the vote. Code decides who speaks;
+the model decides what to say.
 
-Code decides who speaks; the model decides what to say.
-[Orchestrating the conversation](conversation/conversation.md) explains each rule, how I traced and
-fixed the silence in earlier games, and the check that keeps repetition off the table.
+[Orchestrating the conversation](conversation/conversation.md) explains the scheduling rules, stopping
+conditions and handling of repetitive speech.
 
 #### Running the game: coordinating phases and player decisions
 
