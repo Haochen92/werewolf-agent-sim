@@ -315,3 +315,24 @@ owner's rulings:
   record rebuilt from its events, the verdicts from its `memory_consulted` events), so credit reads both.
 - **A merged duplicate's credit follows its survivor**: when the point dedup discards a lesson as a
   duplicate, the follows recorded against its key count for the lesson kept.
+
+## 15. Credit reads games with a human seat; extraction stays AI-only (owner, 2026-10-26)
+
+Until now only games with no human seat could teach the store (the poisoning rule: a human could steer a
+game to plant bad lessons). Most served games will have a human seat, so under that rule the credit pass
+would see almost no served games. The owner's ruling splits the rule by what each route can do:
+
+- **Credit reads games with a human seat, and grades only their AI seats' decisions.** Credit can only
+  prune, evict or protect lessons that already exist, by fixed rules against the true roles; a human can
+  make an AI seat's day harder but cannot make a bad AI vote grade as good, and a prune needs at least
+  eight follows. The human seat's own decisions are dropped, from the ledger and from the memory-off
+  baseline alike; a game whose human seats are not named is dropped whole.
+- **Extraction stays AI-only.** It writes new lesson text from what happened, which is the route a human
+  could use to plant advice; the offline job keeps skipping human-seat games.
+- **Publish still replaces the live counters.** The credit pass recounts each game once from its records
+  and sets the counters; adding the counters the seats bump during served games would count those games
+  twice.
+
+Code: `Agents/memory/consolidation/credit_rules.py` (`_human_seats`, `_iter_game_records`,
+`iter_eval_cases`), `Agents/memory/consolidation/sources.py::games_from_db`; tests in
+`tests/memory/test_consolidation_graduation.py`.

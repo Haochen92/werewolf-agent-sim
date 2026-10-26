@@ -160,7 +160,8 @@ Both passes live in `Agents/memory/consolidation/tick.py`; no schedule runs them
   above 0 after at least 2, and evicts one shown at least 8 times, never followed, and overridden at
   least as often as marked not relevant. The thresholds are carried over from the nine-seat loop and
   are not validated for ten seats. It reads batch-run games from files and served games from the
-  database; a game with a human seat is never read. Every change is recorded with its numbers. The
+  database; in a game with a human seat only the AI seats' decisions are graded (since 2026-10-26,
+  [decisions](decisions.md) §15). Every change is recorded with its numbers. The
   scoring is told in full in the [credit report](../../credit/report.md).
 - **The learning tick** (`tick learn`; paid) folds in new observations from the offline job, lets old
   ones age out (an observation not seen again for four ticks per time it has been seen is dropped),

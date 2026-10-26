@@ -109,7 +109,7 @@ A few counting rules keep the evidence honest:
 
 - **One grade per lesson per decision.** A player sees the same lessons on every turn of one day's discussion, one day's vote, one night's wolf chat, or one night's action. The lesson is graded once in each, at the first graded decision that followed it, so one decision is not counted several times.
 - **Recomputed, not accumulated.** Each credit pass recounts every lesson over the window of games it is given. Old evidence leaves when the window moves.
-- **Only games without a human seat teach.** A game with a human player is dropped before grading (`credit_rules._iter_game_records`). A human's play is not the agents' play, and it could be used to steer the store.
+- **Only AI seats' decisions are graded.** A game with a human seat is read, and the human seat's own decisions are dropped before grading (`credit_rules.iter_eval_cases`); a game whose human seats are not named is dropped whole. A human's play is not the agents' play. Until 2026-10-26 any game with a human seat was dropped; the owner relaxed the rule because most served games will have one, and credit can only grade the agents' own moves by fixed rules (v8 decisions §15). Extraction, which writes lesson text, stays AI-only.
 - **A merged duplicate's follows count for the lesson it was merged into.**
 
 The scores then act. The thresholds were carried over from July and are labelled unvalidated for ten seats (`TickConfig` in `config.py`):

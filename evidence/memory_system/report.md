@@ -53,7 +53,8 @@ vote, night), each partition a **cell**.
   fall more than 0.15 below memory-off play over at least eight follows, and evicts one shown at least
   eight times, never followed, and overridden at least as often as judged not relevant.
   The thresholds are carried over from the nine-seat loop and not validated for ten seats. The pass
-  reads only games in which every seat was an AI. The **learning tick** folds new observations in
+  grades only AI seats' decisions, in games with or without a human seat (since 2026-10-26;
+  extraction still reads only AI-only games). The **learning tick** folds new observations in
   (duplicates are kept or discarded, never rewritten), lets old observations age out, synthesises new
   lessons with Claude Sonnet 5.5, and never prunes lessons. Both are run by hand (no schedule is in the repository), and both publish the
   store to the Postgres database the server reads.
