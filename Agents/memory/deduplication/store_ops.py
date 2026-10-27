@@ -242,7 +242,7 @@ def _update_auto_observation_duplicate(
     """Bump an existing observation's count for the prefilter auto-DISCARD path.
 
     Reached only when the embedding prefilter is confident the new observation
-    duplicates the top match. Roundtrips through ``StoredObservation`` (missing
+    duplicates the best content match. Roundtrips through ``StoredObservation`` (missing
     fields take model defaults), then increments the count. Pydantic counterpart to
     ``_bump_observation_count``; differs only in mechanism, so they are not
     interchangeable.

@@ -121,11 +121,11 @@ def _dedup_without_store_mutation(
         }
 
     if item_type == "observation":
-        prefilter_decision, sim_scores = _embedding_prefilter_observation(
+        prefilter_decision, sim_scores, _ = _embedding_prefilter_observation(
             entry, similar,
         )
     else:
-        prefilter_decision, sim_scores = _embedding_prefilter_strategy_point(
+        prefilter_decision, sim_scores, _ = _embedding_prefilter_strategy_point(
             entry, similar,
         )
 

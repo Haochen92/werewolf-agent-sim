@@ -4,7 +4,7 @@
 1. Search the store for the DEDUP_TOP_N most similar existing entries, using the new item's situation text as the query.
 2. Threshold filter — keep only hits scoring ≥ DEDUP_SIMILARITY_THRESHOLD. If nothing clears it, the item is clearly novel: store it, return auto-KEEP. No LLM involved.
 3. Similarity prefilter (the per-kind discard/keep cutoffs in config.py) — currently a static
-   bi-encoder: cosine of independently embedded texts (prefilter.py). If the top match is extremely
+   bi-encoder: cosine of independently embedded texts (prefilter.py). If the best match is extremely
    similar, it's an obvious duplicate: bump the existing entry's counts, return auto-DISCARD. If
    similarity is low enough, obviously novel: store, auto-KEEP. Both skip the LLM. (A fine-tuned
    cross-encoder is the planned swap-in here — see the fine-tuning plan — not yet wired in.)
@@ -78,8 +78,8 @@ _OBSERVATION_KIND = _DedupKind(
     call_llm=_observation_dedup_agent,
     apply_decision=_apply_observation_decision,
     store_new=_store_new_observation,
-    update_auto_duplicate=lambda store, namespace, top_item, item: (
-        _update_auto_observation_duplicate(store, namespace, top_item.key, top_item)
+    update_auto_duplicate=lambda store, namespace, matched_item, item: (
+        _update_auto_observation_duplicate(store, namespace, matched_item.key, matched_item)
     ),
 )
 
@@ -96,8 +96,8 @@ _STRATEGY_POINT_KIND = _DedupKind(
     call_llm=_dedup_agent,
     apply_decision=_apply_strategy_decision,
     store_new=_store_new_point,
-    update_auto_duplicate=lambda store, namespace, top_item, item: (
-        _update_auto_duplicate(store, namespace, top_item.key, top_item)
+    update_auto_duplicate=lambda store, namespace, matched_item, item: (
+        _update_auto_duplicate(store, namespace, matched_item.key, matched_item)
     ),
 )
 
@@ -284,10 +284,10 @@ def _dedup_single_memory(
             action=DedupAction.KEEP, auto=True, candidates=candidates,
         )
 
-    prefilter_decision, sim_scores = kind.prefilter(item, similar)
+    prefilter_decision, sim_scores, best_match = kind.prefilter(item, similar)
 
     if prefilter_decision == "discard":
-        kind.update_auto_duplicate(store, namespace, similar[0], item)
+        kind.update_auto_duplicate(store, namespace, best_match, item)
         return DedupResult(
             action=DedupAction.DISCARD, auto=True, candidates=candidates,
             similarity_scores=sim_scores,

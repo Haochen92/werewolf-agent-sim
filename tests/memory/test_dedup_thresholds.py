@@ -78,19 +78,19 @@ def obs(monkeypatch, sims):
     (SP_K - 0.10, "keep"),
 ])
 def test_sp_single_candidate_thresholds(monkeypatch, sim, expected):
-    decision, _ = sp(monkeypatch, [sim])
+    decision, _, _ = sp(monkeypatch, [sim])
     assert decision == expected
 
 
 def test_sp_uses_max_over_candidates(monkeypatch):
     # the max over candidates decides: one low, one above the discard line -> discard.
-    decision, scores = sp(monkeypatch, [SP_K - 0.10, SP_D + 0.01])
+    decision, scores, _ = sp(monkeypatch, [SP_K - 0.10, SP_D + 0.01])
     assert decision == "discard"
     assert scores["max_action_sim"] == round(SP_D + 0.01, 4)
 
 
 def test_sp_all_low_keeps(monkeypatch):
-    decision, _ = sp(monkeypatch, [SP_K - 0.10, SP_K - 0.05])
+    decision, _, _ = sp(monkeypatch, [SP_K - 0.10, SP_K - 0.05])
     assert decision == "keep"
 
 
@@ -105,12 +105,12 @@ def test_sp_all_low_keeps(monkeypatch):
     (OBS_K - 0.10, "keep"),
 ])
 def test_obs_single_candidate_thresholds(monkeypatch, sim, expected):
-    decision, _ = obs(monkeypatch, [sim])
+    decision, _, _ = obs(monkeypatch, [sim])
     assert decision == expected
 
 
 def test_obs_uses_max_over_candidates():
-    decision, scores = obs(pytest.MonkeyPatch(), [OBS_K - 0.10, OBS_D + 0.005])
+    decision, scores, _ = obs(pytest.MonkeyPatch(), [OBS_K - 0.10, OBS_D + 0.005])
     assert decision == "discard"
     assert scores["max_content_sim"] == round(OBS_D + 0.005, 4)
 
@@ -118,7 +118,7 @@ def test_obs_uses_max_over_candidates():
 # --- fall-through safety: no candidates / embedding failure -> None ----------
 
 def test_sp_no_candidates_returns_none(monkeypatch):
-    decision, _ = sp(monkeypatch, [])  # only the new vec -> len(vecs) < 2
+    decision, _, _ = sp(monkeypatch, [])  # only the new vec -> len(vecs) < 2
     assert decision is None
 
 
@@ -128,7 +128,7 @@ def test_sp_embedding_failure_falls_through_to_llm(monkeypatch):
 
     monkeypatch.setattr(dedup.prefilter, "embed_texts", boom)
     point = SimpleNamespace(action="x")
-    decision, scores = dedup._embedding_prefilter_strategy_point(point, sp_candidates(1))
+    decision, scores, _ = dedup._embedding_prefilter_strategy_point(point, sp_candidates(1))
     assert decision is None  # never auto-discards on an embedding error
     assert scores == {}
 
@@ -139,6 +139,6 @@ def test_obs_embedding_failure_falls_through_to_llm(monkeypatch):
 
     monkeypatch.setattr(dedup.prefilter, "embed_texts", boom)
     observation = SimpleNamespace(composed_situation="s", approach="a", outcome="o")
-    decision, scores = dedup._embedding_prefilter_observation(observation, obs_candidates(1))
+    decision, scores, _ = dedup._embedding_prefilter_observation(observation, obs_candidates(1))
     assert decision is None
     assert scores == {}
