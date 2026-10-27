@@ -75,8 +75,15 @@ that page's case study.
 
 **The opening: the game in plain words** (the owner's own text). A typical Mafia game: two factions, what
 each knows and wants, the day and the night. Town of Salem as the inspiration. The four sides, what is
-public and what is private, what night abilities give players, and each side's objective. A link to page
-1, then the day-and-night loop figure (`exhibits/day_night_loop.svg`). No graph.
+public and what is private, what night abilities give players, and each side's objective, carried by
+one figure (`exhibits/game_at_a_glance.svg`: the sides, who knows what, one day and night). No graph.
+Then a short section, "Giving players evidence worth debating": the nine-seat problem (one exact
+investigator, evil never claimed) and the redesign (three partial observers; a lie has to be spoken),
+then the link to page 1. Then the engineering problem as the lead into the five sections.
+
+**Diagrams carry what happens; the prose keeps why** (owner, 2026-10-27). A passage is cut only when a
+figure shows the same facts. The tension, the obvious fix that fails, and any result that changed the
+design always stay in prose.
 
 **Five sections, one per requirement.** Each runs: what the game needs → (where human play differs)
 how a human game handles it → why model calls cannot do the same, explained, not asserted → what I
@@ -84,11 +91,11 @@ built → a link to the page that develops it.
 
 | Section | How human play enters | What it must convey | Figure |
 |---|---|---|---|
-| Keeping each player's information separate | Yes: face-down cards and the moderator's private results; Town of Salem's per-player screens and private night chat | The system holds everything and a model call knows only its input, so each turn's input is rebuilt from the permitted view: context isolation, enforced before the prompt is formatted, and checked | Isolation flowchart (Mermaid) |
-| Giving players opportunities to discuss and respond | Yes: a timer, anyone speaks whenever they like (Town of Salem's shared chat), people listen all the time | Why a model cannot (one snapshot, no listening) and the four obvious imitations that fail: all at once (the five identical openers), polling after every line, a clock, a fixed rotation. Then the scheduler as conversation habits turned into rules (owed replies, back-and-forth, several accusers answered together, the floor to the quiet), the rules against domination, the end of the day. "Code decides who speaks; the model decides what to say." | — |
-| Running the game: coordinating phases and player decisions | No: this is an orchestration decision, not a difference from human play | Tracking phase, survivors, who acts and the win checks in LangGraph; discussion in sequence, votes and night choices in parallel (independence comes from each player's permitted view, not from parallelism; the wolves agree on their kill first, by design); collecting every choice before one resolution step | — |
-| One agent turn, from input to action | No | The four-step path, the permitted input, the structured response and why, validation, retry and fallback, and the hand-off: speech published, a vote or night choice collected for the resolution | Turn flowchart (Mermaid) |
-| Letting a human join the game | No | The same seat and rules for a person; a decision that arrives outside the model calls; pause, checkpoint and the same validation; the seat's agent takes over if the human does not return; the repeated step (a consequence of how the steps are wired to keep information separate) and the first two-human test; cached AI answers; the two lifetimes | None on Level 1; the pause diagram is page 5's |
+| Keeping each player's information separate | Yes: face-down cards and the moderator's private results; Town of Salem's per-player screens and private night chat | The system holds everything and a model call knows only its input, so each turn's input is rebuilt from the permitted view: context isolation, enforced before the prompt is formatted, and checked | `context_isolation.svg` |
+| Giving players opportunities to discuss and respond | Yes: a timer, anyone speaks whenever they like (Town of Salem's shared chat), people listen all the time | Why a model cannot (one snapshot, no listening) and the four obvious imitations that fail: all at once (the five identical openers), polling after every line, a clock, a fixed rotation. Then the scheduler as conversation habits turned into rules (owed replies, back-and-forth, several accusers answered together, the floor to the quiet), the rules against domination, the end of the day. "Code decides who speaks; the model decides what to say." | — (a "who speaks next" figure is optional) |
+| Running the game: coordinating phases and player decisions | No: this is an orchestration decision, not a difference from human play | Tracking phase, survivors, who acts and the win checks in LangGraph; discussion in sequence, votes and night choices in parallel (independence comes from each player's permitted view, not from parallelism; the wolves agree on their kill first, by design); collecting every choice before one resolution step | `phase_execution.svg` |
+| One agent turn, from input to action | No | The four-step path, the permitted input, the structured response and why, validation, retry and fallback, and the hand-off: speech published, a vote or night choice collected for the resolution | `agent_turn.svg` |
+| Letting a human join the game | No | The same seat and rules for a person; a decision that arrives outside the model calls; pause, checkpoint and the same validation; the seat's agent takes over if the human does not return; the repeated step (a consequence of how the steps are wired to keep information separate) and the first two-human test; cached AI answers; the two lifetimes | `human_resume.svg` (game terms; page 5 keeps `pause_and_resume.svg`) |
 
 **Rules for the chapter page** (owner, 2026-10-26):
 - **Altitude.** Name LangGraph and a checkpoint; leave subgraphs, `Send`, node caches, cache keys and
