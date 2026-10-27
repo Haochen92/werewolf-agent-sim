@@ -54,7 +54,8 @@ exceptions (`Agents/memory/retrieval/plan_gating.py::retrieval_plan`):
 
 - nothing on day 1 or the night after it, since nothing has happened that a lesson could match (the
   night shares day 1's number);
-- no town seat on a day turn: town day lessons are written for the owner to review and never served;
+- no town seat on a discussion turn: town discussion lessons are written for the owner to review and
+  never served (town vote lessons are served since 2026-10-27, decisions §17);
 - no human seat, which decides without the agent pipeline.
 
 **How a lookup works.** A short call to the seat's own game model describes its situation in one or
@@ -198,7 +199,7 @@ limitations. The de-halo pass is the one approved exception.
 
 | Choice | Why | Record |
 |---|---|---|
-| Town day lessons are written for the owner's review and never served | Advice the owner approves becomes fixed role-prompt text instead; keeping it out of play also closes the path by which v7's credit rewarded town withholding: town day advice is never followed, so it is never credited | decisions §5, §7; plan §9.1 |
+| Town discussion lessons are written for the owner's review and never served; town vote lessons are served (since 2026-10-27) | Advice the owner approves becomes fixed role-prompt text instead. Withheld information, the cost v7's credit missed, is invisible to a per-decision grade of talk; a vote's cost, including an abstention that leaves a day without a lynch, is now graded, so town votes are served like every other side's | decisions §5, §7, §17; plan §9.1 |
 | No forced disclosure for the town's information roles | In 28 saved ten-seat games they already reported the next day almost every time (Investigator after Suspicious 13 of 13, after Not suspicious 25 of 28; Sentinel 42 of 42; Trailseer 44 of 44, rough counts by claim field or text match) | decisions §5; plan §9.1 |
 | New roles mapped onto existing cell shapes, plus one "uses left" field group | No per-role fields; old stores still load | decisions §5; plan §9.1 |
 | Served games retrieve strategy points only | Set on 2026-09-25, when the store served was the nine-seat `demo_gen1`: it held observations only for the wolf and the serial killer, none for the town, so serving them would have given the sides different memory. The ten-seat store published since 2026-10-14 does hold town observations (1,133 of 2,008); the setting was carried over without a new ruling. The other reasons stand: since a ruling of 2026-07-15 observations are material for synthesis, not prompt content, and lessons are what the replay shows being weighed | `server/game/run_config.py::game_run_config` |
@@ -390,8 +391,9 @@ Smaller unknowns, each tied to the claim it limits:
 - **The learning tick on ten seats.** `ten_seat_v2` was synthesised by a one-off build, not by the
   tick, and the demonstration stopped at credit. No ten-seat learning tick is recorded, and nothing
   screens the rules in what it would write.
-- **Town day lessons reach no one.** They are checked only by the owner's reading, and never earn
-  credit, since no seat follows them.
+- **Town discussion lessons reach no one.** They are checked only by the owner's reading, and never earn
+  credit, since no seat follows them. The town vote lessons served since 2026-10-27 entered play
+  unreviewed; credit is their check.
 - **Which outcome signal writes better lessons.** A grade-reading store (`v8_grade_synth`, 568
   lessons) is built and unreviewed. A fair comparison needs the verdict variant rebuilt on the same
   code (about $5) and, by the record's estimate, about 1,000 follows per variant.

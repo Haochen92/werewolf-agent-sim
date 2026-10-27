@@ -188,7 +188,7 @@ Agents followed it 19 times. The store it sat in was then tested on 30 paired bo
 - The town result leans negative but is not statistically established: a gap that size would appear about 6% of the time by chance (p ≈ .06).
 - The July players answered with no reasoning step (zero reasoning tokens), so it is a result for players that do not reason.
 - The fix was checked on recorded games only: re-scoring pruned this lesson and kept three lessons chosen in advance as good. It was never tested in new games.
-- The ten-seat game does not show town players lessons on day turns, so today the abstain rule grades memory-off votes, not served lessons.
+- Until 2026-10-27 the ten-seat game showed town players no lessons on day turns, so the abstain rule graded only memory-off votes. Town vote lessons are served since then ([v8 decisions](../memory_system/v8/decisions.md) §17), so it now grades served lessons too; no served game has been credited yet.
 
 ## 7. What is not established
 

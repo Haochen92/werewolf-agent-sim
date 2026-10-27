@@ -37,8 +37,9 @@ none was re-run on today's code.
 
 - on day 1 or the night after it (the night shares day 1's number), since nothing has happened that a
   lesson could match;
-- on a day turn if it is a town seat: town day lessons are written for the owner to review and never
-  served (`TOWN_DAY_PHASES`; the ruling is in [v8 decisions](../memory_system/v8/decisions.md) §5);
+- on a discussion turn if it is a town seat: town discussion lessons are written for the owner to review
+  and never served (`TOWN_UNSERVED_PHASES`; [v8 decisions](../memory_system/v8/decisions.md) §5, and §17,
+  which serves town vote lessons since 2026-10-27);
 - when memory is off for its role, or no store is loaded.
 
 A human seat decides without the agent pipeline and makes no lookup. In served games memory is the

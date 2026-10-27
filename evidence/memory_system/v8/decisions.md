@@ -360,3 +360,21 @@ pipeline runs:
   automation waits until a few ticks have been read.
 - **Memory stays off by default** for players: its benefit on ten seats is untested, and testing it needs
   new labelling and runs. Memory on is for demonstration.
+
+## 17. Town votes are served; town discussion stays out of play (owner, 2026-10-27)
+
+§5 kept all of the town's day lessons out of play, discussion and vote alike, after v7's credit had
+rewarded town advice to withhold and abstain without seeing its cost. The owner revisited it: there is
+no good reason to serve every other side's vote lessons and not the town's.
+
+- **Town vote lessons are served.** The ten-seat vote rules already grade an abstention on a day that
+  ended with no lynch as bad (the v7 fix), and a town vote for an enemy or a townsperson as good or bad,
+  so the cost that v7's credit missed is now graded. The published store already holds them (76 town
+  vote lessons, extracted and synthesized under §5 but never served); they enter play unreviewed, as
+  every other side's lessons do, and credit is their check.
+- **Town discussion stays out of play.** Its main harm is information a town player keeps back, which a
+  per-decision grade cannot see, and talk is hard to grade by rule at all. Its lessons are still
+  extracted and synthesized for the owner to review into role prompts (§5).
+
+Code: `Agents/memory/retrieval/plan_gating.py` (`TOWN_UNSERVED_PHASES`, skip reason `town_discussion`);
+test `tests/memory/test_memory_plan_gating.py`. Served once the server is redeployed.

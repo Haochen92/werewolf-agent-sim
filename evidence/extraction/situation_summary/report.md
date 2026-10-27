@@ -52,7 +52,7 @@ With memory on, the call runs for one decision and is skipped for others:
 | Decision | Situation call? | Why |
 |---|---|---|
 | Any decision on day 1 | No | Nothing has happened yet that a lesson could match. |
-| A town seat's day discussion or day vote | No | Town day lessons are extracted for the project owner to review. Advice the owner approves becomes fixed text in the role prompt instead of being retrieved (ruled 2026-10-11). |
+| A town seat's day discussion | No | Town discussion lessons are extracted for the project owner to review. Advice the owner approves becomes fixed text in the role prompt instead of being retrieved (ruled 2026-10-11). Town day votes look up since 2026-10-27 ([v8 decisions](../../memory_system/v8/decisions.md) §17). |
 | A town seat's night action | Yes | |
 | A wolf's, lone killer's or neutral's discussion, vote or night action | Yes | |
 | A human seat's own decision | No | A human decides without the agent pipeline. If the human hands a turn to its agent, the agent looks up as any seat would. |
