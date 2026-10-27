@@ -26,15 +26,29 @@ role-specific abilities: ten players on four sides, shown below with what each s
 knows what. Some roles learn things at night and choose whether to reveal them; others must decide whom
 to protect or shoot on uncertain information.
 
-That sets the engineering problem: ten separately called language models must play one game, each with
-different information, and every decision must stay within the rules.
-
 ![Ten players on four sides, what is public and what is private, and one day and night](exhibits/game_at_a_glance.svg)
 
 *Players share the same game but not the same information. Public claims, private evidence and hidden
 actions shape later decisions.*
 
+#### Giving players evidence worth debating
+
+A social deduction game is only as good as its arguments. The town needs evidence strong enough to
+challenge a story, and evil needs room to tell one. My first, nine-seat version had neither. One
+Investigator could identify a player's exact role, and the wolves and the serial killer never claimed a
+role at all: their only answer to a real result was to call it fabricated. That gave the town no rival
+story to weigh, and the rest of the talk turned to tone and timing.
+
+So I redesigned both sides. Three town roles now each see a different part of the night, true but
+incomplete: whether a player reads as suspicious, who visited a player, and where a player went. The
+game never reports a false result, so a lie has to be spoken: evil players now plan a cover role with
+a story for each night, and claim it rather than deny.
+
 *Explore: [Designing evidence worth debating](evidence_design/evidence_design.md) →*
+
+Those rules set the engineering problem for the rest of this chapter: ten separately called language
+models must play one game, each with different information, and every decision must stay within the
+rules.
 
 #### Keeping each player's information separate
 
@@ -45,13 +59,16 @@ In a human game, the moderator controls this separation: role cards are dealt pr
 are given privately, and announcements reach the whole table. Online games such as Town of Salem do
 the same through each player's screen.
 
-With agents, the game system holds everyone's roles, actions and results in order to run the rules, but
-**a model call knows only what its input contains**. Sending the full state and telling the agent to
-ignore what it should not know would undermine the game: one private result in the wrong prompt hands
-that player knowledge it could never have obtained in play.
+With agents, there is no table and no moderator. One program holds everyone's roles, actions and
+results, because it needs them to apply the rules. Each agent, by contrast, knows only what is in the
+input of its model call, so that input is the only place where the separation can hold or fail. The
+shortcut would be to send every agent the whole game and tell it to ignore what its role should not
+know. A model cannot unsee its input, though: anything in the prompt can shape its reply, so one private
+result in the wrong prompt gives that player knowledge it could never have obtained in play.
 
-So for every turn I build that player's input from the full state, selecting only what it is entitled
-to, before the prompt is written. A model can still lie about what it knows, but it is never given
+So I use **context isolation**: controlling which information enters each agent's context. For every
+turn I build that player's input from the full state, selecting only what it is entitled to, before the
+prompt is written. A model can still lie about what it knows, but it is never given
 what it should not have. After test games, I also check every input that was sent for a private record
 that reached the wrong player.
 
