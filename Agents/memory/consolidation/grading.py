@@ -3,8 +3,9 @@
 Each role's turn is graded by the outcome that is ideal for it ("positive"), neutral, or
 undesirable ("negative": a wasted turn, a limited use spent for nothing, a foreseeable failure,
 exposure). The table is plan §9.6 item 10 (evidence/memory_system/v8/plan.md); why it is so is
-decisions §12. ``None`` means unscored: the Necromancer's nights, the Fortune Teller's votes, the
-Speculator's votes before its pick.
+decisions §12, and §18 for the pack's chat. ``None`` means unscored: the Necromancer's nights, the Fortune Teller's votes, the
+Speculator's votes before its pick. A lesson a wolf followed in the pack's chat is graded by the
+move it is about (``pack_move_grade``; owner, 2026-10-28).
 
 Everything is read from the record a ten-seat night keeps (each choice, each actor's result, the
 attacks, visits and conceals) and the day resolutions; sides come from the role registry.
@@ -50,6 +51,19 @@ def night_scope(ec: dict) -> str:
     """The pack's chat and its act (the kill and the skill) are separate lookups; every other night
     turn is one act."""
     return "chat" if (ec.get("agent_night_action") or {}).get("kind") == "chat" else "act"
+
+
+PACK_MOVE_HOLDER = {"conceal": "illusionist", "block": "chanteuse"}
+"""The wolf whose own turn a conceal or block lesson is graded by."""
+
+
+def pack_move_channel(ec: dict, move: str) -> str:
+    """The base-rate channel of a lesson followed in the wolves' chat: a kill lesson keeps the chat's
+    (memory-off chats are graded by the kill), a conceal or block lesson takes the holder's skill
+    channel, so it is compared with memory-off play of the move it is graded by."""
+    if move == "kill":
+        return night_channel(ec)
+    return f"{PACK_MOVE_HOLDER[move]}/night_action/skill"
 
 
 def night_channel(ec: dict) -> str:
@@ -179,7 +193,9 @@ class GameView:
         if role == "necromancer" or night not in self.nights:
             return None
         if side(role) == WOLVES and kind in ("chat", "kill"):
-            return self.pack_kill_grade(night)  # a chat lesson is graded by that night's kill (ruled)
+            # the chat's own grade (its memory-off base); a lesson followed in it is graded by the
+            # move it is about instead (pack_move_grade, owner 2026-10-28)
+            return self.pack_kill_grade(night)
         if kind in ("declined", "hold_fire"):
             return self._declined_grade(role, player, night)
         action = {"vigilante": "shoot"}.get(role, ROLE_SPECS[role].night_action if role in ROLE_SPECS else None)
@@ -192,6 +208,20 @@ class GameView:
             return "neutral"  # a blocked action spends nothing and was not the actor's choice
         grade = getattr(self, f"_grade_{role}", None)
         return grade(rec, night, player) if grade else None
+
+    def pack_move_grade(self, night: int, move: str) -> str | None:
+        """The grade of the pack's move a lesson followed in the wolves' chat is about (owner,
+        2026-10-28): a kill lesson by the pack's kill, a conceal or block lesson by that night's turn of
+        the wolf who holds the skill, a declined turn included. None when no living wolf holds it."""
+        if move == "kill":
+            return self.pack_kill_grade(night)
+        role = PACK_MOVE_HOLDER[move]
+        holder = next((p for p, r in self.roles.items() if r == role), None)
+        if holder is None or holder in self._dead_entering(night):
+            return None
+        kind = move if self._own_record(night, holder, move) else "declined"
+        return self.night_grade({"player_id": holder, "player_role": role, "day": night,
+                                 "agent_night_action": {"kind": kind}})
 
     def _declined_grade(self, role: str, player: str, night: int) -> str:
         if role == "illusionist":
@@ -342,10 +372,13 @@ class GameView:
             return "positive" if self.side.get(lynched) in EVIL else "read_excluded"
         return self.vote_grade(player, role, day, lynched)
 
-    def observation_grade(self, role: str, phase: str, day: int, pack_turn: str = "none") -> str | None:
+    def observation_grade(self, role: str, phase: str, day: int, pack_turn: str = "none",
+                          pack_move: str | None = None) -> str | None:
         """The grade of the decision an extracted observation names (its role, phase, and
         ``decision_day``/``pack_turn``; decisions §13). None when the observation names no single
-        decision (day 0, untagged -1, a wolf's "several") or the record holds no such decision."""
+        decision (day 0, untagged -1, a wolf's "several") or the record holds no such decision. An
+        observation of the wolves' chat is graded by the move it is about (``pack_move``, as a lesson
+        followed there is; decisions §18), and is ungraded without one: the chat decides nothing."""
         holder = next((p for p, r in self.roles.items() if r == role), None)
         if holder is None or day is None or day <= 0:
             return None
@@ -361,7 +394,9 @@ class GameView:
         if phase != "night_action" or day not in self.nights:
             return None
         if side(role) == WOLVES:
-            if pack_turn in ("chat", "kill"):
+            if pack_turn == "chat":
+                return self.pack_move_grade(day, pack_move) if pack_move else None
+            if pack_turn == "kill":
                 kind = pack_turn
             elif pack_turn == "skill":
                 kind = ROLE_SPECS[role].night_action if self._own_record(

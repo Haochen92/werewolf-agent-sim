@@ -97,7 +97,9 @@ def run_credit_pass(window, off_window: str, cfg: TickConfig | None = None, dsn:
         try:
             db.materialize(conn, scratch)
             sp_path = scratch / "strategy_points.json"
-            cstats = credit_apply(sp_path, games, base_rates=compute_base_rates(off_window), off_window=off_window)
+            cstats = credit_apply(sp_path, games, off_window=off_window,
+                                  base_rates=compute_base_rates(off_window, cfg.baseline_by_day),
+                                  by_day=cfg.baseline_by_day, min_n=cfg.baseline_min_n)
             cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)
             store = json.loads(sp_path.read_text())
             rates = json.loads((scratch / "base_rates.json").read_text())
@@ -105,7 +107,8 @@ def run_credit_pass(window, off_window: str, cfg: TickConfig | None = None, dsn:
             sp_path.write_text(json.dumps(store, indent=2))
             changes = pe.pop("changes", [])
             db.ingest(conn, scratch)
-            stats = {"games": len(games), "credit": cstats, "credit_distribution": cdist, "prune_evict": pe}
+            stats = {"games": len(games), "credit": cstats, "credit_distribution": cdist, "prune_evict": pe,
+                     "baseline": {"by_day": cfg.baseline_by_day, "min_n": cfg.baseline_min_n}}
             db.record_credit_run(conn, stats, changes, [g.get("game_id") for g in games])
             if cfg.publish:
                 stats["publish"] = publish_from_db(conn, dsn, source={"step": "credit", "games": len(games)})

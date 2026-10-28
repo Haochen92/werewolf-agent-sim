@@ -20,6 +20,14 @@ def test_sp_container_wraps_the_cell_schema():
     assert container.model_fields["strategy_points"].annotation == list[sp_schema]
 
 
+def test_only_a_wolf_night_lesson_names_the_pack_move_it_is_about():
+    for role in ("chanteuse", "illusionist"):
+        field = cell_strategy_schema_for(role, "night_action").model_fields["pack_move"]
+        assert field.is_required()  # credit grades a chat-followed lesson by it
+    assert "pack_move" not in cell_strategy_schema_for("chanteuse", "day_vote").model_fields
+    assert "pack_move" not in cell_strategy_schema_for("serial_killer", "night_action").model_fields
+
+
 def test_format_cluster_tags_each_obs_with_verdict():
     items = {"k1": _obs("S1", "positive"), "k2": _obs("S2", "negative")}
     out = ss._format_cluster(["k1", "k2"], items)

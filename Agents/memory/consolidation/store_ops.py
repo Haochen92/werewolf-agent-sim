@@ -274,6 +274,8 @@ def synthesize(store_dir: Path, sp_namespaces: dict, base_rates: dict, cfg: Tick
                                   # credit class: routes concealment-typed SPs to the concealment
                                   # floor + conceal/<cell> base instead of the endpoint
                                   "sp_type": getattr(sp, "sp_type", "general"),
+                                  # a wolf night lesson's move: grades it when followed in the chat
+                                  **({"pack_move": sp.pack_move} if hasattr(sp, "pack_move") else {}),
                                   "follow_count": 0, "retrieved_count": 0, "positive_count": 0,
                                   "neutral_count": 0, "negative_count": 0,
                                   "distilled_from": tr_keys,

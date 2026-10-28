@@ -75,8 +75,9 @@ def main() -> None:
         out = []
         for r in rows:
             view = views.get(r["game_id"])
-            grade = view.observation_grade(r["perspective"], r["action_phase"], r["decision_day"],
-                                           r["pack_turn"] or "none") if view and r["decision_day"] is not None else None
+            grade = (view.observation_grade(r["perspective"], r["action_phase"], r["decision_day"],
+                                            r["pack_turn"] or "none", r.get("pack_move"))
+                     if view and r["decision_day"] is not None else None)
             out.append({"game_id": r["game_id"], "index": r["index"], "decision_grade": grade,
                         "record": source.get(r["game_id"])})
             mix[r["action_phase"]][grade or "not graded"] += 1

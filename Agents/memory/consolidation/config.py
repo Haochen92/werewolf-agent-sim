@@ -6,7 +6,9 @@ ships exactly one grading rule — the ten-seat table of plan §9.6 item 10 — 
 town day lookups, which no longer happen). The knobbed legacy-capable variants
 survive only in ``evaluation/src/loop/`` so the frozen research runs stay reproducible. What IS
 configurable is the machinery around the rule: prune/evict thresholds, synthesis cadence, decay
-windows, models — the held-out-validated production params that migrated from the loop harness.
+windows, models — the held-out-validated production params that migrated from the loop harness. One
+exception to the grading being fixed: which memory-off base a follow is compared with
+(``baseline_by_day``, 2026-10-28), kept as a flag so the all-days base still runs for comparison.
 """
 
 from __future__ import annotations
@@ -32,6 +34,13 @@ class TickConfig:
     evict: bool = True
     evict_min_retrieved: int = 8
     evict_require_override: bool = True         # scope-aware: spare not_relevant-dominant non-follows
+    baseline_by_day: bool = True
+    """Compare each followed decision with memory-off play on the same game day (days 1-3, then
+    "4+"): lessons fire at particular stages, and an all-days base mixes easy late days with hard
+    early ones. False = the all-days base of before 2026-10-28."""
+    baseline_min_n: int = 20
+    """Memory-off decisions a day needs before it is used as a base; a thinner day falls back to the
+    channel's all-days base."""
 
     # observation decay (count-scaled allowance clocked from last reinforcement)
     evict_observations: bool = True
