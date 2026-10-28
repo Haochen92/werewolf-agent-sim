@@ -117,7 +117,7 @@ def test_sp_gate_key_none_for_v5_strategy_point():
 
 
 def test_sp_gate_key_signature():
-    assert sp_gate_key(_sp("offensive", "honest")) == ("offensive", "honest")
+    assert sp_gate_key(_sp("offensive", "honest")) == ("offensive", "honest", None, None, None)
 
 
 def test_sp_gate_filter_keeps_only_same_signature():
@@ -135,9 +135,69 @@ def test_kind_dispatch_routes_sp_vs_obs():
     obs_val = _v6(False, 6, "opposes_my_read", "positive") | {
         "info_landscape_class": "info_starved", "exposure_class": "safe"}
     # partition_key_for picks the SP signature for strategy_points, the obs gate+pairchecks otherwise
-    assert partition_key_for("strategy_points", sp_val) == ("positional", "deceptive")
+    assert partition_key_for("strategy_points", sp_val) == ("positional", "deceptive", None, None, None)
     assert partition_key_for("observations", obs_val) == batch_partition_key(obs_val)
     # gate_filter_for routes the per-game candidate filter the same way
     sp_item = SimpleNamespace(direction="positional", honesty="deceptive")
     sp_other = SimpleNamespace(value=_sp("positional", "honest"))
     assert gate_filter_for("strategy_points", sp_item, [sp_other]) == []
+
+
+# ── strategy-point gate: stage is in the partition, before the judge ──
+
+
+def _staged(direction="offensive", honesty="honest", **dims):
+    return {"direction": direction, "honesty": honesty, "dimensions": dims}
+
+
+def test_sp_key_carries_the_stage_filter_facts():
+    sp = _staged(players_alive=9, ally_revealed=True, uses_left=2)
+    assert sp_gate_key(sp) == ("offensive", "honest", "early", True, True)
+    assert sp_gate_key(_staged(players_alive=4, bullets_left=0))[2:] == ("late", None, False)
+
+
+def test_a_missing_stage_fact_is_none_in_its_slot():
+    assert sp_gate_key(_staged(players_alive=6)) == ("offensive", "honest", "mid", None, None)
+    assert sp_gate_key(_staged(ally_revealed=False)) == ("offensive", "honest", None, False, None)
+
+
+def test_a_fresh_point_reads_stage_from_its_own_fields():
+    fresh = SimpleNamespace(direction="offensive", honesty="honest", players_alive=9, uses_left=0)
+    assert sp_gate_key(fresh) == ("offensive", "honest", "early", None, False)
+
+
+def test_same_labels_other_stage_never_share_a_partition():
+    from Agents.memory.batch_deduplication.clustering import _gate_partitions
+
+    base = dict(players_alive=9, ally_revealed=False, uses_left=1)
+    items = {
+        "a": SimpleNamespace(value=_staged(**base)),
+        "same_stage": SimpleNamespace(value=_staged(**base | {"players_alive": 8, "uses_left": 2})),
+        "other_alive": SimpleNamespace(value=_staged(**base | {"players_alive": 6})),
+        "partner_lost": SimpleNamespace(value=_staged(**base | {"ally_revealed": True})),
+        "spent": SimpleNamespace(value=_staged(**base | {"uses_left": 0})),
+    }
+    parts = sorted(sorted(p) for p in _gate_partitions(items, "strategy_points"))
+    assert parts == [["a", "same_stage"], ["other_alive"], ["partner_lost"], ["spent"]]
+
+
+def test_sp_gate_filter_drops_other_stage_candidates():
+    item = SimpleNamespace(direction="offensive", honesty="honest", players_alive=9)
+    same = SimpleNamespace(value=_staged(players_alive=8))
+    late = SimpleNamespace(value=_staged(players_alive=4))
+    assert sp_gate_filter(item, [same, late]) == [same]
+
+
+def test_the_partition_is_never_looser_than_the_after_judge_check():
+    # Lessons sharing a partition never differ on a stage fact the check compares; a lesson missing a
+    # fact sits apart from one that has it, so the check (which skips missing facts) cannot fire inside.
+    from Agents.memory.retrieval.dimension_gating import stage_mismatch
+
+    boards = [dict(players_alive=a, **extra) for a in (9, 6, 3)
+              for extra in ({}, {"ally_revealed": True}, {"ally_revealed": False, "uses_left": 0},
+                            {"uses_left": 2}, {"bullets_left": 1})]
+    for x in boards:
+        for y in boards:
+            if sp_gate_key(_staged(**x)) == sp_gate_key(_staged(**y)):
+                assert stage_mismatch(x, y) == []
+    assert sp_gate_key(_staged(players_alive=9)) != sp_gate_key(_staged(players_alive=9, uses_left=1))

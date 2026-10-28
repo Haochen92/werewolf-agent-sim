@@ -8,6 +8,10 @@ groups crossed those labels. This runs it without writing, on a copy of the work
 points, under each split, and records every group it would collapse; then compares the points it
 would drop with the readers' 78.
 
+2026-10-28: the partition key now also carries the stage facts (``dedup_gate.sp_gate_key``), and the
+``SPLITS`` patch replaces only the labels, so a rerun splits by stage too and will not reproduce the
+2026-10-13 numbers; ``git worktree`` on a commit before then does.
+
   poetry run python evaluation/experiments/v8_sp_dedup_dry_run.py
 """
 

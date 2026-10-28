@@ -16,6 +16,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from Agents.memory.retrieval.dimension_gating import stage_facts
+
 
 def _read(obs: Any, field: str) -> Any:
     """Read a field from either a stored value dict or an Observation-like object."""
@@ -132,23 +134,37 @@ def gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
 
 # ── Strategy-point gate ────────────────────────────────────────────────────────
 # An SP's dedup signature is NOT the situation enums (those go SOFT, as similarity within the bucket) —
-# it is the move classification: direction + honesty, within the (role, action_phase) namespace. Two SPs
-# match only if both agree AND their situations are similar; differ on either → distinct move (e.g.
-# "pressure the accuser" [offensive] vs "lay low" [defensive] in the same spot). The whole signature is
-# the partition, so there are no separate pair-checks. None for a v5 strategy point (no classification).
+# it is the move classification: direction + honesty, within the (role, action_phase) namespace, plus the
+# board's stage. Two SPs match only if all agree AND their situations are similar; differ on a label →
+# distinct move (e.g. "pressure the accuser" [offensive] vs "lay low" [defensive] in the same spot).
+# The whole signature is the partition, so there are no separate pair-checks. None for a v5 strategy
+# point (no classification, no stage).
 _SP_SIGNATURE_FIELDS = ("direction", "honesty")
+_STAGE_DIM_FIELDS = ("players_alive", "ally_revealed", "uses_left", "bullets_left")
 
 
 def sp_gate_key(sp: Any) -> tuple | None:
-    """SP dedup partition: (direction, honesty). None if the SP carries neither (v5)."""
-    values = [_read(sp, field) for field in _SP_SIGNATURE_FIELDS]
+    """SP dedup partition: (direction, honesty, alive bucket, partner lost, has uses), the stage slots
+    from the stage filter's own `stage_facts`, None where the SP lacks a fact. Stage is in the key
+    because lessons from different stages give advice for different boards and are served to different
+    seats, so the judge should never weigh one against the other. None if the SP carries nothing (v5)."""
+    values = tuple(_read(sp, field) for field in _SP_SIGNATURE_FIELDS) + stage_facts(_sp_stage_dims(sp))
     if all(v is None for v in values):
         return None
-    return tuple(values)
+    return values
+
+
+def _sp_stage_dims(sp: Any) -> dict:
+    """The SP's stage dims: a stored value nests them under `dimensions`; a freshly extracted point
+    carries them as its own fields."""
+    dims = _read(sp, "dimensions")
+    if isinstance(dims, Mapping):
+        return dims
+    return {field: _read(sp, field) for field in _STAGE_DIM_FIELDS if _read(sp, field) is not None}
 
 
 def sp_gate_filter(item: Any, candidates: list[Any]) -> list[Any]:
-    """Narrow cosine candidates to the SP's move-classification signature. No-op for v5 SPs."""
+    """Narrow cosine candidates to the SP's signature (labels + stage). No-op for v5 SPs."""
     key = sp_gate_key(item)
     if key is None:
         return candidates

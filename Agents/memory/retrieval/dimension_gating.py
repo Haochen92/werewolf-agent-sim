@@ -60,21 +60,34 @@ def _uses(dims: dict[str, Any]) -> int | None:
     return None if value is None else int(value)
 
 
+_STAGE_FACT_NAMES = ("alive", "partner", "uses")
+
+
+def stage_facts(dims: dict[str, Any]) -> tuple[str | None, bool | None, bool | None]:
+    """A board's stage as (alive bucket, pack partner lost, limited ability has a use left), None
+    where the board lacks the fact. One definition shared by the stage filter and the lesson dedup
+    partition (dedup_gate.sp_gate_key), so the two cannot drift apart.
+
+    Args:
+        dims: a seat's query dims or a stored lesson's `dimensions`.
+
+    Returns:
+        (alive_bucket, partner_lost, has_uses), each None when missing.
+    """
+    alive = dims.get("players_alive")
+    revealed = dims.get("ally_revealed")
+    uses = _uses(dims)
+    return (None if alive is None else _alive_bucket(alive),
+            None if revealed is None else bool(revealed),
+            None if uses is None else uses > 0)
+
+
 def stage_mismatch(query_dims: dict[str, Any], stored_dims: dict[str, Any]) -> list[str]:
     """The stage facts on which a stored lesson's board differs from the seat's: the alive bucket,
     whether the pack has lost a partner, whether the limited ability has any use left (some vs
     none). A fact either side lacks is not compared."""
-    out = []
-    qa, sa = query_dims.get("players_alive"), stored_dims.get("players_alive")
-    if qa is not None and sa is not None and _alive_bucket(qa) != _alive_bucket(sa):
-        out.append("alive")
-    qr, sr = query_dims.get("ally_revealed"), stored_dims.get("ally_revealed")
-    if qr is not None and sr is not None and bool(qr) != bool(sr):
-        out.append("partner")
-    qu, su = _uses(query_dims), _uses(stored_dims)
-    if qu is not None and su is not None and (qu > 0) != (su > 0):
-        out.append("uses")
-    return out
+    return [name for name, q, s in zip(_STAGE_FACT_NAMES, stage_facts(query_dims), stage_facts(stored_dims))
+            if q is not None and s is not None and q != s]
 
 
 # The stage filter's search covers a whole cell (the 40-game store's largest has 35 points), so the
