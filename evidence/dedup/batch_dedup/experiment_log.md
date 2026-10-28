@@ -1,5 +1,14 @@
 # Batch dedup — the offline whole-store pass (experiment log)
 
+> **Status note (2026-10-28).** Merging is off. The observation fold has judged keep/discard only
+> (triage-only) since 2026-06-22, and lessons (strategy points) have not been merged since 2026-10-13;
+> the lesson dedup itself has been off since 2026-10-26 (addendum at the end). The "Bottom line (what we
+> run)" and "Current live state (2026-06-25)" sections below are superseded and carry dated notes; the
+> rest of the log is kept as the record of how the design got here.
+> **Terms.** *Triage* = the first pass, by a cheap model, over every cluster; *escalated* = sent on to
+> the stronger model for a second decision; KEEP / DISCARD / MERGE = keep the entry, drop it as a copy of
+> a survivor, or combine several entries into one rewritten entry.
+
 **What this is.** The **offline** dedup layer: the whole store swept in similarity clusters on a strong
 model. Prompt tuning was only *one* of several threads here (hence the folder is `batch_dedup`, not
 "prompt tuning") — this chapter covers all of them: **(1)** why an offline pass is needed at all;
@@ -39,6 +48,9 @@ verify — with the v3 default prompt** (89.2%, the best-accuracy config; the li
 option for more frequent runs). The **gate and bounded clustering already run live** (online dedup + the
 v7 loop); the offline two-pass pass itself is **built and validated but off by default — one flag**
 (`IncrementalDedupConfig`). The one unclosed risk before flipping it on is merge fabrication (below).
+
+*Superseded 2026-10-28: the two-pass merge is not run anywhere; the fold is triage-only and lessons never
+merge (status note at the top).*
 
 **Model names, once.** *flash / pro / lite* are capability **tiers**; the numbers (`3.5`, `2.5`, `3.1`)
 are **generations** — so the newer `gemini-3.5-flash` can and does beat the older `gemini-2.5-pro` here.
@@ -106,8 +118,14 @@ produced store records it (`memory_stores/v6_1_sp_cluster/manifest_sp.json`: `"c
 *mechanically* enforces that conservatism, so it was the natural pick. `connected` and `agglomerative`
 stay available behind the flag for one-off full-store consolidation but are not used in the loop.
 
+*Note 2026-10-28: "won on relevance" overstates the retrieval study. The 17% store lost a little
+relevance (observations 4.51 → 4.44) and gained efficiency and distinct lessons, with no significance
+test; the 39% store lost relevance ([report.md](../report.md), "Evidence: the store-level effect").*
+
 **The size cap was tuned 8 → 25 → 15.** It started at 8, was raised to 25, then cut to **15** when the
 eval showed accuracy falls off a cliff above ~15 entries (26–74% vs 80–100% for smaller clusters).
+*Note 2026-10-28: the 26–74% figure has no visible source. The size table below ("Accuracy by cluster
+size (v3)") gives 2–5 entries 100%, 8–10 80–100%, 11–16 64–100%, and the one 23-entry cluster 65–74%.*
 
 **The blob returned once — in the *global* `agglomerative` path — and forced the gate.** A system-wide
 run that clustered a whole namespace un-gated over-merged across unrelated game states (the commit calls
@@ -209,7 +227,7 @@ After scoring per-key action accuracy, we evaluated the quality of merged text (
 - **Information preservation** (1-5): Were important nuances preserved (tactic counts, conditions, mechanisms)?
 - **Fabrication detected** (bool): Did the rewrite introduce context not in source entries?
 
-Pipeline: `evaluation/experiments/batch_dedup_merge_eval.py` extracts MERGE/DISCARD-with-rewrite operations from eval result JSONs, pairs with source entries from the cluster file, and sends to the judge.
+Pipeline: `evaluation/src/studies/batch_dedup_merge_eval.py` (path corrected 2026-10-28) extracts MERGE/DISCARD-with-rewrite operations from eval result JSONs, pairs with source entries from the cluster file, and sends to the judge.
 
 ### Results (v3 prompts)
 
@@ -236,15 +254,19 @@ The observation prompt at ~7383 chars is at 3.5-flash's structured output capaci
 
 **2.5-pro writes high-quality merges** with good information preservation (4.0/5) but fabricates 33% of the time — introducing game context not present in source entries.
 
+*Restated 2026-10-28: "33%" is 3 of 9 merges, flagged by a judge on the same model (gemini-2.5-pro) that
+wrote them. A small, self-judged sample, not a general fabrication rate.*
+
 **Open risk — nothing catches the fabrication before it lands.** MERGE is the one **irreversible,
 store-mutating** operation in the pipeline (a DISCARD just drops a near-identical copy; a bad MERGE
 rewrites the survivor with invented context), and 2.5-pro — the *only* model that preserves all three
-fields, so the one we must use to write merges — fabricates on ~1/3 of them. The apply layer
+fields, so the one we must use to write merges — fabricates on ~1/3 of them (3 of 9, self-judged; note
+above, 2026-10-28). The apply layer
 (`operations.py`) validates keys and merges metadata but does **no content check** against the source
 entries, so a fabricated merge would land. Today's safeguards are only partial: the pass is **dry-run
 unless `--apply`**, MERGE is the **rarest** operation, and bounded clustering keeps merge volume low. The
 fix is half-built — the `fabrication_detected` judge from this very eval
-(`evaluation/src/experiments/batch_dedup_merge_eval.py`) is the obvious pre-apply gate, just not wired
+(`evaluation/src/studies/batch_dedup_merge_eval.py`, path corrected 2026-10-28) is the obvious pre-apply gate, just not wired
 into the apply path yet. **This is the single most important open risk in the batch pipeline**, and the
 one to close before turning the offline pass on by default.
 
@@ -475,12 +497,13 @@ Stored at `memory_stores/v2_idempotency` for comparison. Report at `eval_results
 Running batch dedup repeatedly on the same store will cause cumulative shrinkage — each pass removes ~10% of items. Some removals are legitimate (the first pass missed them), but others degrade the store by merging retrieval-distinct entries.
 
 **Mitigations:**
-- **Incremental dedup**: Track last dedup timestamp, only process clusters containing new entries. Prevents re-processing old entries while still comparing new entries against old neighbors. **Implemented** — see below.
+- **Incremental dedup**: Track last dedup timestamp, only process clusters containing new entries. Prevents re-processing old entries while still comparing new entries against old neighbors. **Implemented** — see below. *(Note 2026-10-28: incremental mode is used today by the observation fold, with the new entries named by the caller; the after-game run is built and off — [report.md](../report.md), "The post-game incremental pass".)*
 - **Full-store refresh (deliberate)**: Periodic re-run without `--incremental` to consolidate older entries that have been superseded by newer experience. The 10.4% shrinkage is partly legitimate — strategy discards are mostly correct, and observation rewrites update language to be more general/retrievable. The risk is only from unbounded repeated full-store runs.
 
 ### Incremental dedup (implemented)
 
-Added `--incremental` flag to `memory_batch_deduplication.py`. Mechanism:
+Added `--incremental` flag to `memory_batch_deduplication.py` (file no longer exists; the CLI is now
+`Agents/memory/batch_deduplication/cli.py`, run as a module below — corrected 2026-10-28). Mechanism:
 
 1. After each `--apply` run, writes `.last_dedup_at` timestamp to the store directory
 2. On next `--incremental` run, reads this timestamp and scans JSON files for entries with `created_at > last_dedup_at`
@@ -490,10 +513,10 @@ Added `--incremental` flag to `memory_batch_deduplication.py`. Mechanism:
 Usage:
 ```
 # Routine after-game dedup (only new entries)
-poetry run python Agents/memory_batch_deduplication.py --store-dir <path> --incremental --apply --two-pass
+poetry run python -m Agents.memory.batch_deduplication.cli --store-dir <path> --incremental --apply --two-pass
 
 # Periodic full-store refresh (deliberate re-processing)
-poetry run python Agents/memory_batch_deduplication.py --store-dir <path> --apply --two-pass
+poetry run python -m Agents.memory.batch_deduplication.cli --store-dir <path> --apply --two-pass
 ```
 
 This gives two complementary modes:
@@ -502,13 +525,16 @@ This gives two complementary modes:
 
 ## Next Steps
 
-1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure in `memory_batch_deduplication.py` (CLI: `--two-pass`, `--triage-model`, `--verify-model`). Golden eval: 89.2% accuracy, best of all approaches. See [two-pass golden eval results](#two-pass-golden-eval-results-v3-prompts).
-2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/experiment_log.md#phase-2).
+1. ~~**Implement and validate the two-pass pipeline**~~ — **Done.** Two-pass infrastructure in `memory_batch_deduplication.py` (now `Agents/memory/batch_deduplication/cli.py`, 2026-10-28) (CLI: `--two-pass`, `--triage-model`, `--verify-model`). Golden eval: 89.2% accuracy, best of all approaches. See [two-pass golden eval results](#two-pass-golden-eval-results-v3-prompts).
+2. ~~**Measure retrieval impact of v3-calibrated store**~~ — **Done.** v4_deduped_v2 (v3 prompts, 432 items) outperforms both v4 and v4_deduped on retrieval quality at n=39. See [store_retrieval_impact](../store_retrieval_impact/experiment_log.md#phase-2). *(Note 2026-10-28: not on every measure. Against the raw store it lost a little relevance and gained efficiency and distinct lessons, with no significance test; [report.md](../report.md), "Evidence: the store-level effect".)*
 3. ~~**Tune flash-lite triage prompt**~~ — **Done.** Lite anti-overmerge prompt created and evaluated. Standalone: 85.6% (up from 72.1%). Two-pass with lite: 84.7% at 12% escalation vs 89.2% at 25% escalation with v3 default. See [flash-lite anti-overmerge prompt tuning](#flash-lite-anti-overmerge-prompt-tuning) and [two-pass with lite prompt](#two-pass-with-lite-prompt-validated).
 4. ~~**Solve idempotency before integration**~~ — **Done.** Incremental dedup mode (`--incremental`) implemented. Tracks `.last_dedup_at` timestamp, skips all-old clusters. See [incremental dedup](#incremental-dedup-implemented).
-5. ~~**Integrate batch dedup into the game pipeline**~~ — **Done.** `BatchDedupConfig` added to `MemoryPersistenceConfig` (disabled by default). When enabled, runs incremental two-pass dedup after memory dump in `post_game_analysis()`. Enable via `build_game_config(memory_persistence_config=MemoryPersistenceConfig(batch_dedup=BatchDedupConfig(enabled=True)))`.
+5. ~~**Integrate batch dedup into the game pipeline**~~ — **Done.** `BatchDedupConfig` added to `MemoryPersistenceConfig` (disabled by default). When enabled, runs incremental two-pass dedup after memory dump in `post_game_analysis()`. Enable via `build_game_config(memory_persistence_config=MemoryPersistenceConfig(batch_dedup=BatchDedupConfig(enabled=True)))`. *(Note 2026-10-28: built and off. The switch, now `IncrementalDedupConfig.enabled` in `Agents/memory/persistence/config.py`, defaults off, and since extraction moved out of the game nothing calls `run_batch_dedup_from_config`; [report.md](../report.md), "The post-game incremental pass".)*
 
 ## Current live state (2026-06-25)
+
+*Superseded 2026-10-28: see "Current live state, revisited (2026-10-14)" and the addendum below; no merge
+runs anywhere, and the two-pass sweep is not the resolved config in use.*
 
 **This isn't shelved — the parts that earned their keep run today.** The deterministic **gate**
 (`gate_enabled=True`) and **bounded clustering** are live: the gate on every online dedup decision,

@@ -1,5 +1,7 @@
 # Deduplication: keeping repeated observations and lessons out of the memory store
 
+*Terms note 2026-10-28: the write-up ([writeup/memory/store_upkeep/](../../writeup/memory/store_upkeep/store_upkeep.md)) uses other names for the same parts: gate = metadata filter, embedding check = similarity thresholds, seeded method = seeded clustering, tick = learning cycle.*
+
 This page describes how the project keeps duplicates out of the memory store today, layer by layer,
 and what evidence supports each layer. How the design got here is told in
 [the experiment log](experiment_log.md); the detail of each study is in the four sub-logs linked
@@ -113,8 +115,11 @@ hierarchical method) put all of a role's entries for one kind of decision into o
 threshold low enough to catch real duplicates. The seeded method cannot chain, so each entry lands in one small cluster. The other two
 methods remain behind a setting, unused.
 
-**Evidence.** On the 111-entry set, judges were right on 80–100% of entries in clusters below 15
-entries and on 26–74% above it, which set the cap. Neither line binds much today: both floors sit below
+**Evidence.** On the 111-entry set, the two models in the size table (gemini-3.5-flash and
+gemini-2.5-pro) were right on 100% of entries in clusters of 2–5, 80–100% at 8–10, 64–100% at 11–16, and
+65–74% on the one 23-entry cluster, which set the cap ([batch log](batch_dedup/experiment_log.md),
+"Accuracy by cluster size (v3)"). *Corrected 2026-10-28: this sentence read "80–100% … below 15 entries
+and 26–74% above it"; the 26–74% had no visible source.* Neither line binds much today: both floors sit below
 nearly every pair of entries for the same role and kind of decision, so the gate and the judge do the
 separating
 ([v8 log](../memory_system/v8/experiment_log.md), "Embedder").
@@ -152,6 +157,30 @@ effect on accuracy has never been scored: both labelled sets predate the structu
 gate does nothing on them. On the lesson side it has a measured cost: of 65 groups of duplicate lessons
 that model readers found in the 40-game store, 37 crossed the direction or honesty labels, so the
 dedup never compared them ([v8 log](../memory_system/v8/experiment_log.md), 2026-10-13).
+
+*Note 2026-10-28: stage joined the lesson partition (working tree, not committed).* **The error.** The
+lesson partition held the two labels but not the game stage, so the judge saw lessons from different
+stages side by side; in the dry run of 2026-10-13 it proposed 10 of its 30 drops across stages (layer
+5). The first fix blocked those drops after the judge: the store stayed safe, but the judge still
+compared pairs it could never act on. **The fix.** `sp_gate_key` now also holds the three facts
+retrieval's stage filter compares (players alive in early/mid/late, pack partner lost, a limited
+ability with a use left), read through the filter's own `stage_facts`, with a missing fact as its own
+value. Lessons from different stages give advice for different boards and are served to different
+seats, so the judge now sees only lessons from one stage. **The cost**, counted without a judge
+(`evaluation/experiments/sp_dedup_stage_partition_check.py`):
+
+| Store | Key | Partitions | Lessons alone in a partition (never deduplicated) | Largest |
+|---|---|---|---|---|
+| 605 lessons (the dry run's) | labels | 126 | 22 | 16 |
+| | labels and stage | 266 | 124 | 10 |
+| `ten_seat_v2`, published (498) | labels | 122 | 29 | 16 |
+| | labels and stage | 243 | 128 | 9 |
+
+No lesson lacks a stage fact that another lesson in its cell carries: a missing fact is always one
+the role does not have. Of the readers' 65 groups, the new key splits 51: the 37 split by the labels,
+and 14 more by stage alone (12 differ in players alive, 3 in uses left; one in both). Each of the 14
+spans stages on a fact both lessons carry, so the stage filter would serve its lessons to different
+seats; they are not duplicates the judge should drop.
 
 ### 3. The embedding check: decide the plain cases without a judge
 
@@ -255,6 +284,11 @@ The two steps that use it differ in what the judge may change:
   stage filter (built, off by default) would serve each to different seats; and a discarded lesson's key is listed on its survivor, so the
   follows recorded against it still count (`operations.py::_apply_strategy_operation`,
   `_merged_metadata`; [v8 decisions](../memory_system/v8/decisions.md) §14).
+  *Note 2026-10-28 (working tree, not committed):* the stage rule was the first fix for a partition
+  without stage; stage is now in the partition, before the judge (layer 2), so the 10 cross-stage
+  drops of the dry run below are pairs the judge is never shown. Lessons in one cluster now share
+  their stage, so the rule cannot fire inside a gated cluster; it stays as a backstop for a pass run
+  without the gate (`gate_enabled` off).
 
 Both use **incremental mode** (the lesson dedup when switched on), with the old-entry guard explained below.
 
@@ -305,6 +339,11 @@ had rewritten one lesson in 605 when it still could). The 78 duplicates were lef
 store by hand. The dry run's reading (split by honesty and stage instead of direction, and use a
 stronger judge) has not been built; the judge has since changed to Haiku 5.5 without a re-run, and the
 lesson dedup has been off since 2026-10-26 until this retune is done.
+*Note 2026-10-28:* the stage half of that reading is now built (layer 2); dropping direction and the
+stronger judge are not. By the stage filter's facts, 30 of the 78 lessons left out by hand came from
+another stage than the lesson kept in their group, so the published store left out 30 lessons the
+filter would have served to seats their kept partner does not reach. Owner, 2026-10-28: the published
+store is left as built; the 30 are not restored.
 
 The write step on the same build kept 2,008 of 2,277 observations, discarding 269 as copies; nearly
 all of the build's 4.7 hours went to it. Earlier, folding 562 observations from parallel seed games
@@ -355,13 +394,23 @@ merged text could not be trusted:
   structured output on several clusters.
 - Gemini 2.5 Pro, the one model that kept all three, added game context that was not in the sources in
   3 of the 9 merges a judge reviewed.
+  *Correction 2026-10-28.* Reread from the eval files: the nine reviewed operations were 5 observation
+  merges and 4 lesson discards that rewrote their survivor, all from the one-pass Gemini 2.5 Pro run (the
+  two-pass design's 4 merges were never reviewed). All three flags concern per-tactic counts; the reviewer
+  was not shown observation counts (`evaluation/src/judges/batch_dedup.py`, `_format_source_entries`), and
+  in clusters 14 and 16 the counts match the sources' observation counts exactly. The real failure is
+  cluster 4, whose merged situation reverses source 3d9a71f0 ("had not yet found a wolf" → "has also
+  privately identified or strongly suspects" the wolf), which the reviewer missed. The Flash models dropped
+  move and outcome in most merges (25 of 26 and 38 of 43), not all. Detail:
+  `writeup/memory/store_upkeep/merge_fabrication.md`.
 - Nothing between the judge and the store checks merged text against its sources. The fabrication
   judge exists only in the evaluation code.
 
 So the fold runs triage-only (the mode was added on 2026-06-22) and lessons never merge (since
 2026-10-13). The
 two-pass mode can still be run by hand (`Agents/memory/batch_deduplication/cli.py --two-pass`). Its
-default models are now Haiku 5.5 and Sonnet 5.5, neither of which has been scored on the set.
+default models are now Haiku 5.5 and Sonnet 5.5, not scored as a two-pass pair on the set (each was
+scored one pass on 2026-10-26, below; corrected 2026-10-28 from "neither of which has been scored").
 
 ### The post-game incremental pass
 
@@ -412,7 +461,7 @@ What has not been checked:
 | Choice | Rests on | What would justify changing it |
 |---|---|---|
 | Keep or discard only, no merge | merged text unverified; fabrication in 3 of 9 Pro merges | a check of merged text against its sources, wired before the store is written |
-| Lessons partitioned by direction and honesty | the labels separate rival moves | the dry-run's alternative (honesty and stage) catching more of the readers' groups without cross-stage drops |
+| Lessons partitioned by direction and honesty (stage added 2026-10-28, layer 2) | the labels separate rival moves | the dry-run's alternative (honesty and stage) catching more of the readers' groups without cross-stage drops |
 | Haiku 5.5 as judge | cost; 80% on 65 historical one-at-a-time cases | its batch discards: 11 of 18 right against Flash-Lite's 13 of 15; a judge that discards lessons as safely (Sonnet 5.5 made no wrong discard, 8 of 8) before the lesson dedup is switched back on; for the fold, one that catches copies at all (Haiku caught 0 of 6) |
 | Qwen lines from 65 cases | zero errors on calibration cases; the 232-case recheck found inactive lesson errors and little active observation coverage | recalibration with a separate held-out check, or evaluation on logged current-store decisions |
 | Lean towards keeping | a wrong discard is permanent | a retrieval or play measure showing the duplicates kept cost more than the lessons saved |
