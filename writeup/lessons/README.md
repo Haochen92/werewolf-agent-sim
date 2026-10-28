@@ -9,6 +9,11 @@ The rule for the write-up (2026-10-13): each decision is explained in its own se
 concrete problem and result live; the synthesis is one short paragraph that links back to those
 segments. It never replaces them, and it never flattens different interventions into one slogan.
 
+**Not in the write-up for now (owner, 2026-10-27).** These files are the owner's own learning notes. The
+chapter structure gives them no page; each instance is told in its own chapter. Before any later use,
+check the files against the current reports (the de-halo weights and model names here predate the
+2026-10-26 corrections).
+
 ## Lessons
 
 | Lesson | Instances | Status |
