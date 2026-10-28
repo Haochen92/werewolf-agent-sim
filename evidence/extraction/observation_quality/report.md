@@ -8,6 +8,8 @@ It describes the ten-seat code; the nine-seat measurements of June and July 2026
 as the case study.
 **Revised against the code:** 2026-10-22 at `c0732f88` (the extraction, de-halo and consolidation code
 has no uncommitted edits).
+**Corrected:** 2026-10-28, §4 (why the gap is an upper bound, which negatives de-halo removed, the
+verdict list) with dated notes in place; the phase table in §4 added the same day.
 **Companion docs:** [the journey log](experiment_log.md) (the same story in date order) ·
 [the case study](outcome_halo_case_study.md) (two graded entries from the owner's own seat) ·
 [the ten-seat decisions](../../memory_system/v8/decisions.md) §12–13 (the grading table, the
@@ -132,7 +134,7 @@ pivotal moments with no fixed count.
 
 For every observation we have three facts:
 
-1. **The extractor's verdict:** positive, negative, or unclear.
+1. **The extractor's verdict:** positive, negative, mixed or unclear.
 2. **A grade of the same move, computed by code** from the game record: good or bad. It judges the move's direct effect against the roles revealed after the game. A town vote for a wolf is good, a vote for a villager bad; a vigilante's shot on an evil player is good, on a villager bad. (The full rule table is in the [credit report](../../credit/report.md) §2.) The grade is only a stand-in for move quality, but it never sees who won the game.
 3. **Whether the player's side won.**
 
@@ -148,8 +150,8 @@ A good move on the losing side was called positive 23% of the time; the same kin
 ### How sure we are
 
 - **It is counting, not judging.** No model scored anything in this test. The numbers are counts over 1,472 observations, written by two different extraction models.
-- **It holds in every slice.** The gap appears in discussion, votes and night actions, and for town and non-town roles alike. So it is not a side effect of winners and losers playing different roles or phases.
-- **The grade is a stand-in, and that is fine here.** A grade that is sometimes wrong in the same way for both sides only blurs the picture; it cannot create a gap between winners and losers. Only an error that favours one side could, for example if winners' "good" moves were really more effective than losers' in ways the simple good/bad grade cannot see. So read the gap as the most the halo could be. Most of it is halo all the same: a bad move has no fair claim to praise, yet winners' bad moves got it 18% of the time and losers' never. And the case study in §5 shows the mechanism on a seat whose intent is known.
+- **It holds in every slice.** The gap appears in discussion, votes and night actions (the phase table below, "By phase"), and for town and non-town roles alike. So it is not a side effect of winners and losers playing different roles or phases.
+- **The gap is the most the halo could be, not the halo itself.** The grade is a stand-in for move quality and is sometimes wrong. Even if it is wrong at the same rate for both sides, it can open a gap with no halo at all: the winning side likely makes more truly good moves, so more of its rule-graded good moves really are good and fewer of its rule-graded bad moves really are bad, and a perfectly fair verdict would still praise the winners' graded moves more often. Real differences the grade cannot see (a winner's good vote that also swung the table) push the same way. So the gap is an upper bound on the halo: it is the halo plus whatever real difference in move quality the grade fails to separate. That second part would have to be very large to explain the whole gap. A fair verdict praises a truly good move equally often whichever side made it, so for it to give 83% against 23%, the losers' rule-graded good moves would have to be truly good at barely a quarter of the winners' rate (23 ÷ 83 = 28%). The case study in §5 shows the halo itself on a seat whose intent is known. (Corrected 2026-10-28: this point said a grade wrong in the same way for both sides "cannot create a gap". It can, through the different share of truly good moves on each side, as above.)
 - **Not checked:** whether the stage of the game plays a part (losers' moves come earlier, where effects are harder to see).
 
 ### What de-halo does
@@ -161,9 +163,26 @@ A good move on the losing side was called positive 23% of the time; the same kin
 | **Losing side** | 0% | 21% |
 | **Winning side** | 9% (was 18%) | 75% (was 83%) |
 
-It halved the praise for winners' bad moves and removed many unfair negatives on the losing side (a loser's bad move called negative fell from 79% to 48%, a loser's good move from 27% to 12%). But a loser's good move is still called positive only 21% of the time, against 75% for a winner's. **De-halo reduces the halo; it does not remove it.** That is why the verdict never decides a lesson's score: credit uses the code's grade, and the grade is stored beside the verdict.
+It halved the praise for winners' bad moves. On the losing side it moved many negatives to "unclear", and only some of them were unfair: a loser's good move called negative fell from 27% to 12%, which is the fix intended, but a loser's bad move called negative also fell, from 79% to 48%, and by the grade those negatives were right. (Corrected 2026-10-28: this sentence counted the 79% to 48% fall among "unfair negatives" removed; by the grade it turned correct verdicts into unclear ones.) And a loser's good move is still called positive only 21% of the time, against 75% for a winner's. **De-halo reduces the halo; it does not remove it.** That is why the verdict never decides a lesson's score: credit uses the code's grade, and the grade is stored beside the verdict.
 
-De-halo's model was picked on one test game, where a reader had marked which verdicts were halo and which were fair. Claude Haiku 5.5 fixed all four halo verdicts and none of the fair ones, for under a cent. One game picks a model; it does not measure its accuracy. A straight-line fit over the same rows summarises both tables in two numbers (code: `fit` in `evaluation/experiments/v8_verdict_halo.py`; data: `evidence/memory_system/v8/data/halo/observation_rows.jsonl`).
+A second review was chosen because it is narrow: it may keep a verdict, soften it to "unclear" or flip it (§3), and it changes nothing else in the observation, with the original verdict kept beside it so the pass can be undone. De-halo's model was picked on one test game, where a reader had marked which verdicts were halo and which were fair. Claude Haiku 5.5 fixed all four halo verdicts and none of the fair ones, for under a cent. One game picks a model; it does not measure its accuracy.
+
+### By phase
+
+The same observations split by phase. Each cell is the share before de-halo → after; "good" and "bad" are the rule-based grade's call, and the counts are observations (`evaluation/experiments/halo_phase_breakdown.py`).
+
+| Phase | Side | Good moves (n) | called positive | called negative | Bad moves (n) | called positive | called negative |
+|---|---|---|---|---|---|---|---|
+| Discussion | losing | 97 | 26% → 16% | 21% → 11% | 137 | 0% → 0% | 87% → 59% |
+| Discussion | winning | 217 | 81% → 64% | 1% → 0% | 52 | 40% → 17% | 25% → 19% |
+| Vote | losing | 159 | 13% → 16% | 36% → 14% | 130 | 1% → 1% | 72% → 35% |
+| Vote | winning | 204 | 85% → 83% | 1% → 0% | 112 | 8% → 1% | 29% → 31% |
+| Night | losing | 90 | 37% → 34% | 19% → 8% | 93 | 0% → 0% | 75% → 51% |
+| Night | winning | 105 | 84% → 83% | 4% → 2% | 76 | 16% → 14% | 20% → 8% |
+| All phases | losing | 346 | 23% → 21% | 27% → 12% | 360 | 0% → 0% | 79% → 48% |
+| All phases | winning | 526 | 83% → 75% | 2% → 1% | 240 | 18% → 9% | 25% → 21% |
+
+The halving of winners' praise for bad moves came from discussion (40% to 17%) and votes (8% to 1%), while at night it barely moved (16% to 14%), and the gap in praise for good moves stayed wide in every phase after de-halo (votes 16% against 83%). De-halo cut the unfair negatives on losers' good moves in every phase, but in discussion it also cut the praise those moves fairly earned, from 26% to 16%.
 
 ### Two supporting checks
 
@@ -230,6 +249,7 @@ mechanism, not a rate. All 12 observations from the game carried a negative verd
 | Synthesis reading the verdict or the grade | `synth_outcome` in `Agents/memory/consolidation/config.py`; `_format_cluster` in `Agents/memory/strategy_synthesis.py` |
 | Verdict never merged across in dedup | `Agents/memory/dedup_gate.py` |
 | The halo fit (§4) | `evaluation/experiments/v8_verdict_halo.py` (`--grain observation` for the 1,472-observation fit); data in `evidence/memory_system/v8/data/halo/` |
+| The phase table (§4) | `evaluation/experiments/halo_phase_breakdown.py`, over `evidence/memory_system/v8/data/halo/observation_rows.jsonl` |
 | Test-game judge comparison, seeding revisions, tag check | [v8 log](../../memory_system/v8/experiment_log.md), 2026-10-11 and 2026-10-13 |
 | The rulings | [v8 decisions](../../memory_system/v8/decisions.md) §13 |
 | The §1 example | game `20497d9e`, observation 7 of `batch_results/extraction_runs/flash_seed_gate_2026-10-12/` (`extracted.jsonl`, `dehalo.jsonl`, `grades.jsonl`) |

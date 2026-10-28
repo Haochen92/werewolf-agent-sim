@@ -197,6 +197,17 @@ Two things nothing reads. The memory reranker, an optional model call that re-or
 lessons (off by default), sees only the embedded string, not the separate numbers. The design had
 planned a small trained reranking model that would read the numbers directly; it was never built.
 
+**Why the exact fields are not filtered on more** (owner discussion, 2026-10-27). Only three coarse stage
+facts are filterable, and distance to parity and swing are stored but filtered on by nothing. Two reasons.
+The query's numbers are computed, but a stored lesson's are written by the extraction model, since a lesson
+drawn from a whole game has no single board to compute from; the one stored field checked, uses left, was
+exact in 165 of 196 (§5), and a hard filter would inherit those errors and drop good lessons silently.
+Cells are small (about 4 lessons on the 12-game store, about 15 on the 40-game one), so exact constraints
+empty lookups: the coarse stage filter alone left 17 of 96 with nothing when it did not refill, and
+refilling on the 12-game store mostly brought in misfits ([the situation-query report](../situation_summary/report.md)
+§5). The prose therefore carries what the numbers mean, so a board one step away still matches. A filter on
+distance to parity or swing would need a larger store, or stored values computed from the record.
+
 **Memory in the served game.** On the website, memory is a per-game choice that starts off (the
 production deployment allows it through `WW_MEMORY_ENABLED`); when a player turns it on, AI seats retrieve lessons (strategy points
 only) from the published store, though no seat looks up on day 1 and a town seat never does on day

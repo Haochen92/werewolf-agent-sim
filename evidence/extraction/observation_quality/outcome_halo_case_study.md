@@ -13,6 +13,12 @@ this copy exists only as evidence.
 **What happened since:** the halo was measured at scale and ruled on in October 2026; see the note at
 the end.
 
+> **Note (2026-10-28).** This is the earlier record, kept as written in July 2026. The current account
+> of the outcome halo and of de-halo is [the observation-quality report](report.md) §4. Some details
+> below no longer describe extraction as it runs today: the verdict list omits "unclear", which the
+> schema already allowed then and which most of de-halo's changes now go to, and extraction no longer
+> asks for 4 to 8 observations per role (it asks for the pivotal moments, with no fixed count).
+
 > **What is being graded.** After a game, an extraction model reads the whole transcript, every role
 > and the outcome, and writes 4 to 8 observations per role: what the player did and what it led to.
 > Each observation carries a judgement, `net_verdict` (positive, negative or mixed), with a rationale,
