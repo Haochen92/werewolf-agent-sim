@@ -1,7 +1,7 @@
 # Credit: scoring each lesson by the decisions it was followed at
 
 **Scope:** how the agents' memory scores its lessons from finished games, without an AI judge: how one decision is graded, how grades become a lesson's score, how that scoring was checked, and the July case where it failed and was fixed. It describes the ten-seat code in `Agents/memory/consolidation/`. The nine-seat research loop of July 2026, where the design was built and measured, appears as history and as the case study.
-**Revised against the code:** 2026-10-22 at `e765a18e` (the consolidation package has no uncommitted edits).
+**Revised against the code:** 2026-10-22 at `e765a18e` (the consolidation package has no uncommitted edits). *Note, 2026-10-28:* since then the day-matched baseline (§3) and grading of wolf-chat lessons by the move they are about (§2) were added; the memory tests (325) pass on the working tree; these changes are not yet committed.
 **Companion docs:** [the design record](read_tactic_credit_redesign.md) (why beliefs and actions are scored apart) · [the tell report](../extraction/tell_extraction/report.md) (the research-only tell channel) · [the blind-spot log](blindspot_fix/experiment_log.md) (the §6 investigation in full) · [the ten-seat decisions](../memory_system/v8/decisions.md) §12–14 (why the ten-seat rules are what they are).
 
 > **Orientation: one game's path through credit.**
@@ -33,15 +33,32 @@ Three things in the memory system are deliberately never credited this way:
 
 Grading separates two questions. The first is what happened: the decision's target, the role that target turned out to have, and the outcome (the kill landed, the healer saved them, the vote went the other way). The second is what that meant for the player who acted. The same event can be good for one side and bad for another: a town player lynched is a loss for the town and a gain for the wolves. So one step reads the facts from the game record. A separate rule for each role and action turns them into **good**, **neutral** or **bad** for that player. Good counts +1, neutral 0, bad −1.
 
-The rules come from three questions the project owner asked of every role in October 2026: what outcome is ideal for this role, what is neutral, and what is undesirable. "Undesirable" covers a wasted turn, a limited ability spent for nothing, a failure the player could have foreseen, and exposing oneself. Where the outcome was the opponent's doing, the rule grades the choice instead. A vigilante who shoots a wolf the healer then saves still made the right choice.
+The rules come from three questions the project owner asked of every role in October 2026: what outcome is ideal for this role, what is neutral, and what is undesirable. Applying them role by role gave four general reasons, which most rows below follow (added 2026-10-28, from [v8 decisions](../memory_system/v8/decisions.md) §12):
+
+- **Grade what the player controls.** Where the outcome was another player's doing, the rule grades the choice. A vigilante who shoots a wolf the healer then saves still made the right choice.
+- **A failure the player could foresee is the player's.** The killers must attack someone every night, so their skill is choosing the target. Attacking someone the healer is likely to protect, or a player immune at night, wastes the night.
+- **Being seen is a cost.** A kill witnessed by a Sentinel or a Trailseer is bad for the killer, whom the witness can then name in the day.
+- **A limited use spent for nothing is bad**: a watch that saw no one, a sigil on someone who did not attack, a conceal on a body with nothing to hide. An Investigator's check on the Serial Killer is bad too: it spends a check and gives the town a false clear.
 
 ### The ten-seat rule table
 
-The game deals ten seats from twelve roles, split across four sides:
-- the town;
-- two wolves (the Chanteuse and the Illusionist), who kill together each night;
-- a lone killer (the Serial Killer or the Necromancer);
-- two neutrals who bet on others (the Speculator and the Fortune Teller).
+The game deals ten seats from twelve roles, split across four sides (role glosses added 2026-10-28, from [the role sheet](../gameplay/roles/role_sheet.md)):
+- the town, six roles:
+  - **Investigator**: checks one player at night; wolves read "Suspicious", everyone else (the Serial Killer included) "Not suspicious". Two checks a game.
+  - **Sentinel**: watches one player's door at night and learns everyone who visited. Two watches a game.
+  - **Trailseer**: follows one player each night and learns whom they visited, or "no one".
+  - **Vigilante**: shoots one player at night. Two bullets.
+  - **Sigilist**: places a sigil on one player; if that player attacks anyone that night, the Sigilist kills them. Two sigils.
+  - **Healer**: protects one other player from attacks each night.
+- two wolves, who kill together each night and each have one skill:
+  - **Chanteuse**: blocks one player's night action.
+  - **Illusionist**: hides the pack's victim's role and night record. Two conceals.
+- a lone killer, one of:
+  - **Serial Killer**: attacks every night; immune at night.
+  - **Necromancer**: from night 2, uses a dead player's night ability.
+- two neutrals who bet on others, one of which is dealt:
+  - **Speculator**: once, privately picks the side it predicts will win, and wins when that side does.
+  - **Fortune Teller**: each night bets on who will die; wins at two points.
 
 The rules below are read from `Agents/memory/consolidation/grading.py`.
 
@@ -67,7 +84,7 @@ The rules below are read from `Agents/memory/consolidation/grading.py`.
 
 | Role and action | Good | Neutral | Bad |
 |---|---|---|---|
-| Wolves' kill (a lesson followed in the wolves' night chat takes this grade) | lands on a town player or the lone killer | lands on a neutral | the healer saved the victim; the victim was immune; the kill was seen by a Sentinel or a Trailseer |
+| Wolves' kill | lands on a town player or the lone killer | lands on a neutral | the healer saved the victim; the victim was immune; the kill was seen by a Sentinel or a Trailseer |
 | Chanteuse block | blocks a town action that would have hurt the wolves | blocks a town action that changed nothing; the block did not take | blocks someone who had no action that night, or a non-town player |
 | Illusionist conceal (hides a dead victim's role and night record) | hides a town victim who had a record to read out | the victim survived, so the conceal is kept; declined while the victim's record was harmless | spent on a body with nothing to hide; declined while the victim's record named a wolf |
 | Serial Killer kill | lands on a non-neutral | lands on a neutral | saved, immune, or seen |
@@ -80,6 +97,8 @@ The rules below are read from `Agents/memory/consolidation/grading.py`.
 | Sigilist sigil | placed on an evil attacker | | placed on someone who did not attack; placed on the Vigilante, who then shot |
 | Speculator bet | the side it bet on won | declined to bet yet | the side it bet on lost; died on its last night without ever betting |
 | Fortune Teller bet | scored one or two points; bet on itself on a night it was attacked | | a miss; bet on itself on a night no one attacked it |
+
+The wolves' night chat decides nothing itself, so a lesson followed there takes the row of the move it is about: the kill, the Chanteuse's block or the Illusionist's conceal. Until 2026-10-28 every lesson followed in the chat took the kill's grade, so a lesson about when to spend a conceal was scored on whether the kill landed. (Source: each wolf night lesson records its move in the `pack_move` tag; v8 decisions §18.)
 
 Two rows need a word.
 
@@ -99,7 +118,7 @@ Under the ten-seat table a vigilante who holds fire scores **neutral** (0). The 
 
 ## 3. From grades to a lesson's score
 
-A lesson's grades are averaged, then compared with the same role's same kind of decision in games played with memory off. A vigilante's night lesson is compared with memory-off vigilante nights; a wolf's chat lesson with memory-off wolf chats. This comparison matters because some decisions succeed most of the time anyway. Without it, a lesson attached to an easy decision would look excellent for doing nothing.
+A lesson's grades are averaged, then compared with the same role's same kind of decision in games played with memory off. A vigilante's night lesson is compared with memory-off vigilante nights; a wolf's chat lesson about the kill with memory-off wolf chats, and one about a conceal or a block with memory-off conceal or block turns. This comparison matters because some decisions succeed most of the time anyway. Without it, a lesson attached to an easy decision would look excellent for doing nothing.
 
 The memory-off games must be graded by exactly the same rules. A memory-off average computed any other way would differ from the lesson's average for reasons that have nothing to do with the lesson. Sometimes a lesson has followed decisions of a kind for which no memory-off games exist. It is then left unscored, and an unscored lesson is never pruned. A missing baseline is not treated as a baseline of zero.
 
@@ -111,6 +130,7 @@ A few counting rules keep the evidence honest:
 - **Recomputed, not accumulated.** Each credit pass recounts every lesson over the window of games it is given. Old evidence leaves when the window moves.
 - **Only AI seats' decisions are graded.** A game with a human seat is read, and the human seat's own decisions are dropped before grading (`credit_rules.iter_eval_cases`); a game whose human seats are not named is dropped whole. A human's play is not the agents' play. Until 2026-10-26 any game with a human seat was dropped; the owner relaxed the rule because most served games will have one, and credit can only grade the agents' own moves by fixed rules (v8 decisions §15). Extraction, which writes lesson text, stays AI-only.
 - **A merged duplicate's follows count for the lesson it was merged into.**
+- **Compared on the same game day (since 2026-10-28).** Each followed decision is compared with memory-off play by the same role, in the same kind of decision, on the same game day (days 1 to 3 each, later days together). Lessons fire at particular stages, and an average over all days mixes easy late days with hard early ones. A day with fewer than 20 memory-off decisions falls back to all days (`TickConfig.baseline_by_day`, `baseline_min_n`). On the ten-seat demo no day reaches 20 (12 memory-off seed games), so every follow still falls back and the demo pass's results are unchanged; why the day matters, and the nine-seat re-scoring that found it, are in [`day_matched_baseline/`](day_matched_baseline/README.md).
 
 The scores then act. The thresholds were carried over from July and are labelled unvalidated for ten seats (`TickConfig` in `config.py`):
 
@@ -126,8 +146,10 @@ These steps run as a command that makes no model call: `tick credit`, in `Agents
 > ```text
 > raw average  = (good − bad) / follows
 > difference   = raw average − memory-off average
->                (each follow compared with its own kind of decision; the lesson is
->                 unscored if any of those kinds has no memory-off games)
+>                (each follow compared with memory-off play by the same role, in the
+>                 same kind of decision, on the same game day (since 2026-10-28); all
+>                 days when that day has fewer than 20 memory-off decisions; the lesson
+>                 is unscored if any of those kinds has no memory-off games)
 > score        = difference × follows / (follows + 5)
 > ```
 >
@@ -154,15 +176,19 @@ Three checks bear on whether the scores mean what they say, and one run shows th
 
 The first kind is now closed: a discussion lesson is credited only on a turn where the player actually spoke (`_spoke` in `credit.py`). The second is not; a spoken turn can still contradict the lesson it claims to follow. Source: [the 15 cases and verdicts](attribution_spot_check.json).
 
+*Larger check, 2026-10-28.* 100 follow reports from the ten-seat demo games (35 discussion, 30 vote, 35 night), read by model readers: of the 81 they could judge, 74 matched (91%; 95% interval 83–96%) and 5 matched in part; 19 could not be judged, 10 of them wolf night chats whose content the sample left out. The owner hand-labelled 20 of them against the game records and agreed with every case the readers judged; 3 of the 4 they could not judge were matches once the record was read. Record: [`attribution_check_ten_seat/`](attribution_check_ten_seat/README.md).
+
 **Are the scores repeatable?** If scores were noise, a lesson's score from one set of games would not predict its score from another. In July, the archive of games was split in half by game, and each lesson was scored on each half separately. For the **31 lessons** with enough follows in both halves, the two sets of scores agreed (correlation r = +0.54, where noise would give about 0).
 
-The second question is whether a lesson flagged as a loser stays a loser. Nine lessons scored below the prune line (−0.15) on the first half. On the second half, 8 of those 9 (89%) still scored below memory-off play. For comparison, 61% of all 31 lessons scored below memory-off play on the second half, whatever their first-half score. A flagged lesson was therefore more likely than a typical one to stay negative: 89% against 61%. With nine lessons, that shows the direction, not the size. The one lesson that flipped had only 3 follows, fewer than the 8 the prune rule requires; all 4 flagged lessons with 8 or more follows stayed negative.
+The second question is whether a lesson flagged as a loser stays a loser. Nine lessons scored below the prune line (−0.15) on the first half. On the second half, 8 of those 9 (89%) still scored below memory-off play (but see the 2026-10-28 note below). For comparison, 61% of all 31 lessons scored below memory-off play on the second half, whatever their first-half score. A flagged lesson was therefore more likely than a typical one to stay negative: 89% against 61%. With nine lessons, that shows the direction, not the size. The one lesson that flipped had only 3 follows, fewer than the 8 the prune rule requires; all 4 flagged lessons with 8 or more follows stayed negative.
 
-This shows the ranking repeats across games. It does not show that removing the losers improves play. Record: [the strategy-point store](../store_curation/strategy_points.md) §6.
+This shows the ranking repeats across games. It does not show that removing the losers improves play.
 
-**Do the rules do what the table says?** Unit tests pin the ten-seat table. `tests/memory/test_ten_seat_grading.py` has a test for each row that has a case of its own. It also covers the once-per-decision count, the unscored baseline, and the prune and evict lists. `tests/memory/test_consolidation_graduation.py` covers three things: the town abstain rule (§6), that only the AI seats of a game with a human seat are graded (since 2026-10-26; before then such a game taught nothing), and a full credit pass with no model calls. The 50 test cases in these two files passed at `e765a18e`; the human-seat tests were added with the 2026-10-26 change.
+*Note, 2026-10-28.* Repeating is reliability, not correctness. Four of the nine flagged lessons score identically in both halves because every follow got the same grade against a baseline both halves share, so "8 of 9" is partly built in; and a systematic error repeats in both halves too, as the all-days baseline did (§3, [`day_matched_baseline/`](day_matched_baseline/README.md)). What the split supports is the follow floor: the one lesson that flipped had 3 follows. Record: [the strategy-point store](../store_curation/strategy_points.md) §6.
 
-**Does the ten-seat pass run end to end?** Once, as a demonstration. In October 2026, Claude Haiku 5.5 played 20 memory-on games, compared with the 12 memory-off games that seeded the store. Of 498 lessons, 148 were followed and scored; the pass pruned 4, evicted 4 and protected 50. Twenty games give at most a few dozen follows per lesson. So these numbers show the mechanism working, not which lessons are good ([the v8 log](../memory_system/v8/experiment_log.md), 2026-10-14).
+**Do the rules do what the table says?** Unit tests pin the ten-seat table. `tests/memory/test_ten_seat_grading.py` has a test for each row that has a case of its own. It also covers the once-per-decision count, the unscored baseline, and the prune and evict lists. `tests/memory/test_consolidation_graduation.py` covers three things: the town abstain rule (§6), that only the AI seats of a game with a human seat are graded (since 2026-10-26; before then such a game taught nothing), and a full credit pass with no model calls. The 50 test cases in these two files passed at `e765a18e`; the human-seat tests were added with the 2026-10-26 change. *Note, 2026-10-28:* the two files now hold 54 tests, and the whole memory suite (325) passes on the working tree with the day-matched baseline and the chat-lesson grading, not yet committed.
+
+**Does the ten-seat pass run end to end?** Once, as a demonstration. In October 2026, Claude Haiku 5.5 played 20 memory-on games, compared with the 12 memory-off games that seeded the store. Of 498 lessons, 148 were followed and scored; the pass pruned 4, evicted 4 and protected 50. Twenty games give at most a few dozen follows per lesson. So these numbers show the mechanism working, not which lessons are good ([the v8 log](../memory_system/v8/experiment_log.md), 2026-10-14). *Note, 2026-10-28:* that pass graded every lesson followed in the wolves' chat by the kill (§2). One of the four pruned lessons is about the conceal, so a rerun under the current rule may not prune it.
 
 ## 6. Case study: a harmful lesson the score could not see
 
@@ -188,6 +214,7 @@ Agents followed it 19 times. The store it sat in was then tested on 30 paired bo
 - The town result leans negative but is not statistically established: a gap that size would appear about 6% of the time by chance (p ≈ .06).
 - The July players answered with no reasoning step (zero reasoning tokens), so it is a result for players that do not reason.
 - The fix was checked on recorded games only: re-scoring pruned this lesson and kept three lessons chosen in advance as good. It was never tested in new games.
+- *Note, 2026-10-28.* Matched by day ([`day_matched_baseline/`](day_matched_baseline/README.md)): against memory-off vigilante votes on the lesson's own days (15 follows on day 2, 4 on day 3), the lesson scores −0.08 under the July grades (kept) and −0.38 under the corrected rule (pruned), beside the all-days −0.16 and −0.62 above. The −0.62 was still computed against zero: the lesson is typed as concealment, and no memory-off concealment comparison existed for the vigilante's vote. Against all memory-off vigilante votes under the corrected rule it is −0.64. The three control lessons were re-scored against all days only. Day matching alone would have kept this lesson; only the grading rule removes it. Case write-up: [`writeup/memory/curating_lessons/abstention_credit.md`](../../writeup/memory/curating_lessons/abstention_credit.md).
 - Until 2026-10-27 the ten-seat game showed town players no lessons on day turns, so the abstain rule graded only memory-off votes. Town vote lessons are served since then ([v8 decisions](../memory_system/v8/decisions.md) §17), so it now grades served lessons too; no served game has been credited yet.
 
 ## 7. What is not established

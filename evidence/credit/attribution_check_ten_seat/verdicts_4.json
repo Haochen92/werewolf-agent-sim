@@ -1,0 +1,102 @@
+[
+ {
+  "case_id": "c080",
+  "label": "match",
+  "reason": "Lesson says vote with the plurality when not yet the target; player_2 votes player_9, whom player_3 and player_10 are pushing."
+ },
+ {
+  "case_id": "c081",
+  "label": "match",
+  "reason": "Lesson says conceal when the victim's role is unclaimed or the Illusionist carries the kill; the victim is a quiet unclaimed target and the decision is a conceal."
+ },
+ {
+  "case_id": "c082",
+  "label": "match",
+  "reason": "Lesson says claim a hard-to-check town role at the first challenge; player_2 claims vigilante with all shots held, consistent with the record."
+ },
+ {
+  "case_id": "c083",
+  "label": "uncheckable",
+  "reason": "Lesson says follow an acting-role claimant or a player with a concrete case; the record does not say whether player_6 is either."
+ },
+ {
+  "case_id": "c084",
+  "label": "match",
+  "reason": "Lesson says abstain on the first vote day with no accusations; the decision is abstain in a silent room."
+ },
+ {
+  "case_id": "c085",
+  "label": "match",
+  "reason": "Lesson says make one short procedural point about what claimed results imply; the speech is exactly that (Sentinel vs Trailseer wording) with no vote or block revealed."
+ },
+ {
+  "case_id": "c086",
+  "label": "uncheckable",
+  "reason": "Lesson is about the content of the pack's agreement to conceal; the decision is only a night chat, content unseen."
+ },
+ {
+  "case_id": "c087",
+  "label": "match",
+  "reason": "Lesson says spend the vote on the most credible accuser; player_9 votes player_5, the investigator claimant accusing them."
+ },
+ {
+  "case_id": "c088",
+  "label": "match",
+  "reason": "Lesson says keep sigils when no suspect has an attack pattern; the decision is declined."
+ },
+ {
+  "case_id": "c089",
+  "label": "match",
+  "reason": "Lesson says if forced to name someone, pick the room's leading target; player_10 is accused by players 1 and 3 and gets the vote."
+ },
+ {
+  "case_id": "c090",
+  "label": "match",
+  "reason": "Lesson says attack through the Illusionist body at the strongest information role; the target player_1 is a door-disputing claimant (information role), though the body used is not verifiable."
+ },
+ {
+  "case_id": "c091",
+  "label": "match",
+  "reason": "Lesson says follow an unconfirmed non-claiming quiet player; player_1 is among the four unrevealed, not yet followed players."
+ },
+ {
+  "case_id": "c092",
+  "label": "partial",
+  "reason": "Lesson says join the majority when the room has converged on one accused; player_9 is the sole accused but the room's stated consensus is to hold the vote, so the convergence premise is weak."
+ },
+ {
+  "case_id": "c093",
+  "label": "match",
+  "reason": "Lesson says abstain with the majority on an early no-evidence vote; the decision is abstain."
+ },
+ {
+  "case_id": "c094",
+  "label": "match",
+  "reason": "Lesson says avoid repeating the same protectee and vary among candidates; player_6 is a new protectee after saves on players 5 and 7."
+ },
+ {
+  "case_id": "c095",
+  "label": "uncheckable",
+  "reason": "Lesson says vote with the plurality; the shown discussion has no visible convergence on player_9, so it cannot be told whether the vote was with a plurality."
+ },
+ {
+  "case_id": "c096",
+  "label": "match",
+  "reason": "Lesson says make one short procedural point asking a named visitor to clarify; the speech asks player_10 whether they hold a bullet, neutral and procedural."
+ },
+ {
+  "case_id": "c097",
+  "label": "match",
+  "reason": "Lesson says one short sincere non-accusing contribution such as noting a hidden role means a claim may not be genuine; the speech does exactly that."
+ },
+ {
+  "case_id": "c098",
+  "label": "partial",
+  "reason": "Lesson says at most one neutral question and no defenses; player_7 asks for trailseer and healer results but also defends against player_3's watch result, which is beyond a neutral question."
+ },
+ {
+  "case_id": "c099",
+  "label": "match",
+  "reason": "Lesson says with no concrete evidence join the abstain majority; the decision is abstain."
+ }
+]

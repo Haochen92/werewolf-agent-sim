@@ -1,0 +1,102 @@
+[
+ {
+  "case_id": "c020",
+  "label": "uncheckable",
+  "reason": "Advice is about when to spend a conceal, but the decision is only a night chat with no content recorded."
+ },
+ {
+  "case_id": "c021",
+  "label": "match",
+  "reason": "Echoes the room demand for claims (\"Anyone with a sentinel, trailseer or investigator result, say so now\") as an ordinary townsperson."
+ },
+ {
+  "case_id": "c022",
+  "label": "match",
+  "reason": "As last wolf it votes a non-wolf (player_1), as the lesson instructs; the record does not show a plurality conflict."
+ },
+ {
+  "case_id": "c023",
+  "label": "match",
+  "reason": "Lesson says abstain on first vote day with no accusations; decision is abstain."
+ },
+ {
+  "case_id": "c024",
+  "label": "match",
+  "reason": "Declines to counter-claim and asks player_2 what the claim rests on, calling for checkable results."
+ },
+ {
+  "case_id": "c025",
+  "label": "uncheckable",
+  "reason": "Advice is about conceal on a claimed power-role victim, but the decision is only a night chat with no content recorded."
+ },
+ {
+  "case_id": "c026",
+  "label": "match",
+  "reason": "Checks player_3, the aggressive early pusher, i.e. the player whose public behavior stands out."
+ },
+ {
+  "case_id": "c027",
+  "label": "partial",
+  "reason": "Makes no accusation or partner defense and does not claim, but gives a multi-sentence self-defending statement instead of at most one neutral clarifying question or silence."
+ },
+ {
+  "case_id": "c028",
+  "label": "match",
+  "reason": "Says a visit only shows it went there, not why, refuses to invent a reason, and redirects to other visitors and the reporter wording."
+ },
+ {
+  "case_id": "c029",
+  "label": "match",
+  "reason": "Kills player_1 with three alive so only itself and one other remain, as the lesson says to take."
+ },
+ {
+  "case_id": "c030",
+  "label": "match",
+  "reason": "Stays unclaimed, attacks the premise that the results are unverified, and asks the sentinel for its nights 1 and 2 results."
+ },
+ {
+  "case_id": "c031",
+  "label": "match",
+  "reason": "Votes player_5 with the forming majority, as the lesson says."
+ },
+ {
+  "case_id": "c032",
+  "label": "match",
+  "reason": "Abstains on the first vote day with no hard evidence, as the lesson says."
+ },
+ {
+  "case_id": "c033",
+  "label": "match",
+  "reason": "Spends the last watch on player_3, the claimed healer and likely wolf target, rather than a behavior-only suspect."
+ },
+ {
+  "case_id": "c034",
+  "label": "match",
+  "reason": "Abstains on an early day vote with no evidence and an abstaining room, as the lesson says."
+ },
+ {
+  "case_id": "c035",
+  "label": "uncheckable",
+  "reason": "Follows player_9, but the record does not show whether player_9 is the vocal, room-steering player the lesson names."
+ },
+ {
+  "case_id": "c036",
+  "label": "uncheckable",
+  "reason": "Advice is about conceal on a claimed power-role victim, but the decision is only a night chat with no content recorded."
+ },
+ {
+  "case_id": "c037",
+  "label": "match",
+  "reason": "Votes player_2, the target the room is converging on, as the lesson says."
+ },
+ {
+  "case_id": "c038",
+  "label": "match",
+  "reason": "As last wolf in a four-player endgame it votes a non-wolf (player_3), joining the pile on the accused investigator claimant."
+ },
+ {
+  "case_id": "c039",
+  "label": "match",
+  "reason": "Brief sympathy for the dead plus a prompt for others to share visit directions, with no claim and no vote commitment."
+ }
+]

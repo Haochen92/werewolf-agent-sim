@@ -1,0 +1,102 @@
+[
+ {
+  "case_id": "c040",
+  "label": "match",
+  "reason": "Lesson says admit the visit shows only presence, claim no role and redirect to other visitors/exact wording; the player says 'a visit only shows I was there, not why' and asks whether player_8 saw anyone else visit."
+ },
+ {
+  "case_id": "c041",
+  "label": "match",
+  "reason": "Lesson says abstain with the table on a first vote day with no accusations; the player abstained."
+ },
+ {
+  "case_id": "c042",
+  "label": "partial",
+  "reason": "Lesson says ask a verification question making a claimed power role state its role/shots and give the pack that target; the player asks the sentinel claimant what else it watched, but mostly denies the visit and no pack steer is visible."
+ },
+ {
+  "case_id": "c043",
+  "label": "uncheckable",
+  "reason": "Lesson says watch the likely victim rather than a behavior-only suspect; the player watches player_1 but the record does not show whether player_1 is a likely victim or a suspect."
+ },
+ {
+  "case_id": "c044",
+  "label": "match",
+  "reason": "Lesson says place one sigil on the player most plausibly carrying a night attack and keep the second; the player places a sigil on player_4, the suspected remaining wolf."
+ },
+ {
+  "case_id": "c045",
+  "label": "match",
+  "reason": "Lesson says as last wolf vote a non-wolf, prioritizing the lone killer; the player votes player_8, the suspected killer."
+ },
+ {
+  "case_id": "c046",
+  "label": "match",
+  "reason": "Lesson says vote the unconfirmed player whose record ties most directly to the lone killer; the player votes player_7, the player tied to the reanimated attacks by the record."
+ },
+ {
+  "case_id": "c047",
+  "label": "match",
+  "reason": "Lesson says at most one neutral clarifying question about a claim and no accusations; the player asks one target-only question of the claimants."
+ },
+ {
+  "case_id": "c048",
+  "label": "match",
+  "reason": "Lesson says speak briefly as a Town voice, ask a neutral question and cite only public facts; the player asks to hear Sentinel/Trailseer results before naming anyone, with no private info."
+ },
+ {
+  "case_id": "c049",
+  "label": "match",
+  "reason": "Lesson says make one short non-accusing procedural contribution while hiding the role; the player notes the single Suspicious check is unverified and suggests holding the vote."
+ },
+ {
+  "case_id": "c050",
+  "label": "match",
+  "reason": "Lesson says spend a conceal when the kill is a claimed power role; the player chose the conceal action."
+ },
+ {
+  "case_id": "c051",
+  "label": "match",
+  "reason": "Lesson says make one short procedural point tied to public claims without revealing a block; the player asks claimants to state exactly what their report says."
+ },
+ {
+  "case_id": "c052",
+  "label": "match",
+  "reason": "Lesson says hold fire unless hard evidence ties a living player to evil; the player held fire."
+ },
+ {
+  "case_id": "c053",
+  "label": "match",
+  "reason": "Lesson says reframe a visit as not proof and redirect to another player with comparable visit evidence; the player says a visit proves little and points out player_4's visit sits beside its own, though it does not push a vote."
+ },
+ {
+  "case_id": "c054",
+  "label": "uncheckable",
+  "reason": "Lesson concerns holding the conceal when the victim's role is public; a night chat record shows no conceal decision or chat content, so compliance cannot be told."
+ },
+ {
+  "case_id": "c055",
+  "label": "uncheckable",
+  "reason": "Lesson says agree with the Illusionist to conceal the victim; the record shows only that it chatted, not what was said."
+ },
+ {
+  "case_id": "c056",
+  "label": "uncheckable",
+  "reason": "Lesson concerns which block target to choose; the record shows only a night chat, not a block choice or the chat content."
+ },
+ {
+  "case_id": "c057",
+  "label": "mismatch",
+  "reason": "Lesson says vote with the broad majority against the claimant; the room's majority is on player_9, but the player votes player_1 (the sentinel), outside that bloc."
+ },
+ {
+  "case_id": "c058",
+  "label": "match",
+  "reason": "Lesson says vote with the plurality rather than solo; the player votes player_3, who is on the ballot accused by player_6 and player_7."
+ },
+ {
+  "case_id": "c059",
+  "label": "uncheckable",
+  "reason": "Lesson applies only if blocked last night or the target was publicly named; the player says neither applies, so following player_6 neither enacts nor contradicts it."
+ }
+]

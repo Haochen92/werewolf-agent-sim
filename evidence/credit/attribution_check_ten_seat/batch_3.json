@@ -1,0 +1,447 @@
+[
+ {
+  "game_id": "22c1c19e-eb7e-419f-b368-65b37ab5f248",
+  "player": "player_4",
+  "role": "chanteuse",
+  "day": 2,
+  "phase": "day_discussion",
+  "lesson_key": "01dccd27-ff07-48c9-97c8-f4351a40f83e",
+  "lesson_situation": "Day 2 opens after a night in which the wolves' attack on player_3 was saved by the healer. A claimed trailseer named player_1 as having visited player_3, and player_1 refused to explain the visit, deflecting to waiting for the healer or sentinel. You are a wolf whose partner is directly implicated by that claim, and the village is about to decide how far to press it. Information landscape: Information-starved: one unverified trailseer claim, one night save announced by the GM with no role confirmation, and no votes. Town claims are unverified. Stakes: Ten alive with six eliminations needed before the leading evil faction can win, so no single vote is decisive now; but if the trailseer's read on player_1 gains traction, the pack can lose its partner's cover early, which would leave you with only a few town-side eliminations between you and a wolf-side majority reversal being contested. Consensus: The room is not yet aligned: the trailseer's report is being weighed, the healer and sentinel have not spoken, and no vote has been taken since day 1 had no vote. My position: Holding out, unclaimed, neither driving nor following the forming reads. Heat: Low. You have no public accusations against you and no claims. The only pressure is the general push to examine who player_1 visited, which does not name you. Forward exposure: Any public defense of player_1 or any comment on the trailseer's report would tie you to the pack and raise heat on you; staying silent or making neutral procedural remarks keeps you unattached, and a vote record would be permanent once cast. Target landscape: Trailseer claimant (player_2) with a specific follow result naming player_1; player_1 is your wolf partner, deflecting the trailseer claim while refusing to explain a visit; player_3 saved by the healer, role unknown; unclaimed remaining players with no evidence either way. Public vs private: Privately, you are the Chanteuse, a wolf, and your partner player_1 is still alive and unrevealed; you know the pack's night-1 target was player_3, who was saved by the healer. Publicly you are an unclaimed living player with no role claim, while a trailseer claim (player_2) has just named player_1 as a visitor to the saved player_3, pointing the village's attention at the pack's own member.",
+  "lesson_action": "When you are a low-heat chanteuse in an info-starved early day and the room is sorting through unverified claims, make one short rules-based or procedural point, such as asking a named visitor to explain or noting what a claimed result would imply under the rules. Keep it neutral, tied to public claims, and never reveal your own block or its target. This steers the room toward verification and leaves you with no vote record or read to defend.",
+  "stated_reason": "early day, claims unverified, low heat; a neutral procedural point fits",
+  "decision": {
+   "spoke": "Player_2, a trailseer report only shows where player_1 went, not what the visit did. Before we chase that visit, can the sentinel or healer say whether they saw player_3's save? That would tell us whether there was a real protective visit at all."
+  },
+  "recent_discussion": [
+   "player_5: ",
+   "player_6: ",
+   "player_7: ",
+   "player_8: ",
+   "player_9: ",
+   "player_10: ",
+   "player_1: player_2, I'm not claiming a role, so I won't explain a night visit. If you're the trailseer, that report only tells us who I went to, not why. Let's see whether the healer or sentinel speaks up about player_3's save before we decide anything.",
+   "player_3: "
+  ],
+  "case_id": "c060"
+ },
+ {
+  "game_id": "780068ad-8346-4cf0-a5f4-23b6c9763a6d",
+  "player": "player_7",
+  "role": "chanteuse",
+  "day": 2,
+  "phase": "day_vote",
+  "lesson_key": "1aa478b8-de87-481e-9e21-1a80e38c41a3",
+  "lesson_situation": "Day 2 opens with nine players alive and a concealed night-1 death. Your pack's kill is hidden from the village, so the town has no information to use, and you must decide how much to speak on day 2 without exposing a claim or a block. Information landscape: Information-starved: no claims, no verified results, no eliminations, and only one concealed death whose role is known to the illusionist alone. Stakes: Nine alive with five eliminations needed before the leading evil faction can win; the count is a worst case because the concealed body's side is unknown, so no single vote is decisive yet, but each wrong or right elimination shifts a long path and an early visible claim could shorten the town's margin for error. Consensus: The room is unformed on day 2: no claims have surfaced, no accusations are on record, and the village is working from the concealed death alone. My position: Holding out, unclaimed, with the pack's kill and your block kept private. Heat: Low to moderate: you have made no claims and voted with the night-1 discussion, but you are one of the many unclaimed players and have no public evidence on your side. Forward exposure: Any claim about night results or blocks would commit you to a visible story the wolves cannot easily retract, and would invite the village to test it against the concealed-body fact; staying silent keeps the position reversible but leaves the village without your read. Target landscape: Nine living players with no public role claims and no verified results; the only public signal is the concealed night-1 death, which gives no direct suspect. Behavioral reads only: who pushes accusations early and who stays quiet. Public vs private: Privately, you are the Chanteuse and your pack killed a player on night 1 whose role was concealed by the illusionist; you also know you blocked another player that night. Publicly you hold no claim, and the village has only the bare fact that a player died with a hidden role and that the second player was not reported as roleblocked.",
+  "lesson_action": "When the room is converging or abstaining and you have no evidence-backed target, cast your vote with the majority, or abstain if abstaining is offered, rather than being the lone off-consensus voter. If you are forced to name someone, pick the room's leading target or one your wolf partner also backs, so your permanent record has no outlier vote that can later be quoted as reactionary deflection.",
+  "stated_reason": "no evidence-backed target exists, so abstaining avoids an outlier vote on the record",
+  "decision": {
+   "vote": "abstain"
+  },
+  "recent_discussion": [
+   "player_2: ",
+   "player_3: ",
+   "player_4: ",
+   "player_5: ",
+   "player_7: ",
+   "player_8: ",
+   "player_9: ",
+   "player_10: "
+  ],
+  "case_id": "c061"
+ },
+ {
+  "game_id": "ea972d61-95d1-4072-8337-c64dd98db614",
+  "player": "player_3",
+  "role": "illusionist",
+  "day": 2,
+  "phase": "night_action",
+  "lesson_key": "40785807-9dd5-44e1-9817-fd6d3d8ec146",
+  "lesson_situation": "As an illusionist with the pack, I know the pack's night-1 attack hit a player who was immune, so that player is the serial killer and is a live threat to the wolves. My wolf partner, the carrier, is steering tonight's kill toward a quiet player and urging that the earlier target not be pushed again. The pack's kill target for tonight is not yet named, and the town is still waiting for night results from anyone, with no claims made so far. The day-2 vote abstained, so no one was eliminated. Information landscape: Information-starved for the town: no verified night results, one revealed death, and only generic claims that no one has a result yet. For me, the information is private and rich: the immune-target result, the pack's kill history, and my two remaining conceals, but none of it can be shared publicly without exposing the wolf side. Stakes: Nine alive with five eliminations needed before the leading evil faction can win, so a single kill is not decisive yet, but each wasted conceal or misjudged victim shrinks the margin for error as the serial killer remains unfound and can be removed only by daytime vote. Forward exposure: Concealing the pack's victim tonight would reveal nothing publicly if the victim dies, but the victim's role would stay hidden until game end and the carrier's visit to the victim would be hidden from watchers and followers; the conceal use is irreversible once spent, and a failed conceal (victim survived) wastes nothing but the use itself. Target landscape: Surviving players: eight others besides the illusionist. Public role status: only one death so far, a fortune teller killed on night 1 and revealed; no other roles are public. The earlier night-1 pack attack on one player was blocked by immunity, which the illusionist privately knows identifies that player as the lone killer, not a wolf. Candidates for tonight's kill are mostly silent or low-accusation players; evidence is behavioral only, with no claims that the town can verify.",
+  "lesson_action": "Spend a conceal only when the victim's role is still unclaimed, or when a living Sentinel or Trailseer could otherwise trace the carrier to the victim's door. If the victim has already publicly claimed their role and no tracker threatens the carrier, kill without concealing and keep both charges for a later night. When the Illusionist itself carries the kill, a conceal leaves no trace at that door, so favor it for that night.",
+  "stated_reason": "No claimed power role yet; keep conceals for a later tracker or claimant kill.",
+  "decision": {
+   "kind": "chat",
+   "target": null,
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c062"
+ },
+ {
+  "game_id": "8fd7c94b-3cf2-460c-934b-1b504f5b71e2",
+  "player": "player_3",
+  "role": "healer",
+  "day": 3,
+  "phase": "night_action",
+  "lesson_key": "6a2c8998-5d61-4ffb-8347-6ccb08416377",
+  "lesson_situation": "Day 3 after the Investigator was voted out following a public accusation, with a Suspicious read on one living player that can no longer be checked. The healer's protection on the prior night saved an attacked player from the serial killer, confirming an attack but not a role. The village must decide whether the surviving accused player and the vigilante claimant are trustworthy, while two unrevealed deaths (one a wolf-side kill concealed by an illusionist) keep the faction count uncertain. Information landscape: Information-starved: one unverified Suspicious read (from a now-dead claimant), one unverified vigilante claim with no shots taken, and the public death record (trailseer and fortune teller revealed; two bodies with hidden roles). Night results are private and not shared. Stakes: Five alive with one elimination at worst for the town: a single wrong lynch from five players could leave the wolves level with everyone else, so each daytime vote carries a near-decisive consequence, and a concealed body's side keeps the true margin uncertain. Target landscape: Remaining living candidates for the coming night's protection and the day vote: the vigilante claimant (publicly claiming a role with no verification, 2 bullets left), the other living players whose roles are unknown, and the serial killer and wolves hidden among them. The eliminated Investigator's single Suspicious read on the player now alive is the only public result on the board and is unverified because its claimant was lynched; no role is confirmed by elimination among the living.",
+  "lesson_action": "Each night, protect the confirmed-Town player whose ability is the Town's best remaining way to remove the hidden killer, such as the Vigilante with a bullet left or an Investigator with checks left. If one of them was attacked earlier and saved, keep covering them unless a newer attack pattern points elsewhere. Don't spread protection across low-value or unverified claimants just to rotate.",
+  "stated_reason": "The vigilante with bullets left is the town's best remaining way to remove the killers, so protect them.",
+  "decision": {
+   "kind": "protect",
+   "target": "player_4",
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c063"
+ },
+ {
+  "game_id": "e833e54f-311f-488e-81f0-cd13e6df9627",
+  "player": "player_9",
+  "role": "sigilist",
+  "day": 3,
+  "phase": "night_action",
+  "lesson_key": "76f5f000-6264-4a96-9412-e691d6076356",
+  "lesson_situation": "Night 3 is approaching with six alive, and the sigilist holds two sigils with no confirmed information from any surviving info role. The serial killer kills every night and the wolves have one killing carrier, so any sigil placed on a surviving player is a bet that this player will attack tonight, since a sigil on a non-attacker is spent for nothing. Whether a sigil on a surviving player would strike a wolf or the serial killer depends on which player attacks, and the serial killer cannot be struck at night at all. Information landscape: Information-starved: no living player has posted a verified check, watch, follow, or claim, and the only night record is a dead sentinel's single watch that saw no one. The day-2 vote was all abstains and the day-3 lynch removed a claimed-by-reveal illusionist, which confirms a wolf-side loss but not a lead on the remaining killers. Stakes: Six alive with four eliminations to the leading evil faction's win at worst, so the sigilist's two sigils are a large share of the town's remaining night-action resources; a sigil that strikes a wolf or the serial killer removes a killer at night, while a sigil wasted on a non-attacker leaves both sigils gone with no strike. Forward exposure: Placing a sigil is a visit and spends it whether or not it triggers; a sigil on a player who does not attack is wasted and reveals the sigilist's interest in that player to the wolves and the lone killer, while a sigil on a player who attacks strikes them, and the strike is stopped only by protection or night immunity. Target landscape: Six players are alive: the sigilist, a player who was voted for on day 3 and survived, and four others. The lone killer is still active and can only be removed by a daytime vote; the wolves' remaining member is unknown to the town. The dead include a vigilante, a sentinel, an illusionist, and one concealed body. Evidence is only behavioral: a dead sentinel's night-1 record on one player showing no visitors, and day-discussion accusations.",
+  "lesson_action": "If no living suspect has evidence of attacking and the only candidates are likely victims or confirmed-Town players such as a protected investigator, keep your sigils that night. Wait for a suspect with an attack pattern. A sigil on a player who does not attack does nothing, and a likely victim is the one player who will not attack.",
+  "stated_reason": "No living player has any attack evidence, so holding the sigils is the right move tonight.",
+  "decision": {
+   "kind": "declined",
+   "target": null,
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c064"
+ },
+ {
+  "game_id": "e1c29777-4dfd-4a68-ba3c-161050189dca",
+  "player": "player_5",
+  "role": "vigilante",
+  "day": 2,
+  "phase": "night_action",
+  "lesson_key": "379dfbbe-e067-4e8d-8b4d-275a5f22c7b7",
+  "lesson_situation": "Day 2 ended with a unanimous abstain vote, so no one was eliminated and the town has no accusation to act on. The discussion is asking whoever holds a night result to name the night, target, and direction of the visit, but no one has yet done so. The Vigilante holds two shots and must decide whether any night-one dynamic justifies spending one before a claim is made. Information landscape: Information-starved: one night of outcomes, a single concealed death, and no claims or checks yet on the public record. Only private knowledge is the Vigilante's own held fire on night one. Stakes: With 8 alive and 5 eliminations until the leading evil faction can win at worst, the board is far from decided, so a wrong shot now would cost a scarce bullet and a hidden role without moving the evil count meaningfully, while waiting for a concrete claim keeps both bullets available for a later, better-supported target. Forward exposure: Any shot spends one of the two remaining bullets and is visible as an attack and visit; a shot at a town-aligned or wolf-aligned target now would reveal the Vigilante's role to the wolves and mark its own position, with no reversal once the target dies or is found immune. Target landscape: Eight living players, none with a public role claim and none with a confirmed night result. The only death so far, player_10, had its role concealed by an illusionist, so the pack's side for that body is unknown. Evidence is limited to players saying they want concrete night claims with targets and directions; no one has been accused by a credible source.",
+  "lesson_action": "With no confirmed wolf, no caught lie and no public evidence naming a specific player, hold fire and keep your bullets, since a blind shot risks killing a Town player and spends a bullet that cannot be recovered. Fire only once a concrete lead singles out one player, such as a confirmed-role record, a caught lie, or a pattern in the public record; if the lead names the Serial Killer, remember a night shot will not kill it.",
+  "stated_reason": "Early night after an abstain day with no confirmed wolf or caught lie; holding fire preserves bullets.",
+  "decision": {
+   "kind": "hold_fire",
+   "target": null,
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c065"
+ },
+ {
+  "game_id": "40a87f8a-984a-4c05-b7aa-8b1eb8cc9226",
+  "player": "player_7",
+  "role": "sentinel",
+  "day": 2,
+  "phase": "night_action",
+  "lesson_key": "040f01ab-18f0-43e5-a7bc-c1fbcb658342",
+  "lesson_situation": "Day 2 ended in unanimous abstention after an opening round where players asked for night claims and warned against treating visit lists as reasons to lynch. The village has no read, no claims and no pressure on any single player, while the sentinel must decide whether to spend the last watch on tonight's most likely door, with the wolves' concealment capacity still partly unspent. Information landscape: Information-starved. Only one night result (an empty watch on player_4) and one concealed death exist. No claims have been made by anyone, so every candidate's role status is unknown. Stakes: Nine alive with five eliminations needed before the leading evil side can win, so no single night or vote is decisive yet. A watch spent on a low-information door costs one of the two remaining checks on the village's only information source, and a wrong door yields nothing, so the choice matters for the long game rather than tonight. Target landscape: Nine players alive: the sentinel (you, holding one watch) and eight others: player_1, player_2, player_3, player_4, player_5, player_6, player_9, player_10. No public role claims exist yet. The only hard fact is that player_8 died on night 1 with the role concealed by an illusionist, so the wolf pack has used one concealment. Night-1 watch on player_4 saw no visitors, which is weak evidence about that door only.",
+  "lesson_action": "On night 2 with your last watch and no hard leads, watch the player the wolves are most likely to attack next, such as the most vocal question-driver or a quiet player drawing votes, rather than holding the watch or watching yourself. If a visitor appears, you have a concrete lead on who went to that door. If none appears, it may point to a night-immune target or a different kill choice.",
+  "stated_reason": "No hard leads and no revealed roles; watching the most vocal discussion driver as a likely next wolf target fits the board.",
+  "decision": {
+   "kind": "watch",
+   "target": "player_1",
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c066"
+ },
+ {
+  "game_id": "093a78b6-a19d-4384-bf73-8fd37387923d",
+  "player": "player_3",
+  "role": "chanteuse",
+  "day": 4,
+  "phase": "day_discussion",
+  "lesson_key": "cb7c4e08-7cbe-4c8b-8f9c-62db06d2f77b",
+  "lesson_situation": "Five players remain and a sigilist claimant who says their sigil on the dead sentinel had no effect is being pressed to spend their last sigil on a test, while they decline; the village has no verifiable information and the pack partner's identity is unrevealed. Information landscape: Information-starved: no revealed roles among the living, one unverified sigil claim, and the record of dead players' night results; no living player has a confirmed result. Stakes: Five alive with one wolf-side ally still hidden: at worst for the town, one more elimination that is a wolf or a killer could give the evil side parity, so a wrong daytime vote is costly and recoverable only if the remaining claims are tested. Consensus: The room is split on which claims to trust: the sigilist claim is being questioned for lack of a test, and no consensus target has formed since the day 3 lynch of the serial killer. My position: Holding out from any public push; I am not driving the day discussion and am not yet with a forming majority. Heat: Moderate: the sigilist's claim that their sigil on the dead sentinel did nothing, and player_2's push for a test sigil, place pressure on the room's trust in claims, not directly on me; I have not been named. Forward exposure: Any public claim or accusation I make would commit me to a position the wolf channel record links to my night actions; retracting it later would look like inconsistency, so visible moves are hard to undo. Target landscape: Surviving players are the sigilist claimant (player_6), a quiet player (player_2), a quiet player (player_4), a player who has been agreeing with me in the pack's plans (player_7, wolf-aligned by channel record but publicly unrevealed), and me. Public evidence on the sigilist claim is a single unverifiable sigil result; the others are behavioral reads only. Public vs private: As the chanteuse I privately know my pack partner is the illusionist and that I carried or coordinated the kills on players 1, 5 and 9; publicly I am an ordinary surviving player who has only voted with the majority, and my blocks are hidden. The village reads the sentinel and serial killer records and the sigilist's claim, none of which I can verify.",
+  "lesson_action": "When a day-3 accusation lands on your wolf partner or on a hard-to-verify claim, ask in neutral evidence-seeking terms what separate result backs it, and add mechanical points only where the rules clearly support them. Posing as an arbiter of evidence keeps your heat low, and the accuser has to retract or the room moves to a different target.",
+  "stated_reason": "Asking what separate evidence backs player_6's sigil claim keeps heat low and tests claims.",
+  "decision": {
+   "spoke": "player_6, you say your sigil on player_9 did nothing. Did player_9 actually visit anyone that night? If not, the sigil result tells us nothing new, so what else supports your claim? I'd also like to hear what player_2 thinks a sigil test on a suspect would show."
+  },
+  "recent_discussion": [
+   "player_2: ",
+   "player_3: ",
+   "player_4: ",
+   "player_6: I'm the sigilist. Night 3 I placed my sigil on player_9, and it had no effect, so they didn't attack that night.",
+   "player_7: ",
+   "player_2: player_6, the sigil on player_9 only tells us player_9 did not attack, which is what a dead sentinel would do anyway. If you are the sigilist, try the last sigil on someone you suspect of attacking: the result is then a real test rather than a claim. Who do you want to test first?",
+   "player_6: player_2, I'm not going to spend the last sigil on a guess. My night 3 sigil on player_9 did nothing, which fits the record that player_9 was a sentinel who didn't attack. I'd rather wait for a real attack pattern before placing it. Which of the living players do you think is acting at night?"
+  ],
+  "case_id": "c067"
+ },
+ {
+  "game_id": "46d4ec79-8d1e-4b45-a116-3cb2223c680f",
+  "player": "player_6",
+  "role": "sigilist",
+  "day": 3,
+  "phase": "night_action",
+  "lesson_key": "76f5f000-6264-4a96-9412-e691d6076356",
+  "lesson_situation": "Two nights have produced kills (one concealed by an illusionist, one with role unrevealed), the chanteuse was lynched on day 3, and the village is split between accusers with no shared night result. The sigilist holds two sigils and must predict whether the surviving wolves, or a remaining lone killer, will attack tonight, knowing that a sigil placed on a non-attacker is wasted and a sigil on a successful attacker can strike them only if the attack is not stopped by protection or immunity. Information landscape: Information-starved: only one concrete night result is public (a follow showing a visit to a blocked player), plus two unverified role claims and no Investigator or Sentinel result. The sigilist has no night information of its own. Stakes: Seven alive with two evil factions still in play and five eliminations at worst before the leading evil side can reach parity, so a wasted sigil spends one of only two strikes against a non-attacker, and a missed attacker leaves the wolves' kill unanswered; the next single vote or kill can change which side leads. Forward exposure: Placing a sigil is a visit and spends the sigil whether or not it triggers; a sigil on a player who attacks at night would reveal the sigilist's own role through the strike result and any public claim, and cannot be undone once placed. Target landscape: Seven players alive: six non-revealed players (none publicly claiming a night-attacking role) plus the sigilist's own seat. The eliminated chanteuse was a wolf, and wolves carry the nightly kill on rotation among living wolves. The trailseer claim (player_8) and the healer claim (player_3) are unverified claims; the claimed trailseer's follow on the blocked night is the only concrete night result on the board, and it touched the now-eliminated wolf. Attack-capable candidates are whoever the pack has left, with no public evidence pointing at any specific survivor.",
+  "lesson_action": "If no living suspect has evidence of attacking and the only candidates are likely victims or confirmed-Town players such as a protected investigator, keep your sigils that night. Wait for a suspect with an attack pattern. A sigil on a player who does not attack does nothing, and a likely victim is the one player who will not attack.",
+  "stated_reason": "No living player has any attack evidence, so holding the sigils is the right move tonight.",
+  "decision": {
+   "kind": "declined",
+   "target": null,
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c068"
+ },
+ {
+  "game_id": "20e38feb-6280-4b8f-83b7-11fa4d091a45",
+  "player": "player_2",
+  "role": "illusionist",
+  "day": 3,
+  "phase": "day_discussion",
+  "lesson_key": "f6f44db6-fb2e-45ca-954f-746fafd79ce8",
+  "lesson_situation": "A claimed investigator announced a Suspicious read on the player responding to them and demanded a vote, while the accused contested the timing and asked the Sentinel and Trailseer to test the claim; the Trailseer's public trail record is consistent with the claimant's visit story. Information landscape: Information-starved: one unverifiable check result, two claimed trails, no confirmed deaths of town roles revealed by reading, and two concealed or unrevealed bodies. Stakes: Eight alive with four eliminations until the leading evil faction can win at worst for the town, and one more elimination could decide the game under at least one way a concealed body's side could fall; a wrong vote or a public slip now is costly and hard to recover from. Consensus: The room is split between backing the investigator claim and treating the single read as unverifiable; most players have abstained and the vote has not yet settled on a target. My position: Holding out against the accusation's momentum, neither driving nor following the majority. Heat: Moderate: the accused player has been named by the investigator claimant as Suspicious and is being asked to explain, which has drawn attention to you as the one answering the accusation. Forward exposure: Any counter-claim or role reveal would be visible and hard to reverse; defending the accused or pushing a counter-read would commit you publicly while your partner's identity remains hidden from the village. Target landscape: Players alive are eight. The Investigator claimant's accusation rests on a single unverifiable Suspicious read; the accused is contesting timing; the Trailseer's night 1 and night 2 trails are public claims that the claimant's visit is consistent with; no wolf partner is publicly revealed. Public vs private: Privately you are the illusionist and know your pack killed a player concealed as a sentinel on night 1 and a necromancer on night 2; publicly a player claiming Investigator has accused another player of a Suspicious read, and you hold no claimed role.",
+  "lesson_action": "When a claimed investigator names you Suspicious and the room is already moving to eliminate you, spend your turns on short, non-fabricating defense. Do not invent a rival role claim, and do not mention or defend your wolf partner. Instead, steer any remaining suspicion toward non-partner players, so your partner is not tied to your elimination and can survive the day.",
+  "stated_reason": "Accused by a claimed investigator with the room converging; short non-fabricating defense, no rival claim.",
+  "decision": {
+   "spoke": "player_7, you still haven't said why you picked me over player_10 or player_6, who've barely spoken. A Suspicious read is one result, and it can't be checked. I'm unclaimed and I'm not hiding anything. Vote on what the room can test, not on one read."
+  },
+  "recent_discussion": [
+   "player_4: player_10, yes, I went to player_7 on both nights, as I said earlier. Nobody came to me that I'll report on. player_7's claim is that they checked player_2 on night 2 and got Suspicious, so player_2 should answer the question directly: which night 2 check did they see, and why does it matter to them whether they were checked?",
+   "player_2: player_4, I never checked anyone and I'm not claiming a role, so player_7's Suspicious read on me is only their word. player_7, when did you check me, and why me on night 2? player_3 is dead with a hidden role, so nobody can cross-check your night 1 check either. Ask for the Sentinel or Trailseer results before anyone votes on one read.",
+   "player_7: player_2, I checked you on night 2, last night. I'm the investigator: night 1 I checked player_3, Not suspicious; night 2 you, Suspicious. player_10, yes, player_4 visited me on both nights, and player_9's trail matches that. I'm not voting on one read alone, so let's see who pushes hardest today.",
+   "player_2: player_7, you say you checked me on night 2, but that is only your word. Why me, out of everyone alive? Your night 1 check was on player_3, who is dead with a hidden role, so nobody can cross-check it either. I'm not claiming anything, so I'd rather we see who else has a real result before voting on one Suspicious read.",
+   "player_7: player_2, I picked you for night 2 because you were one of the few players who hadn't given a read yet, so I wanted to know where you stood. That's all it was, nothing I'm hiding. Player_9's trail on player_4 matches player_4's own account, so if player_4 is telling the truth, that's one visit we can rule out as a wolf tell.",
+   "player_2: player_7, your answer is still just your word. You picked me as one of the 'few who hadn't given a read', but that's a reason to check anyone, not a wolf tell. If you're the investigator, why did you not check player_10 or player_6, who've said almost nothing? I'd like to see that choice tested.",
+   "player_6: ",
+   "game_master: Before the vote: player_2 has been accused by player_7 and player_4. player_2 gets a last word."
+  ],
+  "case_id": "c069"
+ },
+ {
+  "game_id": "8fd7c94b-3cf2-460c-934b-1b504f5b71e2",
+  "player": "player_5",
+  "role": "chanteuse",
+  "day": 3,
+  "phase": "day_discussion",
+  "lesson_key": "cb7c4e08-7cbe-4c8b-8f9c-62db06d2f77b",
+  "lesson_situation": "A self-described Investigator announced a Suspicious read on player_2 and pressed for a lynch, while the accused and several others demand the Investigator explain the night-1 hold and night-2 choice. I am a wolf-aligned player with a night record that is private and a partner who has not been revealed, so the village's vote on player_2 is the live decision I am watching. Information landscape: Information-starved: one unverified role claim and one Suspicious read; no confirmed night result, no revealed wolf, and two concealed or unannounced kills whose roles are unknown to the village. Stakes: Six alive with two eliminations from a wolf-side win at worst; one more wrong town elimination could leave the wolves needing only one more kill to reach parity, so a mis-lynch of a town player is costly and hard to recover from, while the pack's own position is already narrow. Consensus: The room is split: a majority is pushing a lynch on the player the Investigator accused, while several players argue that one unverified Suspicious read is not enough and ask the accused to explain night actions. My position: Holding out from the forming push: I have no public information to add and am not driving the accusation against player_2 nor defending it. Heat: Moderate and indirect: I am not named in the current accusations, but I voted with the pack-leaning night-2 target player_9 and I was among the players steered toward for quiet kills in the discussion, which a careful reader could connect to my vote pattern. Forward exposure: Any claim or defense of a night result would commit me to a visible position that the village can cross-check against deaths; a public claim about blocks is irreversible and would expose the pack's kill pattern. Staying unclaimed and voting with the room keeps the option open but builds no credibility. Target landscape: Six living players: a self-described Investigator whose single Suspicious read on player_2 is an unverified claim, the accused player_2 who denies it, a Vigilante who held fire both nights and leans against the Investigator, and two quiet players (player_3, player_8) plus player_4 in that group. The Investigator claim is the only public evidence pointing at a wolf; no result has been confirmed by elimination. Public vs private: As the Chanteuse I privately know my pack killed player_7 and player_9 and that I blocked player_10 and player_9 on the nights they fell; publicly I am an unclaimed town-seeming player, and the village reads me only as one of six quiet-to-moderate voices. My wolf partner is still unrevealed and alive.",
+  "lesson_action": "When a day-3 accusation lands on your wolf partner or on a hard-to-verify claim, ask in neutral evidence-seeking terms what separate result backs it, and add mechanical points only where the rules clearly support them. Posing as an arbiter of evidence keeps your heat low, and the accuser has to retract or the room moves to a different target.",
+  "stated_reason": "The lynch rests on one unverified read, so asking for the evidence behind it keeps my heat low",
+  "decision": {
+   "spoke": "player_1, one Suspicious read is the whole case for a lynch, so before anyone votes, what would a second check or a Sentinel's watch on player_2 show? player_4, you held fire both nights, so do you have any visit or result that could be cross-checked?"
+  },
+  "recent_discussion": [
+   "player_2: I'm town and I haven't claimed anything. A single Suspicious read is one unverified claim, so I don't think it settles much by itself. player_1, who did you check on night 1, and why did you pick me on night 2?",
+   "player_1: player_2, I held my check on night 1 and used it on you on night 2. You read Suspicious. I'm claiming Investigator because the town needs a lynch on you, not more debate. Players 3, 4, 5 and 8, who do you think is the wolf here?",
+   "player_2: player_1, I'm not going to dispute that you checked me, but a single Suspicious read is only your word right now. You say you held your check to night 2 and used it on me, so what did you check on night 1, and why me over the others? I'm town, unclaimed, and I'd like to hear from the others before we lynch on one result.",
+   "player_1: player_2, I held my check on night 1 and didn't check anyone, so there's no night 1 read. I used it on you on night 2 because you were the most active voice in the first discussion, and you read Suspicious. I know that's only my word. Let's see whether your claim of being town holds up when others push on it.",
+   "player_3: player_1, I won't lynch on one Suspicious read with no night 1 result behind it. You say you checked nobody on night 1, so there's nothing to cross-check. I'd like player_2 and the others to answer before anyone votes. If it came to a vote now, I'd lean toward you, since your claim is what's driving the push.",
+   "player_1: player_3, fair question. I'm the Investigator. I held night 1 with no check, and on night 2 I checked player_2, who read Suspicious. I know that's my word, but it's the only result we have. Player_2, what were your night 1 and night 2 actions?",
+   "player_4: I'm the vigilante, and I held fire both nights, so I have no result to add. The whole lynch rests on player_1's single Suspicious read. If it came to a vote now I'd lean player_1, because a wolf claiming Investigator to pin a town player is an easy move. I'd like player_1 to explain why they picked player_2 on night 2 rather than others.",
+   "player_1: player_4, I checked player_2 on night 2, not on a whim: they were the most active voice in day 1 and read Suspicious. I know that's my word alone, so I won't ask for a lynch on it yet. player_2, you still haven't said what you did on night 1 or night 2. Answer that and we can compare."
+  ],
+  "case_id": "c070"
+ },
+ {
+  "game_id": "20e38feb-6280-4b8f-83b7-11fa4d091a45",
+  "player": "player_1",
+  "role": "vigilante",
+  "day": 2,
+  "phase": "night_action",
+  "lesson_key": "379dfbbe-e067-4e8d-8b4d-275a5f22c7b7",
+  "lesson_situation": "Day 2 ended with every living player abstaining, so no one was eliminated. The village has no claims, accusations, or conflicting results to work from, and the vigilante holds two shots and a private night record showing it held fire on night 1. The question on the board is whether to spend a bullet on a read that has not yet formed, or to keep both shots until a claim such as a Sentinel or Trailseer result appears. Information landscape: Information-starved: only the game master's record of the night 1 kill and the concealment, plus the abstain vote pattern (unanimous abstain). No claims, no accusations, no watch or follow results have been made public. Stakes: With five eliminations needed before the leading evil faction can win, the board is far from decisive, so a single wrong shot is recoverable but would cost one of only two bullets, which matters because the wolves still hold a concealment and a living illusionist while the town has no confirmed information roles yet. Forward exposure: Firing a shot now would be a visible, irreversible kill on a player whose role is unknown to the village; if the target is town, the village loses a potential information source and the shooter's bullet count drops with no check on the result, and a shot on an apparent wolf reveals the vigilante's role only through the outcome. Target landscape: Eight living candidates other than the vigilante, none with a public role claim or any night result brought up; the only hard public fact is that player_3 died on night 1 with role concealed by an illusionist, so at least one wolf remains alive and the illusionist still holds one concealment.",
+  "lesson_action": "With no confirmed wolf, no caught lie and no public evidence naming a specific player, hold fire and keep your bullets, since a blind shot risks killing a Town player and spends a bullet that cannot be recovered. Fire only once a concrete lead singles out one player, such as a confirmed-role record, a caught lie, or a pattern in the public record; if the lead names the Serial Killer, remember a night shot will not kill it.",
+  "stated_reason": "No confirmed wolf, no caught lie, and all votes were abstains; a blind shot risks a Town power role.",
+  "decision": {
+   "kind": "hold_fire",
+   "target": null,
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c071"
+ },
+ {
+  "game_id": "40a87f8a-984a-4c05-b7aa-8b1eb8cc9226",
+  "player": "player_4",
+  "role": "chanteuse",
+  "day": 3,
+  "phase": "day_discussion",
+  "lesson_key": "ae6c4a9d-7c6b-4646-b43d-2038e273a094",
+  "lesson_situation": "Day 3 discussion. A claimed investigator's Suspicious read on me, plus a trailseer follow and a sentinel watch both placing me at a healer-claimant's door on night 2, has made me the focus of a forming lynch. The healer-claimant says they were roleblocked that night, which matches my actual action, but the claim cannot be verified publicly. Information landscape: Information-rich but contested: three role-based reports (Investigator read, Trailseer follow, Sentinel watch) plus one roleblock claim, all consistent with each other and with my visit. None are verified by elimination; the claims themselves are the evidence. Stakes: Eight alive with a wolf-side count where one more elimination could decide the game under at least one concealed-body outcome; a wrong lynch of a town player moves the wolves closer to parity, while a lynch of me would remove the pack's chanteuse but leave the wolf partner hidden. Consensus: The room is converging on player_4 as the lead suspect, driven by the Suspicious read and the matching visit reports, with several players pressing for exact wording and a vote. My position: Holding out against the forming consensus: I am the accused player, not driving the lynch, and I have a private reason (my block) that I cannot share. Heat: High. Two independent reports (Trailseer follow and Sentinel watch) plus an Investigator Suspicious read name me in the night 2 visit to player_1, and player_7 has announced a vote on me. Forward exposure: Any explanation of my night 2 visit to player_1 would expose my chanteuse role and the block, and would commit me to a claim the wolf partner cannot back. Staying silent or redirecting keeps options open but leaves the Suspicious read and the visit report unanswered; neither move is reversible once made. Target landscape: Public suspects: player_4 (me) is the most-accused by the investigator read and the visit reports. player_1 is a roleblock-claiming healer whose claim is true but unverified publicly. player_6 claims Investigator with a Suspicious read on me and has no checks left. player_3 (Trailseer) and player_7 (Sentinel) have reports that point at me. Evidence is public reports and claims; no role is confirmed by elimination. Public vs private: Privately, as the chanteuse I know my pack's kills on nights 1 and 2 (player_8, player_2) and that I blocked player_1 on night 2, so player_1's roleblock claim is true. Publicly, player_1 claims Healer and says they were roleblocked; the Investigator claims a Suspicious read on me; the Trailseer and Sentinel both report my visit to player_1 on night 2. The village reads that visit as a lead on me, while I know the visit was my block, not a tell I can disclose.",
+  "lesson_action": "When a Sentinel or Trailseer report puts your visit on record, don't invent a role the real holder can contradict. Say that a visit shows only that you went there, never why. Then redirect the room to every other visitor and to the reporters' exact wording, and ask what else the reports show. If an unclaimed role's holder is still alive, any claim to that role invites an instant counter-claim, so claim a role only when the holder is already revealed dead or no counter-claim could come.",
+  "stated_reason": "my visit is on record via Sentinel and Trailseer, so I explain that a visit shows only that I went there and redirect to the exact wording",
+  "decision": {
+   "spoke": "I've answered this: a visit shows only that I went there, not why, and I won't make up a reason. Player_3's and player_7's reports agree on the one visit, and nothing else in them points at me. I'd rather the vote go to whoever the exact wording actually implicates, not to a read built on a Suspicious result that only means someone attacked."
+  },
+  "recent_discussion": [
+   "player_9: ",
+   "player_10: Three reports line up on night 2: player_6's Suspicious read on player_4, player_3's follow, and player_7's watch on player_1 that saw player_4. A Suspicious read means a wolf or a necromancer attacked that night, so player_4 fits the block on player_1. player_4, you keep asking others for exact lists instead of saying where you went that night.",
+   "player_4: player_10, a Suspicious read only means someone attacked that night, it doesn't pick out who. My answer is the same as before: a visit shows only that I went there, not why. player_3 and player_7 both put me at player_1's door, so the useful question is what else their reports show that night, and whether player_6's check on me was on a wolf-or-necro attack.",
+   "player_5: ",
+   "player_6: player_4, a Suspicious read means the checked player is a wolf, or a necromancer who attacked that night. It doesn't mean they were attacked. Night 2's kill was the wolves on player_2, so the question is what you did that night. You've been asking everyone else for lists. Answer it: did you go to player_1?",
+   "player_4: player_6, I answered this already: a visit shows only that I went there, not why. I won't give a reason I can't back up. Your Suspicious read on me is a claim until someone else can check it. Let's look at who the reports put at each door, and at the exact wording from player_3 and player_7.",
+   "player_9: ",
+   "game_master: Before the vote: player_4 has been accused by player_6, player_3, player_1, player_7 and player_10. player_4 gets a last word."
+  ],
+  "case_id": "c072"
+ },
+ {
+  "game_id": "faa61d67-95c4-474f-b0b3-ba965f67c1f9",
+  "player": "player_9",
+  "role": "chanteuse",
+  "day": 5,
+  "phase": "day_discussion",
+  "lesson_key": "fc264139-bbf3-4a50-b95c-278b296ff0d6",
+  "lesson_situation": "A trailseer claimant publicly says they followed player_9 on night 4 and that player_9 visited player_2, and player_2 has challenged player_9 to say what their night action went to. The claim conflicts with the record that player_9's night action on player_2 was a block, and the village has no verification of the trailseer's claim. Information landscape: Information-starved on verifiable facts: the only public night outcomes are the morning reports of kills and saves; claims from the trailseer and sentinel are unconfirmed, and the sentinel's watch on player_5 was checked only by its later reveal as a sigilist. Stakes: Five alive with three eliminations until the leading evil faction can win at worst for the town, so a wrong lynch is recoverable but leaves little margin; one more elimination could decide the game under at least one way a concealed body's side could fall. Consensus: The village is split: some players are treating the trailseer claim as unverified, while others are looking to test claims against the morning reports; no consensus on who is lying. My position: Holding out: I am being asked to answer a claim about my night action, and I have no public standing beyond my unrevealed role and the non-committal votes I cast. Heat: Moderate and rising: the trailseer claim names player_9 (me) as the visitor to player_2, and player_2 has publicly asked me to explain my night action, so I am the named subject of a contested claim without any public confirmation of my role. Forward exposure: Any statement I make about my night visits or blocks would be a commitment that other players can test against the morning reports and against any watch or follow claim; a claim of my own role would be hard to retract once made, while staying silent keeps the current read unchanged. Target landscape: Surviving players are player_2, player_3, player_8, player_10 and me. player_8 has publicly claimed trailseer and named player_9 as the visitor of player_2 on night 4, which conflicts with my private knowledge that I am the one who blocked player_2. player_3 has a sentinel claim with a watch that read on player_5 and a save-on-player_3 record backing an attacked sentinel. player_2 has pushed back on the trailseer claim, and player_10 has been a steady voice in votes. Public vs private: Privately, as the chanteuse I know my pack partner the illusionist was lynched on day 3, and I know the pack's kills on nights 1 to 4 and my own blocks. Publicly, the village knows only the revealed roles of dead players; the trailseer claim from player_8 that places my visit on player_2 is a claim, and I know my own night 4 action went to player_2 as a block.",
+  "lesson_action": "When an accuser's result or claim is ambiguous and you are the target, spend the discussion on a concrete rival suspect and a specific question for the claimant, rather than only saying your result fits another role. Pick the loudest pusher who gains from your elimination, such as a player whose own role is at stake, and ask the town to weigh their incentive. If the room still stays locked on you, keep the argument short and do not rely on staying unclaimed or on the ambiguity alone.",
+  "stated_reason": "I am the target of a push built on one unverified follow claim; I should name a concrete question and point at the accuser's motive",
+  "decision": {
+   "spoke": "player_3, I haven't claimed a night role, so I won't walk through mine. A roleblocked player is told, so player_2 can answer that for themselves. Right now the only thing against me is player_8's follow claim, and that's one unverified claim. player_8, which of my visits did you actually see, and why follow me on night 4?"
+  },
+  "recent_discussion": [
+   "player_2: ",
+   "player_3: ",
+   "player_8: I'm the trailseer. Night 4 I followed player_9, and they visited player_2.",
+   "player_9: ",
+   "player_10: ",
+   "player_2: player_8, you say player_9 visited me on night 4. I wasn't a target of anything from player_9 that I know of, so I can't back that. player_9, what did your night action go to? If it's a claim we can test, let's see whose story fits the morning reports.",
+   "player_9: player_2, I'm not claiming a night role, so I'm not going to say where my night went. Whatever player_8 says they saw is their claim to back up. I'd rather we look at who has been confirmed by the morning reports than trade night stories.",
+   "player_3: I'd vote player_9 today. player_8 named them as the visit on night 4, and they still won't say where their own night went. Saying nothing about it isn't a defense. player_2, if you'd been roleblocked that night, would you have been told?"
+  ],
+  "case_id": "c073"
+ },
+ {
+  "game_id": "faa61d67-95c4-474f-b0b3-ba965f67c1f9",
+  "player": "player_2",
+  "role": "necromancer",
+  "day": 5,
+  "phase": "day_discussion",
+  "lesson_key": "39162e80-b5ba-4da8-b8cc-a0f907f0b077",
+  "lesson_situation": "A trailseer claim named player_9 as visiting player_2 (you) on night 4, and the claimant's claim is now the main public piece of information. The necromancer must decide whether to engage with a claim that touches their own seat while the reanimated kill of player_4 remains publicly attributed to a reanimated wolf. Information landscape: Information-starved: a handful of unverified role claims (sentinel, healer, sigilist, trailseer), two dead players' records partially read out, and a single revealed night-3 save. No confirmed roles among living players. Stakes: Five alive with three eliminations at worst before the leading evil faction can win; a concealed body's side is unknown, so one more elimination could decide the game for either side, meaning a wrong daytime vote here is costly and hard to recover from. Consensus: The village is split among competing sentinel, trailseer and healer claims with no hard confirmation; the room leans toward testing claims by vote rather than agreeing on a set of facts. My position: Holding out: you are not driving the discussion and are neither in the accusing group nor the defending group. Heat: Low to moderate. You have made no claim and have not been accused; the night-4 kill through a reanimated body is publicly visible as a reanimated attack, which can draw attention toward the necromancer role only if someone reasons it out. Forward exposure: Any public defence of the trailseer or challenge of the healer claim would commit you to a stance on the night-4 result; contesting the trailseer claim invites checks on your own visits, and retracting a stance later is difficult once voted on. Target landscape: Surviving players are player_3 (claimed sentinel, watched you on night 3 and reads you Not suspicious through a body), player_8 (claimed trailseer, new claim naming player_9 visiting you), player_9 (named by the trailseer claim, no role claim), and player_10 (no claim, mostly silent). Public role status is only claims; no role is confirmed, and the dead players' roles are partially hidden. Public vs private: You are the necromancer and privately know you struck player_4 last night through a dead illusionist's body, and that their role was hidden, so the public sees only a reanimated kill. Publicly the village reads a healer claim from player_4 (now dead, role hidden) and a trailseer claim from player_8 that points at player_9 visiting player_2, which puts you in the path of that claim. You cannot reveal any of this without exposing yourself.",
+  "lesson_action": "When a night read obtained through a dead player's body would be impossible for any living role to know, hold it back and stay vague, and only restate what the Game Master announced or what living claimants have said. If you push a read, ground it in public voting records and announced facts, so a challenge cannot trace it to your necromancer channel.",
+  "stated_reason": "I will not cite any channeled result; I only answer from what I received myself",
+  "decision": {
+   "spoke": "player_8, nothing from player_9 reached me that I know of, and I wasn't blocked. So your follow is one unverified claim against my word. Did your trailseer read show any other visits that night? player_9, if you're not claiming, fine, but then the room has only player_8's read to go on."
+  },
+  "recent_discussion": [
+   "player_8: I'm the trailseer. Night 4 I followed player_9, and they visited player_2.",
+   "player_9: ",
+   "player_10: ",
+   "player_2: player_8, you say player_9 visited me on night 4. I wasn't a target of anything from player_9 that I know of, so I can't back that. player_9, what did your night action go to? If it's a claim we can test, let's see whose story fits the morning reports.",
+   "player_9: player_2, I'm not claiming a night role, so I'm not going to say where my night went. Whatever player_8 says they saw is their claim to back up. I'd rather we look at who has been confirmed by the morning reports than trade night stories.",
+   "player_3: I'd vote player_9 today. player_8 named them as the visit on night 4, and they still won't say where their own night went. Saying nothing about it isn't a defense. player_2, if you'd been roleblocked that night, would you have been told?",
+   "player_9: player_3, I haven't claimed a night role, so I won't walk through mine. A roleblocked player is told, so player_2 can answer that for themselves. Right now the only thing against me is player_8's follow claim, and that's one unverified claim. player_8, which of my visits did you actually see, and why follow me on night 4?",
+   "player_8: player_9, I followed you on night 4 because you hadn't claimed anything. What I saw is that you went to player_2. I can't tell from that what the visit was for. player_2, did anything come to you that night? Nothing from the morning report touched you, so a sentinel or chanteuse visit would be the only thing to check."
+  ],
+  "case_id": "c074"
+ },
+ {
+  "game_id": "e0017973-81f9-4e42-9d9a-0cbe09b6fd9a",
+  "player": "player_7",
+  "role": "necromancer",
+  "day": 3,
+  "phase": "day_vote",
+  "lesson_key": "f5f35850-a428-4fd2-8fe0-278aef01de54",
+  "lesson_situation": "Day 3: two competing claims (a sentinel and a sigilist) both confirm each other's visits on the dead illusionist, a follower is being pressed to explain a visit, and a second player is publicly pushing for a vote without a tied reason. The village has not voted since the lynch of a revealed investigator on day 2, and the discussion is deadlocked over which claims to believe. Information landscape: Information-starved: the only announced facts are the day-2 lynch, the sigil strike on the dead illusionist, and an illusionist-concealed body; every other claim (sentinel watch, sigilist placement, follow) is a player's own claim with no independent confirmation. Stakes: Seven alive with five eliminations until the leading evil faction can win at worst for the town, and one more elimination could decide the game under at least one way a concealed body's side could fall, so a wrong vote now is recoverable but costly, while the town's remaining accurate information is thin. Consensus: The village is split: some are pressing the follower for a visit explanation, some are defending the sentinel and sigilist claims, and a few are withholding votes until more checks surface. No single target has majority support. My position: Holding out with low profile, neither driving nor opposing the forming pressure, and tracking which of the competing sentinel and sigilist claims the night facts support. Heat: Your own suspicion is low: you have not been accused and have not claimed a role, but the sentinel and sigilist claims each name visits, and the village is asking every player to explain visits, which makes silence itself draw questions. Forward exposure: Any visible move (a vote, a claim, or a remark about the night) would commit you publicly and cannot be undone; the lowest-exposure path is to keep speaking only when you have new information and to vote with the majority. Target landscape: The sentinel claim and the sigilist claim both rest on each other's visits; the follower's night-2 follow on the dead illusionist is unverified; the player who was struck by the sigil is confirmed as the dead illusionist; the lone accuser's pressure rests on an investigator read that has since been revealed as a real Suspicious result on the dead illusionist. Public vs private: You privately know you are the Necromancer and that you have used a dead Investigator's body to learn a result, but publicly you hold no claim and no role; the village sees only public claims from a sentinel, a sigilist, and a follower, none verified, while the one hard fact is that a player was struck by a sigil on night 2 and a player was concealed by an illusionist on night 2.",
+  "lesson_action": "When the room is converging on a target and you are not yet that target, cast your vote with the plurality instead of a solo dissent. A solo vote is permanent and marks you as the one voter outside consensus, and it moved no one in either game. If you are the accused, vote the same way as the room's other non-you voters where one target exists, so your record does not stand out.",
+  "stated_reason": "Avoid a solo dissent; abstaining keeps my record with the room and I have no evidence to justify a lone vote.",
+  "decision": {
+   "vote": "abstain"
+  },
+  "recent_discussion": [
+   "player_8: ",
+   "player_3: ",
+   "player_4: I'm the sentinel, and my night-2 watch on player_9 showed player_2 and player_10 coming to them. Both visits fit their claims, a follow and a sigil, so I don't think either is a wolf on this alone. player_1, you pushed player_2 without saying what the visit tells you; what is your read?",
+   "player_1: player_4, I answer you: I can't check your watch from my side, so I'll take it as a claim for now. player_10's sigil striking player_9 is the one hard fact: player_9 did attack on night 2, which fits player_2's follow and player_4's watch both being real. I won't vote on player_2 without a reason tied to that night.",
+   "player_7: ",
+   "player_8: ",
+   "player_10: I can confirm player_4's watch: I placed the sigil on player_9 on night 2, so my visit is real. That fits player_4 as a real sentinel. player_1, the night-1 attack on me doesn't clear anyone, so please give a reason tied to a visit. I'd abstain today and not vote on player_2 without more.",
+   "player_1: player_10, I won't lay out my night action in the open yet. The night-1 attack on you only says the wolves didn't pick you as a teammate, not much more. I'm not voting on player_2 without a reason tied to a visit either. Who would you vote today if you had to, and why?"
+  ],
+  "case_id": "c075"
+ },
+ {
+  "game_id": "762114dd-aa48-4b54-acc9-dd2de43f125f",
+  "player": "player_4",
+  "role": "serial_killer",
+  "day": 2,
+  "phase": "day_discussion",
+  "lesson_key": "551ac419-a85e-42f9-8659-98e2ad882fc7",
+  "lesson_situation": "Day 2 opens with nine players alive after the night-1 stabbing of a sigilist. You are the serial killer, unseen by the village, and must decide whether to stay quiet and blend in or to start shaping suspicion before the first vote while you are unrevealed and cannot be voted out without a daytime vote. Information landscape: Information-starved: one confirmed death and its revealed role; no claims, no investigations, no sentinel or trailseer results shared publicly. Only the wolves and you hold private night results. Stakes: With nine alive and five eliminations needed before the leading evil faction can win, no single vote is decisive now; a wrong town vote is recoverable but each night kill removes a potential voice, so the value of staying hidden accumulates over several days rather than resolving on this one. Consensus: The village has no consensus yet: day 2 opens with no accusations, no claims surfaced in the summary, and no vote history beyond a day-1 no-vote. My position: Holding out, with no claim and no accusation; you are not leading the room and are not aligned with any faction of the forming consensus. Heat: Low. No accusations are on record and no one has named you; suspicion on you is at baseline, based only on general silence on day 1. Forward exposure: Any visible accusation, defense, or vote pushing a particular player would commit you to a stance the village can later check against night results; retracting it is costly because votes are public and permanent. Staying silent carries no record but also gives no cover. Target landscape: Nine living players, all with unknown roles and no claims on record. The wolves (two) and the town roles remain hidden; the fortune teller is neutral. No player has public evidence against another, so candidates are distinguished only by how much they speak and how quickly they draw attention. Public vs private: Privately, as the serial killer you know you killed the sigilist on night 1 and that no one has a confirmed result yet; publicly the village knows only that a sigilist died and was revealed, with no accusations on record. You hold the only knowledge of your own kill and carry no public claim.",
+  "lesson_action": "When early deaths leave the room hunting for leads and no heat is on you, speak as an ordinary town member and echo the room's demand that evasive or vague players state their role and night action. If a vocal player pushes for claims without offering information, ask them to say whether they hold any, so the room's scrutiny lands on claimants and evasive players instead of on you.",
+  "stated_reason": "Day 2 with no leads; staying low-heat and asking for role claims fits my board.",
+  "decision": {
+   "spoke": "Night one killed player_3, a sigilist, so we have no checks or watches yet. Before we vote on anyone, I'd like claimants to say what they learned. Anyone holding a night result, please share it, even if it's a quiet one."
+  },
+  "recent_discussion": [
+   "player_5: ",
+   "player_6: ",
+   "player_7: ",
+   "player_8: ",
+   "player_9: ",
+   "player_10: ",
+   "player_1: ",
+   "player_2: "
+  ],
+  "case_id": "c076"
+ },
+ {
+  "game_id": "46d4ec79-8d1e-4b45-a116-3cb2223c680f",
+  "player": "player_7",
+  "role": "necromancer",
+  "day": 4,
+  "phase": "day_vote",
+  "lesson_key": "f5f35850-a428-4fd2-8fe0-278aef01de54",
+  "lesson_situation": "A day-4 discussion with no hard evidence: the healer and trailseer claims both partly fit the record, and several players are pushing a lynch of a player who keeps asking others to be tested. You privately hold the block that the trailseer claimant reported, while the trailseer's deduction about a necromancer is pointing toward you. Information landscape: Information-starved: one confirmed save, one admitted night-2 visit, one dead chanteuse, and many unverified claims and accusations; the decisive night results are private to each player. Stakes: Seven alive with five eliminations until the leading evil faction can win at worst for the town; a single wrong lynch is recoverable but removes information, and one more elimination could decide the game under at least one concealed-body outcome, so a mis-vote now is costly. Consensus: The village is split: one bloc is pushing a lynch on the player who dodged questions, while others want the two claimants tested first. No one has a hard result to settle it, so the room is aligned against one player but not confident. My position: Holding out: you are not driving the lynch and not defending the accused; you are with the visible majority on a vote only if it is sound on the record. Heat: Low to moderate. Players have not targeted you directly; the night-3 block on the trailseer-claimant is a fact only you know, and the trailseer has publicly guessed the block came from a necromancer using the chanteuse's body, so the deduction is close to your position. Forward exposure: Any visible move (a vote, a defense, a claim, or pressing a lynch) would commit you to a public stance that later night results could contradict; votes are permanent on the record, so a vote now cannot be withdrawn, though your night actions stay hidden. Target landscape: Surviving players: seven, of whom you are one. The claimed healer and claimed trailseer are unverified claims with partial corroboration (a save on night 3 matches the healer claim; a night-2 visit admitted by the dead chanteuse matches the trailseer claim). The player under pressure has refused to pick a side on either claim and is accused by several players; the evidence against them is behavioral only. Public vs private: You are the necromancer working alone, using a dead chanteuse's body; you blocked a Town player on night 3 and the public record shows only that a healer-type save happened. Publicly you are an unrevealed player with no claim, while the village argues over two unverified claims (a healer and a trailseer) and a bloc pressing a vote on a player who has dodged questions.",
+  "lesson_action": "When the room is converging on a target and you are not yet that target, cast your vote with the plurality instead of a solo dissent. A solo vote is permanent and marks you as the one voter outside consensus, and it moved no one in either game. If you are the accused, vote the same way as the room's other non-you voters where one target exists, so your record does not stand out.",
+  "stated_reason": "The room is converging on player_10 and I am not the target, so joining the plurality avoids a solo dissent",
+  "decision": {
+   "vote": "player_10"
+  },
+  "recent_discussion": [
+   "player_7: Looking at the record: player_10 is the only one who has dodged a direct question twice, and player_2 is pushing that vote on a thin reason. I'd like player_10 to answer plainly which trail or healer claim they believe, rather than telling others to get tested first.",
+   "player_10: player_7, I'm not dodging. I'm not voting on either claim yet: player_3's save on player_8 is confirmed by the record, and player_8's night 2 trail fits what player_1 admitted, so both fit so far. I'd rather see who backs their claims with something concrete than hear me pick a side on thin evidence.",
+   "player_9: ",
+   "player_8: My vote today is player_10. They've twice refused to say which claim they believe and keep asking others to be tested first. Nothing I know clears them, so I want a plain answer on player_3's healer claim before anyone is lynched.",
+   "player_10: player_8, I'm not dodging. The record says someone protected you on night 3, and that is a healer-type save, so player_3's claim fits the one fact we have. I'm not voting on thin reasons. You were blocked on night 3, so you have no trail from that night. What did your night 2 trail show beyond the visit to player_3?",
+   "player_9: player_8, if your night 3 block came through the dead chanteuse's body, that means the necromancer is alive and used player_1 to block you. That's a concrete push: whoever has been quiet on night 3 results, watch for the necromancer's suspicious reads. I'm not voting player_10 on this alone.",
+   "game_master: Before the vote: player_10 has been accused by player_2, player_3, player_7 and player_8. player_10 gets a last word.",
+   "player_10: The only thing on the record is that someone saved player_8 on night 3, and player_1 admitted visiting player_3 on night 2, so the accusations rest on thin ground. I have no reason to point at anyone beyond that. I'd ask the town to weigh who pushed the lynch on a thin reason before voting."
+  ],
+  "case_id": "c077"
+ },
+ {
+  "game_id": "762114dd-aa48-4b54-acc9-dd2de43f125f",
+  "player": "player_6",
+  "role": "trailseer",
+  "day": 4,
+  "phase": "night_action",
+  "lesson_key": "b2c876a9-fc67-498b-8a1c-dd23859786f0",
+  "lesson_situation": "A claimed healer says they were roleblocked on night 3 and so protected no one, implying an active chanteuse; a claimed investigator's check on the sentinel conflicts with the account of the eliminated player who also claimed that check. The trailseer must decide, by the next vote, whether to share its follow results to test these claims, knowing that doing so exposes its own role to a chanteuse who could block the trailseer's follow. Information landscape: Information-starved on the night actions of most players: only the trailseer's own follow records and the morning record of attacks and saves are hard. Claims conflict on investigator identity and on who was roleblocked; no claim has been confirmed by a public result. Stakes: With six alive and four eliminations needed before the leading evil side can reach parity, one vote is a swing: a wrong lynch of a town role leaves the chanteuse and remaining wolf in a stronger position, while an accurate lynch of a wolf brings the town nearer to ending the game. Target landscape: The two investigator-claim players (player_5 versus the eliminated player_4's contested night-2 result, now moot) and the claimed healer player_10, whose night-3 roleblock account is the only evidence for a chanteuse being active. Candidates for the next lynch are player_5, player_10, player_2, player_7 and player_8.",
+  "lesson_action": "When the wolves are largely dead and a lone killer (likely the necromancer) is still unidentified, follow an unconfirmed, non-claiming player whose behavior is quiet or unexplained, not a role already validated as Town. A follow shows only whom they visited, so a visit onto a night-death victim or a dead body's door points at the hidden killer, while a protective or empty visit narrows the pool by elimination.",
+  "stated_reason": "Wolves are down to the chanteuse; follow an unconfirmed, non-claiming player to test them",
+  "decision": {
+   "kind": "follow",
+   "target": "player_8",
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c078"
+ },
+ {
+  "game_id": "46d4ec79-8d1e-4b45-a116-3cb2223c680f",
+  "player": "player_2",
+  "role": "vigilante",
+  "day": 3,
+  "phase": "night_action",
+  "lesson_key": "fca214c8-38f3-49ab-9087-d2d77069d5d1",
+  "lesson_situation": "The day 3 lynch removed a player who had been blocked-adjacent to the healer's night, and the vigilante, who was itself roleblocked on night 1 and held fire on night 2, must decide whether to spend a bullet on a night with no verified wolf or necromancer evidence. Two earlier deaths were concealed by an illusionist, so the wolves' remaining membership is unknown. Information landscape: Information-starved: the only results are one claimed trailseer follow, one claimed healer's blocked night, and the vigilante's own roleblock record. Two of the three dead players' roles are concealed, and no investigator or sentinel result has been posted. Stakes: Seven alive with five eliminations until the leading evil faction can win at worst for the town, so a single mis-shot is recoverable but consumes one of only two bullets, and a wrong vote or shot removes a Town player whose role may be needed to find the remaining wolves; one more correct elimination could decide the game in either direction depending on the concealed bodies' sides. Forward exposure: A shot at night is a visible act that would be announced in the morning as a shot by the vigilante if it kills; the vigilante's role would be revealed as the shooter, and the target's role would be revealed on death, committing the vigilante to a named target with no reversal and spending one of two bullets. Target landscape: Six living players: a claimed trailseer whose night 2 follow is the only public result touching the lynched chanteuse; a claimed healer whose night 2 was blocked by the lynched chanteuse; and four players with no claim. No candidate has confirmed role status, and the only evidence is one unverified claim plus behavioral accusations.",
+  "lesson_action": "After both wolves are dead and only a hidden lone killer remains, hold fire while no living player is tied to a lone-killer signal. Keep the bullets for when a reanimated-body kill or other concrete evidence points at a specific suspect.",
+  "stated_reason": "The wolf chanteuse is dead and only the illusionist and a hidden necromancer remain, with no lone-killer signal yet, so holding fire keeps both bullets.",
+  "decision": {
+   "kind": "hold_fire",
+   "target": null,
+   "role_named": null,
+   "via": null
+  },
+  "recent_discussion": [],
+  "case_id": "c079"
+ }
+]
