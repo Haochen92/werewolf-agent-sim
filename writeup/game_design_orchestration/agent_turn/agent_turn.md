@@ -1,8 +1,13 @@
-# One agent turn, from input to action
+# Structured Agent Execution
 
-*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Executing a day and night](../day_and_night/day_and_night.md) (not yet drafted) · next: [Adding a human in the loop](../human_in_the_loop/human_in_the_loop.md) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
+*From model responses to validated actions, with retries and fallbacks.*
 
-## Brief
+*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Multi-Agent Game Orchestration](../day_and_night/day_and_night.md) · next: [Adding a human in the loop](../human_in_the_loop/human_in_the_loop.md) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
+
+## Original drafting brief
+
+This brief records the earlier outline. The 2026-10-27 editorial revision and verification questions
+are recorded in [the editorial notes](../editorial_notes.md).
 
 Condensed from [`../content_plan.md`](../content_plan.md), "Level 2 page briefs", section 4, with its
 "Widened 2026-10-26" note (owner); the plan keeps its copy until the owner moves it.
@@ -49,15 +54,14 @@ proposed in the drafting notes, not yet added).
 
 ## Page copy (draft)
 
-A turn is the moment one player acts: it speaks in the discussion, votes, or uses a night ability. The
-rules limit every one of those acts. A player can vote only for someone alive, and a role can act only
-on certain players and only while its uses remain: the Vigilante has two bullets for the whole game,
-the Speculator one pick.
+A turn is the moment one player acts: it speaks in the discussion, votes, or uses a night ability.
+The rules limit every one of those acts. A player can vote only for someone alive, and a role can
+act only on certain players and only while its uses remain: the Vigilante has two bullets for the
+whole game, the Speculator one pick.
 
-Here the player is a model call, and the engine has to apply whatever comes back. So every turn must
-end in one answer of a known shape that is legal under the rules, and it must end that way even when
-the model writes something broken or its provider stops answering. A game that waits on an answer it
-cannot use never finishes.
+Here the player is a model call, and the engine has to apply whatever comes back. Each turn
+therefore needs a response contract: a known format, legal choices and a defined outcome when
+generation fails. Without that last part, one unusable answer can prevent a phase from finishing.
 
 Every turn follows the same four steps: build the player's permitted input, ask the model for one
 structured answer, check it, and hand the result to the game.
@@ -75,114 +79,67 @@ flowchart LR
     A -- "vote or night choice" --> C["Collected, then resolved with every other choice"]
 ```
 
-*Every path ends in an accepted answer. A vote or night choice changes the game only when the phase
-resolves.*
+*Invalid replies lead to a retry and, if needed, a legal fallback. A vote or night choice changes
+the game only when the phase resolves.*
 
-### Code asks; the model answers one structured question
+### Build the input for this decision
 
-The input is one prompt built fresh for this seat: the public record of the game, the seat's own role
-and private results, and whatever its faction shares. Which information may enter it is the subject of
-chapter 2, [Information boundaries](../../../evidence/agent_boundaries/report.md); how it is worded is
-chapter 3's, context engineering.
+Each turn starts with a freshly assembled input: the public game record, the player's own role and
+private results, and information its faction is entitled to share. Selecting that input enforces the
+[agent information boundary](../../../evidence/agent_boundaries/report.md). Formatting it clearly is
+a separate task, described in the [turn-prompt
+report](../../../evidence/gameplay/turn_prompt/report.md).
 
-The model answers with a *structured response*: a JSON object whose fields are fixed in advance by a
-schema. Every turn opens with the seat's read of each other living player and its private note to
-itself, then the turn's own fields: a message, a vote or a night target. The model has no tools to
-call; the schema is the whole of what it can do.
+The request identifies the decision needed now. A discussion turn asks for speech; a vote asks for a
+target; a night turn asks for the role's permitted action. The player also returns its reads of the
+other living players and a private note for later turns. These appear in one JSON object with fields
+defined by a schema, so code can distinguish the action from the explanation around it.
 
-That split follows one rule: code decides whatever a rule can decide, and the model decides only what
-needs judgement.
-
-| Decision | Made by |
-|---|---|
-| The deal, the order of phases, when the game ends | Code |
-| Who speaks next, when the discussion ends, who gets a closing defence | Code, from the tags each speaker puts on its own line |
-| Legal targets, the night's outcome, the vote's result | Code: the answer's schema and the rules |
-| Chance, when there is no reason to choose (e.g. a first-night target) | Code, by lot |
-| What follows with certainty from a seat's own results; whether a claim fits the record | Code: the deduction engine and the claim ledger (→ chapter 3) |
-| Whether an opening line is of an allowed kind; whether a later line adds anything | One cheap model call each |
-| What the day said, for later days | A summarising model call |
-| What a player says, whom it suspects, its vote and night target, whether to pass | The player's model |
-
-### Why not a tool loop
-
-Agent frameworks usually let a model act through tools: it calls `vote(target)` or `shoot(target)`, the
-framework runs the tool, and the model carries on. That suits an agent that must discover what it can
-do. A seat here has nothing to discover. Each turn's options are fixed and few: one legal target, a
-pass, or a message.
-
-So a tool would be called on every turn, and each call would cost something. It adds a model
-round-trip and more output tokens. It makes the start of the prompt less stable, and the start is the
-part the provider can cache and reuse across calls. And the tool's arguments would still have to be
-validated as structured data, which a structured response does in one call. That reasoning is mine,
-and I did not measure the extra cost.
-
-One part was measured. Before Claude Haiku 5.5 joined the game, a probe made 51 calls on ten-seat
-turn schemas (17 schemas, three calls each, 2026-10-11). Forced to answer through a tool call, it
-passed 45 of 51 and returned no thinking tokens in any call: forcing the tool switched its thinking
-off. Answering a JSON schema, it passed 51 of 51 and thought for about 312 tokens a call.
-
-The cost I accepted is that the model can do only what a field allows. An action code cannot list in
-advance would need a new field before any seat could take it.
-
-### The output contract
+### Define the response contract
 
 Three rules make an answer something code can act on.
 
-**Every field the turn shows is required, and "no" is a value.** Gemini's Flash-Lite, the game's model
-in June, silently dropped optional fields. A missing field was then ambiguous: had the seat declined,
-or was the answer incomplete? So declining became an explicit answer: `pass_turn` (true or false) for
-staying silent, `abstain` for a vote, and a word for each ability that may go unused, e.g. `no_check`
-for the Investigator and `hold_fire` for the Vigilante.
+**Every field the turn shows is required, and "no" is a value.** Gemini's Flash-Lite, the game's
+model in June, silently dropped optional fields. A missing field was then ambiguous: had the seat
+declined, or was the answer incomplete? So declining became an explicit answer: `pass_turn` (true or
+false) for staying silent, `abstain` for a vote, and a word for each ability that may go unused,
+e.g. `no_check` for the Investigator and `hold_fire` for the Vigilante.
 
 **A target field lists only legal targets.** For each turn, code rebuilds the schema so the target
 field accepts exactly the players this seat may target, and a reply naming anyone else fails
 validation. Uses are counted before the turn exists: a role with no uses left gets no night turn.
 
-**What code reads downstream is a field, not prose.** Each line carries the speaker's own tags (whom it
-addresses, and whether it questions, accuses, defends or agrees), which the turn scheduler reads
-([Orchestrating the conversation](../conversation/conversation.md)). A role claim and any claimed night
-results are fields too, which the claim ledger checks against the record (chapter 3).
+**What code reads downstream is a field, not prose.** Each line carries the speaker's own tags (whom
+it addresses, and whether it questions, accuses, defends or agrees), which the turn scheduler reads
+([Orchestrating the conversation](../conversation/conversation.md)). A role claim and any claimed
+night results are fields too, which the claim ledger checks against the record.
 
-The fields also come in a set order, reads and note before the action, because where a field sits can
-change the answer; that finding is chapter 3's.
+The fields also come in a set order, reads and note before the action, because field order can
+affect the answer. The [turn-prompt report](../../../evidence/gameplay/turn_prompt/report.md)
+discusses that investigation.
 
-### Enforced by the provider, or checked in code
+### Validate every reply; enforce the schema on retry
 
-A provider can enforce a schema while the model writes, so the reply cannot break it. Enforcing it on
-every call is the obvious choice, and on Claude Haiku 5.5 it collided with caching.
+Every reply is validated in code against the turn's schema, including its legal targets. Provider-enforced
+generation can also constrain the answer, but in the tested Haiku 5.5 setup the changing per-seat schemas
+interfered with reuse of the shared prompt cache. The first call therefore receives the schema as text
+after the cached input. This changes when an invalid answer is caught; it does not relax what the game
+accepts. The [caching investigation](../../../evidence/caching/experiment_log.md) explains the provider
+behaviour, prompt layout and measured cost tradeoff.
 
-Ten seats read the same rules and the same transcript many times a day. If every prompt opens with the
-same text, the provider serves that part from its cache at a fraction of the input price. For
-caching, Claude counts an enforced schema as the very start of the prompt, and a vote's schema lists
-that seat's legal targets. It differs from seat to seat and changes at every death, so no two seats' votes or night
-actions could share the cached transcript.
+Initial testing suggested invalid replies were rare, but a later 20-game Haiku run found 74 schema
+failures across 3,118 seat decisions, including malformed reads and truncated JSON. Repeating the same
+unenforced call failed again in six cases. Invalid replies now trigger a retry with provider-enforced
+schema generation, still followed by application validation. The updated retry policy's effectiveness
+in live games has not yet been measured.
 
-The obvious fix was to drop the target list from the schema and state it in the prompt. I ruled that
-out: legal targets stay limited by code. Instead, I write the same per-seat schema as text after the
-cached part of the prompt, and validate the reply in code against it. An illegal target still fails.
-What changes is when a mistake is caught: after the reply instead of during it.
+### Retry, then supply a legal fallback
 
-The open question was how often unenforced replies would break. In a trial on 2026-10-13 (probe
-calls plus real ten-seat turns), 1 of 412 unenforced Haiku calls failed, and validation caught it. In
-paired games on the new prompt layout (two games per arm on the same two deals), Haiku's votes read
-none of their input from cache with the schema enforced and 63% with it written as text; night actions
-read about 18% against 56%. On Haiku that did not lower the cost per call, because the model reasoned
-more; the cost side is chapter 6's.
-
-Twenty Haiku games played after the switch (3,118 seat decisions) broke the schema more often than
-the trial: 74 replies, about one decision in forty, e.g. a malformed read or JSON cut off. The plain
-retry repeated the same unenforced call, and six failed again. So a reply that breaks the schema is
-now asked again with the schema enforced. That one call cannot read the cache, since its schema again
-opens the prompt, but it runs only after a failure. How often it fires and holds in live games has not
-been measured yet.
-
-### When a reply still fails
-
-After the enforced retry, a game may have a *rescue model*: a model from another provider family that
-gets one try when the game's own model fails, and takes the turn outright when the provider stalls.
-Haiku has none, so on Haiku a reply that fails the enforced retry goes straight to the fallback. The
-stall budget and the rescue's design are chapter 7's.
+After the enforced retry, a game may have a *rescue model*: a model from another provider family
+that gets one try when the game's own model fails, and takes the turn outright when the provider
+stalls. Haiku has none, so on Haiku a reply that fails the enforced retry goes straight to the
+fallback. The [turn-prompt report](../../../evidence/gameplay/turn_prompt/report.md) describes the
+rescue settings and failure handling.
 
 If nothing produces a valid answer, code supplies a legal one, so the phase can always complete:
 
@@ -191,27 +148,47 @@ If nothing produces a valid answer, code supplies a legal one, so the phase can 
 - a night ability that can go unused is declined with the role's own word, because a random shot is
   worse play than none; any other night action gets a random legal target.
 
-A fallback pass is a valid answer, and that had a consequence. One failed opening was cached like any
-other answer and replayed in another game; [The cache key that crossed
+A fallback pass is a valid answer, and that had a consequence. One failed opening was cached like
+any other answer and replayed in another game; [The cache key that crossed
 games](../human_in_the_loop/cache_key.md) tells that story.
 
-### After the answer
+### Hand the accepted answer to the game
 
 An accepted vote or night choice does not change the game when the model returns. It is collected
-with every other player's choice and resolved in one step by the rules
-([Executing a day and night](../day_and_night/day_and_night.md)). An accepted line of speech goes to the discussion, where two filters described in
-[Orchestrating the conversation](../conversation/conversation.md) may hold it: one checks the kind of
-an opening line, the other holds a line that only repeats the day. Both are model judgements made after
-the line is written, not schema rules. Both fail open, so a failed check keeps the line, and a line
-they wrongly judge acceptable is published.
+with every other player's choice and resolved in one step by the rules ([Executing a day and
+night](../day_and_night/day_and_night.md)). An accepted line of speech goes to the discussion, where
+the relevant publication filter described in [Orchestrating the
+conversation](../conversation/conversation.md) may hold it: one checks the kind of an opening line,
+the other holds a line that only repeats the day. Both are model judgements made after the line is
+written, not schema rules. Both fail open, so a failed check keeps the line, and a line they wrongly
+judge acceptable is published.
 
-### What this does not establish
+### Why this turn uses a structured response
+
+The actions available on a turn are known before the model is called. The engine needs one choice
+among those actions, so a structured answer fits the task directly. The player does not need a loop
+in which it discovers tools, invokes them and decides what to do next.
+
+This is a design choice, not a measured cost comparison with every form of tool calling. The
+relevant question is whether a turn needs another model decision after its first answer. Here, the
+engine takes over to publish the speech or collect the choice for resolution.
+
+One implementation comparison was measured. Before Haiku 5.5 joined the game, a probe made 51 calls
+on ten-seat turn schemas: 17 schemas, three calls each, on 2026-10-11. In the forced-tool
+configuration, 45 of 51 passed and none returned thinking tokens. The JSON-schema configuration
+passed 51 of 51 and returned about 312 thinking tokens per call. Those results describe the tested
+configurations; they do not establish that all tool-based designs behave that way.
+
+The restriction is that a player can do only what the response fields allow. A new kind of action
+requires a new contract before a seat can take it.
+
+### What remains unmeasured
 
 - No other orchestration design was compared; the case against a tool loop is reasoned, except the
   Haiku probe above.
 - No failure rate for optional fields was recorded; the rule came from schema work in June.
 - Whether writing the schema as text, or today's field order, changes what Haiku's players say has not
-  been measured (chapter 3).
+  been measured.
 
 **Evidence.**
 

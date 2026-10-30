@@ -1,8 +1,13 @@
-# Executing a day and night
+# Multi-Agent Game Orchestration
 
-*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Orchestrating the conversation](../conversation/conversation.md) (being drafted) · next: [One agent turn, from input to action](../agent_turn/agent_turn.md) (being drafted) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
+*Coordinating agent decisions, resolving actions, and maintaining consistent game state.*
 
-## Brief
+*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Orchestrating the conversation](../conversation/conversation.md) (being drafted) · next: [Structured Agent Execution](../agent_turn/agent_turn.md) (being drafted) · status: page copy drafted 2026-10-26 with the level prompts; restructured 2026-10-28 to follow the game loop (detail moved to the supporting notes); for the owner's review.*
+
+## Original drafting brief
+
+This brief records the earlier outline. The 2026-10-27 editorial revision and verification questions
+are recorded in [the editorial notes](../editorial_notes.md).
 
 Copied from [`../content_plan.md`](../content_plan.md), "Level 2 page briefs", section 3 (agreed with the
 owner 2026-10-26); the plan keeps its copy until the owner moves it.
@@ -41,27 +46,19 @@ notes and not yet added.
 
 ## Page copy (draft)
 
-Executing a day and night means turning ten players' separate decisions into one game that follows its
-rules. Two needs shape it, and both are familiar from a table game.
+Ten agent players contribute to one game, but their decisions have different dependencies.
+Discussion needs to proceed one speaker at a time so each agent can respond to what was just said.
+Votes must be collected without revealing other ballots. Night actions must be resolved together:
+a block can prevent an attack, and protection can prevent a kill.
 
-Votes and night choices are made independently: each player decides from what they know, and nothing
-happens until every choice is in. At night this matters because actions interact. A Healer's
-protection stops a kill only if both are applied together, and a blocked player's action should never
-land. Conversation is the opposite: each line answers the one before, so players speak in turn.
+The orchestration layer preserves these relationships regardless of how quickly each model answers.
+I built it with LangGraph, representing the game as steps that read and update shared state. Models
+choose actions; code controls the execution order and applies the game rules.
 
-With model calls as the players, something also has to decide who acts next, give each player only
-its own information, combine the results and stop when a side has won. I built that in LangGraph, a
-framework that runs connected steps over shared state. This page follows a day and a night through the
-graph: its shape, which steps run in parallel and which in sequence, how results come back into the
-shared state (where one bug wiped the players' private notes each night), what the players share, and
-what keeps a loop from running forever.
+### The game loop
 
-### The game as a graph
-
-In LangGraph a *node* is a step that reads the game's state and returns changes to it. An *edge* says
-which node runs next. A *router* is an edge that decides in code, e.g. "has a side won?". After every
-step the framework saves the state, a *checkpoint*, which is what lets a game pause for a human
-([Adding a human in the loop](../human_in_the_loop/human_in_the_loop.md)).
+The main graph follows the game's cycle: run the day, resolve the vote, run the night, and resolve
+its actions. After each resolution, code checks whether the game has ended.
 
 ```mermaid
 flowchart TB
@@ -80,57 +77,34 @@ flowchart TB
     W2 -- "yes" --> END
 ```
 
-*The main graph. "Game over" means a side has won, no side is left, or day 12 has been reached. The
-wolves' night and the solo roles' steps run in parallel; the resolution waits for all of them.*
+*The main graph. The game ends when a side has won, no side is left, or day 12 has been reached.
+The wolves' night and the solo roles run in parallel; night resolution waits for both.*
 
-Only the day and the night call a model. The deal, the vote count, the win checks and the resolution
-are code, so the rules are applied the same way in every game.
+Each step is a **node**, and the connections between steps determine what runs next. The day and the
+wolves' night each contain several steps, so they have their own **subgraphs**. A solo role's night
+action needs only one model turn and runs as a single node. Those solo nodes share an implementation,
+with role-specific actions and permitted answers supplied as data.
 
-### A subgraph where a phase has its own flow; a named node where a turn is one step
+Model calls sit inside the day and night phases. Dealing roles, counting votes, checking win
+conditions and resolving night actions are handled by code. This keeps the application of the rules
+separate from the agents' decisions.
 
-A *subgraph* is a smaller graph, with its own steps and state, that runs inside one node of the main
-graph. The day and the wolves' night are subgraphs because each has an internal flow. The day loops
-through a scheduler that picks the next speaker and runs parallel rounds. The wolves' night has a chat,
-a kill and then each wolf's skill. A solo role's night is one model turn, so it is one node.
+### A day: rounds in parallel, conversation in turn
 
-A separate piece of code per role is the obvious structure, and that is where the code started: the first
-version gave the day and every night role a subgraph of its own. The record does not say why. The
-repetition showed twice. First, the day graph routed each speaker to a node named after its role, and
-12 day functions and 4 night functions had identical bodies apart from the prompt; I replaced them with
-factories, functions that build each node from its prompt. Later, with twelve roles, a subgraph per role
-would have given every one-step night its own state, a node to call it and a hand-written return of
-results. So the
-solo nights became named nodes that share one body. What differs per role (its action, its answer
-field, its word for declining, its number of uses) is data in a role table. The day graph's own rule
-says it: "role-specific content is payload data, not topology."
+The opening round, closing defences and vote each collect responses from a set of eligible players.
+Within each round, agents receive their permitted view of the game and respond without seeing the
+other responses being collected. The engine waits for the whole round before advancing.
 
-The cost: a graph built from generic nodes no longer reads role by role. That is why the solo nights
-kept their names, so the graph, the traces and the server's translator (which turns graph events into
-what the live site shows) still name each role. The record states only what changed in that second
-collapse, so its reason is my reading.
+This is a **fan-out/fan-in** pattern. LangGraph's `Send` starts a branch with an input prepared for
+one player. A collecting node acts as a **barrier**, waiting for those branches to finish. Running
+them in parallel means waiting for the slowest response rather than making every call in sequence.
+Ballots remain independent because other ballots are excluded from each agent's input.
 
-### The same snapshot in parallel, conversation in sequence
-
-LangGraph's `Send` starts one node with an input built for it. A router can return one `Send` per
-player, and those turns then run as one parallel step. A collecting node after them waits for every
-branch: a *barrier*. Votes, the day's opening and closing rounds, the solo nights and the wolves'
-skills all run this way.
-
-Anything that needs an order happens at the barrier, never in a branch. Every branch in a parallel step
-reads the same snapshot of the state, so a round's turns, each numbering its line from the transcript,
-would all claim the same number; the collecting node orders and numbers them instead. At night the
-resolution step applies every choice together, so the order in which branches finish cannot change the
-outcome. Night actions count as simultaneous: a Healer killed that night still protects, and an
-Investigator killed that night made the check but receives no result. A limited use, such as a
-Vigilante's bullet, is spent only in that step.
-
-The parallel step suits a vote because a vote should be independent. That independence comes from each
-player's permitted input, not from running in parallel; running in parallel only means the step waits
-for its slowest player instead of adding every player's wait. Conversation needs the opposite. Asked
-in parallel, players answered the same snapshot and repeated each other, so discussion turns run one at
-a time, each one a single step that loops back to the scheduler. The cost is one model call in series
-per speaker. The evidence for that choice, and the scheduler itself, are in
-[Orchestrating the conversation](../conversation/conversation.md).
+Discussion has a different dependency: the next speaker needs the latest published line. When
+agents were asked in parallel, they responded to the same discussion snapshot and repeated each
+other. Discussion therefore loops through a scheduler: choose one speaker, run its turn, then choose
+the next. This adds a model call in sequence for each speaker. [Orchestrating the
+conversation](../conversation/conversation.md) explains how the scheduler selects them.
 
 ```mermaid
 flowchart TB
@@ -150,115 +124,158 @@ flowchart TB
     CV --> E
 ```
 
-*The day subgraph. Parallel rounds end at a collecting node; the discussion loops through the
-scheduler one turn at a time. A human seat takes a separate copy of each parallel turn, not shown
-([Adding a human in the loop](../human_in_the_loop/human_in_the_loop.md)).*
+*The day subgraph. Openings, closing defences and votes end at collecting nodes. Discussion advances
+one turn at a time. Human turns use separate branches, omitted here; see [Adding a human in the
+loop](../human_in_the_loop/human_in_the_loop.md).*
 
-The wolves' night uses both patterns in one subgraph. The wolves first chat one at a time, for at most
-three rounds; a round in which every wolf passes ends it early, and a lone wolf skips it. One wolf, the
-carrier, then makes the kill; the role rotates through the living wolves in seat order. Only then does
-each wolf's skill run, in parallel: the Chanteuse blocks a player's night action, and the Illusionist can
-hide the victim's role. The order follows the rules. The kill has a single visitor because the
-Sentinel and Trailseer see night visitors by name, and the skills come after the kill because the
-Illusionist decides on the victim. Tests pin this routing, and three ten-seat games read in full ran
-every step of the wolves' night as specified.
+Collecting responses also gives the engine one place to order them. Each parallel branch starts
+from the same state snapshot. If every branch numbered its own transcript entry, they would all
+choose the same next number. The collecting node assigns those numbers after the round finishes.
 
-### Why the subgraphs are invoked by hand
+### A night: choose together, resolve once
 
-There are two ways to attach a subgraph. One hands it to LangGraph as a node, and the framework can then
-see inside it. The other calls it like a function from inside my own node, which builds its input by
-hand. I use the second, because that hand-built input is where privacy is enforced.
+At night, the wolves' subgraph runs alongside the solo roles' turns. These branches submit choices;
+the resolution step applies their effects only after every branch has finished. A fast model's
+attack therefore cannot take effect before a slower model submits its protection.
 
-A `Send` passes its input to the node exactly as given, and nothing downstream narrows it. Whatever
-builds the input therefore decides what a seat can see: the wolves' subgraph receives only what wolves
-may know. Keeping that in one builder gives one place to enforce and test the boundary. The guarantee
-and its checks are [chapter 2's](../../../evidence/agent_boundaries/report.md).
+Resolution follows the game's simultaneous-action rules. A Healer killed that night still protects
+its target. An Investigator killed that night performs the check but receives no result. Limited
+uses, such as a Vigilante's bullet, are spent during resolution.
 
-The cost is that LangGraph sees the call as one opaque step. If a human's pause lands inside it, a
-resume re-runs the whole step, AI turns included; page 5 explains how caching the AI players' answers
-avoids asking them again. The subgraph's results also come back by hand, which caused the bug below. The
-alternative, letting LangGraph manage the subgraphs, would mean redesigning that privacy boundary.
+The wolves' branch also contains decisions that depend on one another. They first chat in sequence,
+then one wolf chooses the kill target, then their individual skills are chosen in parallel. The
+Illusionist can hide the victim's role, so it needs the selected target before choosing its skill.
+The attack itself still waits for night resolution. Routing tests check this sequence, and three
+ten-seat games read in full followed it as specified.
 
-### How a subgraph's result comes back
+### Passing information in, and results back out
 
-A node returns *changes*, and LangGraph combines each change with the current value using the field's
-*reducer*, its rule for combining. The transcript and the game's records append. A field with no
-reducer is simply replaced by the latest value.
+The game state contains information that individual agents must never see. Before a phase runs,
+its input must be restricted to what its participants may know. For example, the wolves' subgraph
+receives the wolves' permitted information rather than unrestricted access to the full game state.
 
-Appending is why a subgraph's result is folded back by hand. The day receives the running transcript
-and returns the grown one. Returned whole, the parent would append the old history a second time, so
-the node that called the day returns only the entries after what it sent.
+I enforce this boundary in a wrapper node that builds the input and invokes the subgraph. `Send`
+passes along the input it is given; it does not remove private fields automatically. Keeping the
+input construction in one place makes the boundary explicit and testable. [Agent information
+boundaries](../../../evidence/agent_boundaries/report.md) describes those checks.
 
-The private notes broke in the same place. Each seat keeps a private note between turns, its own plans
-and suspicions, carried into its next prompt. The notes lived in one map from seat to note, in a field
-with no reducer. The day and the wolves' phases returned the whole map, so they did no harm. The solo
-night phases, then each a subgraph of its own, returned only their own actor's entry, and that one-entry
-map replaced the whole field. Each night wiped every other seat's note. The test that pins the fix
-records the damage:
+This choice also makes the wrapper responsible for returning the subgraph's updates to the parent
+graph. The parent must combine them with existing state correctly. A field can define a **reducer**,
+a rule for combining updates: the transcript appends new entries, for example. Without a reducer,
+an update replaces the field's previous value.
 
-- notes broken for every seat except the first night actor;
-- nearly all seats blank from day 2;
-- a corrupted end-of-game copy of the notes, which the memory system reads after the game.
+An earlier implementation exposed the danger of that default. Each agent keeps a private note of
+its plans and suspicions for its next turn. All notes were stored in one map, keyed by player, with
+no reducer. The solo night subgraphs returned only the acting player's note, replacing the entire
+map with that one entry:
 
-The fix gave the notes a reducer that merges by seat, so an update replaces only its own seat's entry.
-Two tests pin it: a one-seat update keeps every other seat's note, and three solo actors updating in
-turn keep all three plus the seats they did not touch. The rule I took from it: choose each field's
-reducer from how every node that writes it returns it.
+| Update | Notes retained |
+|---|---|
+| Before the Healer's update | Every agent's note |
+| Apply the update by replacement | Only the Healer's note |
+| Apply the update by merging on player | Every agent's note, with the Healer's updated |
 
-The cost I kept is the hand-written return. Each calling node must know what it sent, and every new
-list field needs the same slice. Nothing warns if one is forgotten.
+The regression test records nearly all seats losing their notes from day 2, as well as a corrupted
+end-of-game copy used by memory extraction. The day and wolves' subgraphs returned the whole map,
+which had masked the problem. I fixed it with a reducer that merges notes by player. Tests check
+that updating one agent preserves the others, and that successive updates from three solo roles
+preserve both their notes and those of agents who did not act.
 
-### What the agents share
+The transcript needs different treatment. A day subgraph receives the existing transcript and
+returns it with new lines added. Appending that entire result would duplicate the old history.
+The wrapper therefore returns only the new entries. Each new append-only field needs the same
+care: its return value and reducer must agree on whether the update contains new data or the
+complete record.
 
-Agents never message each other. They share four records, rebuilt into every prompt:
+Explicit wrappers also affect human pauses. Resuming a paused subgraph re-enters its wrapper, which
+can repeat AI turns; cached answers are used to avoid repeating their model calls. [Adding a human
+in the loop](../human_in_the_loop/human_in_the_loop.md) explains that mechanism and its limits.
+Using framework-managed subgraphs would require revisiting how these information boundaries and
+state updates are implemented.
 
-- **today's transcript**: the lines published so far today;
-- **the game master's record**: the engine's exact announcements of each night and each vote;
-- **the claim ledger**: every role claim, per player, built by code and checked against that record;
-- **the day summaries**: a model's account of who accused whom on earlier days.
+### What every player reads
 
-The last three are labelled in that order of how far to trust them, the engine's record first.
+Preserving state is only part of the problem. The engine must turn it into an account of the game
+that each agent can use. Agents communicate through published records that the engine includes in
+their prompts:
 
-Shared records make one agent's error everyone's premise. In a census of 50 nine-seat games from July
-2026, errors clustered, the worst game-day having 24 errors, with one player's false premise becoming others'
-starting point. In one ten-seat game on Gemini 3.5 Flash-Lite, the summariser turned "I was roleblocked"
-into a claim to be the role that blocks, and the real Investigator was voted out 7 to 1. The fixes to
-the summary and the ledger are chapter 3's, and how the errors were counted is in the Evaluation
-chapter. The design response here is structural: each record carries its trust label, code rather than
-the summariser checks claims, and a line held back from publication reaches no prompt.
+- **Today's transcript:** lines published so far today.
+- **The game master's record:** exact announcements of night and vote results.
+- **The claim ledger:** role claims organised by player, maintained by code and checked against the
+  game master's record.
+- **Day summaries:** a model's account of earlier discussions.
 
-### The step budget
+These sources have different authority. An engine announcement establishes a game result; a claim
+records what a player said; a summary is a model's interpretation. The prompts keep them separate
+and label their authority, with engine results taking precedence over claims and summaries.
 
-LangGraph caps how many steps a run may take, its *recursion limit*, and stops with an error when the
-cap is reached. The discussion is a loop, one turn and one scheduler step at a time, and how long it
-runs depends on who is alive. The day should end by the game's own rules: the talk stops once every
-question and accusation has had its reply and the floor has gone round, or at a cap of three lines per living player. It
-should never end on that error.
+A summary error can otherwise become a premise for several agents. In one ten-seat game, the
+summariser turned “I was roleblocked” into a claim to be the role that blocks. The real Investigator
+was later voted out 7 to 1. That sequence illustrates the risk, although it does not isolate the
+summary's effect on the vote. The [day-summary
+report](../../../evidence/extraction/day_summary/report.md) covers the error and subsequent fixes.
+Here, the architectural responsibility is to preserve the distinction between engine facts,
+player claims and model interpretations.
 
-Because the day subgraph is called by hand, it can be given a limit of its own. So the day's budget is
-computed each morning from the survivors and the rules that end the talk: two steps per discussion
-turn; room for twice the speaking cap, since a pass does not count toward the cap and could follow
-every real line; a pass by every survivor each time the floor goes round the table; one last reply per
-survivor after the cap; and the steps for the rounds, the summary and the vote. Its stated aim is that "the graceful cap always
-fires before an ungraceful GraphRecursionError". The cost is upkeep: each change to the day has added a
-term to the formula. The main graph still uses LangGraph's default limit of 100, which is not derived
-from the game's length.
+### Ending the day safely
 
-### Checked without a model
+Discussion ends according to the game's rules: finish outstanding reply obligations and the final
+sweeps of the floor. A speaking cap provides another route to closure, allowing a final round of
+owed replies before the day ends.
 
-The wiring is tested with a scripted model that fills whatever answer format it is given. It plays whole
-games on the real main graph, streamed through the server's translator, for two of the four lineups,
-which between them deal every drawn role, and every solo role dealt is routed to its night step. Other
-tests pin the wolves' night routing, the day's rounds, the note merge, and a list of every class stored
-in the state, without which a checkpoint could not save and reload it. These tests show that the graph
-runs and its state combines as designed. They say nothing about how well the agents play.
+The framework imposes a separate limit. LangGraph's **recursion limit** caps execution steps and
+raises an error if the graph exceeds it. The day needs enough steps to reach its normal ending,
+including turns where an agent passes and final replies after the speaking cap.
 
-### Limits
+I calculate the day subgraph's budget from the number of living players and the discussion rules.
+The aim is for normal termination to happen before the framework limit is reached. That calculation
+needs maintenance whenever the discussion flow changes. The main graph still uses the default
+limit of 100 rather than a budget derived from the game's maximum length.
 
-No alternative orchestration design was compared: the evidence is implementation tests, recorded
-faults and their fixes. Why the first version gave every role a subgraph is not recorded, and the
-reason for collapsing the solo nights into named nodes is inferred. The main graph's recursion limit is the default, not
-derived from the length of a game.
+### Checking the wiring
+
+A scripted model supplies responses in the required formats so whole games can exercise the real
+graph without live model calls. These tests run through the server's event translator and cover two
+of the four lineups, together including every drawn role. They check that each dealt solo role
+reaches its night-action node.
+
+Targeted tests cover the wolves' routing, the day's rounds and private-note merging. A separate
+check covers the state classes needed to save and reload **checkpoints**, the saved execution state
+used when a game pauses and resumes.
+
+These checks establish execution and state-handling behaviour in the tested cases. Agent playing
+quality requires separate evaluation, and no alternative orchestration architecture was compared.
+
+<!-- Supporting notes (moved out of the page copy 2026-10-28, restructure to follow the game loop;
+interview defence, not page text).
+- Subgraph vs single node, history: earlier versions used repeated functions and a subgraph for each
+  night role (day.py, healer.py, investigator.py, wolf_night.py); the solo nights were subgraphs from
+  May/June until 2026-10-09. The refactor record evidence/refactor/node_factory_pattern.md documents
+  how the repeated functions were replaced. Solo night nodes share one implementation but keep their
+  role names in the graph and traces, so it stays possible to see which role is acting.
+- Role-specific data per solo role: the action, the answer field, the permitted decline, the number
+  of uses.
+- `Send` rounds: votes, the day's opening and closing rounds, the solo nights and the wolves' skills.
+- Wolves' night particulars: chat for at most three rounds; a round in which every wolf passes ends it
+  early; a lone wolf skips it. One wolf, the carrier, makes the kill; the role rotates through the
+  living wolves in seat order. The kill has a single visitor because the Sentinel and Trailseer see
+  night visitors by name. The Chanteuse blocks a player's night action; the Illusionist can hide the
+  victim's role. Three ten-seat games read in full on 2026-10-09.
+- Notes bug: fixed 2026-07-23 (d1cbd2f8), when the solo nights were each a subgraph and games were
+  nine-seat. Damage as the test records it (tests/engine/test_agent_strategies_merge.py): notes
+  broken for every seat except the first night actor; nearly all seats blank from day 2; a corrupted
+  end-of-game map that memory extraction reads. Tests: a one-seat update keeps every other seat's
+  note; three solo actors updating in turn keep all three plus the seats they did not touch. How the
+  bug was noticed is not recorded.
+- Summary error game: e06, ten-seat, Gemini 3.5 Flash-Lite in every seat, read 2026-10-10.
+- Step budget terms (Agents/config/langgraph.py::discussion_recursion_limit): two steps per
+  discussion turn; room for twice the speaking cap, since a pass does not count toward the cap and
+  could follow every real line; a pass by every survivor each time the floor goes round; one last reply
+  per survivor after the cap; and the steps for the rounds, the summary and the vote. Stated aim
+  (decision 10): "the graceful cap always fires before an ungraceful GraphRecursionError".
+- Limits list (orchestration "What is not established" 1, 2, 6): no alternative architecture compared;
+  tests do not measure play; parent recursion limit is the default 100; the hand-written return needs
+  upkeep. Each is now stated once, in the section it qualifies. -->
 
 **Evidence.**
 

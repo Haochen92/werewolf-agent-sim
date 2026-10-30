@@ -52,16 +52,24 @@ replaying `14926d10`'s failed turn) and the before-and-after control. Its home i
 references its diagnosis, and chapter 6 distinguishes this node cache from the provider's prompt
 cache.
 
-### 2. Information boundaries: who may know what
+### 2. Information boundaries: what each agent may know
 
-One story in four steps: what the engine knows → what a seat receives → what the server sends → what
-the browser reveals.
+Narrowed to the agents (owner, 2026-10-29): what the server sends to each viewer moved to chapter 8,
+and secrets and untrusted input to chapter 7. Hidden information is part of the game's rules, so a seat
+given what its role may not know is no longer playing the game being tested; this stays in Group A as
+a correctness requirement, not a way to improve play.
 
-| Level 2 page | What it covers | Main sources |
-|---|---|---|
-| What a seat receives | The payload builder as the one boundary; the deduction engine's view built from it; the leak tests over every batch game; the leak-audit job on served games | `agent_boundaries/`; `evaluation/deterministic_audits` (cross-referenced with Evaluation's code checks) |
-| What the server sends and the browser reveals | The wire per viewer (player, spectator, replay) and the Reveal switch | the server and frontend docs |
-| Secrets and untrusted input (kept separate from the privacy guarantees) | **Secrets:** a player's API key held for one game and scrubbed everywhere. **Untrusted input:** the prompt-injection gap, scoped to its interface and consequence. A human's typed line enters other agents' prompts unlabelled; agents have no tools and every action is a legal-target structured output, so the worst case is a manipulated claim or vote; no incident on record. | map blocks 98–99 |
+The material fits one page (map blocks 1–5 and 47), so the chapter is a Level 1 page with no Level 2
+pages. It keeps three things apart: the intended boundary, the code that enforces it (permitted fields
+selected when each seat's input is built), and the checks that detect a violation (the audit after
+every game the batch runner plays; the nightly job for games played on the site is mentioned without
+its status, owner 2026-10-30). The deduction engine's view is held to the same rule. Optional Level 3:
+"Private fields in the wrong agent inputs". It ends with one line pointing to chapter 8: what each
+viewer's screen is sent is decided separately on the server. The Level 1 plan is
+`writeup/information_boundaries/content_plan.md`.
+
+Main sources: `agent_boundaries/`; `evaluation/deterministic_audits` (cross-referenced with
+Evaluation's code checks); `gameplay/deduction` (the seat's view).
 
 ## Group B. Improving how agents play
 
@@ -137,20 +145,28 @@ Each addressed a different limitation and needed its own evidence. The results d
 
 Main sources: `caching/`, the batch extraction records.
 
-### 7. Running it in production: can we detect, explain and recover when it fails?
+### 7. Running it in production
+
+No subtitle (owner, 2026-10-29): the group titles carry the chapter. Groups renamed 2026-10-30 (owner); the
+Level 1 plan is `writeup/running_in_production/content_plan.md`.
 
 | Group | Level 2 pages |
 |---|---|
 | Seeing what happened | Tracing and prompt captures; the runtime fingerprint (provenance, with the rationale from `refactor/`); error reporting and the usage ledger |
 | Serving the engine | Hosting the synchronous game engine in the async web server: three options, the parity check, the thread pool sized from a late human prompt (block 111; moved from chapter 1's page 5, owner 2026-10-26). Links to chapter 1's page 5 for the pause, checkpoint and cache |
-| When it broke | Provider stalls and the 30-second request budget; the rescue model and backup key; the cache bug's diagnosis from captures (its home is chapter 1); the missing hang watchdog as a gap |
+| Handling dependency failures | Provider stalls and the 30-second request budget; the rescue model and backup key; the cache bug's diagnosis from captures (its home is chapter 1); the missing hang watchdog as a gap |
+| Handling player credentials and input | Moved from chapter 2 (owner, 2026-10-29). **Secrets:** a player's own API key held for one game and scrubbed everywhere; two incidents shaped it (block 99). **Untrusted input:** the prompt-injection gap. A human's typed line enters other agents' prompts unlabelled; agents have no tools and every action is a legal-target structured output, so the worst case is a manipulated claim or vote; no incident on record (block 98) |
 
 Main sources: `tracing/` (with `fingerprinting/`), `docs/agentic_ai_encountered_issues.md`, the
-server records.
+server records, map blocks 98–99.
 
 ### 8. Frontend: the live stage and replays
 
 `frontend/docs/`, which is another session's area.
+
+Takes one page from chapter 2 (owner, 2026-10-29): **what the server sends and the browser reveals**,
+the wire per viewer (player, spectator, replay) and the Reveal switch. Sources: the server and
+frontend docs.
 
 ## Placement rules (one main home per overlapping item)
 
@@ -158,6 +174,8 @@ server records.
 |---|---|---|
 | The evil contest | Ch 1, the cast page | Ch 3's deduction section (the cover lines) |
 | Context isolation (what an agent may not see) | Ch 2 | Ch 3, which covers what it can use |
+| What each viewer is sent (the wire, the Reveal switch) | Ch 8 | Ch 2, one closing line |
+| Secrets (BYOK) and untrusted input (prompt injection) | Ch 7 | Ch 1, "How a human joins" (where a human's line enters the prompts) |
 | Output guardrails (schemas, validation, echo gate) | Ch 1, one turn; the echo gate on "who speaks when" | — |
 | Field order | Ch 3 | Ch 1 |
 | Factual errors | Evaluation (identification and measurement); Ch 3 (causes and fixes) | each to the other |

@@ -2,7 +2,7 @@
 
 Level 1 page copy. The chapter's structure is in [`content_plan.md`](content_plan.md); each Level 2 page
 has its own folder here, with its Level 3 pages beside it; exhibits and where they come from are in
-[`exhibits/source_map.md`](exhibits/source_map.md). Only page 5 is drafted; links to pages 1–4 still point to planned paths.
+[`exhibits/source_map.md`](exhibits/source_map.md). All five Level 2 pages and two Level 3 investigations are drafted; their editorial revision is recorded in [editorial_notes.md](editorial_notes.md).
 This revision integrates the Level 2 links into the chapter narrative; the content plan records
 this structure (updated 2026-10-26).
 
@@ -140,9 +140,9 @@ and one resolution step applies the rules to all of them together.
 *The graph decides what runs and when; the rules decide what happens, whatever order the replies
 arrive in.*
 
-*Explore: [Executing a day and night](day_and_night/day_and_night.md) →*
+*Explore: [Multi-Agent Game Orchestration](day_and_night/day_and_night.md) →*
 
-#### One agent turn, from input to action
+#### Structured Agent Execution
 
 Every turn, whether a line of speech, a vote or a night action, follows the same path, shown below.
 Two parts of it are design choices.
@@ -162,7 +162,7 @@ reply never leaves the game without a legal move.
 *A reply is checked before it affects the game. Votes and night choices take effect only when their
 phase resolves.*
 
-*Explore: [One agent turn, from input to action](agent_turn/agent_turn.md) →*
+*Explore: [Structured Agent Execution](agent_turn/agent_turn.md) →*
 
 #### Letting a human join the game
 

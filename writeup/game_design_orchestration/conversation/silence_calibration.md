@@ -1,8 +1,12 @@
-# Silence calibration: a volume knob, not a filter
+# Deciding when an agent should speak
 
-*Level 3 · [Game design and orchestration](../game_design_orchestration.md) · parent: [Orchestrating the conversation](conversation.md), "Speak by default, filter after the line" · status: page copy drafted 2026-10-26 with the level prompts, as a complete study; to be updated when the owner's labels arrive; for the owner's review.*
+*Level 3 · [Game design and orchestration](../game_design_orchestration.md) · parent: [Orchestrating the conversation](conversation.md), "Testing who should judge a contribution" · status: page copy drafted 2026-10-26 with the level prompts, as a complete study; revised 2026-10-28 as a focused explanation of the open-floor policy and the evidence that informed it; to be updated when the owner's labels arrive; for the owner's review.*
 
-## Brief
+## Original drafting brief
+
+This brief records the earlier investigation-only outline. The current page also explains the
+implemented silence policy. Revision scope and verification questions are recorded in
+[the editorial notes](../editorial_notes.md); the brief below is historical, not the current page specification.
 
 Copied from [`../content_plan.md`](../content_plan.md), "Level 3 candidates", "Possible", condensed; the
 plan keeps its copy until the owner moves it.
@@ -39,228 +43,157 @@ verified; the questions for the verifier are in the drafting notes (NOTES_sc.md)
 
 ## Page copy (draft)
 
-Silence calibration is the study that decided who separates useful lines from repeats on the open
-floor: the player, by choosing whether to speak, or a separate check after the line is written. The
-open floor is the part of a day's discussion where nobody owes anyone an answer, and the engine offers
-the floor, one at a time, to the players who have not spoken yet. Until this study, a player given the floor there decided for itself
-whether to speak or to pass.
+A discussion needs both participation and restraint. An agent that repeats earlier speakers adds
+noise; one that stays silent may withhold a useful question or interpretation. The silence policy has
+to balance those two errors.
 
-The study started from reading games: players with a different reading of the evidence were staying
-quiet. The obvious fix was to reword the rule that tells a player when to pass, so that it speaks when
-it has something new and passes when it would only repeat. That fix adds no model call. But it works
-only if a player's own choice can tell a useful line from a restatement, so I tested that first.
+The current design separates writing from checking. On the **open floor**—a turn offered when no reply
+is owed—the player is encouraged to contribute. A separate model then checks whether the completed
+line adds anything to the discussion.
 
-It could not. Lines the players held back were worth hearing about as often as lines they posted.
-Rewriting the rule moved nothing, and the one sentence whose removal did move behaviour changed how
-much players spoke, not which lines: a volume knob, not a filter. So players now speak by default, and
-the echo gate, a separate model call, holds restatements after the line is written. The decision rests
-on blind model judgements of each line; this page shows how they were collected and how much they
-carry.
+This page explains how that rule works and the experiments that led to it.
 
-### What decided a pass before the change
+### How the silence policy works
 
-In an earlier version of the day, most silence had been the engine's doing, and a redesign removed
-those sources (the parent's "Silence had three sources"). What remained on the open floor was the
-player's own choice. The rules told a player to pass if it had nothing new to add, and ended: "a
-pass costs nothing here." After a player spoke, the echo gate held the line only if it made "the same
-point as an earlier line", and in the 16 games this study drew from, it held nothing. So every silence
-on the open floor was a player's decision, which is what a better rule would have to tune.
+This policy applies to the open floor. Opening statements use a separate filter, described in
+[Orchestrating the conversation](conversation.md).
 
-### Making a pass visible
+The open-floor prompt no longer tells players to pass when they have nothing new to add. Passing is
+still an allowed response, but the default instruction encourages a contribution and warns that a line
+adding nothing may be withheld. This gives the checker an actual line to assess instead of relying
+entirely on the player's decision about whether to write one.
 
-A pass leaves no line, so there is nothing to judge. To see what a pass held back, I replayed it. The
-16 source games (ten-seat, Claude Haiku 5.5, 2026-10-18) captured every turn's full prompt input, so
-any turn can be run again on exactly what its player saw. Each sampled pass was replayed once, with one
-instruction added after the prompt: "whatever the rules above say about passing, do not pass this
-time. Write the message you would say if you spoke now, as you would say it." A forced line is what a
-player writes when told not to pass, which may differ from what it would have said by choice.
+That checker is the **echo gate**. It compares the new line with the day's published player messages.
+Its rule concerns contribution, not truth or strategic wisdom: a false claim can add something the
+table needs to discuss.
 
-The turns were drawn with a fixed seed, 162 in all:
+| Publish a line that adds… | Withhold a line that only… |
+|---|---|
+| A previously unstated claim about the speaker's role or night action/result | Restates an earlier point |
+| A different interpretation, with a reason | Agrees without adding a reason |
+| A new question or concrete test directed at a player | Repeats a request or question |
+| A confirmation or denial of something said about the speaker | Offers filler, such as urging patience without naming a fact, player or test |
 
-- 40 passes each from the opening round and the open floor, each replayed;
-- the 7 lines the opening round's filter had held;
-- 25 posted lines each from the opening, the open floor and the replies players owed.
+One useful addition is enough to keep a line. The gate asks what the line adds and whose contribution
+it repeats. Code withholds it only when the model says it adds “nothing” and identifies an earlier
+speaker or marks it as filler. An invalid reference does not justify a hold.
 
-Six replays failed, all of them opening passes, leaving 156 lines. Most of this page follows the 65
-open-floor lines: 40 forced and 25 posted.
+Some contributions bypass the gate. Human lines and owed replies are exempt; code also protects an
+open-floor reply to someone who named the speaker, using the message tags. The gate is skipped when no
+player has spoken yet. If its model call fails, it **fails open** and publishes the line.
 
-Four Claude Sonnet readers divided the lines between them, one reader per line. Each saw the line with
-what its speaker had seen (summaries of the earlier days and the day's discussion so far), but not
-whether the line had been posted, held or forced. The reader sorted the line into one of four kinds (a
-new fact, meaning a role claim or the speaker's own night result; a new reading of known facts; a
-question or test nobody had asked; or a restatement, a repeated request or filler) and said whether it
-was worth hearing. "Worth hearing" followed the kinds: yes for every new fact and new reading, for 32 of
-34 questions, and for no restatement. So on this page a *worthwhile* line is one of the first three
-kinds. The readers' bar was strict: anything already on the table counted as a restatement.
+A withheld line remains in the records but reaches no player's prompt, including its author's. The
+private note generated with it is discarded, so the author does not carry forward a note based on a
+statement the table never heard. Its tags create no reply obligation, and the scheduler does not offer
+its author another turn that day. Withholding therefore has a real cost: a mistaken decision can
+remove a useful contribution and the opportunity to replace it.
 
-Here is a pass that hid something. A watch is a night result showing who visited a player. With nobody
-yet having spoken on day 4, a player who had passed wrote, when told not to:
+### What players were leaving unsaid
 
-> "Player_1's night 2 watch said player_2 and player_3 visited player_7. Player_3 is now dead, so only
-> player_2 can be checked against that. player_2, what did you do on night 2, and who did you go to?"
+Before this change, the open-floor rule said: “If you have nothing new to add, set pass_turn=true; a
+pass costs nothing here.” An echo gate already existed, but used the narrower test of whether a line
+made “the same point as an earlier line.” It withheld nothing in the 16 ten-seat games used for this
+study. The open-floor silence in those games came from players choosing to pass.
 
-Its reader called it a new question.
+**Were agent players passing when they had something useful to say?** To investigate, I replayed
+40 turns where an agent had passed, using the same input but asking it to speak. I compared those
+responses with 25 messages agents had posted voluntarily.
 
-### The choice to pass did not separate value
+A model judge assessed each message without knowing which group it came from. It classified new facts,
+interpretations and questions as worthwhile contributions, and repetition or filler as unhelpful.
+“Worthwhile” meant adding to the discussion, not necessarily being correct.
 
-If the choice to pass worked as a filter, the lines players held back would be mostly restatement and
-the lines they posted mostly worthwhile. On the open floor they came out about the same:
+The judge classified **23 of 40 replayed responses** and **13 of 25 voluntary messages** as worthwhile.
+The replayed responses included specific questions: one agent used an earlier visitor report to ask
+a surviving player to explain their night action.
 
-| Open-floor line | Lines | New fact | New reading | New question | Restatement or filler | Worthwhile |
-|---|---|---|---|---|---|---|
-| Held back by a pass, forced on replay | 40 | 1 | 11 | 11 | 17 | 23 (57%) |
-| Posted | 25 | 1 | 7 | 5 | 12 | 13 (52%) |
+This suggested that passing was not reliably separating useful contributions from repetition.
+However, asking an agent to speak generates a new response; it does not reveal an original, unspoken
+thought. The labels also came from one model judge per message and have not been validated by a person.
 
-*One blind reader's verdict per line; 16 ten-seat Haiku 5.5 games, 2026-10-18.*
+The next question was whether changing the pass instruction could release more useful contributions
+without also increasing repetition.
 
-What the passes held back was readings and questions, not facts. The rule licensed new information
-and private results, never a different reading of what everyone already knew. Meanwhile about half of
-what players did post restated something, so loosening the same rule would add restatement along with
-the readings. Each verdict here is one Claude Sonnet reader's, with 25 to 40 lines a row, and no person
-has yet checked the readers; how that check is being built is on [Designing and validating LLM
-judges](../../evaluation/llm_judges/llm_judges.md).
+### Could a different instruction make passing selective?
 
-The opening round looked different. Every posted opening line was a new fact, and most of what an
-opening pass held back was a role claim or a night result its player chose to keep, a strategy the role
-cards allow rather than a misjudged rule. The opening was left as it was.
+A better pass rule needed to encourage useful contributions while suppressing repetition. Rewriting
+it to explicitly welcome interpretations and questions, removing the player's private note, and
+softening a role-card instruction to “blend in” produced only small differences in speaking frequency.
+With one sample per turn and version, those differences did not establish a dependable effect.
 
-This result set the test for any new wording. A better rule would not just change how often players
-speak: on the same turns, it would make a player speak more often when its line would be worthwhile,
-and less often when it would be a restatement.
+Removing the entire instruction—“If you have nothing new to add, set pass_turn=true; a pass costs
+nothing here”—produced a larger change. On the same open-floor turns, speech rose from **20 of 64
+successful samples to 41 of 64**. This did not isolate the effect of “a pass costs nothing” alone.
 
-### Four changes to the prompt, one that moved
+Turns were grouped by their original line's label, and speech increased in both the worthwhile and
+repetitive groups. The newly generated lines were not relabelled, so the test measured willingness to
+speak, not their quality.
 
-Each change was tried on the drawn turns it applies to. Every turn was sampled twice, once with the
-prompt as it was and once with the change, one sample each, and the record shows whether the player
-spoke. A turn keeps the value its reader gave it in the first step; the lines written in these samples
-were not judged again. So each row asks: on turns where the player had something worth saying, did it
-speak more often, and on turns where it had only a restatement, less often?
+Relaxing the pass instruction encouraged participation, but did not establish a better distinction
+between useful contributions and repetition. Keeping the rule risked withholding useful speech;
+removing it risked letting more repetition through. I chose to encourage contributions and revise the
+echo gate to check the completed lines. This moved the tradeoff to a separate checker rather than
+eliminating it.
 
-The four changes were: the pass rule rewritten around the kinds (speak for a fact, a reading of your
-own "worth saying even if the table leans the other way", or a question; pass for a restatement); the
-private note a player carries from its previous turn, blanked; six role cards' "Blend in and
-participate like an ordinary town player." softened to "Take an active part in the discussion."; and
-one sentence, "a pass costs nothing here", cut from the open floor's rules.
+### Calibrating the echo gate
 
-| Change (turns it applies to) | Worthwhile turns where the player spoke | Restating turns where the player spoke |
-|---|---|---|
-| Pass rule rewritten (90: open floor and owed replies) | 24 of 46 → 25 of 47 | 21 of 43 → 21 of 43 |
-| Private note blanked (90) | 24 of 46 → 27 of 46 | 21 of 42 → 23 of 42 |
-| "Blend in" softened (48, those six roles) | 12 of 25 → 10 of 25 | 10 of 23 → 11 of 23 |
-| **"A pass costs nothing here" cut (65, open floor)** | **13 of 35 → 23 of 35** | **7 of 29 → 18 of 29** |
+The old gate's “same point” test missed forms of repetition the readers had labelled unhelpful,
+including repeated requests and agreement without a new reason. The revised rule broadened the test
+to whether any part of the line added something, using the policy described above.
 
-*Before → after; one sample per turn and version, 23 to 46 turns a cell; a turn's value is its
-first-step verdict. Denominators differ where a sample failed. Haiku 5.5, 2026-10-18.*
+I tested candidate gates on the same 65 open-floor lines, rebuilding their earlier discussion from
+the captured prompts. In the game's implementation, the revised gate withheld **10 of 29 lines labelled
+repetition and none of 36 labelled worthwhile**. The original gate withheld none of either group.
 
-The rewrite moved one turn. Blanking the note and softening "blend in" moved two or three turns either
-way, which one sample per turn cannot tell apart from noise. Cutting one sentence moved everything:
-open-floor speech went from 20 of 64 turns to 41 of 64. But it moved both columns. Before the cut, on
-these turns, a player spoke on 37% of worthwhile turns and 24% of restating ones; after it, on 66% and
-62%. More of what players had held back got said, restatement nearly tripled, and the little
-separation there had been was gone.
+The prompt and reasoning setting were both adjusted, and small differences between variants were
+comparable to variation across repeated calls. The final
+before/after comparison therefore does not isolate a prompt effect from a reasoning-setting effect.
 
-That is a volume knob. No wording tried made a player better at judging whether its own line added
-anything; the one lever found set only how much it spoke. If the sorting could not happen before the
-line, it had to happen after.
+These were **calibration results**, not a held-out evaluation: the same lines helped choose the rule
+and measure it. Catching some repetition without withholding any labelled worthwhile line was
+encouraging, but does not establish a generally low false-hold rate. The labels themselves also remain
+model judgements awaiting human validation.
 
-### The gate, measured on the same lines
+Some misses reflect the gate's available context. It receives player messages, not the moderator's
+morning report, and skips an empty discussion. Six of the 29 labelled repetitions were first lines
+that it never checked. Most restated the record and requested claims. Whether that is useless filler
+or a reasonable way to start a quiet discussion is also a question for the human labelling, not merely
+an implementation defect.
 
-I made speech the default on the open floor by cutting the sentence, and gave the sorting to the echo
-gate. The gate is one cheap model call per open-floor line. It reads the new line against the day's
-spoken lines and answers in three steps: the line's point, what it adds (exactly "nothing" if it adds
-nothing), and only then whose earlier line it repeats. Code holds the line only when the answer to
-"what it adds" is "nothing", and keeps it if the call fails. The old bar, "the same point as an earlier
-line", let through agreement, repeated requests and filler, which the readers counted as restatement,
-so the bar had to widen.
+### What happened in whole games
 
-Because the 65 open-floor lines already had blind verdicts, each candidate bar could be run on them
-offline, with the earlier lines the gate would have seen rebuilt from the captures:
+The revised instruction and gate then ran together in four ten-seat games, on the same deals as four
+source games. Both sets used character voices. Matching deals held the starting conditions fixed;
+the discussions could diverge after the first different response.
 
-| Bar, at the gate's thinking level | Restatements held, of 29 | Worthwhile lines held, of 36 |
-|---|---|---|
-| Old: "the same point as an earlier line" (minimal, as in the games) | 0 | 0 |
-| New: holds restatement, agreement with no new reason, a repeated request and filler (low) | 10 | 0 |
-| New, stricter: repeating the morning's report of the night, or a second general call for claims, adds nothing (low) | 12 | 0 |
-| **New, stricter, as shipped in the game (low)** | **10** | **0** |
+Published open-floor lines rose from **41 of 100 turns to 54 of 93**. The revised gate withheld seven
+lines; review of the games identified all seven as repeating recent contributions, with none identified
+as a fact or claim. This checked that the mechanism operated in play. Four games cannot establish its
+general error rate or show that the additional speech improved reasoning or voting.
 
-*Reference: the first step's blind verdicts, one reader per line.*
+### What the evidence supports
 
-The thinking level, i.e. how much the model reasons before it answers, mattered as much as the
-wording. At minimal, both new bars held fewer restatements (8 and 9) and one worthwhile line each, so
-the gate runs at low. Run-to-run variation is real too: one bar run twice held 5 and then 8
-restatements, so a gap of two or three lines is not a ranking. Ported into the game's own gate code,
-the stricter bar held 10, inside that spread of its trial's 12.
+The result was a design decision: encourage contributions, then assess the completed line separately.
+This retains a checking call for eligible open-floor lines and accepts that repetition will still get
+through. The old design already called an echo gate, so this was a revision of its role and rule, not
+the introduction of a new call where none existed.
 
-The shipped gate holds about a third of the restatements and none of the worthwhile lines. It errs
-toward keeping, which is the way a filter in the live game should err: a wrongly held line silences a
-player who had something to say, while a missed restatement costs one line of the table's attention.
-
-Here is a line the gate catches. A follow, like a watch, is a night result, showing whom a player
-visited; the Sentinel and the Trailseer are the roles that get them. On day 2 of one game, a player who
-had passed was made to speak right after this line:
-
-```
-player_5: "Night 1 was a save on player_7, so whoever is holding a watch or follow should speak up with
-           what they saw. …"
-player_7: "Agreed the save tells us little until someone with a watch or follow posts a named visitor.
-           Suggest anyone holding a Sentinel or Trailseer result post it now, even a blank one, so we
-           can test claims against each other rather than against silence."
-```
-
-Its reader called player_7's line a restatement, and the shipped gate held it as a repeat of
-player_5's.
-
-The gate also has a blind spot. Six of the 29 restatements were the first line on an empty floor. The
-gate is not called when nobody has spoken yet, and it never sees the morning's report of the night,
-so a first line that restates the record always passes. Most of those six restated the record and then asked for
-claims, and on a silent table, such a line is arguably what moves the game.
-
-Putting the two measurements together gives an estimate, not a measured outcome. With the sentence cut,
-a player speaks on about two-thirds of both kinds of turn, and the gate then removes about a third of
-the restatements and none of the worthwhile lines. So about two-thirds of the worthwhile turns should
-reach the table, against 37% before, while restatement reaching the table still rises above its old
-24%. I accepted that cost, plus one more model call per open-floor turn, to hear the lines players had
-been holding back.
-
-### Four whole games
-
-The change then ran in whole games: four ten-seat Haiku games on the deals of four of the source
-games, with voices on as before, so each has a "before" game on the same deal. A pair diverges after
-its first line that differs.
-
-| Open floor, four games | Before | After |
-|---|---|---|
-| Turns with a published line | 41 of 100 | 54 of 93 |
-| Lines held by the gate | 0 | 7 |
-| Passes | 59 | 32 |
-
-The four games were read in full. All seven held lines restated a line spoken shortly before: the same
-question, the same pressure, or "nobody has given a reason". None held a fact or a claim. Four games
-show the gate behaving as designed in play; they do not measure whether the games got better.
-
-### What it settled, and what is still open
-
-The study settled where the sorting happens. The player decides what to say, and a separate call that
-did not write the line decides whether it reaches the table, the same separation of writer and checker
-that the parent page argues for.
-
-Three things are open. The readers' verdicts have not yet been compared with a person's: a sample of
-the gate's decisions is being labelled by hand, and this page will be updated with those labels when
-they are done. No level of restatement was ever set as acceptable, so the gate's third is where
-the bar landed, not a target. And the whole-game effect on how well players reason has not been
-measured.
+The next evaluation needs human-checked labels and fresh cases that were not used to tune the gate.
+A prepared hand-labelling set is intended to check the model judgements. It also needs an explicit
+tradeoff between missed repetition and wrongly withheld contributions; the observed 10 of 29 is where
+calibration landed, not a predefined target. Whole-game evaluation remains a separate step: publishing
+more lines and catching some repetition does not establish a better discussion.
 
 **Evidence.**
 
-- [Silence calibration](../../../evidence/gameplay/data/silence_calibration/README.md), steps 1–5 (the
-  draw, the replays, the blind verdicts, the rule variant, the levers, the gate check and the four
-  games).
-- [The day discussion: who speaks, when, and when the day ends](../../../evidence/gameplay/discussion/report.md),
-  "The sweeps" and decisions 12–14.
-- [Discussion evidence](../../../evidence/gameplay/discussion_evidence.md), §2.4 (the June design's
-  silence) and §7.4 step 4c (the gate's earlier bar).
-- [Persona voice games](../../../evidence/gameplay/data/persona_voice_games/README.md) (the 16 source
-  games).
+- [Silence calibration](../../../evidence/gameplay/data/silence_calibration/README.md), steps 1–5:
+  sampling, forced replays, blind labels, prompt variants, gate calibration and the four-game check.
+- [The day discussion](../../../evidence/gameplay/discussion/report.md), decisions 12–14:
+  the policy and its place in the scheduler.
+- [Echo-gate implementation](../../../Agents/turn/echo_gate.py) and
+  [turn resolution](../../../Agents/turn/resolve.py): the prompt, hold condition and exemptions.
+- [Source games](../../../evidence/gameplay/data/persona_voice_games/README.md): the 16 ten-seat games
+  from which the calibration turns were sampled.
 
 <!-- Sources for the page copy (drafted 2026-10-26):
 Opening: silence_calibration/README.md step 1 "Question (owner)" (a player with a genuinely different
@@ -313,3 +246,31 @@ a fact or a claim); games_scores.json re-summed.
 Settled/open: report decision 12 (generator-verifier separation) via the parent; hardening task 1b and
 llm_judges.md "The open gap" (labelling packets prepared, echo gate among the three sources); report
 "What is not established" (no standing regression bar). -->
+
+<!-- Supporting notes (moved out of the page copy 2026-10-28, editorial restructure; interview
+defence, not page text).
+- Models: the 16 source games and every replay and lever sample ran on Claude Haiku 5.5 (thinking
+  low, memory off, 2026-10-18); the four blind readers were Claude Sonnet subagents, one per line; the
+  gate check ran the game's judge model at the thinking levels in the table. The page says "a stronger
+  model" per the no-model-families rule.
+- The full draw (seed 20261018, 162 turns): 40 passes each from the opening round and the open floor,
+  each replayed; the 7 lines the opening round's filter had held; 25 posted lines each from the
+  opening, the open floor and the replies players owed. Six replays failed, all opening passes,
+  leaving 156 lines. The lever test's 90 turns = the 65 open-floor turns + the 25 owed replies.
+- Lever motivations: README step 3 is titled "the other things that tell a seat to pass" (note and
+  "blend in"); step 2's rewrite follows step 1 reading 2 (the rule licensed facts, never readings);
+  the pass-sentence cut is step 3's no_pass_sentence. The three questions on the page are worded from
+  those headings, not separately recorded hypotheses.
+- Combined estimate (removed from the narrative; conditional, never measured): with the sentence cut
+  a player speaks on about two-thirds of both kinds of turn, and the gate removes about a third of the
+  restatements and none of the worthwhile lines. IF the original labels still describe the new lines
+  AND the gate behaves similarly on them, about two-thirds of worthwhile-labelled turns would reach
+  the table (against 37% before), and restatement would still rise above its old 24%. Source: README
+  step 4 "Expected open floor" (which uses the trial bar's ~40% of D).
+- Rule tables (added 2026-10-28): pass sentence verbatim from README step 3 no_pass_sentence (the
+  whole sentence was cut, not only "a pass costs nothing here"; the earlier draft quoted only the
+  clause); the live open-floor block is Agents/prompts/day_discuss.py PROACTIVE_ROUND_RULES, and the
+  pass_turn field description still allows a pass. Keep/hold table paraphrases LINE_ECHO_PROMPT in
+  Agents/turn/echo_gate.py; never-held rows from its docstring and line_echo_of (reactive turns and
+  human seats skipped in resolve_decision; returns "" with no spoken lines, game_master lines
+  excluded; fails open). Checked against today's code, 2026-10-28. -->

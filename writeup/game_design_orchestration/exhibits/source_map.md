@@ -65,7 +65,7 @@ Paths are from the repository root.
 | CV-held-defence | The held-defence case (October test game 1, day 3: untagged accusations, defence held, never re-asked, no closing, voted out as a villager without speaking), drafted as one limits bullet rather than two lines | content | `evidence/gameplay/discussion/report.md`, "What is not established"; `discussion_evidence.md` §9 item 9 | drafted (as a bullet) |
 | CV-scheduler-flow | Optional "who speaks next" flowchart (below) | diagram | report "Reactive turns", "The sweeps", "Ending the day", "The closing defence"; `Agents/turn/scheduler.py::select_next_speaker` | optional |
 
-## Level 2: [Executing a day and night](../day_and_night/day_and_night.md)
+## Level 2: [Multi-Agent Game Orchestration](../day_and_night/day_and_night.md)
 
 | Id | Exhibit | Form | Source | State |
 |---|---|---|---|---|
@@ -76,7 +76,7 @@ Paths are from the repository root.
 | DN-fold-back-slice | The one-line slice `result["day_channel"][len(sent):]` beside the damage list (the map's block 112 exhibit) | content | `Agents/graphs/parent.py` (module docstring, `day_phase`) | optional (the draft explains it in prose; code names are kept off the page) |
 | DN-pack-night | The wolves' night subgraph: chat loop (carrier first, ≤3 rounds, ends on a full round of passes; skipped by a lone wolf) → carrier's kill → each wolf's skill in parallel → collect | diagram | `Agents/graphs/night/pack.py` (wiring lines 34–56); orchestration report "The nights", decision 7 | optional (prose only in the draft) |
 
-## Level 2: [One agent turn, from input to action](../agent_turn/agent_turn.md)
+## Level 2: [Structured Agent Execution](../agent_turn/agent_turn.md)
 
 | Id | Exhibit | Form | Source | State |
 |---|---|---|---|---|

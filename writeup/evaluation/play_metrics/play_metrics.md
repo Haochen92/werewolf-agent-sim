@@ -1,8 +1,8 @@
 # Measuring play quality beyond win rate
 
-*Level 2 · [Evaluation](../evaluation.md) · previous: [Finding and fixing factual errors](../factual_errors/factual_errors.md) · next: [Checking agent outputs with code](../code_checks/code_checks.md) · status: page copy drafted 2026-10-25 with the Level 2 prompt, reviewed in the main session; for the owner's review.*
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Finding and fixing factual errors](../factual_errors/factual_errors.md) · next: [Checking agent outputs with code](../code_checks/code_checks.md) · status: revised 2026-10-29; for the owner’s review.*
 
-## Brief
+## Historical brief (2026-10-25)
 
 **Reader question:** What can be measured when wins are too noisy to identify modest gains affordably?
 
@@ -33,6 +33,180 @@ Verified 2026-10-25 (main session): the record gives no interval or direct test 
 
 ## Page copy (draft)
 
+A game of Werewolf ends with one result: which side won. That result carries the luck of the role deal,
+of whom the killers happened to target and of every close vote. Small batches can therefore provide
+little evidence of a change in playing strength. Depending on the improvement being tested, a
+comparison based on wins can require more games than the project could afford for each change.
+
+A game contains many decisions, though: every vote, every night target, every protection. I used scores
+that grade those decisions against the true roles, computed by code from the saved game record, as
+candidate proxies for play quality. A proxy here is a measurable stand-in for what we actually care
+about, which is playing well enough to win.
+
+Two questions have to be kept apart. A scoring rule rewards a specified outcome, such as keeping a
+townsperson alive. A separate check asks whether higher scores are associated with winning. When the
+game expanded from nine to ten players, the healer's save remained a good outcome under the rules,
+but its save rate no longer showed the earlier association with town wins. That distinction shapes
+how these scores can be used.
+
+### Why grade decisions instead of games?
+
+One win per game is a noisy measure. A graded decision isolates a single choice: a town vote on a wolf
+counts as right even if the town later loses on an unrelated coin flip. Averaging grades within a
+game gives a more detailed measure than its single win or loss. This can make a comparison more
+sensitive to changes in the decisions being scored, but the benefit depends on the metric and its
+variation across games.
+
+Those decisions are not independent extra games. Votes in the same game share its deal, its history
+and its players; thirty graded votes from one game are not thirty games' worth of evidence. The checks
+on this page therefore use the game as the unit: one score per game, compared with that game's result.
+
+The score also had to be computable in the same way for both versions being compared. An early
+proposal weighted votes by how certain the agent could have been, but its uncertainty signal existed
+only in games with memory enabled. It could not fairly compare memory on with memory off. The chosen
+approach instead scores recorded outcomes without asking agents to produce extra answers for the
+evaluator.
+
+### Grading a decision by the rules
+
+The scoring rules define which outcomes to reward. A town vote on a wolf removes a threat; a
+protection that stops an attack keeps a player alive; a vigilante's night shot on an evil player is
+a hit. For the expanded game I defined a table that marks every kind of turn as good, neutral or
+bad, and code grades each decision against it.
+
+Some scores are rates, and a rate must divide by the chances a player actually had. A healer, who
+protects one player each night, would collect more saves simply by surviving longer. Its score
+therefore divides saves by the nights on which its protection went ahead. A role that never had the
+chance to act gets no score rather than a zero.
+
+How one healer protection is graded in the expanded game:
+
+| What happened that night | What the game records | Effect on the healer's save rate |
+|---|---|---|
+| The protected townsperson was attacked and survived | A save | One save; the night counts |
+| Nobody attacked the protected player | No save | The night counts, with no save |
+| The protected player was evil and was attacked | A save of an enemy | Not a town save; counted against the healer in a separate rate |
+| The Chanteuse, an evil role that blocks one player's night action, blocked the healer | The protection did not happen | The night is left out entirely |
+
+*Rate = saves of townspeople ÷ nights the protection went ahead. Checked against the scoring code and
+the game's night-resolution rules.*
+
+Grading a decision separates it from the eventual win or loss, but does not remove luck inside the
+decision. A villager who votes blindly and hits a wolf scores the same as one who reasoned it out,
+and a healer's save depends on whom the killers chose to attack. More games can reduce the influence
+of those chance events; scoring does not remove them from a single decision. The scores describe selected outcomes, not the quality of the reasoning that produced them.
+
+### Checking whether a score goes with winning
+
+A plausible scoring rule is not enough to establish a useful proxy. The check compares each
+per-game score with that side's win or loss using a correlation from −1 to +1. A positive value
+means higher scores tended to occur in games the side won; a value near zero indicates little
+linear association in that sample.
+
+The original game's Investigator illustrates why this check mattered. Finding an enemy seemed
+useful, but the rate of finding wolves did not show the expected association with town wins.
+A different measure—whether a confirmed wolf was later voted out—tracked winning more closely
+(+0.40 over 180 games). The distinction was between acquiring information and acting on it.
+This supported the follow-through measure as a candidate proxy; it did not establish that increasing
+it would cause more wins.
+
+A pooled correlation can also reflect differences between batches. For example, one configuration
+might produce both higher scores and more wins. The checks therefore examined memory-off games
+separately and, in the expanded game, associations within batches. These checks help assess whether
+the relationship persists under narrower conditions. They do not turn an association into a causal
+effect.
+
+The role of validation changed as the game expanded. In the original game, the check helped select
+scores from a set of candidates. The ten-player game introduced more roles, with too few examples
+of each to choose every score that way. Memory also needed grades from the first game. I therefore
+defined good, neutral and bad outcomes from the rules, then used the win-association check to assess
+which per-game metrics could support claims about playing strength. That check did not validate the
+combined decision-grading table used by memory.
+
+### What transferred to the expanded game
+
+The expanded game added information roles that learn about other players at night, new evil roles and
+a second kind of lone killer, the necromancer. Correlations from the nine-player game
+could not simply be assumed. Before any check, the scores had to be rewritten to read the new game's
+night records and to take each player's side from the role list rather than from the original role
+names. The check then ran on 78 ten-player games.
+
+| Score, correlated with its side's win | Original nine-player game | Expanded ten-player game |
+|---|---|---|
+| Share of lynches that removed a threat (town) | +0.65 (50 games) | +0.49 (78 games; 95% interval +0.30 to +0.64) |
+| Healer's saves of townspeople per protection night (town) | +0.36 (50 games) | −0.03 (75 games; 95% interval −0.26 to +0.20) |
+
+*Associations, not causal effects. The nine-player figures come from June 2026 games on the Gemini
+models of that time, with no interval reported; the ten-player games were played mostly on Claude Haiku
+5.5 in October 2026. The nine-player lynch figure held on memory-off games; the ten-player one held
+within batch (+0.55) and on memory-off games (+0.48).*
+
+The share of lynches that removed a threat retained a positive association: higher values tended
+to occur in town wins. The within-batch and memory-off checks supported that reading in the expanded
+game. This made it a better-supported proxy in these games than the healer's save rate.
+
+The healer's save rate did not reproduce the earlier association. The new interval excluded the old
+point estimate, but the old estimate also has uncertainty: this was not a direct test of the difference
+between game versions. The practical finding is narrower—the new sample did not validate save rate
+as a proxy for winning.
+
+The healer averaged about one save in both town wins and losses, while surviving for more protection
+nights in wins. A similar number of saves spread across more nights changes the rate. The detailed
+records also show saves followed by later deaths or a kill elsewhere on the same night. The linked
+transfer analysis examines those patterns.
+
+My interpretation is that additional information roles and two killers may change the value of a
+protection. The check did not test that mechanism. The comparison also crosses game versions and
+models, so it cannot separate changes to the rules from changes in how the healer was played.
+
+A save remains a useful action. By the rules it means one more townsperson the next day, so the
+decision table still grades it as good. What the check removed was the healer's save rate as evidence
+that a ten-player version wins more. Counting saves exactly and validating their rate as a proxy for
+winning are different claims.
+
+**Link:** Explore how the transfer was checked: within-batch and memory-off readings, rare roles and
+intervals → [Which play metrics transferred to the expanded game?](metric_transfer.md)
+
+### When there is not enough evidence to validate a proxy
+
+Some actions were too rare for a useful conclusion in the 78-game sample. The Vigilante, who can
+shoot a player at night, fired in only 19 games. Its correct-shot rate correlated +0.29 with town
+wins, but the 95% interval ranged from −0.19 to +0.66. That range includes both no association and
+a substantial positive one.
+
+The scoring rule can still describe whether a shot hit an evil player. The sample does not establish
+its rate as a reliable proxy for winning, or show that the proxy is useless. This is a different
+result from having enough evidence to challenge a previously supported measure.
+
+For a new game version, the next step is to specify each new metric's expected relationship with
+winning before examining the results, check that the scorer handles the new roles correctly, and
+report associations with their uncertainty. Examining many candidate metrics also increases the
+risk of selecting chance findings. The new-role results from this check remain exploratory because
+their expected directions were not recorded beforehand.
+
+The practical boundary is to use a rule-based grade to describe the action it measures, and require
+additional evidence before treating a higher score as better overall play. The combined decision
+grades used by memory still need that separate validation.
+
+**Evidence.**
+
+- [Play-quality metrics: scoring how well the agents played](../../../evidence/evaluation/metrics/report.md) (the approach, both checks, the healer, the cautions).
+- [The working record](../../../evidence/evaluation/metrics/experiment_log.md), Part A (the nine-player scores) and the 2026-10-24 entry (the ten-player check).
+- [Ten-player win check: games and full results](../../../evidence/evaluation/metrics/data/ten_seat_win_check/README.md).
+- [The nine-player check against winning](../../../evidence/metrics/proxy_win_monotonicity.md).
+
+
+<!-- Selection pass 2026-10-29, direct edit under the agreed requirements, without skill workflow.
+Kept: why proxies, comparable scoring, opportunity-adjusted rates, association checks, healer transfer,
+and one rare-action example. Removed the extra candidate/design inventory, wolf-kill subset analysis,
+correlated-metric/survival examples, additional transfer findings, sample-size estimate, early-investigator
+history and separate scorer-bug anecdote. They remain in the prior copy below and evidence reports.
+Qualified sample-size and sensitivity claims; grades measure recorded outcomes, not reasoning quality.
+Sources checked: evidence/evaluation/metrics/report.md, sections 1–4 and 6. No new calculations,
+experiments or implementation audit. This is an editorial pass, not fresh factual verification.
+-->
+
+<!-- Prior page copy, superseded by the selection pass of 2026-10-29.
 A game of Werewolf ends with one result: which side won. That result carries the luck of the role deal,
 of whom the killers happened to target and of every close vote. Detecting a moderate improvement
 through wins alone takes hundreds of games, more than the project could run for each change it wanted
@@ -204,6 +378,7 @@ table itself still needs its own test against winning.
 - [The working record](../../../evidence/evaluation/metrics/experiment_log.md), Part A (the nine-player scores) and the 2026-10-24 entry (the ten-player check).
 - [Ten-player win check: games and full results](../../../evidence/evaluation/metrics/data/ten_seat_win_check/README.md).
 - [The nine-player check against winning](../../../evidence/metrics/proxy_win_monotonicity.md).
+-->
 
 <!-- Sources for the page copy (checked 2026-10-25):
 Opening: win too lucky, hundreds of games for a moderate effect, many decisions per game vary less:

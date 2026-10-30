@@ -2,7 +2,10 @@
 
 *Level 3 · [Game design and orchestration](../game_design_orchestration.md) · parent: [Adding a human in the loop](human_in_the_loop.md), "A stable cache key also needs a game boundary" · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
 
-## Brief
+## Original drafting brief
+
+This brief records the earlier outline. The 2026-10-27 editorial revision and verification questions
+are recorded in [the editorial notes](../editorial_notes.md).
 
 Copied from [`../content_plan.md`](../content_plan.md), "Level 3 candidates", "Selected" (agreed with the
 owner 2026-10-26), condensed; the plan keeps its copy until the owner moves it.
@@ -37,21 +40,15 @@ verified; the questions for the verifier are in the drafting notes (NOTES_l3.md)
 
 ## Page copy (draft)
 
-This page follows one bug. A cache I built so that a human player's pause would cost nothing ended up
-handing one game's failed turn to another game, played on a different model. No single choice caused
-it: five choices, each reasonable on its own, added up to a cache key that matched across games. I
-found it while reading the code for a report, fixed it by putting the game's id into every cached turn,
-and checked the fix with a before-and-after control.
+A cache built to reuse AI turns after a human player's pause also let one game reuse a failed turn
+from another game, played on a different model. The key recognised equal turn inputs, but did not
+identify the game those inputs belonged to. Adding the game id preserved reuse within a game and
+prevented the cross-game collisions exercised by the regression tests.
 
-First, the setting, which the [parent page](human_in_the_loop.md) explains in full. A person can take
-one of the ten seats. When it is their turn, the game pauses, saves a checkpoint and waits. When they
-answer, LangGraph, the framework that runs the game as a graph of steps, resumes the game, and because
-of how I wired the graphs, it re-runs the whole paused step, including AI turns that had already
-finished. So I cache each finished AI turn. The cache stores the turn's answer under a *key* computed
-from the turn's input, its *payload*. When a re-run turn produces the same key, the cache returns the
-stored answer and no model is called.
-
-The key therefore decides what counts as "the same turn". This one said too little.
+The [parent page](human_in_the_loop.md) explains why resuming can repeat AI turns. Here the question
+is what counts as the same turn. A cached answer is stored under a key computed from the turn's
+input, or *payload*. If another turn produces that key, the cache returns the stored answer without
+calling a model. That is useful only if the key captures the scope within which reuse is intended.
 
 ### Five choices, each reasonable alone
 
@@ -73,19 +70,20 @@ Each link solved a real problem, and each made the next one possible.
    the key, not under the game's checkpoint. The consequence: equal payloads from two games meet in the
    same cache.
 5. **The day-1 opening round adopted the same cached pattern.** Until then only votes were cached, and
-   a vote's payload holds that game's discussion so far, which no other game shares. An opening is each
+   a vote's payload holds that game's discussion so far, which usually distinguishes it from another game. An opening is each
    player's first line on day 1, before anyone has spoken and before any night. Its payload holds the
    seat, its role, the lineup (the public list of roles in play) and the day: nothing particular to its
    game.
 
-The payload had no game id. While only votes were cached, links 1 to 4 did no harm, because vote
-payloads never matched across games. Link 5 made a match easy: two games with the same lineup and the
-same role at the same seat now asked their model the same question.
+The payload had no game id. While only votes were cached, the discussion in a vote's payload made a
+match less likely; it did not provide an explicit game boundary. Openings made a match easy: two
+games with the same lineup and the same role at the same seat now asked their model the same
+question.
 
-Two more properties made a shared answer a damaging one. The model is not in the key either, so a game
-on one model could be served another model's answer. And a failure is cached like any answer: when a
-turn's model call and its retries fail, the turn falls back to a legal move, for an opening a pass, and
-that pass is the turn's result, so the cache keeps it.
+Two more properties made a shared answer a damaging one. The model is not in the key either, so a
+game on one model could be served another model's answer. And a failure is cached like any answer:
+when a turn's model call and its retries fail, the turn falls back to a legal move, for an opening a
+pass, and that pass is the turn's result, so the cache keeps it.
 
 <!-- Diagram CK-chain goes here: the five-link chain (see NOTES_l3.md). -->
 
@@ -105,51 +103,52 @@ pass. Nine minutes later, a second game on another model dealt the same lineup.
 
 The replay in the second game was not observed directly. A cache hit skips the code that records a
 model call, so it leaves no record of its own. Three records point to it. The game's prompt capture
-holds a day-1 opening prompt for 8 of its 9 AI seats, and none for seat 9. Its event log holds seat 9's
-pass, marked "generation failed". And its usage ledger counts 142 model calls and no failed ones, though
-the ledger counts a failed call. So seat 9 failed without a failed call and without a prompt, at the one
-seat whose role matched a game played minutes earlier on the same lineup, where that seat had failed.
-The record attributes the pass to a replay from the shared cache. How those records were read together
-is told in chapter 7.
-<!-- Link spec: chapter 7 (serving and observability), the cross-game cache diagnosis from the records
-(map block 163). Not yet drafted; no URL. -->
+holds a day-1 opening prompt for 8 of its 9 AI seats, and none for seat 9. Its event log holds seat
+9's pass, marked "generation failed". And its usage ledger counts 142 model calls and no failed
+ones, though the ledger counts a failed call. So seat 9 failed without a failed call and without a
+prompt, at the one seat whose role matched a game played minutes earlier on the same lineup, where
+that seat had failed. The record attributes the pass to a replay from the shared cache. The
+[observability report](../../../evidence/tracing/report.md) explains how the records were compared.
+<!-- Link spec: chapter 7 (serving and observability), the cross-game cache diagnosis from the
+records (map block 163). Not yet drafted; no URL. -->
 
 ### How far it could reach
 
-One case shows the bug happened. Two counts bound how often it could.
+One recorded case supports the diagnosis. An offline collision check shows that matching inputs are
+reachable, while the hosted records leave the frequency of actual reuse uncertain.
 
-**Collisions are reachable with an ordinary deal.** In an offline check with no model calls, 12 games
-were freshly dealt and every day-1 opening key computed. Of the 66 pairs of games, 7 shared at least one
-key, 8 seats in all, each matching on seat, role and lineup. The unit is a pair of dealt
+**Collisions are reachable with an ordinary deal.** In an offline check with no model calls, 12
+games were freshly dealt and every day-1 opening key computed. Of the 66 pairs of games, 7 shared at
+least one key, 8 seats in all, each matching on seat, role and lineup. The unit is a pair of dealt
 games, so this shows how easily two games could collide. It is not a rate of reuse in served games,
 which also depends on which games ran in the same process within the cache's six-hour lifetime.
 
-**One replay is recorded among served games.** Nineteen other pairs of served games could have matched,
-and none shows a copy. Restarts empty the in-memory cache and could explain that, but I did not check
-the restart times. Detection is limited too: only 11 of the 68 served games have prompt captures. For
-the rest, a copied turn shows only when the private note it carries is distinctive. Batch runs also
-play games one after another in one process, and no game in my recorded batch runs, or in the runs
-whose prompts were captured, lost a day-1 opening call. How many served games crossed before the fix
-is not known.
+**One replay is recorded among served games.** Nineteen other pairs of served games could have
+matched, and none shows a copy. Restarts empty the in-memory cache and could explain that, but I did
+not check the restart times. Detection is limited too: only 11 of the 68 served games have prompt
+captures. For the rest, a copied turn shows only when the private note it carries is distinctive.
+Batch runs also play games one after another in one process, and no game in my recorded batch runs,
+or in the runs whose prompts were captured, lost a day-1 opening call. How many served games crossed
+before the fix is not known.
 
 ### The fix, and how it was checked
 
 LangGraph sets this cache's scope: an entry is filed under the node and the key, and nothing else. A
-cache bounded by the game's checkpoint would have been the natural boundary, but it is not on offer. So
-the boundary had to go into the key. Every run already carries its game id in the run's configuration,
-which LangGraph passes to each node; the key, though, reads only the payload. The nodes that call the
-subgraphs now copy the game id from the configuration into the subgraph's input, so every cached
-turn's payload carries it. A resume of the same game still finds its own turns. A matching turn from
-another game no longer does.
+cache bounded by the game's checkpoint would have been the natural boundary, but it is not on offer.
+So the boundary had to go into the key. Every run already carries its game id in the run's
+configuration, which LangGraph passes to each node; the key, though, reads only the payload. The
+nodes that call the subgraphs now copy the game id from the configuration into the subgraph's input,
+so every cached turn's payload carries it. A resume of the same game still finds its own turns. A
+matching turn from another game no longer does.
 
-The cost I accepted: every cached payload must carry the id, so any new cached turn must carry it too.
-And the model is still outside the key, so the cache assumes that nothing outside the payload, such as
-a switch of model, changes a turn's answer during one game.
+The cost I accepted: every cached payload must carry the id, so any new cached turn must carry it
+too. And the model is still outside the key, so the cache assumes that nothing outside the payload,
+such as a switch of model, changes a turn's answer during one game.
 
 The regression tests check both sides of the key. A payload saved and reloaded through the real
-checkpoint serializer keeps its key. The nodes that call the day and the wolves' night put the game id
-on their payloads. And the 12 freshly dealt games of the offline check, now with their ids, share no
-opening key; that test fails without the fix.
+checkpoint serializer keeps its key. The nodes that call the day and the wolves' night put the game
+id on their payloads. And the 12 freshly dealt games of the offline check, now with their ids, share
+no opening key; that test fails without the fix.
 
 The control tests the fix where the bug lived: two games back to back in one process, sharing one
 cache. It used two deals chosen so that six seats had the same roles, and the test suite's scripted
@@ -160,18 +159,23 @@ model, a stand-in that fills in whatever answer it is asked for without calling 
 | Before the fix | 5 |
 | After the fix | 0 |
 
-Two games on the same deals with Claude Haiku 5.5, on the fixed code, each made all ten day-1 opening
-calls, so with a real model too, the second game's openings were its own. Before the deploy, a check
-inside the production image found that two freshly dealt games share no opening key. I deployed the fix
-on 2026-10-26.
+Two games on the same deals with Claude Haiku 5.5, on the fixed code, each made all ten day-1
+opening calls, so with a real model too, the second game's openings were its own. Before the deploy,
+a check inside the production image found that two freshly dealt games share no opening key. I
+deployed the fix on 2026-10-26.
 
 ### The lesson
 
-A cache key must name its scope: the game, and anything else that changes the answer, not only the
-turn's input. The earlier fix made the key stable across a checkpoint, and by the same move made it
-equal across games. A fix that makes a key stable can widen it. The bug became reachable only when a
-working pattern was reused on a new kind of turn, so reusing a cached pattern means checking again what
-its key captures. And a cache replays a fallback as faithfully as a real answer.
+The key needs to preserve two different properties: the same turn must retain its key after a
+checkpoint reload, and a turn from another game must receive a different key. The regression tests
+now exercise both.
+
+Reusing the caching pattern for openings changed the inputs on which its isolation had depended. The
+vote transcript had made inputs distinctive without explicitly naming their scope; the opening round
+exposed that missing boundary. New cached turn types therefore need their own collision check,
+including fallback results, which the cache replays just like successful model answers. Within one
+game, the remaining assumption is that settings outside the payload, such as the model, do not
+change.
 
 **Evidence.**
 

@@ -5,7 +5,8 @@ Prepared 2026-10-28. Editorial instructions, not public page copy.
 **Status 2026-10-28 (later):** carried out. `store_upkeep_revised.md` replaced `store_upkeep.md` (the earlier
 text kept as `store_upkeep_pre_revision.md`); both L3 pages written (`dedup_judge.md`, with
 `#where-the-lesson-judge-failed`; `merge_fabrication.md`); the lesson dedup now groups by stage before the
-judge. Not approved for publication.
+judge. Not approved for publication. Later the same day the owner removed `store_upkeep_revised.md` and
+`store_upkeep_pre_revision.md`; the links to them below are historical (git history keeps both).
 
 ## Files and replacement sequence
 

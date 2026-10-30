@@ -1,8 +1,8 @@
 # Designing and validating LLM judges
 
-*Level 2 · [Evaluation](../evaluation.md) · previous: [Checking agent outputs with code](../code_checks/code_checks.md) · next: [Building reference labels and reviewing outputs](../reference_labels/reference_labels.md) · status: page copy drafted 2026-10-25 with the Level 2 prompt, reviewed in the main session; for the owner's review.*
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Checking agent outputs with code](../code_checks/code_checks.md) · next: [Building reference labels and reviewing outputs](../reference_labels/reference_labels.md) · status: rewritten 2026-10-29; for the owner’s review.*
 
-## Brief
+## Historical brief (2026-10-25)
 
 **Reader question:** How do you make a model's assessment useful enough to guide a decision?
 
@@ -47,6 +47,195 @@ Verified 2026-10-25 (main session): no repeated aggregate scores exist. Every ve
 
 ## Page copy (draft)
 
+An **LLM judge** is a language model asked to assess an output against explicit criteria, called a
+rubric. In this project, it answers questions such as whether a summary misrepresents an accusation
+or an agent's response contradicts the information it received.
+
+Model judging makes it practical to inspect more outputs than I could read individually. But a
+plausible verdict is not enough to support an engineering decision. The judge needs a defined
+requirement, the evidence needed to assess it, and checks of its own reliability. The earlier
+quality judges showed why: they caught some obvious failures while producing scores that could
+not reliably rank versions.
+
+### Choosing when to use a model judge
+
+The first choice is whether the answer requires interpreting language. Code can determine whether
+an action was legal or a vote targeted an enemy from the structured game record. A model is useful
+when the remaining question concerns meaning: whether a summary changes what someone said, for
+example. Even then, code can do part of the work. The factual-error screen first selects candidate
+statements, then supplies a model reader with facts computed from the game record.
+
+The next consideration is volume. A person can inspect a few failures directly; reading thousands
+of messages needs a repeatable process. Model judging provides that scale, while human review
+helps define the criteria and check a sample of verdicts. The choice is therefore guided by three
+questions: does the task need interpretation, is automated review worthwhile at this volume, and
+can its answers be checked meaningfully?
+
+That last question distinguishes a promising evaluator from a validated one. Human labels can
+check individual verdicts. Recorded game outcomes can test whether a score is associated with
+winning, but cannot establish whether a particular judgement was correct. Where validation is
+missing, a judge may still suggest failures worth investigating; its scores need more support
+before they can decide between close alternatives.
+
+The response format should fit the decision. A factual contradiction can receive a yes-or-no
+verdict with the conflicting fact identified. Sorting contributions needs defined categories.
+Comparing two outputs may call for a pairwise preference. A numerical quality scale is useful
+only if its levels have meanings the judge can apply consistently. Choosing a simpler format
+does not remove the need to test it.
+
+### High scores did not answer the design question
+
+In the original nine-player game, agents saw summaries of earlier discussions rather than the
+full transcripts. A summary that dropped an accusation or presented a role claim as confirmed
+could therefore change the information available to later decisions.
+
+To compare summarising models and prompts, a judge read the transcript and summary together and
+scored five dimensions from 1 to 5. The evaluation used 18 transcript–summary pairs. Some criteria
+could be checked against the transcript; others produced almost uniformly high scores.
+
+| Criterion | Behaviour in the recorded evaluations | What it established |
+|---|---|---|
+| Discussion dynamics | Scored 5.00 across the tested versions; the prompt already required a section describing those dynamics | The score did not distinguish how well versions described the discussion |
+| Evidence type clarity | Scored 4.89–5.00; structured summaries already required an evidence-type label for each accusation | The presence of labels did not establish that their classification was accurate |
+| Accuracy and completeness | Missing accusers, invented announcements and claims treated as confirmed received low scores | The judge detected concrete failures in these examples |
+
+The first two criteria showed a **ceiling effect**: scores clustered at the top, leaving little
+room to distinguish versions. Inspection of the rubric and results suggested that the judge was
+rewarding required sections and labels without adequately assessing their content. The scores
+had not been validated against human judgements, so they could not establish that those aspects
+of the summaries were consistently excellent.
+
+Even the criteria that caught failures did not provide a convincing ranking of nearby versions.
+Moving from free text to structured output changed average completeness from 4.44 to 4.50. Each
+version had only one run, and the harness regenerated summaries before judging them. The score
+change therefore combined any effect of the format with variation in generation and judging;
+there was no repeated estimate of the average to establish how stable that difference was.
+
+Structured output was kept for a clearer reason: it supplied a fixed format, one entry per
+accusation and fields that downstream code could read. Concrete failures also informed changes.
+The judge helped locate defects, but its small score differences did not justify the design
+choice. This historical rubric is no longer suitable for the current summary format, which
+removed one of the sections it still grades.
+
+### Give the judge a requirement it can check
+
+The factual-error readers used a more specific task. A reader received a statement and a fact
+sheet built by code from the game record, then decided whether the statement contradicted a
+supplied fact. A flagged statement had to identify that fact. This made the verdict inspectable:
+a reviewer could examine the alleged contradiction instead of interpreting a general quality score.
+
+A replayed turn sometimes needs more than a fact sheet. True observations can support an invalid
+conclusion, so each regression case can also specify what the response must not infer. For
+example, a town observer saw another player visit someone during the night. The visitor claimed
+to be the Investigator. The observation established a visit, but did not establish the visitor's
+role; the case's expectation forbids using it to validate that claim or dismiss a rival claimant.
+
+That expectation permits many valid responses. It checks a particular reasoning error without
+requiring the agent to reproduce one reference answer. Passing the check means the output avoids
+the specified failure, not that every statement in the response is correct.
+
+References need scrutiny too. Reviewing verdicts once exposed an expectation saying that a
+player had never claimed a role when the player had claimed Investigator. The apparent failures
+came from the test's premise. A narrow question makes a judgement easier to inspect; it cannot
+compensate for incorrect evidence.
+
+The same principle applies to the rubric. Criteria should describe the output's requirements,
+with written rules for what counts and evidence attached to the verdict. Sharing requirement
+text between generator and evaluator reduces the risk of maintaining conflicting copies. It
+still requires review when the task changes: the outdated day-summary rubric shows what happens
+when the evaluator is left behind.
+
+### Check correctness and consistency separately
+
+A judge needs two different checks. Does its verdict agree with the intended judgement? And does
+it give stable answers when nothing changes? Consistency alone cannot establish correctness: a
+judge can repeat the same mistake reliably.
+
+For correctness, the planned human check samples both flagged and unflagged outputs across games.
+A person labels them without seeing the judge's answer. Reading only flagged outputs would reveal
+**false positives**, cases incorrectly marked as failures, but miss **false negatives**, real
+failures the judge passed. Both matter when deciding whether the evaluator can support a comparison.
+
+The historical factual-error readers received checks of this kind. A 23-case labelled set helped
+select the reader design, and I reviewed the 90 public messages it flagged. A separate sample of
+private notes found that about four in five of 25 flags were real errors; reviewing 15 rejected
+candidates found two or three missed errors. These were small checks on the earlier game and its
+models, but they exposed both kinds of mistake rather than treating every verdict as correct.
+
+For consistency, hold the outputs fixed and judge them again. On the original game's factual-error
+test set, repeated judging changed the total flagged count by one or two out of 267 responses.
+That gives a limited view of variability in the evaluator; it does not measure variability from
+generating new responses, or establish a universal threshold below which differences are meaningless.
+
+When review leads to changing the rubric, testing it on fresh items matters. Examples used to tune
+a judge are a **calibration set**; an untouched, **held-out set** tests whether the revised behaviour
+extends beyond those examples. Changing the judge's model or the task also calls for another check.
+Agreement measured on the earlier configuration does not automatically transfer.
+
+Other model readers can help find disagreements and inspect more cases. Their agreement is not
+human validation: they may share mistakes, including with the model being evaluated. A different
+judge model can reduce reliance on the generator's own assessments, but still needs checking.
+[Building reference labels and reviewing outputs](../reference_labels/reference_labels.md)
+explains how the review samples are prepared.
+
+### When a verdict changes the game
+
+Some model classifications affect play directly. The echo gate decides whether an agent player's
+completed contribution adds enough to publish. Unlike an offline judge whose labels enter a
+report, its decision changes what other players hear.
+
+The two mistakes have different costs. Letting repetition through adds unnecessary discussion;
+withholding a useful contribution removes information from the game. The gate therefore keeps a
+line if its model call fails, a policy called **fail-open**. This handles a failed call, not an
+incorrect verdict returned in the expected format. That second failure still needs evaluation.
+
+On the 65 lines used for calibration, the implemented gate withheld 10 of 29 lines that model
+readers labelled repetition and none of 36 labelled worthwhile. This supported the chosen rule on
+those examples, while showing that much repetition remained. The same examples helped select the
+rule, and their labels had not been checked by a person. The result therefore does not establish
+general accuracy or an improvement in gameplay.
+
+[Deciding which contributions to publish](../../game_design_orchestration/conversation/silence_calibration.md)
+covers the policy and calibration in detail. Here, the additional requirement is that a live
+classifier needs both operational failure handling and checks of the consequences of its verdicts.
+
+### What remains unvalidated
+
+The earlier factual-error checks do not validate the judges used on the current ten-player game.
+Individual replay verdicts have been inspected, but there is no completed human-labelled sample
+establishing their agreement with a person on the current setup. Until that check is done,
+reported rates describe what the judge labelled, with the reliability limits of that evaluator.
+
+The prepared labelling packets cover factual-error judges, the echo gate and the accusation tags
+that drive reply obligations and closing defences. The next step is to complete those labels,
+inspect both kinds of disagreement and evaluate any revisions on fresh cases. Re-running the
+historical factual-error set can provide an earlier regression check, but cannot replace coverage
+of the current game's situations.
+
+**Evidence.**
+
+- [LLM judges and their validation](../../../evidence/evaluation/llm_judge/report.md): evaluator
+  choice, factual-error readers, live classifiers and outstanding checks.
+- [The day-summary judge](../../../evidence/evaluation/llm_judge/day_summary.md) and
+  [summary design experiments](../../../evidence/extraction/day_summary/experiment_log.md):
+  ceiling effects, concrete failures and the structured-output comparison.
+- [Reference labels](../../../evidence/evaluation/labeling/report.md): prepared human-review packets.
+- [Silence calibration record](../../../evidence/gameplay/data/silence_calibration/README.md):
+  the echo gate's calibration results and model-reader labels.
+
+<!-- Direct editorial rewrite 2026-10-29, without the skill workflow, per owner.
+Approved outline retains definition and evaluator choice before the main example. Progression:
+choice -> ceiling-effect case -> grounded criteria -> correctness versus consistency -> live
+classification -> current human-validation gap. Earlier prose and source mappings retained below.
+Selected source check, not a fresh implementation audit. No experiments or reviewers run.
+The echo-gate result is explicitly calibration, not held-out accuracy, following the current
+silence_calibration.md and its linked README. Noise-floor language no longer asserts a universal
+minimum meaningful difference. Sharing requirements reduces drift; it does not guarantee alignment.
+Removed version/latency inventory, extraction-rubric incident, pairwise-query history, opening-filter
+history and acceptance-threshold details from public copy; full records remain in evidence.
+-->
+
+<!-- Prior page copy; superseded 2026-10-29.
 Some questions about an agent's output can only be answered by reading it. Does a day summary
 misrepresent who accused whom? Does a player's line add anything the table has not already heard? An
 LLM judge answers questions like these at scale: a language model reads another model's output and
@@ -169,8 +358,7 @@ did not settle the design. That harness generated and judged in a single pass, s
 could not be separated from sampling. A human-labelled retrieval set answered the question directly, by
 measuring whether each query version ranked the relevant memories first.
 
-<!-- **Link (planned):** Explore how a labelled ranking overturned a query design → the Memory chapter's
-retrieval page. -->
+
 
 ### Writing a rubric that measures the requirement
 
@@ -270,6 +458,10 @@ players' outputs with a different model from the one that produced them.
   against a person, the noise floor).
 - [Reference labels](../../../evidence/evaluation/labeling/report.md), "Golden sets against what is
   deployed today" (the owner-check packets).
+-->
+
+<!-- **Link (planned):** Explore how a labelled ranking overturned a query design → the Memory chapter's
+retrieval page. -->
 
 <!-- Sources for the page copy (checked 2026-10-25):
 Opening, judge definition, narrow vs 1–5: llm_judge/report.md "In short", key learnings 1.

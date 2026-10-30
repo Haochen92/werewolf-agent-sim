@@ -1,3 +1,401 @@
+# Building golden sets for evaluation
+
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · next: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · revised 2026-10-29.*
+
+A **reference set** pairs examples with expected answers so that an evaluator can be tested consistently. In this project, golden sets are used to check LLM judges, compare deduplication models and calibrate similarity thresholds.
+
+For example, a deduplication judge decides whether a new memory duplicates one already stored. Two memories can describe the same tactic but opposite outcomes. The expected decision is **keep**, because success and failure teach different lessons. Recording that answer gives us a case against which to test the judge.
+
+I build reference sets through manual labelling, model-assisted review or model-generated labels. The work has four parts: choose cases, define the labelling rule, assign and review the answers, then use the fixed set to compare evaluator versions. The examples below show how those choices affected the project's datasets.
+
+### Choose cases for the decision being tested
+
+A reference set needs the inputs the evaluator will see, together with the expected answer. For deduplication, that means the new memory and the stored candidates it is compared with. For factual-error detection, it means the response and the facts needed to check it. Keeping that context lets a reviewer inspect the label and another evaluator attempt the same decision.
+
+Selection depends on the question the set should answer:
+
+| Purpose | Cases to include | What the result establishes |
+|---|---|---|
+| Regression testing | Known failures and important edge cases | Whether the evaluator handles those specified cases |
+| Performance evaluation | A sample covering the decisions the evaluator is expected to make | Measures accuracy on the selected cases. To estimate accuracy in normal use, the sample must reflect the cases encountered there. |
+
+The first dedup set sampled **50 cases from 390 recorded decisions across 30 games**, using a fixed random seed. Half were observations, which record a situation, action and outcome; half were strategy points, which give advice. Each case retained the compared memories, and review returned to the full text when a summary was ambiguous.
+
+The balance made it possible to inspect both memory types separately. Their equal weighting also determined the overall score, rather than their frequency in live use. The set later grew to 65 cases.
+
+The project also freezes known factual failures with written expectations for regression testing. Those cases are selected because they exposed a problem, as described in [Finding and fixing factual errors](../factual_errors/factual_errors.md).
+
+### Define the rule, then assign and review labels
+
+A labelling rule makes the expected answer explainable. For an observation to be a duplicate, its situation, approach and outcome must match a stored memory. For advice, the situation and the recommended action must match. Similar wording alone is not enough.
+
+The 65-case dedup set was labelled manually, then revised when repeated model disagreements highlighted cases worth rereading. **Fourteen labels changed across two review rounds.** The later review sharpened the criterion: would retaining only one memory lose useful information for retrieval?
+
+Model disagreement prompted inspection; the written rule justified the correction. This matters because otherwise a reference intended to evaluate models could gradually become a record of whatever those models already answer.
+
+For genuinely borderline cases, the label file records an alternative acceptable answer. The scorer reports strict accuracy against the primary label and lenient accuracy accepting either answer. This makes the ambiguity visible instead of silently counting a defensible answer as wrong.
+
+For checks of model-generated labels, the prepared human-review packets hide the model's answer until labelling is complete. The reviewer gets the case and the rule, so the human label can be compared with the existing verdict afterward.
+
+### Using model agreement to prioritise human review
+
+Training data or a larger reference set can require hundreds of labels, making it expensive for one person to decide every case. I tried to reduce that work by accepting unanimous model labels and reviewing disagreements. Review uncovered mistakes even among unanimous answers, so consensus needed sample validation before it could justify skipping human review.
+
+This experiment built training data for a deduplication classifier; its review strategy also applies when expanding a reference set. Three models applied the same keep-or-discard rule, with their votes determining which cases reached review:
+
+```mermaid
+flowchart TD
+    A["Case and labelling rule"] --> B["Three models label the case"]
+    B --> C{"Do all three agree?"}
+    C -->|Yes| D["Accept the label without review"]
+    C -->|No| E["Owner reviews with model assistance"]
+    D --> F["Labelled training set"]
+    E --> F
+```
+
+*Original routing: human effort went to disagreements, while unanimous labels bypassed review.*
+
+Reviewing the disagreements raised a concern: discard majorities were overturned more often than keep majorities. Review therefore expanded to unanimous discards and changed **80 of 373 to keep**. Those labels would have entered the training set unchecked under the original plan.
+
+The reversals came from my review with a model assisting, without an independent second reviewer. The 246 unanimous keeps remained unchecked. The result exposed a problem with the shortcut; it did not establish the accuracy of the corrected dataset.
+
+For a future labelling run at this scale, the review plan therefore needs to **sample agreed cases as well as resolve disagreements**. Check a human-reviewed sample from each agreement group before deciding whether to accept the rest.
+
+[Why unanimous model labels still needed review](model_panel_review.md) details how review expanded and which distinctions the panel missed.
+
+### Use the labels to compare evaluators
+
+Once cases and labels are fixed, each evaluator version attempts the same decisions. Code compares the predictions with the reference answers. The dedup scorer reports accuracy, a confusion matrix, per-label precision and recall, and a list of mismatches to inspect. No additional LLM judgement is needed to score the decisions.
+
+The breakdown matters because errors have different consequences. **Discard precision** asks how many proposed discards the reference supports; **discard recall** asks how many reference discards the evaluator finds. Poor precision can mean losing distinct lessons. Poor recall leaves duplicates in the store.
+
+These golden labels supported successive dedup prompt revisions and later embedding-threshold calibration. A set used repeatedly this way is a development set: its results guide improvements, while fresh or held-out cases are needed to assess whether those improvements transfer.
+
+### Keep the reference set relevant
+
+An evaluator change may only require rerunning an existing set. A change to the task can require new cases or revised labels. The original dedup golden sets came from the nine-player game, before later memory fields and candidate filters changed which comparisons reached the judge. Their historical scores therefore need updating before describing the current pipeline.
+
+The project has completed human-labelled evaluation for online and batch dedup, and a golden set used to calibrate the factual-error reader. It also has model-generated references awaiting human checks. Prepared packets cover accusation tags, the discussion echo gate and the factual-error judge; the calibration tool is built, but those labels remain outstanding.
+
+The [reference-set inventory](../../../evidence/evaluation/labeling/report.md#reference-sets-in-this-project) records the datasets, their uses and the remaining checks. Keeping those details with the cases helps distinguish a model change that needs a rerun from a task change that needs new labelling.
+
+**Evidence**
+
+- [Building reference sets](../../../evidence/evaluation/labeling/report.md): construction workflow, inventory and calibration status.
+- [Dedup evaluation apparatus](../../../evidence/evaluation/labeling/dedup.md): golden sets and deterministic scoring.
+- [Per-extraction dedup record](../../../evidence/dedup/per_extraction/experiment_log.md): case selection, criteria, label revisions and prompt tuning.
+- [Scales and scores](../../../evidence/evaluation/scoring/report.md): agreement measures and label-specific scores.
+
+<!-- Alignment revision 2026-10-29: portfolio copy follows the revised reference-set evidence report. Case selection, labelling/review, scaling, scoring and maintenance are the main argument. Training-data panel retained as the scaling example; output-review activities excluded. -->
+
+<!-- Previous portfolio copy before evidence-report alignment
+# Building golden sets for evaluation
+
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · next: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · revised 2026-10-29.*
+
+To check a memory deduplication judge, we need examples with expected answers. Suppose two memories describe the same tactic, but one reports success and the other failure. The expected decision is **keep**: the different outcomes make both worth retaining. If the judge says **discard**, we have a disagreement to investigate.
+
+A **golden set** collects cases like these with reference labels: the expected answers used to score an evaluator. It gives us a consistent way to compare prompts, models or thresholds. The work is in choosing useful cases, defining the right answer and reviewing the labels before relying on them.
+
+### Start with the decision the set will test
+
+The reference must match the evaluator's job. A deduplication set asks whether a memory should be kept or discarded. A factual-error set asks whether a response contradicts the information available to the agent player.
+
+Where the game record determines the answer, code can supply it. Judgements of meaning need labelled examples. In this project, hand-labelled golden sets anchor dedup evaluation, while model-assisted labelling has been used to build larger training datasets and other references.
+
+A case needs more than a label. For deduplication, it includes the new memory, the stored candidates being compared with it, and the expected decision. That lets another model replay the same decision and lets a reviewer inspect why the label fits. The scorer can then compare the prediction with the reference directly, without asking another LLM to decide whether the answer was correct.
+
+### Choose cases that test the intended behaviour
+
+Case selection determines what a score can tell us. A set built from known failures can check whether those failures return. A sample of routine decisions can help assess performance on the work the evaluator normally sees. These are different purposes:
+
+| Purpose | Cases to include | What the result establishes |
+|---|---|---|
+| Regression testing | Known failures and important edge cases | Whether the evaluator handles those specified cases |
+| Performance evaluation | A sample covering the decisions the evaluator is expected to make | Measures accuracy on the selected cases. To estimate accuracy in normal use, the sample must reflect the cases encountered there. |
+
+The initial dedup golden set used a seeded sample of **50 cases from 390 recorded decisions across 30 games**. It balanced two memory types: 25 observations, which record situations, actions and outcomes, and 25 strategy points, which give advice. Each case retained the new entry and its retrieved candidates. Reviewers consulted the full original text when a summary was ambiguous.
+
+Balancing the sample made it possible to inspect each memory type separately. The overall score reflects that equal weighting, rather than their frequency in live use. The set subsequently grew to 65 cases.
+
+Known factual failures serve a different purpose. They can be frozen with an explicit expectation and replayed after changes, as described in [Finding and fixing factual errors](../factual_errors/factual_errors.md). Their value is in detecting a regression, not estimating how often that failure occurs in ordinary games.
+
+### Define and review the expected labels
+
+A labelling rule needs to explain what makes an answer correct. For memory deduplication, “these sound similar” is insufficient. An observation is a duplicate only when its situation, approach and outcome match a stored one. That is why the opening example keeps accounts of both success and failure. For advice, the situation and the recommended action must match.
+
+The hand-labelled dedup set also shows why labels need review. **Fourteen of its 65 labels changed** across two revision rounds. Several models repeatedly disagreed with particular labels, prompting a reread. The later review sharpened the criterion: would retaining only one lesson lose something useful for retrieval?
+
+Model disagreement identified cases to inspect; it did not decide the replacement label. The written criterion supplied the reason for changing it. Otherwise, a reference intended to evaluate models could drift towards whatever those models already answered.
+
+Genuinely borderline cases could record an alternative acceptable label. The scorer reported strict accuracy against the primary label and lenient accuracy accepting either answer. This preserved ambiguity explicitly instead of treating every defensible alternative as a model error.
+
+The resulting golden set provided a human-labelled reference for prompt tuning and deterministic scoring.
+
+### Using model agreement to prioritise human review
+
+Training data or a larger reference set can require hundreds of labels, making it expensive for one person to decide every case. I tried to reduce that work by accepting unanimous model labels and reviewing disagreements. Review uncovered mistakes even among unanimous answers, so consensus needed sample validation before it could justify skipping human review.
+
+The experiment produced training labels for a memory deduplication classifier. Three models applied the same keep-or-discard rule, with their votes determining which cases reached review:
+
+```mermaid
+flowchart TD
+    A["Case and labelling rule"] --&gt; B["Three models label the case"]
+    B --&gt; C{"Do all three agree?"}
+    C --&gt;|Yes| D["Accept the label without review"]
+    C --&gt;|No| E["Owner reviews with model assistance"]
+    D --&gt; F["Labelled training set"]
+    E --&gt; F
+```
+
+*Original routing: human effort went to disagreements, while unanimous labels bypassed review.*
+
+Reviewing the disagreements raised a concern: discard majorities were overturned more often than keep majorities. Review therefore expanded to unanimous discards and changed **80 of 373 to keep**. Those labels would have entered the training set unchecked under the original plan.
+
+The reversals came from my review with a model assisting, without an independent second reviewer. The 246 unanimous keeps remained unchecked. The result exposed a problem with the shortcut; it did not establish the accuracy of the corrected dataset.
+
+For a future labelling run at this scale, the review plan therefore needs to **sample agreed cases as well as resolve disagreements**. Check a human-reviewed sample from each agreement group before deciding whether to accept the rest.
+
+[Why unanimous model labels still needed review](model_panel_review.md) details how review expanded and which distinctions the panel missed.
+
+### Use the set, and keep it relevant
+
+Once the cases and labels are fixed, run each evaluator version on the same inputs and compare its predictions with the expected answers. The dedup scorer reports overall accuracy, a confusion matrix, per-label precision and recall, and the mismatched cases for inspection.
+
+Those breakdowns help explain a score. **Discard precision** asks how many proposed discards the reference supports; **discard recall** asks how many of the reference's discards the evaluator finds. Poor precision can mean losing distinct lessons. Poor recall means leaving duplicates. Overall accuracy alone can hide that difference.
+
+A set used repeatedly for prompt tuning is a development set. Performance on it shows how well the changes fit those examples; fresh or held-out cases are needed to assess whether improvements transfer. The dedup set supported successive prompt revisions and later embedding-threshold calibration, so its results should be read in that development context.
+
+The cases also need to remain relevant to the system. These golden labels came from the original nine-player game, before later changes to candidate filtering and memory fields. They remain useful examples, but their historical scores do not describe the current pipeline. Updating an evaluation therefore means checking case coverage and the decision rules as well as rerunning the scorer.
+
+The project has completed golden-set evaluation for dedup, alongside references that still need validation. For the expanded game, prepared human-check packets cover accusation tags, the discussion echo gate and the factual-error judge. The calibration tool is built, but those human checks remain outstanding.
+
+**Evidence**
+
+- [Dedup evaluation apparatus](../../../evidence/evaluation/labeling/dedup.md): golden sets, deterministic scoring and the scope of the results.
+- [Per-extraction dedup record](../../../evidence/dedup/per_extraction/experiment_log.md): case selection, labelling criteria, revisions and prompt tuning.
+- [Labelling report](../../../evidence/evaluation/labeling/report.md): reference sets, panel review and prepared calibration checks.
+- [Scales and scores](../../../evidence/evaluation/scoring/report.md): agreement measures and label-specific scores.
+
+-->
+
+<!-- Scope revision 2026-10-29: owner confirmed reference/golden-set construction as the subject. Removed one-off output comparisons. Case selection checked against per-extraction log, Building the golden set; scoring and maintenance scope against labeling/dedup.md. No new numerical audit. -->
+
+<!-- Prior draft before scope correction
+# Building reference labels and reviewing outputs
+
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · next: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · revised 2026-10-29.*
+
+To check a memory deduplication judge, we need examples with expected answers. Suppose two memories describe the same tactic, but one reports success and the other failure. The expected decision is **keep**: the different outcomes make both worth retaining. If the judge says **discard**, we have a disagreement to investigate.
+
+That expected answer is a **reference label**. For facts such as a player's true role, the game record supplies the answer. For a judgement such as whether two lessons are equivalent, a person or model has to interpret the text. The reference can therefore be wrong too. Building useful labels means defining the judgement clearly and checking the answers before relying on them.
+
+### What we use labels for
+
+The project uses labels both to check evaluators and to compare generated outputs:
+
+| Use | What the reader produces | How we use it |
+|---|---|---|
+| Check an evaluator | Expected labels for selected cases, such as keep or discard | Compare the evaluator's answers with them |
+| Compare generated outputs | Labels describing the outputs, such as whether two messages take different stances | Compare results across prompt or feature versions |
+
+The first can become a **reusable evaluation set**, used to compare versions of a classifier or judge. The second can be a **sampled read** for one decision, without becoming a standing test set.
+
+Reusing a set makes comparisons consistent, but tuning and testing on the same examples can overstate performance. Agreement on those examples shows how well the evaluator fits them; fresh or held-out cases are needed to check whether the improvement transfers.
+
+### How labels are used in the project today
+
+In the expanded ten-player game, model readers supply labels for many checks that require interpreting text. I frame the question, often write the rubric, and use the findings to decide what to change. The evaluations use different scripts, but share this broad sequence:
+
+1. **Write the rubric.** Define the judgement and the labels the reader can choose.
+2. **Prepare examples.** Select outputs and include the context needed to judge them.
+3. **Collect labels.** Model readers return a verdict, usually with a reason or supporting quote.
+4. **Score and inspect.** Code compares predictions with reference labels or aggregates output labels by version. I inspect the findings to identify failures and guide changes.
+
+These reads generally use one model reader per item. The expanded game's model-read sets have not yet had a human sample check, so their labels remain provisional.
+
+### Define the judgement before collecting labels
+
+A labelling rule needs to explain what makes an answer correct. For memory deduplication, “these sound similar” is insufficient. An observation is a duplicate only when its situation, approach and outcome match a stored one. That is why the opening example keeps accounts of both success and failure: removing one would lose information.
+
+The original hand-labelled dedup set contained 65 cases. Review changed **14 labels** across two rounds. Several models repeatedly disagreed with particular labels, prompting a reread. The later review sharpened the criterion: would retaining only one lesson lose something useful for retrieval?
+
+Model disagreement identified cases to inspect; it did not decide the replacement label. The written criterion supplied the reason for changing it. Otherwise, a reference intended to evaluate models could drift towards whatever those models already answered.
+
+The revised set guided dedup prompt tuning. It still came from one labeller without an independent second review, so its labels were an inspectable reference rather than unquestionable ground truth.
+
+### Using model agreement to prioritise human review
+
+Training data or a larger reference set can require hundreds of labels, making it expensive for one person to decide every case. I tried to reduce that work by accepting unanimous model labels and reviewing disagreements. Review uncovered mistakes even among unanimous answers, so consensus needed sample validation before it could justify skipping human review.
+
+The experiment produced training labels for a memory deduplication classifier. Three models applied the same keep-or-discard rule, with their votes determining which cases reached review:
+
+```mermaid
+flowchart TD
+    A["Case and labelling rule"] --&gt; B["Three models label the case"]
+    B --&gt; C{"Do all three agree?"}
+    C --&gt;|Yes| D["Accept the label without review"]
+    C --&gt;|No| E["Owner reviews with model assistance"]
+    D --&gt; F["Labelled training set"]
+    E --&gt; F
+```
+
+*Original routing: human effort went to disagreements, while unanimous labels bypassed review.*
+
+Reviewing the disagreements raised a concern: discard majorities were overturned more often than keep majorities. Review therefore expanded to unanimous discards and changed **80 of 373 to keep**. Those labels would have entered the training set unchecked under the original plan.
+
+The reversals came from my review with a model assisting, without an independent second reviewer. The 246 unanimous keeps remained unchecked. The result exposed a problem with the shortcut; it did not establish the accuracy of the corrected dataset.
+
+For a future labelling run at this scale, the review plan therefore needs to **sample agreed cases as well as resolve disagreements**. Check a human-reviewed sample from each agreement group before deciding whether to accept the rest. The experiment supports adding that check, rather than treating model agreement alone as evidence that review can be skipped.
+
+[Why unanimous model labels still needed review](model_panel_review.md) details how review expanded and which distinctions the panel missed.
+
+### Compare outputs without assuming every difference comes from the change
+
+Adding a speaking style should change how an agent player expresses itself. Could it also change what the agent argues? A sampled read compared messages generated with and without a line describing the agent's voice. The rubric asked whether a listener would take the same position and request from each message.
+
+Readers received the discussion context and messages with the version labels hidden. A separate key joined their verdicts back to the versions after labelling. This **blinding** reduced the opportunity to favour the expected winner, although distinctive wording could still reveal which version produced a message.
+
+The comparison also needed a baseline. Two calls to an unchanged prompt can produce different arguments, so a difference between styled and plain messages cannot automatically be attributed to the style instruction. The packets included both comparisons:
+
+| Comparison | Pairs labelled as having different stances |
+|---|---:|
+| Styled versus plain | 9 of 30 |
+| Plain versus another plain response | 3 of 10 |
+
+Both observed rates were 30%. The read therefore did not distinguish an effect of the style instruction from ordinary output variation. The ten baseline pairs were too few to rule out a modest effect, but they prevented treating every difference as a consequence of the change.
+
+These were model judgements, with one reader per item and no human check of the labels. Blinding and the baseline made the comparison more interpretable; neither established the reader's accuracy.
+
+### The remaining check: validate the model-written labels
+
+The current model reads help identify possible failures and guide implementation. To assess their accuracy against human judgement, the next step is to label a sample myself and compare the answers. Until that happens, agreement with these references means agreement with the model readers.
+
+Packets for that check are ready for accusation tags, the discussion echo gate and the factual-error judge. Each provides a written rule and keeps the source's answers hidden during labelling. A calibration tool computes agreement, uncertainty and scores for each label; the human labels needed to run the check are still outstanding.
+
+The check needs to show which decisions disagree, not just overall agreement. For deduplication, **discard precision** asks how many proposed discards the human reference supports; **discard recall** asks how many of the reference's discards the evaluator finds. These distinguish losing useful memories from leaving duplicates in the store. Their different consequences matter when deciding whether an evaluator is suitable for use.
+
+**Evidence**
+
+- [Labelling report](../../../evidence/evaluation/labeling/report.md): reference sets, provenance, dedup label revisions and panel review.
+- [Sampled reads](../../../evidence/evaluation/labeling/sampled_reads/report.md): packet preparation, comparisons and reader variation.
+- [Persona-line comparison](../../../evidence/gameplay/data/persona_line/README.md): styled-versus-plain and plain-versus-plain pairs.
+- [Dedup labelling record](../../../evidence/dedup/per_extraction/experiment_log.md): duplicate criteria and revision rounds.
+- [Scales and scores](../../../evidence/evaluation/scoring/report.md): agreement measures and statistical checks.
+
+-->
+
+<!-- Readability revision 2026-10-29: concrete opening, two-use table, short current workflow, supporting examples and a focused validation ending. Panel routing retained. Prior draft below; Mermaid arrows in that archive are escaped to keep the HTML comment intact. -->
+
+<!-- Prior draft before readability pass
+# Building reference labels and reviewing outputs
+
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · next: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · revised 2026-10-29.*
+
+An evaluator needs something to compare its answers with. For a legal action or a player's true role, the game record can supply that answer. For a question such as whether two lessons give equivalent advice, someone has to interpret the text. Their decision becomes a **reference label**: the answer used to assess the evaluator.
+
+That creates another engineering problem. A judge can agree with its reference and still be wrong if the reference is wrong. This project used hand-labelled examples, model panels and blind model reads to evaluate questions that code could not settle directly. The work was in making the judgement explicit, deciding what needed human review, and keeping the conclusions within what those checks could support.
+
+### What needs a reference label
+
+The project uses labels in two ways. A **reusable evaluation set**, such as the hand-labelled dedup set below, holds examples and their expected labels so that a classifier, similarity threshold or LLM judge can be compared across versions. A **sampled read** answers a particular question about outputs, such as whether adding a speaking style changes what an agent player argues. Here the labels directly measure the property being compared, rather than providing expected answers against which another evaluator is scored. They do not necessarily become a reusable reference set.
+
+Both need a clear rule and enough context to apply it. They differ in what depends on the result. An exploratory read can reveal a failure worth investigating even when its labels are provisional. A reference used repeatedly to tune or select a judge needs more scrutiny, because an error in it can steer every later comparison. If the same examples are used for tuning and scoring, the resulting agreement describes performance on those examples; fresh or held-out cases are needed to assess whether it transfers.
+
+The label's provenance also matters. A person writing a label, a person reviewing a model's label, and a model supplying an unchecked label are different levels of review. Calling a set “gold” or “silver” is shorthand; it does not explain which answers were checked or make any of them infallible.
+
+### How labels are used in the project today
+
+In the expanded ten-player game, model readers supply the labels for many checks that require interpreting text. I frame the question, often write the rubric, and use the findings to decide what to change. The work follows this broad sequence, although individual evaluations use different scripts and do not all run through one standardised pipeline:
+
+1. **Define the judgement.** Specify what the reader should identify, such as duplicate advice, a factual error or a change in a message's stance, as a rubric with fixed labels written before any are collected.
+2. **Prepare the cases.** Select outputs and provide the context needed to judge them. Blind comparisons hide the version behind opaque IDs, with a separate key for scoring later. Where ordinary variation could look like an effect, a read can include pairs from an unchanged version as a baseline.
+3. **Collect labels.** Model readers apply the rubric and return verdicts, usually with a reason or supporting quote. Each item has one reader, so how often two readers agree has not been measured.
+4. **Score and inspect.** For a judge evaluation, compare its predictions with the reference labels. For an output comparison, group the reader's labels by version after unblinding and inspect what differs.
+5. **Use the finding.** The results identify possible failures and guide prompt or implementation changes. Agreement with model-written references remains agreement with those readers until their labels are checked independently.
+
+Human validation is a prepared next step, rather than a completed stage of this workflow. Packets for my own check and a calibration tool exist for selected sources, but the expanded game's model-read reference sets have not yet had a human sample check.
+
+The three cases below come from earlier work, and each explains part of this sequence. The dedup reference set is why the rule comes before the labels. The model-panel review is why agreement with model readers is not treated as accuracy, and why the calibration step was built. The speaking-style comparison shows the blind packet in use, and why a read can need its own baseline. Two of their lessons are not yet routine: reads use one reader per item, and no agreed model label in the ten-player game has been checked by a person.
+
+### Define the judgement before collecting labels
+
+The first deduplication reference set illustrates why a labelling rule matters. Memory deduplication decides whether a new lesson adds something worth retaining or repeats an existing lesson. Similar wording alone cannot answer that question: two accounts of the same tactic can teach different lessons if one succeeded and the other failed.
+
+The rule therefore distinguished two kinds of memory. An **observation**, recording a situation, an approach and an outcome, counted as a duplicate only when all three matched. A **strategy point**, giving advice for a situation, counted as a duplicate when the situation matched and the advice pointed the same way. Borderline cases could record either label as acceptable, allowing both strict and lenient scoring.
+
+One person labelled 65 cases. Even with those rules, 14 labels changed across two revision rounds. Several models repeatedly disagreed with particular labels, which made those cases worth rereading. The later review sharpened the question to whether retrieval would lose something by keeping only one lesson. This shifted several decisions from discard to keep.
+
+Model disagreement was a reason to reopen a case, not sufficient reason to adopt the models' answer. Otherwise, a reference intended to evaluate models would gradually become a record of what those models preferred. The revised criterion gave the review a reason for changing each label that could be inspected separately from the vote.
+
+The set subsequently guided dedup prompt tuning. Its value was a consistent, inspectable comparison, with limits: it came from one labeller, had no independent second opinion, and contained only 65 cases from the original nine-player game. Agreement on that set did not establish general dedup accuracy. The order it established carried forward: today's reads start from a written rubric, so a disputed label can be checked against the rule rather than against the vote.
+
+### Using model agreement to prioritise human review
+
+Training data or a larger reference set can require hundreds of labels, making it expensive for one person to decide every case. I tried to reduce that work by accepting unanimous model labels and reviewing disagreements. Review uncovered mistakes even among unanimous answers, so consensus needed sample validation before it could justify skipping human review.
+
+The experiment labelled examples for a memory deduplication classifier: **keep** a new lesson if it adds useful information, or **discard** it if it duplicates a stored lesson. Three models applied the same rule, with their votes determining which cases reached review:
+
+```mermaid
+flowchart TD
+    A["Case and labelling rule"] --&gt; B["Three models label the case"]
+    B --&gt; C{"Do all three agree?"}
+    C --&gt;|Yes| D["Accept the label without review"]
+    C --&gt;|No| E["Owner reviews with model assistance"]
+    D --&gt; F["Labelled training set"]
+    E --&gt; F
+```
+
+*Original routing: human effort went to disagreements, while unanimous labels bypassed review.*
+
+Reviewing the disagreements raised a concern: discard majorities were overturned more often than keep majorities. Review therefore expanded to unanimous discards and changed **80 of 373 to keep**. Those labels would have entered the training set unchecked under the original plan.
+
+The reversals came from my review with a model assisting, without an independent second reviewer. The 246 unanimous keeps remained unchecked. The result exposed a problem with the shortcut; it did not establish the accuracy of the corrected dataset.
+
+For a future labelling run at this scale, the review plan therefore needs to **sample agreed cases as well as resolve disagreements**. Check a human-reviewed sample from each agreement group before deciding whether to accept the rest. The experiment supports adding that check, rather than treating model agreement alone as evidence that review can be skipped.
+
+[Why unanimous model labels still needed review](model_panel_review.md) details how review expanded and which distinctions the panel missed.
+
+### Make one-off reviews interpretable
+
+Some questions did not need a reusable reference set. They needed a consistent read of outputs from two versions. In the October comparisons, model readers assessed sampled messages using a fixed rubric, while I framed the question and used the results to decide what to change.
+
+The packet preparation separated reading from knowing the treatment. Outputs were saved, sampled with a fixed seed where necessary, shuffled and assigned opaque IDs. Readers received the relevant discussion context and messages without their version labels. A separate key mapped the verdicts back to the versions after the read. Hiding those labels reduced an opportunity to favour the expected winner, although distinctive wording could still reveal which version produced an output.
+
+A comparison of speaking styles shows why blinding alone is not enough. The experiment added a line to an agent player's prompt describing its voice. Readers compared pairs of messages and judged whether a listener would take the same position and request from them. If the style instruction changed the substance, a feature intended to change presentation could also change play.
+
+Readers found different stances in **9 of 30 styled-versus-plain pairs**. That result needed a baseline: repeated calls to an unchanged prompt can also produce different arguments. The packets therefore included pairs of plain responses to the same prompt, and readers found different stances in **3 of 10** of those pairs.
+
+Both observed rates were 30%. In this sample, the style instruction did not produce a higher rate of stance differences than an ordinary second response. The ten baseline pairs were too few to rule out a modest effect, but they prevented attributing every observed difference to the instruction.
+
+These were model judgements, with one reader per item, and had not been checked against my labels. Other repeated reads in the project found that concrete labels, such as whether an agent player claimed a role, held more consistently than interpretive labels. Fixing the rubric and hiding the version made the comparison easier to inspect; they did not establish that the reader was accurate or interchangeable with another reader.
+
+### What confidence the current labels support
+
+The project has evidence that its references can expose useful failures: hand labels needed correction, consensus concealed disputed discards, and a baseline changed how a prompt comparison should be interpreted. It has less evidence that the model-written references themselves are accurate enough to support close comparisons.
+
+A human check should examine which decisions disagree, as well as total agreement. In deduplication, excessive discarding loses distinct lessons; excessive keeping leaves repetition. Those failures have different consequences. Per-label precision and recall distinguish them: discard precision asks how many proposed discards the reference supports, while discard recall asks how many reference discards the evaluator finds. A high overall agreement rate can conceal poor performance on one of those decisions.
+
+A calibration step now computes agreement, uncertainty and label-specific scores against human labels. Prepared packets for my own check cover accusation tags, the discussion echo gate and the factual-error judge, with written rules and the source answers hidden during labelling. At the time of this write-up, those packets were waiting for labels; building the check had not validated those sources.
+
+The existing human-labelled evaluation sets come from the original nine-player game. The expanded game's model-read sets have not yet had a human sample check, although some support live features. They remain useful for locating possible failures and guiding implementation. The next step is to check the prepared samples before treating agreement with those references as evidence of accuracy against a person's judgement.
+
+**Evidence**
+
+- [Labelling report](../../../evidence/evaluation/labeling/report.md): reference sets, provenance, dedup label revisions and panel review.
+- [Sampled reads](../../../evidence/evaluation/labeling/sampled_reads/report.md): packet preparation, comparisons and reader variation.
+- [Persona-line comparison](../../../evidence/gameplay/data/persona_line/README.md): styled-versus-plain and plain-versus-plain pairs.
+- [Dedup labelling record](../../../evidence/dedup/per_extraction/experiment_log.md): duplicate criteria and revision rounds.
+- [Scales and scores](../../../evidence/evaluation/scoring/report.md): agreement measures and statistical checks.
+
+-->
+
+<!-- Editorial revision 2026-10-29: follows the owner-approved outline. L2 explains reference construction and sampled reads; L3 investigates the consensus review shortcut. Secondary experiment histories, calibration thresholds and training details remain in the evidence records. No new experiments or independent numerical audit. Prior draft and source notes retained below as history.
+Small fix 2026-10-29 (owner request): each case now links to today's sequence. Steps 1–3 carry the written rubric, the optional no-change baseline and one reader per item (sampled_reads/report.md §2–4); the "historical examples, not the routine method" sentence became a paragraph mapping each case to the step it explains and naming the two lessons not yet routine (labelling/report.md "What is missing"). The panel section gains the later mixed-provider rounds (labelling/report.md case 2: round 1 reviewed, round 2 none; "a shared lean was still caught only by a different kind of judge"), which the chapter page's summary already mentions. "The owner" became first person; model family names removed. The dedup labeller stays "one person", as the record does not name them. -->
+
+
+<!-- Previous visible draft, superseded 2026-10-29
+
 # Building reference labels and reviewing outputs
 
 *Level 2 · [Evaluation](../evaluation.md) · previous: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · next: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · status: page copy drafted 2026-10-25 with the level prompts, reviewed in the main session; for the owner's review.*
@@ -31,13 +429,7 @@ Exhibits for this page are listed in [`../exhibits/source_map.md`](../exhibits/s
 
 ---
 
-<!-- Editorial review 2026-10-25: phrasing and structure revised; no independent factual
-verification. Earlier completion notes below describe the pre-edit draft and are retained as history.
-Verifier handoff: The parent retains the panel result, review scope and unmeasured unanimous keeps; the later-panel
-counts now live in Level 3. Check whether sample-size calculations account for clustering before
-presenting their nominal precision as achieved. Blinding is described as reducing, not eliminating, bias.
-Verified 2026-10-25 (main session): sample sizes are a plain normal approximation (evaluation/src/labeling/anchor.py sample_size_for_ci) and the calibration step uses an ordinary binomial interval (calibration.py via core.stats.binomial_ci); nothing in the labelling pipeline adjusts for clustering. The page's 'may overstate precision' is accurate. No change needed.
--->
+
 
 ## Page copy (draft)
 
@@ -249,6 +641,15 @@ validated is on [Designing and validating LLM judges](../llm_judges/llm_judges.m
   recall, McNemar, intervals.
 - [Persona line screen](../../../evidence/gameplay/data/persona_line/README.md): the
   plain-against-plain baseline.
+-->
+
+<!-- Editorial review 2026-10-25: phrasing and structure revised; no independent factual
+verification. Earlier completion notes below describe the pre-edit draft and are retained as history.
+Verifier handoff: The parent retains the panel result, review scope and unmeasured unanimous keeps; the later-panel
+counts now live in Level 3. Check whether sample-size calculations account for clustering before
+presenting their nominal precision as achieved. Blinding is described as reducing, not eliminating, bias.
+Verified 2026-10-25 (main session): sample sizes are a plain normal approximation (evaluation/src/labeling/anchor.py sample_size_for_ci) and the calibration step uses an ordinary binomial interval (calibration.py via core.stats.binomial_ci); nothing in the labelling pipeline adjusts for clustering. The page's 'may overstate precision' is accurate. No change needed.
+-->
 
 <!-- Sources for the page copy (drafted 2026-10-25):
 Opening, gold/silver: labeling/report.md intro ("gold ... silver"). Ways-of-labelling table: report.md
@@ -364,4 +765,19 @@ Rubric self-scores (Level 2, 0/1/2):
 - Exhibits and links 2: the comparison table, the tier table and one packet item each support a claim;
   the Level 3 link sits under the featured subsection, which keeps the finding and its caveat.
 Approximate length: 2,000 words of page copy including tables and captions, at the top of the range.
+-->
+
+<!-- Section before diagram-led revision, 2026-10-29
+### Scale labelling without assuming agreement means correctness
+
+Training a small dedup classifier called for hundreds of labelled examples, beyond the existing hand-labelled set. A model panel offered a way to reduce my review workload: let several models label each case, accept their unanimous answers, and review the disagreements.
+
+Three models from one provider labelled 863 cases. Reviewing the split decisions, with a model assisting, revealed that discard majorities were overturned more often than keep majorities. That prompted a further check of the supposedly safe cases: those where all three models said discard.
+
+The review changed **80 of 373 unanimous discards to keep**. Under the original plan, those cases would have entered the training set without review. Checking only disagreements would have missed them precisely because the models agreed.
+
+This was my own review with a model assisting, not an independent human benchmark. The reversals show where the panel differed from that review. The 246 unanimous keeps were accepted without review, so their accuracy remained unknown. The resulting dataset therefore combined reviewed labels with labels still supported only by model agreement.
+
+The practical consequence was to include agreed cases in the review plan. Consensus can help organise review work, but it needs checking before it becomes a reason to skip that work. Later panels mixed models from different providers. That reduced the shared lean without removing it, and the largest of those rounds had no human review. The ten-player reads that followed used one model reader per item, so this lesson now sits in the calibration step and the prepared check packets, not yet in a completed review. The investigation follows the review decisions and the kinds of distinction the panel missed: [Why unanimous model labels still needed review](model_panel_review.md).
+
 -->

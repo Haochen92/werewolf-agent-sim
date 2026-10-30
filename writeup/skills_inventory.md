@@ -48,7 +48,7 @@ verification available.
 | Statistical methods | Power analysis, Monte Carlo simulation, bootstrap resampling, stratification | Chapter 5, attached to the specific studies. A mention of a statistical concept alone is not a skill demonstration. |
 | Inference optimisation | Prompt caching, batch inference, model selection, model routing, token/cost accounting | Chapter 6. Fixed per-job selection is not adaptive routing; API inference optimisation is not model quantisation or GPU-kernel optimisation. |
 | Observability and data | **Langfuse**, LLM tracing, experiment tracking, data provenance, evaluation data pipelines, audit logging, **Sentry** | Chapter 7. The case sink and artifact manifests are data-engineering evidence. Traces here do not by themselves demonstrate cross-service distributed tracing. |
-| Security-related implementation | Credential redaction, secrets handling, context isolation | Chapter 2, with error-report redaction in 7. Promote a broader security tag only after the browser/access-control material is reviewed. Prompt injection is currently a documented gap, not an implemented defence. |
+| Security-related implementation | Credential redaction, secrets handling, context isolation | Context isolation in chapter 2; secrets handling and credential redaction in chapter 7 (moved with the secrets material, owner 2026-10-29). Promote a broader security tag only after the browser/access-control material is reviewed. Prompt injection is currently a documented gap, not an implemented defence. |
 | Simulation | Simulation environment design, dialogue scheduling, evaluation of deceptive gameplay | Chapter 1. These explain the domain and agent behaviour; they do not establish adversarial ML, red teaming or game-theoretic optimisation. |
 
 ## Terms corrected or held back
@@ -70,8 +70,9 @@ verification available.
 
 - **Chapter 1:** multi-agent orchestration, human-in-the-loop systems, structured outputs and validation.
   Keep simulation design as a supporting term. The cache mechanism and fix belong here.
-- **Chapter 2:** context isolation and secrets handling are currently supported. Browser access control
-  needs its own evidence pass before the chapter is given broader security tags.
+- **Chapter 2:** context isolation is currently supported; secrets handling moved to chapter 7 with the
+  secrets material (owner 2026-10-29). Browser access control needs its own evidence pass before any
+  chapter is given broader security tags.
 - **Chapter 3:** context engineering, structured outputs and validation, symbolic reasoning. Thinking
   effort is a supporting topic spanning correctness here and inference cost in chapter 6.
 - **Chapter 4:** RAG and agent memory. Show credit assignment and learning-loop results without implying
@@ -80,7 +81,8 @@ verification available.
   the checks for their own claims.
 - **Chapter 6:** LLM inference optimisation. Model admission's quality criteria stay in Evaluation;
   selection by cost and latency belongs here.
-- **Chapter 7:** LLM observability and reliability engineering. Experiment provenance serves Evaluation;
+- **Chapter 7:** LLM observability and reliability engineering, with secrets handling and credential
+  redaction (moved from chapter 2, owner 2026-10-29). Experiment provenance serves Evaluation;
   the recording pipeline and operational failures have their main home here.
 
 These assignments do not require another chapter. The new observability blocks fit chapter 7 well:

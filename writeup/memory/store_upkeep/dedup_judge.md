@@ -168,8 +168,8 @@ L3 pass 2026-10-28 (version honesty and the two error sources):
   problem reading and "others merge different moves": v8 log dry-run entry. 10 of 30 / 25 of 55 are
   lessons dropped (units: lessons), 9 / 16 of 65 are readers' groups (units: groups); 78 = surplus
   lessons the readers would drop, not lessons in the 65 groups.
-- After-judge stage rule 08dea470 dated 2026-10-13, the dry run's day. Stage in the partition: report.md
-  layer 2 note says working tree, not committed, as of 2026-10-28; the page says "now".
+- After-judge stage rule 08dea470 dated 2026-10-13, the dry run's day. Stage in the partition: committed
+  2026-10-28 (372e46c0, "the lesson dedup groups by game stage before the judge"), so the page's "now" holds.
 - Retune status: TickConfig.sp_dedup docstring (honesty + stage facts, stronger judge); report.md layer 5
   note 2026-10-28 (stage half built; dropping direction and the stronger judge not).
 - Model choice: per_extraction log §③ "Supporting analyses" compares on v8 D/M/K figures (flash-lite 69.2%

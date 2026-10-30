@@ -1,8 +1,13 @@
 # Adding a human in the loop
 
-*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [One agent turn, from input to action](../agent_turn/agent_turn.md) (not yet drafted) · status: page copy drafted 2026-10-26 with the level prompts; for the owner's review.*
+*Pausing for human decisions, reusing completed agent turns, and defining what survives a restart.*
 
-## Brief
+*Level 2 · [Game design and orchestration](../game_design_orchestration.md) · previous: [Structured Agent Execution](../agent_turn/agent_turn.md) · status: editorially revised 2026-10-28 around pause, replay and persistence; for the owner's review.*
+
+## Original drafting brief
+
+This brief records the earlier outline. The 2026-10-27 editorial revision and verification questions
+are recorded in [the editorial notes](../editorial_notes.md).
 
 Copied from [`../content_plan.md`](../content_plan.md), "Level 2 page briefs", section 5 (agreed with the
 owner 2026-10-26); the plan keeps its copy until the owner moves it.
@@ -46,174 +51,151 @@ handoff is in the completion note at the bottom. -->
 
 ## Page copy (draft)
 
-Adding a human in the loop means letting a person take one of the ten seats and play alongside the AI
-agents. A person plays at a person's pace: they may take minutes to vote, close the tab, or come back
-after the server has restarted. Meanwhile the AI players around them have already spoken, voted or
-chosen their targets.
+A human player may take minutes to answer while the AI agents have already finished their turns.
+The engine must wait for that answer, validate it, and continue the game.
 
-So the game has to do three things: wait for the human's answer, survive a restart while it waits, and
-carry on without changing what the AI players already decided. The first two fitted the existing
-design. The third did not: in my first test with two human players, resuming the game asked the AI
-voters again, and some of them changed their votes.
+My first two-human test exposed a complication: resuming after a human vote ran the AI votes again,
+and some agents changed their ballots. Saving the game's state had not prevented completed decisions
+in the interrupted round from being repeated.
 
-I handled it with two tools that do different jobs. A checkpoint saves the game's progress and
-survives a restart. A cache keeps the AI players' finished turns, so a resume can reuse them instead
-of asking again. The cache lives in memory for six hours, so after a restart the game still resumes,
-but the AI players may be asked again.
+The implementation therefore separates two responsibilities. Checkpoints preserve game progress;
+an answer cache lets repeated AI turns reuse their earlier decisions while those answers remain
+cached. Handling a pause also means applying the resulting actions correctly, even when parts of
+the execution repeat.
 
-### A human's answer goes through the same pipeline as a model's
+### A human answers through the same game pipeline
 
-Every turn, AI or human, goes through the same four steps: build the seat's input, get a decision,
-check it, apply it. The only difference is where the decision comes from. For an AI seat, it comes from
-a model. For a human seat, it comes from LangGraph's `interrupt()`, which pauses the game until the
-person answers. LangGraph is the framework that runs the game as a graph of steps, called *nodes*.
+Every turn follows four steps: prepare the player's input, obtain a decision, validate it, and apply
+it. An AI decision comes from a model. For a human, the engine requests an answer and pauses until
+it arrives. The server presents legal choices, such as the players eligible to receive a vote, and
+returns the person's choice in the same format as a model response. Both then pass through the same
+validation and action-handling code.
 
-While the game is paused, the server keeps its checkpoint in PostgreSQL under the game's id. It shows
-the human the legal answers, e.g. the players they may vote for, and sends the chosen answer back in
-the same format as a model's reply. So a human's answer is checked and applied exactly like a model's.
-If the human has gone away, the seat's AI agent takes the turn instead.
+LangGraph runs the game as connected steps, called **nodes**. A human turn calls `interrupt()`, which
+pauses execution. A **checkpoint** saves the execution state so that the game can resume with the
+submitted answer. On the server, checkpoints are stored in PostgreSQL under the game's ID. If the
+human is away, the seat's AI agent can take the turn instead.
 
-Sharing the pipeline has two side effects. An AI player tags its own lines with whom it questions or
-accuses, and the turn scheduler uses those tags to decide who replies next
-([Orchestrating the conversation](../conversation/conversation.md)). A human's free text has no tags,
-so a separate model call adds them. And a human's line reaches the other players' prompts like any
-other line, with no label saying a human wrote it; that is an information-boundary question for
-chapter 2.
+Free-text discussion needs one additional step. AI agents label whom their lines question or accuse;
+the scheduler uses those tags to offer replies. A human supplies only the text, so a separate model
+call adds the tags. The published line enters other players' prompts without a label identifying
+its author as human. [Orchestrating the conversation](../conversation/conversation.md) explains how
+those tags affect turn order.
 
-### Resuming the vote changed the ballots
+### Why resuming changed the AI votes
 
-The first test game with two humans, on 2026-08-19, stopped at the vote. The server keeps its own count
-of the ballots it streams to viewers, as a cross-check against the engine. The two counts disagreed:
-the server's said a player was voted out, the engine's said nobody was, so the server refused to
-announce the result.
+The first two-human test stopped when the server's ballot count disagreed with the engine's result.
+The server keeps a count of the ballots it streams to viewers as a cross-check: it believed a player
+had been voted out, while the engine reported that nobody had. It refused to announce that result.
 
-My first guess was that ballots were being delivered twice, so I kept each voter's first ballot. The
-next game failed the other way. A capture of everything the engine streamed showed the real cause:
-after the human answered, the engine ran the AI votes again, and some voters changed their minds. The
-server was counting ballots the engine had thrown away. Keeping each voter's **latest** ballot made the
-counts agree. It did not stop the repeated model calls or keep the AI players' original decisions;
-that took the cache below.
+I initially suspected duplicate delivery and kept each voter's first ballot. The next test failed
+in the opposite direction. Capturing the full event stream showed what was happening: after the
+human answered, the engine asked the AI agents to vote again. Some changed their choices, and the
+engine used the new ballots while the server retained the old ones. Keeping each voter's **latest
+ballot** made the counts agree. It did not prevent the repeated calls or preserve the original choices.
 
-The pause showed two more surprises at the server, both about how a pause travels between graphs:
+The cause lay in how I connected the graphs. The day and the wolves' night each have an internal
+sequence of steps, represented as a **subgraph**. A wrapper node prepares the subgraph's restricted
+input and calls it. That input construction is where I control what information the phase receives.
+When a human pauses inside the subgraph, resuming re-enters the wrapper. Its call with fresh input
+restarts the interrupted round, including AI turns that had already returned. Completed earlier
+rounds are not repeated.
 
-| What reached the server | How I handled it |
-|---|---|
-| The same interrupt arrived once for each level of nested graphs | Read interrupts only at the top level |
-| A human's interrupt arrived only after every other turn in its parallel step had finished | Announce the human's turn as soon as it is dispatched, but still take the answer only through the interrupt |
+A small test graph reproduced the difference without a model. When parallel turns were ordinary
+nodes in the main graph, a finished AI turn ran once across a human pause and resume. When the same
+turns were inside a subgraph invoked by a wrapper, it ran twice. This explained why the solo night
+roles, which are ordinary main-graph nodes, did not need the same workaround.
 
-*LangGraph 1.1.10. The repeated interrupts and the count mismatch were found in August; the early
-announcement was added in October.*
+### Reuse completed AI decisions
 
-### Reusing the AI players' decisions
+I kept the explicit input boundary and added a **node cache** to the affected AI turns. It stores
+the completed result of a turn. When execution repeats that turn with the same input, a cache hit
+returns the stored result without another model call. An AI vote can therefore remain the same
+across the human's pause.
 
-Why did resuming re-run the AI votes? Because of how I connected the graphs. The game has a main graph,
-and two of its phases, the day and the wolves' night, each run as a smaller graph of their own, a
-*subgraph*. I call each subgraph from inside a main-graph node, and that node builds the subgraph's
-input by hand. The hand-built input is where I control what each seat is allowed to see. The cost is
-that LangGraph treats the whole call as one step: when the game resumes, the node starts again from the
-top, and every AI turn in the paused step runs again.
-
-A small test graph with no model shows the difference. With the parallel turns placed directly in the
-main graph, a finished AI turn ran once across a pause and resume. With the same turns inside a
-subgraph called from a node, it ran twice (LangGraph 1.1.10, 2026-10-26). That is also why the roles
-that act alone at night need no help: they are ordinary main-graph nodes.
-
-I had two options. Wire the subgraphs the way LangGraph manages them, which would mean redesigning how
-I control what each seat sees. Or keep that boundary and make the repeated turns free. I chose the
-second: I cache each finished AI turn. When the node repeats a turn with the same input, the cache
-returns the earlier answer without calling the model again.
-
-Human turns go through an uncached copy of the same node, for two reasons. A resumed human turn must
-take the answer the person just gave, not a stored one. And in my tests, caching a node that can pause
-broke on resume, which a later check on LangGraph 1.2.14 still showed. The copy keeps the same
-validation code without caching the person.
+Human turns use an uncached copy of the same node. Their answer must come from the person responding
+now; a matching input is no reason to substitute a previous human answer. Tests also found that
+caching a node containing an interrupt caused a resume failure. Registering cached and uncached
+versions preserves the shared validation code while routing humans through the uncached version.
 
 ![Within the cache lifetime and server process, a resumed vote reuses cached AI ballots and accepts the human answer through an uncached node](../exhibits/pause_and_resume.svg)
 
-*The day's vote, with three AI seats for illustration. Cached ballots are reused only while their cache
-entries exist; the checkpoint alone does not keep them.*
+*The day's vote, with three AI seats for illustration. The AI turns reuse completed results on cache
+hits; the human turn accepts the submitted answer.*
 
-At first the cache never hit, even when nothing had changed. Its default key was built with Python's
-pickle, which records how an object was built as well as its values, and an input reloaded from the
-checkpoint looked different to pickle. I switched the key to canonical JSON, i.e. the input's values
-written in a fixed order, and added a test that saves and reloads an input and checks that its key
-stays the same. In one nine-seat verification game on 2026-08-19, the fixed cache replayed 20 ballots,
-each identical to its original. In that game all the wolves still voted on their kill; in today's
-ten-seat game, one wolf chooses it.
+The alternative was to let LangGraph manage the subgraphs directly, which would require revisiting
+how their inputs enforce information boundaries. Caching addressed the repeated calls within the
+existing design. It adds responsibilities of its own: a key must recognise the right turn, and the
+stored answer must still exist when that turn repeats.
 
-A resume can't spend a limited ability twice either. A bullet or an investigation is deducted only when
-the night resolves, which comes after the human's pause, and the new counts are worked out from the
-counts at the start of the night. Two tests check this: running that calculation twice gives the same
-counts, and in a scripted game, a human Vigilante who pauses and then shoots ends with one bullet left.
-That covers one scripted game, lineup and seed, and shows the count is right, not that the step runs
-exactly once.
+### Replaying a step must preserve the right result
 
-### What survives a pause or a restart?
+The first cache failed to recognise its own saved turns. Its default key used Python's pickle
+representation of the input. Reloading an input from a checkpoint preserved its values but changed
+internal object metadata, producing a different key. The repeated turn therefore missed the cache
+precisely when it needed the earlier answer.
 
-Three things are kept, and each has its own job. Only the checkpoint holds the game's progress.
+I changed the key to **canonical JSON**: the input's values serialized in a consistent order. A
+regression test saves and reloads an input through the checkpoint serializer and checks that the
+key stays the same. In one historical nine-seat verification game, the corrected cache replayed
+20 ballots, each identical to its original. That game used the earlier wolf voting system; it is
+specific evidence of answer reuse, rather than coverage of every current turn type.
 
-| Mechanism | What it keeps | Limit |
+Recognising the same input is only half of the key's job. The server shares a cache across games,
+so the key must also distinguish otherwise identical inputs belonging to different games. This
+boundary was missing when the opening round adopted the caching pattern: day-1 inputs could match
+across games. The incident record attributes one failed opening to reuse of an earlier game's result.
+
+I added the game ID to cached inputs. Tests check both that a key survives checkpoint reload and
+that matching openings in different games receive different keys. A scripted before-and-after
+control reused five openings across games before the fix and none afterwards. The number of hosted
+games affected remains unknown. [The cache key that crossed games](cache_key.md) develops the
+incident and its verification.
+
+State changes need their own protection against repetition. A limited ability, such as a
+Vigilante's shot, is spent during night resolution, after the human's turn has finished. Remaining
+uses are computed from the counts at the start of that night, rather than deducted each time a
+turn runs. Tests check that repeating this calculation produces the same counts. A scripted game
+also pauses for a human Vigilante, resumes with a shot, and checks that one bullet remains. That
+covers one lineup and seed; it checks the resulting count, not exactly-once execution.
+
+### What survives a pause or restart
+
+A valid key helps only while the cached result exists. The checkpoint and the answer cache have
+different storage lifetimes:
+
+| Mechanism | What it retains | Lifetime |
 |---|---|---|
-| Game checkpoint | The game state needed to resume | Stored in PostgreSQL under the game id; survives a server restart |
-| AI node cache | Finished AI turns | In the server's memory for six hours; keyed by the turn's input and the game id |
-| Provider prompt cache | A reusable start of a model's input | Cuts the cost of reading input; never keeps the model's answer |
+| Game checkpoint | Execution state needed to resume | Stored in PostgreSQL; survives a server restart |
+| AI node cache | Completed AI turn results | Stored in server memory for six hours; lost on restart |
 
-After a restart, or once a cache entry expires, the paused step may ask the AI players again. The
-latest-ballot count still keeps the announced result in line with the engine, but the AI players may
-choose differently than before the pause. The cache also assumes that nothing outside a turn's input,
-e.g. the model, changes during a game.
+A game can therefore resume after a restart while asking AI agents in its interrupted round to
+decide again. The same can happen when an answer expires from the cache. The latest-ballot tally
+keeps the server aligned with the engine's accepted votes, but it does not preserve the agents'
+original choices. The cache also assumes that answer-affecting settings outside the input, such as
+the model, do not change during a game.
 
-### A stable cache key also needs a game boundary
-
-Later, the day-1 opening round adopted the same caching pattern. A vote's input contains the day's
-discussion, which ties it to one game. An opening's input can contain nothing particular to its game.
-The key had no game id, and every game in the server process shared one cache.
-
-In October, one game replayed a failed opening from an earlier game; the record attributes it to the
-shared cache. I added the game id to every cached turn's input. The regression tests check both sides of the
-key: the same turn keeps its key after the checkpoint reloads, and turns from different games get
-different keys. In a scripted before-and-after control on two deals, the old code reused five openings
-across games and the fixed code none. I deployed the fix on 2026-10-26. How many hosted games were
-affected before the fix is not known.
-
-So the key has two jobs: recognise a repeated turn **within** a game, and never mistake a similar turn
-from another game for it. [The cache key that crossed games](cache_key.md) tells the full story.
-
-### Hosting the game without blocking the web server
-
-A hosted game streams to people's browsers while it waits for models. The engine is synchronous: each
-step blocks until its model answers. The web server is asynchronous: one event loop serves every
-viewer, so a blocking step on that loop would freeze every stream.
-
-I considered three ways to connect them:
-
-| Option | Decision and trade-off |
-|---|---|
-| Give each game a thread and pass its events to the server | Rejected: a second thread pool beside the one LangGraph already runs |
-| Use LangGraph's asynchronous streaming with the synchronous engine | Chosen: blocking steps run in a thread pool while the server streams asynchronously |
-| Rewrite the engine as asynchronous | Rejected: broad changes across the engine and its command-line, batch and evaluation callers, and a partial conversion could still block the loop |
-
-Before switching, I ran a model-free check that the interrupt and cache behaviour the server depends on
-still worked under the asynchronous API. The choice kept one engine for hosted and batch games. The
-cost is that LangGraph, not my code, owns the boundary between blocking and asynchronous work.
-
-The size of the thread pool mattered too. On 2026-10-17, the default eight threads queued a checkpoint
-write behind model calls, and a human wolf's prompt arrived late. The threads mostly wait on the
-network, so I raised the pool to 64. That fixed the delay I saw; I did not benchmark capacity.
+The provider's **prompt cache** serves a separate purpose: it reuses input processing to reduce
+cost. It does not retain a generated answer and cannot preserve an agent's decision across a pause.
 
 ### What the checks establish
 
-The tests cover pausing and resuming, stable cache keys, isolation between games and limited
-abilities. Scripted games also run the real graph through the server's streaming layer. One gap is
-covered separately: the pause-and-resume test graph would pass even if my helper that hands
-configuration to the subgraphs passed nothing, because LangGraph can pass it implicitly, so a unit
-test checks that helper directly.
+Small test graphs exercise interrupts and resumes. Regression tests check cache-key stability and
+game isolation, while scripted games exercise the real graph through the server's event translator.
+Together with the ability-count tests, these check specific execution behaviours without relying
+on live model responses. They do not assess what the game is like for a human player.
 
-These checks show that the execution works. They say nothing about what it is like to play as a human,
-and they do not prove every event is delivered exactly once. The server logs a turn's events just
-before the checkpoint is saved, so a hard crash in that gap could send those events twice. I accepted
-that window, because removing all repeated events would also drop events that legitimately repeat. And
-as above, a saved game is not the same as saved AI answers.
+Event delivery has a further limit. The server saves streamed events before the corresponding
+checkpoint is necessarily written. A hard crash in that interval can leave an event recorded even
+though the resumed engine repeats the work that produced it. Existing replay guards handle several
+forms of repetition, but a re-executed sequential turn can still send an event twice.
+
+I retained that crash window. Deduplicating solely by event content or player would also suppress
+legitimate repeated events, such as another request for the same player to act. Stronger delivery
+guarantees remain unresolved. The [server incident
+record](../../../frontend/docs/server_encountered_challenges.md) explains the window and the existing
+guards; the [server design notes](../../../frontend/docs/server_design_notes.md) cover the separate
+hosting question of keeping the web server responsive while a game waits.
 
 **Evidence.**
 
@@ -271,4 +253,169 @@ for the Level 3 draft. This was an editorial pass, not an implementation or expe
 Verifier handoff: confirm the incident attribution (the missing call was not directly captured), the
 recorded deployment, and the restart/resume scope before publication. No claim is made about served
 games after deployment. The evidence/source list above is retained for tracing the draft.
+-->
+
+<!-- Supporting history: page copy before the 2026-10-28 rewrite.
+Retained for source context; current public copy is above.
+
+## Page copy (draft)
+
+A human player may take minutes to answer while the AI players have already completed their turns.
+The game needs to preserve its progress during that wait and reuse completed decisions when play
+resumes. These require different mechanisms: a checkpoint saves game state, while a cache retains
+finished AI answers.
+
+That distinction mattered in my first test with two humans. Resuming after a human vote asked the AI
+voters again, and some changed their ballots. Caching their completed turns prevents those repeated
+calls while the cache entries exist. The checkpoint survives a server restart; the six-hour,
+in-memory answer cache does not. A game can therefore resume after a restart without preserving all
+of the AI decisions made in its interrupted step.
+
+### What survives a pause or a restart?
+
+Three things are kept, and each has its own job. Only the checkpoint holds the game's progress.
+
+| Mechanism | What it keeps | Limit |
+|---|---|---|
+| Game checkpoint | The game state needed to resume | Stored in PostgreSQL under the game id; survives a server restart |
+| AI node cache | Finished AI turns | In the server's memory for six hours; keyed by the turn's input and the game id |
+| Provider prompt cache | A reusable start of a model's input | Cuts the cost of reading input; never keeps the model's answer |
+
+After a restart, or once a cache entry expires, the paused step may ask the AI players again. The AI
+players may then choose differently than before the pause; the server must announce the ballots the
+engine ultimately accepts. The cache also assumes that nothing outside a turn's input, e.g. the
+model, changes during a game.
+
+### A human's answer goes through the same pipeline as a model's
+
+Every turn, AI or human, goes through the same four steps: build the seat's input, get a decision,
+check it, apply it. The only difference is where the decision comes from. For an AI seat, it comes
+from a model. For a human seat, it comes from LangGraph's `interrupt()`, which pauses the game until
+the person answers. LangGraph is the framework that runs the game as a graph of steps, called
+*nodes*.
+
+While the game is paused, the server keeps its checkpoint in PostgreSQL under the game's id. It
+shows the human the legal answers, e.g. the players they may vote for, and sends the chosen answer
+back in the same format as a model's reply. So a human's answer is checked and applied exactly like
+a model's. If the human has gone away, the seat's AI agent takes the turn instead.
+
+Sharing the pipeline has two side effects. An AI player tags its own lines with whom it questions or
+accuses, and the turn scheduler uses those tags to decide who replies next ([Orchestrating the
+conversation](../conversation/conversation.md)). A human's free text has no tags, so a separate
+model call adds them. And a human's line reaches the other players' prompts like any other line,
+with no label saying a human wrote it. The [information-boundary
+report](../../../evidence/agent_boundaries/report.md) discusses what a player may learn about other
+seats.
+
+### Why resuming changed the ballots
+
+The first test game with two humans, on 2026-08-19, stopped at the vote. The server keeps its own
+count of the ballots it streams to viewers, as a cross-check against the engine. The two counts
+disagreed: the server's said a player was voted out, the engine's said nobody was, so the server
+refused to announce the result.
+
+My first guess was that ballots were being delivered twice, so I kept each voter's first ballot. The
+next game failed the other way. A capture of everything the engine streamed showed the real cause:
+after the human answered, the engine ran the AI votes again, and some voters changed their minds.
+The server was counting ballots the engine had thrown away. Keeping each voter's **latest** ballot
+made the counts agree. It did not stop the repeated model calls or keep the AI players' original
+decisions; that took the cache below.
+
+The pause showed two more surprises at the server, both about how a pause travels between graphs:
+
+| What reached the server | How I handled it |
+|---|---|
+| The same interrupt arrived once for each level of nested graphs | Read interrupts only at the top level |
+| A human's interrupt arrived only after every other turn in its parallel step had finished | Announce the human's turn as soon as it is dispatched, but still take the answer only through the interrupt |
+
+*LangGraph 1.1.10. The repeated interrupts and the count mismatch were found in August; the early
+announcement was added in October.*
+
+### Reusing the AI players' decisions
+
+Why did resuming re-run the AI votes? Because of how I connected the graphs. The game has a main
+graph, and two of its phases, the day and the wolves' night, each run as a smaller graph of their
+own, a *subgraph*. I call each subgraph from inside a main-graph node, and that node builds the
+subgraph's input by hand. The hand-built input is where I control what each seat is allowed to see.
+The cost is that LangGraph treats the whole call as one step: when the game resumes, the node starts
+again from the top, and every AI turn in the paused step runs again.
+
+A small test graph with no model shows the difference. With the parallel turns placed directly in
+the main graph, a finished AI turn ran once across a pause and resume. With the same turns inside a
+subgraph called from a node, it ran twice (LangGraph 1.1.10, 2026-10-26). That is also why the roles
+that act alone at night need no help: they are ordinary main-graph nodes.
+
+I had two options. Wire the subgraphs the way LangGraph manages them, which would mean redesigning
+how I control what each seat sees. Or keep that boundary and make the repeated turns free. I chose
+the second: I cache each finished AI turn. When the node repeats a turn with the same input, the
+cache returns the earlier answer without calling the model again.
+
+Human turns go through an uncached copy of the same node, for two reasons. A resumed human turn must
+take the answer the person just gave, not a stored one. And in my tests, caching a node that can
+pause broke on resume, which a later check on LangGraph 1.2.14 still showed. The copy keeps the same
+validation code without caching the person.
+
+![Within the cache lifetime and server process, a resumed vote reuses cached AI ballots and accepts the human answer through an uncached node](../exhibits/pause_and_resume.svg)
+
+*The day's vote, with three AI seats for illustration. Cached ballots are reused only while their
+cache entries exist; the checkpoint alone does not keep them.*
+
+At first the cache never hit, even when nothing had changed. Its default key was built with Python's
+pickle, which records how an object was built as well as its values, and an input reloaded from the
+checkpoint looked different to pickle. I switched the key to canonical JSON, i.e. the input's values
+written in a fixed order, and added a test that saves and reloads an input and checks that its key
+stays the same. In one nine-seat verification game on 2026-08-19, the fixed cache replayed 20
+ballots, each identical to its original. In that game all the wolves still voted on their kill; in
+today's ten-seat game, one wolf chooses it.
+
+A resume can't spend a limited ability twice either. A bullet or an investigation is deducted only
+when the night resolves, which comes after the human's pause, and the new counts are worked out from
+the counts at the start of the night. Two tests check this: running that calculation twice gives the
+same counts, and in a scripted game, a human Vigilante who pauses and then shoots ends with one
+bullet left. That covers one scripted game, lineup and seed, and shows the count is right, not that
+the step runs exactly once.
+
+### Keep cached answers within their game
+
+An answer cache must recognise a repeated turn within one game without confusing it with a similar
+turn in another. That boundary was missing when day-1 openings adopted the caching pattern. Their
+inputs could match across games, and one shared cache served the whole server process.
+
+The record attributes one game's failed opening to reuse from an earlier game. I added the game id
+to cached inputs. Tests check that keys remain stable after checkpoint reload and differ between
+games; a scripted control reused five openings across games before the fix and none after it. The
+fix was deployed on 2026-10-26. How many hosted games were affected remains unknown.
+
+[The cache key that crossed games](cache_key.md) explains the collision, the evidence for the
+observed case and the before-and-after control.
+
+### Keep the server available while a game waits
+
+A waiting game must also leave the web server free to serve other viewers. The engine's steps are
+synchronous: a step waits for its model answer. The server uses LangGraph's asynchronous streaming
+API so those blocking steps can run in a thread pool while the server continues handling
+connections.
+
+A model-free check covered the interrupt and cache behaviour before that switch. This kept one
+engine for hosted and batch games, with LangGraph managing the boundary between blocking and
+asynchronous work. The [server design notes](../../../frontend/docs/server_design_notes.md) explain
+the alternatives; the [server incident
+record](../../../frontend/docs/server_encountered_challenges.md) covers thread contention and
+delayed human prompts. Those hosting decisions are separate from what a checkpoint or answer cache
+preserves.
+
+### What the checks establish
+
+The tests cover pausing and resuming, stable cache keys, isolation between games and limited
+abilities. Scripted games also run the real graph through the server's streaming layer. One gap is
+covered separately: the pause-and-resume test graph would pass even if my helper that hands
+configuration to the subgraphs passed nothing, because LangGraph can pass it implicitly, so a unit
+test checks that helper directly.
+
+These checks show that the execution works. They say nothing about what it is like to play as a
+human, and they do not prove every event is delivered exactly once. The server logs a turn's events
+just before the checkpoint is saved, so a hard crash in that gap could send those events twice. I
+accepted that window, because removing all repeated events would also drop events that legitimately
+repeat. And as above, a saved game is not the same as saved AI answers.
+
 -->

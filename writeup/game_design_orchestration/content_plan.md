@@ -13,6 +13,14 @@ requirements table, the five summaries with one finding each, and the question s
 dropped. The chapter page's draft (`game_design_orchestration.md`) is the reference for Level 1; this
 plan records its structure and the rules behind it.
 
+## Editorial revision, 2026-10-27
+
+All five Level 2 pages and both existing Level 3 investigations now have revised page copy. The owner
+requested the clarity and explanatory progression of the root chapter. The original briefs below
+record the earlier plan; the current ordering, material condensed and claim-scope questions are in
+[editorial_notes.md](editorial_notes.md). This revision does not constitute factual verification or
+publication approval.
+
 ## Reading structure
 
 **Level 1 is the chapter page: "Game design and orchestration: making ten agents play together".**
@@ -37,8 +45,8 @@ portfolio.
 | The game (opening) | **1. Designing evidence worth debating** | Diagnoses thin talk from one exact source that nobody contested. Then a cast design (partial observers; an engine that never reports a false result) and an evil contest through claims, with the chapter's strongest controlled result | 131–139 |
 | Keeping each player's information separate | Chapter 2 (information boundaries); until it exists, the agent boundaries report | Chapter 2 owns the implementation and the checks; this chapter states the requirement and the mechanism | 1–5, 47 |
 | Giving players opportunities to discuss and respond | **2. Orchestrating the conversation** | Turn order computed by code from the speakers' own tags. Silence traced to three sources. A publication filter moved after the line on calibration evidence. Each decision has its own failure and fix | 117–130 |
-| Running the game: coordinating phases and player decisions | **3. Executing a day and night** | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
-| One agent turn, from input to action | **4. One agent turn, from input to action** | The whole turn: permitted input, one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, validation, retries and a legal fallback. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
+| Running the game: coordinating phases and player decisions | **3. Multi-Agent Game Orchestration** | The graph's shape (subgraph versus named node), parallel versus sequential steps, state fold-back, shared records and the step budget. These are the multi-agent orchestration decisions themselves | 102, 107–110, 112–114, 116 |
+| Structured Agent Execution | **4. Structured Agent Execution** | The whole turn: permitted input, one structured question rather than a tool loop, legal targets in the schema, required fields, enforcement against caching, validation, retries and a legal fallback. The full who-decides table | 103–104 (with 97, 100, 147 cross-referenced) |
 | Letting a human join the game | **5. Adding a human in the loop** | Interrupt and resume, the re-run of AI turns, the cache and its uncached twin, the three things kept (checkpoint, node cache, prompt cache), limited uses across a pause | 105–106, 114–116, 165 (111 until it moves to chapter 7) |
 
 **Why the arrangement holds.**
@@ -94,7 +102,7 @@ built → a link to the page that develops it.
 | Keeping each player's information separate | Yes: face-down cards and the moderator's private results; Town of Salem's per-player screens and private night chat | The system holds everything and a model call knows only its input, so each turn's input is rebuilt from the permitted view: context isolation, enforced before the prompt is formatted, and checked | `context_isolation.svg` |
 | Giving players opportunities to discuss and respond | Yes: a timer, anyone speaks whenever they like (Town of Salem's shared chat), people listen all the time | Why a model cannot (one snapshot, no listening) and the four obvious imitations that fail: all at once (the five identical openers), polling after every line, a clock, a fixed rotation. Then the scheduler as conversation habits turned into rules (owed replies, back-and-forth, several accusers answered together, the floor to the quiet), the rules against domination, the end of the day. "Code decides who speaks; the model decides what to say." | — (a "who speaks next" figure is optional) |
 | Running the game: coordinating phases and player decisions | No: this is an orchestration decision, not a difference from human play | Tracking phase, survivors, who acts and the win checks in LangGraph; discussion in sequence, votes and night choices in parallel (independence comes from each player's permitted view, not from parallelism; the wolves agree on their kill first, by design); collecting every choice before one resolution step | `phase_execution.svg` |
-| One agent turn, from input to action | No | The four-step path, the permitted input, the structured response and why, validation, retry and fallback, and the hand-off: speech published, a vote or night choice collected for the resolution | `agent_turn.svg` |
+| Structured Agent Execution | No | The four-step path, the permitted input, the structured response and why, validation, retry and fallback, and the hand-off: speech published, a vote or night choice collected for the resolution | `agent_turn.svg` |
 | Letting a human join the game | No | The same seat and rules for a person; a decision that arrives outside the model calls; pause, checkpoint and the same validation; the seat's agent takes over if the human does not return; the repeated step (a consequence of how the steps are wired to keep information separate) and the first two-human test; cached AI answers; the two lifetimes | `human_resume.svg` (game terms; page 5 keeps `pause_and_resume.svg`) |
 
 **Rules for the chapter page** (owner, 2026-10-26):
@@ -263,7 +271,7 @@ calibration that made speech the default and moved the filter after the line (12
    - The held-defence case.
    - No standing regression bar.
    - Order effects unmeasured.
-   - The opening-order sentence is wrong (seat order, not random).
+   - ~~The opening-order sentence is wrong (seat order, not random).~~ Fixed 2026-10-28 in the code (order drawn per day); dropped from the page.
 
 **Cross-links:** page 3 (parallel and sequential steps as execution); chapter 2 (what each speaker may
 see); chapter 3 (the town's vote-reason
@@ -272,7 +280,7 @@ brief and reply brief, block 145); Evaluation (the readers' calibration, hardeni
 **Length risk:** this page carries the most blocks. If it runs past about 2,000 words, move subsection 8
 to chapter 3 before cutting any scope.
 
-### 3. Executing a day and night
+### 3. Multi-Agent Game Orchestration
 
 **Reader question:** how do ten model-driven seats become one consistent game? Who acts when, what each
 receives, how their results combine, and what stops a loop from running away?
@@ -333,7 +341,7 @@ noticed is not recorded (commit `d1cbd2f8`, 2026-07-23); do not infer it from sa
 
 **Tags:** multi-agent orchestration, LangGraph, fan-out/fan-in, shared-state architecture.
 
-### 4. One agent turn, from input to action
+### 4. Structured Agent Execution
 
 **Widened 2026-10-26 (owner):** the page follows one whole turn: the player's input, the model's
 response, validation, retries and fallback, and the hand-off to the game (speech published; a vote

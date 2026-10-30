@@ -1,5 +1,106 @@
 # Checking agent outputs with code
 
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Measuring play quality beyond win rate](../play_metrics/play_metrics.md) · next: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · revised 2026-10-29.*
+
+Some evaluation questions have answers that can be calculated or checked against an explicit rule. For those questions, code provides repeatable checks without asking another model to judge the output. The choice depends on what we need to establish and whether the required evidence is available.
+
+### When code can check the answer
+
+A direct check needs three things: an output we can inspect, a rule for deciding whether it is correct, and the data needed to apply that rule. The answer may come from a lookup, a calculation or a search through the possibilities allowed by the rules.
+
+| Question | Evidence available | What code does |
+|---|---|---|
+| Did a vote target a wolf? | The selected player and the game's true roles | Looks up the target's role |
+| Did a private field reach an unauthorised player? | The field's permitted recipients and recorded prompt inputs | Compares the actual recipient with the access rule |
+| Is the reported player count correct? | The surviving-player roster at that decision | Counts the roster and compares the values |
+| Is a deduction certain from the player's information? | Game rules and the facts available to that player | Checks the conclusion against every compatible role assignment |
+
+These checks avoid a model call for each verdict. They can run over every available record rather than a small manually reviewed sample, and the same inputs and rules produce the same result. Failures also identify a specific mismatch—a recipient, count or conclusion—that can be reproduced and investigated. This makes code useful both for offline audits and for checks that stop a batch when an invariant is violated.
+
+The boundary is whether the rule answers the actual question. Looking up a vote target's role establishes whom the agent selected; it does not explain the reasoning behind the choice. Likewise, finding a player name in a summary does not tell us whether the summary misrepresents what that player said. Those questions require interpreting the text. Code can prepare the relevant facts or screen candidate statements, as in the [factual-error workflow](../factual_errors/factual_errors.md), while a person or model makes the judgement.
+
+A deterministic answer can still be wrong if the rule is wrong or its inputs are incomplete. Repeatability makes a failure reproducible; it does not validate the checker. The following techniques address the rule, its integration and the values being checked.
+
+### Test the checker and its integration
+
+A checker needs tests showing that it rejects known faults, and the surrounding application must supply the inputs those tests assume. Testing only clean examples cannot distinguish a working checker from one that never detects anything. Testing the function alone cannot establish that the runner calls it correctly. The information-boundary checks exposed both needs.
+
+Each agent player should receive only the private information its role allows. Prompts are assembled from a **payload**: a bundle of fields prepared for that player. The batch runner checks recorded prompt inputs against access rules after each game. Wolf names belong only with wolves, private night results only with their owner, and dead players should receive no prompt. A detected violation fails the batch.
+
+The first run caught **109 payload violations** after a code change included private fields for the wrong recipients. For example, a healer's payload contained the surviving wolves' names. Those fields had not reached the final prompt text, so the incident exposed an overly permissive intermediate boundary without affecting the recorded game results.
+
+The checker also needs to demonstrate that it can fail. Unit tests build payloads with the real builders, plant a leak and require the check to catch it. This **fault injection** tests the detection logic rather than merely confirming that clean payloads pass.
+
+Integration required a separate check. In October, three leak checks were found to receive none of their required optional inputs from the batch runner. They did nothing on those runs even though the checks existed. The runner was changed to extract those inputs from each game's final state and pass them through.
+
+Together, these tests address both the checker and its wiring. Their coverage is structured fields and exact wording in the recorded inputs; detecting a secret paraphrased in free text requires interpretation.
+
+### Use an independent reference for conclusions that require reasoning
+
+For a computed conclusion, checking the output format is insufficient. A separate reference implementation can test whether the conclusion follows from the rules, using a different approach from the production implementation. In this project, exhaustive enumeration provides that reference for the deduction engine.
+
+The deduction engine adds conclusions to an agent player's prompt, including statements that another player must have a particular role. Such certainty needs a stronger test than comparing the conclusion with the actual role. For example, the engine might identify the actual wolf even though a second player could also be the wolf under the visible evidence. The answer happens to be true, but calling it certain is unjustified.
+
+The reference is an **oracle**: separate test code that enumerates role assignments compatible with what the agent knows. A certain conclusion must hold in every one of them.
+
+```mermaid
+flowchart LR
+    A["Player-visible information"] --> B["Enumerate compatible role assignments"]
+    B --> C["Conclusions true in every assignment"]
+    A --> D["Deduction engine"]
+    C --> E["Check each certain conclusion"]
+    D --> E
+```
+
+The tests examine different ways a deduction could be wrong:
+
+| Test | Failure it looks for |
+|---|---|
+| Generate legal games with random roles and moves; resolve 20,000 nights per test | A conclusion contradicts the actual game state |
+| Enumerate compatible assignments for more than 8,000 player views | A conclusion claims certainty when the visible information allows alternatives |
+| Swap other players' hidden roles while preserving the player's information | A conclusion depends on information the player cannot know |
+
+The hidden-role swap is an **invariance test**: changing unavailable information should not change the engine's output. The random tests also require each kind of deduction to occur at least once. During development, deliberately broken rules were caught by those tests, checking that the tests could detect faults rather than pass through lack of coverage.
+
+No false conclusion was found in the recorded runs. This supports **soundness** in the tested cases: emitted conclusions were justified. **Completeness**, finding every conclusion available, has narrower coverage from four real failure cases with expected and forbidden conclusions. The oracle and engine also depend on the same written rules; a shared misinterpretation could survive comparison.
+
+### Recompute model-written values when the record determines them
+
+Structured model output is convenient to process, but a valid number or boolean can still be factually wrong. If the underlying record determines its value, recomputing it provides a direct accuracy check. When the same calculation is available during execution, it can also replace the model's calculation entirely. The memory-query audit led to that change.
+
+Before retrieving memories, a model used to describe the current situation and supply structured fields alongside its search text. Some of those values could be derived from the game state, including player count, remaining bullets and whether one elimination could end the game.
+
+A July audit recomputed applicable fields and compared them with the model's answers:
+
+| Field | Accuracy | Field comparisons |
+|---|---:|---:|
+| Players alive | 97% exact count | 6,099 |
+| Bullets remaining | 16% | 1,109 |
+| Swing day, wolf decisions | 61% | 439 |
+
+The player count was largely read from a supplied roster; the other values required tracking or calculation. The audit exposed errors that could be checked without asking another model to judge them.
+
+The implementation changed accordingly. Player count, remaining bullets and partner status moved into code, followed by swing-day and distance-to-win calculations. The model receives the computed values when writing its situation description.
+
+Some fields had also been inputs to a memory-ranking experiment. The audit gave a reason to question its earlier negative interpretation, but ranking was not re-tested with corrected fields. [The field audit that reopened a memory-ranking result](field_audit.md) explains that investigation, including the mismatch between the original test cases and the audit's scope.
+
+### What makes a passing check useful
+
+A passing result is useful when the rule matches the question, the runner supplies valid inputs, and the check has demonstrated that it detects relevant faults. The payload incident required an access-rule fix; the inactive checks required an integration fix; the field audit led to computing values directly. Each called for a different response even though all were found through code-based evaluation.
+
+When the question depends on meaning, code can still prepare evidence or select candidate errors. The [factual-error workflow](../factual_errors/factual_errors.md) explains that handoff to a reader. Checks on the experiment's configuration belong with [designing fair comparisons](../fair_comparisons/fair_comparisons.md).
+
+**Evidence**
+
+- [Deterministic evaluation](../../../evidence/evaluation/deterministic_audits/report.md): the checks and recorded results.
+- [Detailed record](../../../evidence/evaluation/deterministic_audits/experiment_log.md), §1–2 and §5: leak-check integration, deduction tests and field audit.
+- [Agent boundaries](../../../evidence/agent_boundaries/report.md): payload construction and information access.
+
+<!-- Revised 2026-10-29: owner-approved joint editorial pass. L2 explains deterministic validation techniques; L3 owns the ranking investigation. Source reports checked for mechanisms and scope; no new experiments or full code audit. Earlier copy and source notes retained below. -->
+
+<!-- Previous visible draft
+# Checking agent outputs with code
+
 *Level 2 · [Evaluation](../evaluation.md) · previous: [Measuring play quality beyond win rate](../play_metrics/play_metrics.md) · next: [Designing and validating LLM judges](../llm_judges/llm_judges.md) · status: page copy drafted 2026-10-25 with the Level 2 prompt, editorially revised, pending factual verification and the owner's review.*
 
 ## Brief
@@ -12,7 +113,7 @@ records. Before approval, verify the payload-versus-final-prompt distinction, th
 three deduction tests, and the audit table and decision-rule wording against the evidence. Table
 counts and the grouped player-count result were carried over from the current Level 3 draft.
 
-<!-- Verified 2026-10-25 (main session): payload vs final prompt, the 109 violations and the two LEAK lines (deterministic_audits case 1); the three deduction tests, 10 of 10, four failure cases, planted rule breaks (case 2); the audit table, the 80% reopening rule, 173 of 363, 176 empty rosters (experiment_log §5a); bullets not a gating input (Agents/memory/retrieval/dimension_gating.py alignment()); fields computed on every current memory search (situation_agent.py _override_deterministic_dims, _known_board_facts; a legacy path for old payloads falls back to the model). No change needed. -->
+
 
 Subsections: recomputing structured fields from game state; testing deductions against an independent
 oracle; testing checkers with known faults; the boundary between code and interpretation.
@@ -201,6 +302,12 @@ situations.
 - [Deterministic evaluation: checks done by code](../../../evidence/evaluation/deterministic_audits/report.md) (cases 1–3; the table of every code check).
 - [The detailed record](../../../evidence/evaluation/deterministic_audits/experiment_log.md), §1a (the leak checks, including the checks fed no input), §2 (the deduction tests), §5 (the field audit).
 - [Agent boundaries](../../../evidence/agent_boundaries/report.md) §3–5 (where the payload boundary sits).
+
+
+
+-->
+
+<!-- Verified 2026-10-25 (main session): payload vs final prompt, the 109 violations and the two LEAK lines (deterministic_audits case 1); the three deduction tests, 10 of 10, four failure cases, planted rule breaks (case 2); the audit table, the 80% reopening rule, 173 of 363, 176 empty rosters (experiment_log §5a); bullets not a gating input (Agents/memory/retrieval/dimension_gating.py alignment()); fields computed on every current memory search (situation_agent.py _override_deterministic_dims, _known_board_facts; a legacy path for old payloads falls back to the model). No change needed. -->
 
 <!-- Sources for the page copy (2026-10-25):
 Leak checks: deterministic_audits/report.md case 1 (payload; after every batch game; one leak fails the

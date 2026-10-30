@@ -231,8 +231,8 @@ of the same context?
 
 Increasing the reasoning budget reduced responses with factual errors from 82 to 27 out of 267 samples
 on the earlier game's test set. Re-judging the same outputs changed totals by only one or two, so the
-reduction was much larger than the observed variation in the judge. The higher budget was not adopted
-for live play. This result shows that more reasoning helped on those cases; the set contains several
+reduction was much larger than the observed variation in the judge, and that model now runs at the
+higher budget by default. This result shows that more reasoning helped on those cases; the set contains several
 error types, so it does not assign every improvement to one cause.
 
 A separate comparison tested a stronger model on frozen turns from the expanded game, using the same
@@ -292,8 +292,9 @@ game_play_enhancement/report.md problem 1 and "Why telling did not work".
 The roleblock claim: discussion_evidence.md §8.4 (game e06, AI-only; two players repeated it; the
 investigator accepted it and was voted out 7 to 1; fix 6248fc58); the repeat 5 of 5 → 0 of 5:
 factual_errors/report.md step 3 table and game_play_enhancement/report.md problem 1.
-Thinking budget 82 → 27 of 267, 36 better / 4 worse; noise floor 1–2 of 267; not live (seats at low
-thinking): step 4; game_play_enhancement/report.md "Where it stands". Separate stronger-model replay:
+Thinking budget 82 → 27 of 267, 36 better / 4 worse; noise floor 1–2 of 267; corrected 2026-10-29:
+the catalogue now runs gemini-3.5-flash-lite at medium (gameplay/turn_prompt/report.md decision 15,
+Agents/llm_factory/catalog.py); Haiku stays at low: step 4; game_play_enhancement/report.md "Where it stands". Separate stronger-model replay:
 six bad samples in 40 versus one in 40, same prompts (factual_errors/report.md, step 3 symptom table
 and step 4); selected ten-seat failure turns, not the earlier game's reasoning-budget test set.
 Six games with a stronger model:

@@ -1,8 +1,8 @@
 # Designing fair comparisons
 
-*Level 2 · [Evaluation](../evaluation.md) · previous: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · next: [Evaluating models before switching](../model_admission/model_admission.md) · status: page copy drafted 2026-10-25 with the level prompts, reviewed in the main session; for the owner's review.*
+*Level 2 · [Evaluation](../evaluation.md) · previous: [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md) · next: [Evaluating models before switching](../model_admission/model_admission.md) · status: rewritten 2026-10-29; for the owner’s review.*
 
-## Brief
+## Historical brief (2026-10-25)
 
 **Reader question:** Does the apparent improvement come from the intended change?
 
@@ -40,6 +40,175 @@ Verified 2026-10-25 (main session): the 2026-06-12 canary now carries a dated co
 
 ## Page copy (draft)
 
+A comparison needs more than matching prompts and a better score. The intended versions must
+actually run, their conditions must be comparable, and the experiment must be sensitive enough to
+distinguish an improvement from variation between games.
+
+Those requirements became concrete through three problems: a historical baseline that stopped
+looking comparable, a memory experiment that ran a different configuration from the one intended,
+and a planned test that usually missed an improvement even when one was deliberately added. Each
+led to a different safeguard.
+
+### Why historical baselines became questionable
+
+An early memory experiment reused results from an older memory-off baseline in the nine-player
+game. With unchanged prompts and game code, the town had won 20 of 30 earlier games but won only
+1 of 10 fresh baseline games. That raised a problem before memory's effect could be interpreted:
+the old results might no longer describe the conditions under which the new experiment was running.
+
+A change in the hosted model was suspected, but the records could not establish it. A later
+analysis compared the 20 starting deals played in both periods. Town wins fell from 12 to 7 on
+those deals, but the paired test did not distinguish the drop from chance. This analysis used a
+different sample as well as a different statistical test; its weaker evidence cannot be credited
+to pairing alone.
+
+The practical response did not require settling the cause. The reused deals were played again so
+that the memory-off control came from the same period as the memory games. Running compared
+versions together became the rule for subsequent experiments. It reduced exposure to changes
+between periods while leaving ordinary sampling variation to be handled in the analysis.
+
+[What the paired baseline reanalysis changed](paired_baseline.md) explains the two samples, the
+statistical tests and why neither establishes that the model service changed.
+
+### Hold the inputs and measurement comparable
+
+The comparison aims to isolate the intended change. A different role deal, model configuration or
+scoring rubric introduces a **confounding factor**: another difference that could explain the
+result. The controls address these at three points:
+
+| What needs to match | How the comparison controls it | What that buys |
+|---|---|---|
+| Starting situation | Both versions play the same deals, or receive the same saved turn in a replay | Neither version receives a different set of starting cases |
+| Execution conditions | Run both versions in the same time window, with other model and application settings held fixed | Reduces unintended differences between the versions |
+| Measurement | Apply the same scoring code or judge rubric to both versions | Keeps a change in measurement from looking like a change in play |
+
+Matching deals creates a **paired design**: each starting assignment of roles is played under both
+versions, and the analysis compares their outcomes deal by deal. It guarantees the same starting
+roles, not the same game. Once an agent produces a different response, later agents receive a
+different history and play can diverge.
+
+Measurement needs the same care as generation. When a discussion judge's rubric split one label
+into two, the share assigned to another label moved from 74% to 63% on the same messages. Comparing
+old games under the old rubric with new games under the new one would have mixed changes in play
+with changes in labelling. The old games were therefore scored again alongside the new ones using
+the revised rubric. Consistent judging makes the comparison more interpretable; judge accuracy
+still needs its own [validation](../llm_judges/llm_judges.md).
+
+Scheduling is partly automated. The memory-experiment driver runs both versions concurrently,
+matched by game id, and turn-replay comparisons run their versions in one session. The general
+batch tool does not alternate configurations game by game, so comparisons outside those paths
+still depend on manual scheduling. Same-window execution is a requirement with uneven enforcement,
+not a guarantee supplied by every runner.
+
+### Verify the experiment that actually ran
+
+Even well-matched runs can answer the wrong question if their configuration differs from the
+intended experiment. A June memory run was believed to give memory only to town agents, but gave
+it to every faction. It produced plausible results without an error: nothing checked whether the
+memory recipients matched the experiment's declaration.
+
+The memory driver now requires that declaration before starting, unless the check is explicitly
+waived. During the run, it reads back the actual memory settings after each round of games and
+stops on a mismatch. In the recorded follow-up run, declared town-only, every round recorded the
+four town roles and no others. That checks who received memory; it does not establish whether the
+memory helped them.
+
+Other conditions are recorded in a **runtime fingerprint**: model names, API backend, temperature,
+requested thinking levels, prompt hashes and code version. Recording these makes differences
+inspectable. A separate guard in the memory driver stops a run if the fingerprint changes between
+games. Across separate runs, comparing fingerprints remains a manual step.
+
+A fingerprint also has a boundary: it records requested settings, which may not have the expected
+effect. A later probe found that the player model returned no reasoning tokens at its configured
+“minimal” thinking level; it returned them at “low”. The experiments had recorded the request
+without measuring its effect.
+
+Both sides used the same level, so this finding did not introduce a configuration difference
+between them. It narrowed what their results covered: the tested setting produced no reported
+reasoning tokens. That is not proof that the model performed no reasoning. The factual-error
+replay runner now records reasoning tokens per sample; game records still hold only the requested
+level.
+
+### Check what the experiment can detect
+
+Controls reduce unintended differences, but they do not remove variation in sampled responses.
+A fair comparison can still be too small to answer its question. **Statistical power** describes
+how often a test would detect an effect of a specified size if that effect were present.
+
+Before another paid run of the memory learning loop, a simulation checked the proposed test for
+improvement over successive rounds. The measure was the town's decision score: code grades its
+votes and night actions against the true roles, then averages the grades into one score per game,
+from −1 to +1. This measures selected decisions rather than who won.
+
+The simulation resampled scores from 15 existing memory-off games and added a known improvement
+that grew across six rounds, ending 0.15 points above where it started. It then applied the planned
+trend test. Across 2,000 simulated runs of 24 games each, the test detected that improvement only
+about one time in nine. Even under the simulation's assumption of independent games, it usually
+missed the effect it was intended to find.
+
+That finding led to dropping the proposed trend test before paying for another run using it.
+The replacement compared finished memory against no memory on matched deals. Its power was not
+simulated, so the earlier check cannot establish that the replacement had adequate sensitivity.
+The [memory experiment report](../../../evidence/memory_system/v7/report.md#testing-the-test-before-paying-for-it)
+contains the simulation and design change.
+
+Pairing itself also needed checking. In the original nine-player game, decision scores varied
+about as much between repeated plays of one deal as between different deals. Matching deals
+therefore added little precision for that score in that setting. It remained useful for balancing
+starting roles, but it could not substitute for enough games. The same conclusion need not hold
+for other measures or the expanded game, where the dealt cast can also vary.
+
+For turn replays, repeated runs help distinguish variation in the model's responses from variation
+in the judge's labels. Those are separate measurements: re-judging fixed outputs cannot tell us
+how much another generation run would vary. [Choosing between turn replays and whole games](../replays_and_games/replays_and_games.md)
+explains what each scope can establish.
+
+### Commit to the analysis before seeing results
+
+An experiment offers many possible readings: wins, vote quality, night decisions, individual roles
+or an overall score. Selecting whichever looks best after seeing the results increases the risk
+of presenting a chance finding as an improvement. A **pre-specified analysis** makes the main
+question and reporting rules explicit before the evaluation data arrive.
+
+For the memory loop's final evaluation, the written plan specified the town's decision score as
+the primary measure, with other measures secondary. It fixed the number of games and committed to
+reporting a null or negative result as “no compounding detected”, rather than searching for a more
+favourable measure.
+
+The plan was amended after the learning games but before any final evaluation game. Three
+conditions on 20 deals became two on 30, comparing finished memory with no memory. This also
+changed the question: whether the finished store helped, rather than whether it improved over an
+earlier store. The amendment was recorded before collecting the endpoint results, so that change
+remained visible in interpreting the experiment.
+
+Pre-specifying the analysis limits selective reporting; it does not make a small experiment more
+sensitive or validate its metric. The remaining engineering work follows those separate needs:
+automate alternating versions in the general batch tool, record observed reasoning-token usage
+alongside requested settings, and check power for the exact design before each paid evaluation.
+These would extend safeguards that currently cover only particular runners or experiments.
+
+**Evidence.**
+
+- [Experimental controls](../../../evidence/evaluation/experimental_controls/report.md): baseline
+  comparisons, matched inputs, measurement consistency, configuration checks and their coverage.
+- [Deterministic evaluation](../../../evidence/evaluation/deterministic_audits/report.md), case 5:
+  the memory configuration guard.
+- [Measuring whether memory compounds](../../../evidence/memory_system/v7/report.md), “Testing the
+  test before paying for it”, “The redesign” and “The pre-registration”: power simulation and
+  the endpoint plan, including the timing and meaning of its amendment.
+
+<!-- Revision 2026-10-29, direct rewrite at owner request; skill workflow discontinued.
+Approved progression: historical baseline -> comparable inputs/measurement -> actual execution ->
+statistical sensitivity -> pre-specified interpretation. Full prior copy and source mappings follow.
+Detailed baseline statistics remain in paired_baseline.md. Provider-version inventory, full fingerprint
+fields, detectable-effect estimates and repeat-run counts remain in evidence, not new L3 pages.
+Source correction: v7/report.md (updated 2026-10-26) establishes that the amendment followed learning
+but preceded endpoint games, and changed the comparator as well as the deal count. The older brief
+and historical copy below are superseded on that point. Zero reported tokens is not no reasoning.
+Sources read for consequential claims; no fresh code audit or experiment rerun.
+-->
+
+<!-- Prior page copy, retained as editorial history; superseded 2026-10-29.
 When a new prompt, memory setting or model scores better than the old one, the result helps only if
 the intended change caused it. Two other things can produce a difference. Something else may differ
 between the sides: a model updated behind the same name, a side configured differently from what was
@@ -195,7 +364,7 @@ A memory test can be scored many ways: town wins, wolf wins, each role's decisio
 decision. With that many measures one will usually look significant by chance, and choosing it after
 seeing the data turns chance into a finding. The final test of the memory learning loop, whether a
 store built over four rounds of games beat no memory, therefore had its rules written before any game
-was played (pre-registration):
+was played:
 
 - **The measure:** the town's decision score on each deal, computed by code; others were secondary.
 - **The number of games,** so the test could not be stopped when the numbers looked good.
@@ -208,8 +377,7 @@ was played (pre-registration):
 Writing the measure down in advance makes it possible to check whether the analysis followed the
 plan. It does not make a small experiment more informative, and departures still need reporting.
 
-<!-- **Link (planned):** The endpoint test's result and what it meant for the learning loop → the Memory
-chapter. -->
+
 
 ### What remains open
 
@@ -233,6 +401,10 @@ play and could be adjusted for.
 - [Deterministic evaluation](../../../evidence/evaluation/deterministic_audits/report.md), case 5 (the
   guards on the experiment itself).
 - [The power simulation](../../../evidence/memory_system/v7/execution_plan/report.md), §1–2.
+-->
+
+<!-- **Link (planned):** The endpoint test's result and what it meant for the learning loop → the Memory
+chapter. -->
 
 <!-- Sources for the page copy (drafted 2026-10-25):
 Opening: experimental_controls/report.md "Why controls" (about 30 games a side or a few dozen turns,

@@ -1,5 +1,80 @@
 # The field audit that reopened a memory-ranking result
 
+*Level 3 · Evaluation › [Checking agent outputs with code](code_checks.md) · revised 2026-10-29.*
+
+Reordering retrieved memories by situation fields produced little improvement in an initial experiment. A later audit found that some model-written fields were unreliable, giving a reason to question the inputs and compute them in code. It did not directly diagnose the original test cases, and the ranking experiment was never repeated with corrected fields.
+
+The investigation therefore led to a concrete change in how search inputs were constructed, while leaving the retrieval question open.
+
+### What the ranking experiment depended on
+
+Memory search retrieves lessons from earlier games. Similar wording does not necessarily mean that a lesson applies to the current situation, so a ranking feature compared structured fields attached to the query and each stored lesson.
+
+The feature was called **gating**, but it adjusted similarity scores rather than excluding candidates outright. Agreement on the fields raised a candidate's score; disagreement lowered it. The search then selected the top five.
+
+```mermaid
+flowchart TD
+    A["Current situation: model-written query fields"] --> C["Compare situation fields"]
+    B["Retrieved lessons: stored fields and similarity scores"] --> C
+    C --> D["Adjust each candidate's similarity score"]
+    D --> E["Select the top five lessons"]
+```
+
+The four matching fields were player count grouped into early, middle or late game; a **swing-day** flag indicating whether one elimination could end the game; and categories describing the agent's information and exposure. Incorrect values could therefore change which lessons reached the agent.
+
+The June 2026 experiment replayed **24 held-out town votes** from the nine-player game. Ranking changed the selected lessons in 23 cases, but the share judged not to apply moved only from 38% to 36%. Votes targeted a real threat about a third of the time with either setup. The feature stayed off.
+
+The experiment showed that ranking changed retrieval without a clear measured benefit. Its small sample and single judging model limited the comparison. The audit asked a different question: were the fields reliable enough to support the intended matches?
+
+### What the audit could check
+
+The audit used recorded decisions from three July runs. It compared model-written fields with values recomputed from game state. Player counts applied broadly; bullets applied to the Vigilante. Each field therefore had its own denominator, and records missing the required inputs were excluded from that check.
+
+The swing-day reference calculation represented the wolves' path to a win. Its interpretable result was restricted to **wolf decisions**, while the original ranking experiment used **town votes**. The audit could reveal problems with the field-generation approach, but it did not measure errors on the original 24 cases.
+
+The audit plan specified a reopening condition: if any field used in matching scored below 80% accuracy, reconsider the earlier negative interpretation. It also set separate requirements for confirming that interpretation, including a human review of the category fields. That review was not completed. The [full audit protocol](../../../evidence/evaluation/deterministic_audits/experiment_log.md) records the thresholds and outstanding checks.
+
+### What failed, and why it mattered
+
+| Field | Accuracy | Field comparisons | Use in the experiment |
+|---|---:|---:|---|
+| Players alive | 97% exact; 99% in the groups used for matching | 6,099 | Ranking input |
+| Swing day, wolf decisions | 61% | 439 | Ranking input; below the 80% reopening threshold |
+| Bullets remaining | 16% | 1,109 | Diagnostic field; not used in ranking |
+
+The low bullets accuracy identified a separate calculation problem, but could not trigger the ranking decision rule. The swing-day result could, because the ranking feature used it.
+
+The swing errors mostly came from overprediction. The model identified all 76 actual swing days, but also flagged 173 of 363 ordinary days. Always answering “no” would have achieved about 83% accuracy, higher than the model's 61%, while missing every actual swing day. That baseline explains why the error breakdown matters: the field was often signalling urgency where the reference calculation found none.
+
+Player counts were more accurate, but depended on how the input roster was assembled. Some night-turn rosters omitted the acting player. For bullets, the audited day-2 cases with two remaining were reported as having one. These patterns pointed towards input construction and counting errors that code could address directly.
+
+### Check the audit before accepting its findings
+
+The audit itself initially produced a misleading result. In **176 wolf night-action records**, the saved surviving-player roster was empty. The first pass treated the missing roster as a genuine count of zero, making the model appear to overcount substantially.
+
+Those records were excluded from checks requiring the roster rather than scored against zero. Corrected wolf player-count accuracy was 97%. Other checks could still use the records where their own required inputs were available.
+
+Inspecting the unexpected result prevented missing data from becoming a false finding about the model. The exclusion was specific to the affected comparison, rather than discarding every field from those records.
+
+### What changed, and what still needs testing
+
+The wolf swing-day score crossed the predeclared reopening threshold. That justified revisiting the earlier interpretation, but the audit's wolf-only reference did not show how much input error affected the town-vote experiment. The supported result remains that the original run measured little benefit; a repeat with corrected fields is still needed.
+
+The implementation change did not depend on resolving that experiment. Player count, bullets remaining and partner status moved into code. Swing-day and distance-to-win calculations followed, extending beyond the audit's wolf-only reference. These values are supplied to the model as facts when it writes the query description. The unvalidated information and exposure categories were later removed from the query side.
+
+Computing query fields does not also verify the fields attached to stored lessons. A new ranking test needs reliable values on both sides of the comparison. The audit fixed how computable query values were produced; whether that makes situation-based ranking useful remains the next experimental question.
+
+**Evidence**
+
+- [Deterministic evaluation](../../../evidence/evaluation/deterministic_audits/report.md), case 3: audit approach and implementation change.
+- [Detailed record](../../../evidence/evaluation/deterministic_audits/experiment_log.md), §5a–5b: per-field results, audit-input correction, decision rule and computed fields.
+- [Situation dimensions](../../../evidence/extraction/situation_dimensions/report.md), §5–6: field definitions, ranking mechanism and original experiment.
+
+<!-- Revised 2026-10-29: owner-approved joint editorial pass. L2 explains deterministic validation techniques; L3 owns the ranking investigation. Source reports checked for mechanisms and scope; no new experiments or full code audit. Earlier copy and source notes retained below. -->
+
+<!-- Previous visible draft
+# The field audit that reopened a memory-ranking result
+
 *Level 3 · Evaluation › [Checking agent outputs with code](code_checks.md) · status: page copy drafted 2026-10-25, for the owner's review as the Level 3 exemplar.*
 
 ## Brief
@@ -11,7 +86,7 @@ should review those changed units/counts, the expanded decision-rule table, and 
 query-field implementation claims. The attenuation estimate was omitted rather than promoted as a
 measured effect. This draft is not being marked factually verified or publication-approved.
 
-<!-- Verified 2026-10-25 (main session): 6,267 decision records and 20,284 field comparisons (dimension_audit_20260702_105203.json provenance); the confirm / reopen / middle-band rule incl. the 0.4 kappa reopening clause (dimension_accuracy_audit/experiment_log.md §3); 176 cases 'criticality uncomputable'; the query-field implementation (situation_agent.py). No change needed. -->
+
 
 Show the decision rule,
 field definitions, separate thresholds and baselines, audit-input correction and why unreliable fields
@@ -188,6 +263,14 @@ or better decisions.
 - [Deterministic evaluation: checks done by code](../../../evidence/evaluation/deterministic_audits/report.md), case 3.
 - [The detailed record](../../../evidence/evaluation/deterministic_audits/experiment_log.md), §5a (per-field results and the rule) and §5b (the fields computed by code).
 - [Situation dimensions](../../../evidence/extraction/situation_dimensions/report.md), §5 (the audit table and the stored check) and §6 (the gating test).
+
+
+
+
+
+-->
+
+<!-- Verified 2026-10-25 (main session): 6,267 decision records and 20,284 field comparisons (dimension_audit_20260702_105203.json provenance); the confirm / reopen / middle-band rule incl. the 0.4 kappa reopening clause (dimension_accuracy_audit/experiment_log.md §3); 176 cases 'criticality uncomputable'; the query-field implementation (situation_agent.py). No change needed. -->
 
 <!-- Sources for the page copy (checked 2026-10-25):
 Fields and their purpose; 58% not relevant, similarity 0.827 vs 0.828; gating = a ×0.7–1.3 tilt by
