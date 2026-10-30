@@ -1,39 +1,47 @@
-# Werewolf Agent Sim — Project Write-up
+# Werewolf Agent Sim: the portfolio write-up
 
-The portfolio narrative for the whole project: what it is, what was built, what
-the experiments found, and **why** each design choice was made. This is the story
-layer — read this first.
+The draft of the project's portfolio pages, written for a hiring reader who meets the project cold.
+Pages are drafted here in Markdown and ported to the portfolio site later; only each page's
+"Page copy" section goes to the site.
 
 - **How it works (technical reference):** [`../docs/`](../docs/)
-- **The raw research record (the proof):** [`../evidence/`](../evidence/)
-
-> **Status: skeleton.** Chapters are written during the evidence read pass. A
-> chapter stays a flat file until it earns its own subfolder — structure grows
-> from the content, not ahead of it.
-
-## How to read this
-
-_The spine — a few-minute linear tour of the project, filled in as chapters land._
+- **The record behind every claim:** [`../evidence/`](../evidence/)
 
 ## Chapters
 
-1. **The game** — what Werewolf Agent Sim is: a 3-faction social-deduction game
-   played by LLM agents.
-2. **Game design & engine** — the design decisions (sequential discussion, the
-   3-faction role set, abstain voting) and why they were made.
-   _How → [`../docs/`](../docs/); proof → `../evidence/{role_set, sequential_discussion, refactor}`._
-3. **Episodic memory system** _(the biggest component)_ — cross-game learning,
-   v5 → v7: the memory substrate, the paired A/B program, and the compounding loop.
-   _Proof → `../evidence/memory_system/`, `../evidence/{dedup, retrieval, extraction}`._
-4. **Evaluation rigor** — de-lucked outcome proxies, paired-A/B methodology, and the
-   de-luck credit signal.
-   _Proof → `../evidence/metrics/`, `../evidence/evaluation/metrics/report.md`._
-   _Draft pages → [`evaluation/`](evaluation/evaluation.md): the Level 1 page, one folder per Level 2
-   page with its Level 3 pages beside it, and `exhibits/` with its source map._
-   _Exhibit menu (concrete examples to pick from) → [`eval_exhibits.md`](eval_exhibits.md)._
-5. **Frontend** — _added after the build (replay + live spectator)._
-   _Server talking points, one page for interviews →_
-   [`server_talking_points.md`](server_talking_points.md)
-6. **Serving the agents in production** — what went wrong with the models while real people
-   played (the Vertex stall and the rescue model) →
-   [`../docs/agentic_ai_encountered_issues.md`](../docs/agentic_ai_encountered_issues.md).
+The arrangement is [`_planning/structure_proposal.md`](_planning/structure_proposal.md) (v2): eight
+chapters in four groups, under one overview page. Status as of 2026-10-30.
+
+| # | Chapter | Folder | Status |
+|---|---|---|---|
+| | **A. How the game runs** | | |
+| 1 | Game design and orchestration | [`game_design_orchestration/`](game_design_orchestration/game_design_orchestration.md) | Level 1 page, five Level 2 pages and two Level 3 pages drafted |
+| 2 | Information boundaries | [`information_boundaries/`](information_boundaries/content_plan.md) | Content plan only (candidate, not approved) |
+| | **B. Improving how agents play** | | |
+| 3 | Context engineering | [`context_engineering/`](context_engineering/content_plan.md) | Content plan only (candidate, not approved) |
+| 4 | Memory | [`memory/`](memory/memory.md) | Level 1 page, five Level 2 pages and their Level 3 pages drafted; claims bounded by [`memory_presented_set.md`](memory/memory_presented_set.md) |
+| | **C. Knowing whether it worked** | | |
+| 5 | Evaluation | [`evaluation/`](evaluation/evaluation.md) | Level 1 page approved 2026-10-25; eight Level 2 pages and four Level 3 pages drafted |
+| | **D. Serving it to people** | | |
+| 6 | Cost and latency | [`cost_and_latency/`](cost_and_latency/content_plan.md) | Content plan only (candidate, not approved) |
+| 7 | Running it in production | [`running_in_production/`](running_in_production/content_plan.md) | Content plan only (candidate, not approved) |
+| 8 | Frontend: the live stage and replays | — | Not started; source material in [`../frontend/docs/`](../frontend/docs/README.md) |
+
+## What a chapter folder holds
+
+- `<chapter>.md`: the Level 1 page.
+- `<subject>/<subject>.md`: a Level 2 page, with its Level 3 pages beside it in the same folder.
+- `content_plan.md`: the chapter's page plan; `editorial_notes.md`: claim changes made in editing.
+- `exhibits/`: figures, and `source_map.md` saying where each exhibit comes from.
+- `<subject>/_authoring/`: the writing skill's brief for a page (frame, evidence selection, open
+  questions). Authoring material, never page copy.
+
+## Elsewhere
+
+- [`_planning/`](_planning/): the write-up's working files. [`map.md`](_planning/map.md) is the
+  building-blocks ledger and holds each chapter's "Handle with care" list;
+  [`triage.md`](_planning/triage.md) is the finished evidence triage the map's card numbers refer to;
+  [`skills_inventory.md`](_planning/skills_inventory.md) the public skill tags;
+  [`portfolio-agent-brief.md`](_planning/portfolio-agent-brief.md) the brief for building the site.
+- The writing rules and the page workflow: the `write-portfolio-page` skill,
+  [`../.agents/skills/write-portfolio-page/`](../.agents/skills/write-portfolio-page/SKILL.md).
