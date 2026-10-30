@@ -5,7 +5,7 @@ from the first version's per-game learnings; one moment (a Healer protecting the
 through the page; the page separates selecting observations, deciding whether to generalise and writing actionable
 lessons. Supporting experiments and operating rules are in selection_and_quality.md. Figures are Mermaid sketches and markdown tables, to be redrawn as
 SVGs once their layout is agreed. Claims are bounded by
-[`../../memory_presented_set.md`](../../memory_presented_set.md).
+[`../memory_presented_set.md`](../memory_presented_set.md).
 
 ---
 
@@ -247,7 +247,7 @@ yet run.
 the coverage experiments, synthesis constraints, store-growth rules and published-store audit behind
 these mechanisms.
 
-<!-- Sources, for checking each claim against the claims boundary (writeup/memory_presented_set.md).
+<!-- Sources, for checking each claim against the claims boundary (writeup/memory/memory_presented_set.md).
 Restructure 2026-10-27 (owner review). Removed from this page: prompt-cache warm-up, the 15% batch prefix
 rewrites and the $0.95 vs $0.45 cost (evidence/caching/report.md §3.6, §4.6); how the second review was
 chosen (one test game; to the L3); the June 2026 extraction-recall A/B (v7/extraction_coverage_ab_spec.md:

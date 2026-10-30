@@ -262,7 +262,7 @@ cluster dedup, the tell detector and the application judge serve research only).
 
 Rows 1 to 3 back numbers the write-up is likely to cite or parts players notice; rows 4 to 7 matter only
 if their numbers are cited. The owner's labelling sessions are scheduled in
-[`writeup/map.md`](../../../writeup/map.md), "Evaluation hardening tasks".
+[`writeup/_planning/map.md`](../../../writeup/_planning/map.md), "Evaluation hardening tasks".
 
 ## What we would do differently next time
 

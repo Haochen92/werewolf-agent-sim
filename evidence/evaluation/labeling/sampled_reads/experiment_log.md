@@ -151,7 +151,7 @@ gaps this report named — **no principled sampler** and **no durable record** �
 > - **The reason counts add to 10 for 9 cases**, so at least one case carries two reasons.
 > - **Never used for a real review.** The smoke run, with one placeholder verdict, is the only record of
 >   the sampler running. The "upcoming v5/v6/v7 + eval concurrent review" it was built for did not use
->   it (`writeup/triage.md`, row 68). It reads nine-seat batch records only. The October reads below
+>   it (`writeup/_planning/triage.md`, row 68). It reads nine-seat batch records only. The October reads below
 >   drew their own seeded samples inside each runner instead.
 
 **What it can claim.** Selection that cannot see the outcome, by construction: `assert_outcome_blind`
@@ -356,7 +356,7 @@ one model reader's label per item, with no measured agreement and no human ancho
 
 | What | Code | Record |
 |---|---|---|
-| Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/triage.md` (row 68) |
+| Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/_planning/triage.md` (row 68) |
 | Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `gameplay/deduction/data/deduction_placement{,_n10}/` |
 | Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `gameplay/deduction/data/note_prompt/judging/`; [`gameplay/deduction/experiment_log.md`](../../../gameplay/deduction/experiment_log.md) §6 |
 | Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../gameplay/data/silence_calibration/README.md), `packet_*.md`, `blind_key.json`, `verdicts_*.jsonl` |

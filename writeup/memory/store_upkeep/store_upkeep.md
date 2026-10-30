@@ -3,7 +3,7 @@
 Drafted 2026-10-27; restructured 2026-10-28 (owner): an editorial revision following
 `l3_migration_brief.md` replaced the earlier text (both working copies since removed; git history keeps
 them). The lesson dedup now groups by game stage before the judge (2026-10-28). Claim
-scope: [`../../memory_presented_set.md`](../../memory_presented_set.md).
+scope: [`../memory_presented_set.md`](../memory_presented_set.md).
 
 ---
 

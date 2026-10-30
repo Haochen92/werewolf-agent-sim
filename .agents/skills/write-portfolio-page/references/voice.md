@@ -1,7 +1,7 @@
 # The owner's voice and page rules
 
 Rules the owner gave across review rounds (2026-10-13 to 2026-10-28) that are not all written in the
-three `writeup/portfolio-*` guides. The guides win if the two ever disagree.
+three `portfolio-*` guides in this folder. The guides win if the two ever disagree.
 
 ## Voice
 

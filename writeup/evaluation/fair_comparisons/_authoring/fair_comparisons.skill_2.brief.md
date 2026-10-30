@@ -7,7 +7,7 @@ Authoring material, not page copy. The cold editorial reviewer never sees this f
 Trial run of the `write-portfolio-page` skill (second version, 2026-10-29): steps 1–3 only, stopping at the
 checkpoint. Written without reading the owner's version, the earlier trial or any other brief in this folder.
 Inputs read: the skill and its references (voice, examples A–C, page types, brief template); the general and
-Level 2 prompts; `writeup/map.md` "Chapter outline: Evaluation" with its Handle-with-care list; the chapter
+Level 2 prompts; `writeup/_planning/map.md` "Chapter outline: Evaluation" with its Handle-with-care list; the chapter
 content plan; the chapter page and the parent excerpt (`parent_context.py`); the Level 3 page
 `paired_baseline.md`; the packet's historical brief and sources comment. Sources read directly:
 `evidence/evaluation/experimental_controls/report.md` (all), `variance_reduction_levers.md`;

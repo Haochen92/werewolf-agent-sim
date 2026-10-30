@@ -261,7 +261,7 @@ home; code-checks keeps its short version and links here.
 
 - **The served-game leak audit is not running, per the record.** It is built and tested, and the
   capture table is migrated. But the nightly job was found not installed on 2026-10-23 (no crontab
-  entry, no log; `writeup/map.md` "Eval hardening" item 3; `evidence/evaluation/experiment_log.md`
+  entry, no log; `writeup/_planning/map.md` "Eval hardening" item 3; `evidence/evaluation/experiment_log.md`
   line ~324). On 2026-10-26, 11 of 68 served games had a capture and none had been audited (map block
   158). My read-only check today (2026-10-29): the `ubuntu` user's crontab has no leak entry and
   `/home/ubuntu/leak_audit.log` does not exist. A root crontab or a systemd timer was not checked. So:
@@ -316,7 +316,7 @@ home; code-checks keeps its short version and links here.
    recommend a new one: ch1's figure shows *what* each player receives, not *where* the filter sits.
 7. **Closing line.** "Decided separately in the server" rather than "the same rule carries through to
    the screen"? (See the closing-line note.)
-8. **Stale cross-reference.** `writeup/skills_inventory.md` "Chapter assignments" still gives chapter
+8. **Stale cross-reference.** `writeup/_planning/skills_inventory.md` "Chapter assignments" still gives chapter
    2 "secrets handling" (and line 51 the security row). It should move to chapter 7 per the 2026-10-29
    ruling. Not edited here.
 9. **Chapter card tags.** Proposed: context isolation (public tag); invariant checks and metamorphic

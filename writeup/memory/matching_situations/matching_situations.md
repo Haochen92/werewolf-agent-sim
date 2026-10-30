@@ -4,7 +4,7 @@ Restructured 2026-10-27 after the owner's review: two halves, describing a situa
 were chosen, how both sides fill them alike, the query) and finding the lessons that fit (cells, search,
 the fit review as the case for filtering, the stage filter). The epistemic rule stays on the extraction
 page; lookup reuse and the retry detail left the page. Claim scope is recorded in
-[`../../memory_presented_set.md`](../../memory_presented_set.md).
+[`../memory_presented_set.md`](../memory_presented_set.md).
 
 ---
 

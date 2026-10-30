@@ -2,8 +2,8 @@
 
 Prepared 2026-10-25 for the owner's review. **Nothing in `evidence/` has been changed.** This is the plan
 for bringing every folder's `report.md` to the standard of the two revised evaluation reports
-([deterministic audits](../../evidence/evaluation/deterministic_audits/report.md),
-[factual errors](../../evidence/evaluation/factual_errors/report.md)), with each folder's
+([deterministic audits](../evaluation/deterministic_audits/report.md),
+[factual errors](../evaluation/factual_errors/report.md)), with each folder's
 `experiment_log.md` holding the chronological detail.
 
 **How it was made.** Five read-only passes, one per area, read every report in full against the two

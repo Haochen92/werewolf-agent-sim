@@ -12,7 +12,7 @@ a constraint list against the code. Code was read, never run. One constraint in 
 and all four scanners caught it against the code: puppet voices are ON in hosted games since
 2026-10-19, not off. The brief is corrected; no document in the folder states the voices setting.
 
-The evidence pass's rubric applies ([`../report_pass/proposal.md`](../report_pass/proposal.md) §0):
+The evidence pass's rubric applies ([`../../../evidence/report_pass/proposal.md`](../../../evidence/report_pass/proposal.md) §0):
 the four-line card on superseded records, `path::symbol` anchors, one detailed home per finding, and
 the type decides the tense. What differs here: most of the folder is living specs and dated records,
 not reports, so rewrites are few and the main work is dated notes, two new documents and the learning
@@ -194,7 +194,7 @@ Status lines and sentences that state something false today.
 | `live_timing_sheet.md` head note; `stage_fit/README.md` | stage_fit "measured the lag again" / "replaces the one earlier measurement" | it measured the waits; the lag rows are still the one flash-lite game's; 5.5 s to 5.4 s |
 | `event_derivation.md` pacing channel, "Derived (night)" | the night denominator as the role census | one padded unit per living seat (its own 2026-10-11 ruling) |
 | `design_log.md`, `ux_baseline.md`, `HANDOFF.md`, `music_brief.md`, `scorecards_plan.md`, `landing_features.md`, `opening_round_brief.md`, `landing-handoff`, `multiplayer-audit`, `rendering-audit`, `site_architecture.md`, `pages_review.md` | no status line, or one that reads as current | one dated status line each (the wording is in the assessments); ux_baseline and the rendering audit get the four-line card |
-| `writeup/server_talking_points.md` | the "walks away" answer omits the October rulings; the credit date; "how much did you write" | three answers rewritten to the facts, the last to: the owner wrote the event schema and co-wrote the beat sheet, the rest was AI-built to those specs and reviewed |
+| `interview_prep/server_talking_points.md` | the "walks away" answer omits the October rulings; the credit date; "how much did you write" | three answers rewritten to the facts, the last to: the owner wrote the event schema and co-wrote the beat sheet, the rest was AI-built to those specs and reviewed |
 
 ### Server (chapter C's spine)
 

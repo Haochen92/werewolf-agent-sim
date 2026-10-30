@@ -1,7 +1,7 @@
 # The discussion tagger: an LLM judge for discussion credit, retired
 
 > **Write-up: not used. No detailed read needed.** Owner ruling 2026-10-22: the tagger stays out of the
-> write-up; at most one plain sentence in the credit topic ([map](../../../writeup/map.md), folder walk).
+> write-up; at most one plain sentence in the credit topic ([map](../../../writeup/_planning/map.md), folder walk).
 
 A decision record from the v7 memory loop of June and July 2026 (the nine-seat game). The loop's
 **credit** step scored each lesson a player had chosen to follow by whether the decisions it led to were

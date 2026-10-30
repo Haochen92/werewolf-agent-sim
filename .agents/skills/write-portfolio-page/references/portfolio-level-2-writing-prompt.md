@@ -1,8 +1,8 @@
 # Level 2 writing prompt and review rubric
 
 Status: provisional, 2026-10-25. Based on the revised
-[factual-errors page](evaluation/factual_errors/factual_errors.md), which the owner preferred to the
-earlier draft. A first transfer draft, [code checks](evaluation/code_checks/code_checks.md), followed the structure
+[factual-errors page](../../../../writeup/evaluation/factual_errors/factual_errors.md), which the owner preferred to the
+earlier draft. A first transfer draft, [code checks](../../../../writeup/evaluation/code_checks/code_checks.md), followed the structure
 but needed an editorial pass on claim scope and explanatory density. Neither the prompt nor these
 pages are being marked publication-approved here.
 

@@ -1,7 +1,7 @@
 # Level 3 writing guidance and review rubric
 
 Status: provisional. Editorial reference:
-[the field-audit draft](evaluation/code_checks/field_audit.md). This guidance has not yet been tested
+[the field-audit draft](../../../../writeup/evaluation/code_checks/field_audit.md). This guidance has not yet been tested
 on another investigation or approved as the final reference.
 
 Use the general [portfolio prompt](portfolio-writing-prompt.md) and the clarity principles in the

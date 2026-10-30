@@ -20,9 +20,9 @@ Status: candidate plan, 2026-10-29, from a subagent pass checked against the rec
 
 ---
 
-Planning note, 2026-10-29. Not page copy. Built from `writeup/structure_proposal.md` (read as it stood
+Planning note, 2026-10-29. Not page copy. Built from `writeup/_planning/structure_proposal.md` (read as it stood
 on disk on 2026-10-29, including that day's chapter 2 change: the served-game audit stays off the page
-until it runs), `writeup/map.md` (blocks 96–101, 104, 106, 111, 115–116, 153–165, "Covered outside
+until it runs), `writeup/_planning/map.md` (blocks 96–101, 104, 106, 111, 115–116, 153–165, "Covered outside
 the map", topic hooks), the two approved Level 1 pages and their content plans,
 `human_in_the_loop.md`, `cache_key.md`, `fair_comparisons.md`, and the sources named under
 "Disposition". Code was opened in two places only, to check claims (the rescue setting, the Langfuse
@@ -266,7 +266,7 @@ the strongest.
 | same, §8 (the event log leads the saved state) | L2 A; possible L3 |
 | `frontend/docs/seat_continuity.md` | L2 A (fault model, clocks, restart). The intro table takes its §1 statuses |
 | `frontend/docs/build_plan.md` deploy entries → now `deploy_log.md` | 2026-10-14 outage → L2 B and L1 §3; 2026-10-17 (64 threads, key tried before the game, error reporting on) → L2 A, E, C; 2026-10-21 (budget reaching all providers, backup key) → L2 B; 2026-10-26 (cache fix) → chapter 1's L3. The Cloudflare SSE buffering → chapter 8. The deploy procedure (clean build, check in the image, smoke, rollback image) → open question 8 |
-| `writeup/server_talking_points.md` | Interview notes, not page copy. It feeds L2 A (restart, the ordering story) and the gaps ("what would you change": the stall watchdog). Its authorship answer feeds open question 6 |
+| `interview_prep/server_talking_points.md` | Interview notes, not page copy. It feeds L2 A (restart, the ordering story) and the gaps ("what would you change": the stall watchdog). Its authorship answer feeds open question 6 |
 | `writeup/game_design_orchestration/human_in_the_loop/human_in_the_loop.md`, "Keep the server available while a game waits" | Moves to L2 A. Page 5 keeps one sentence and a link. Its "What the checks establish" sentence on duplicate events keeps one clause, linking to L2 A |
 | `…/human_in_the_loop/cache_key.md` | Chapter 1's L3; it already tells the three records in "Two games, one answer". Chapter 7 links to it and does not retell. **Its link spec (line 112) to chapter 7 should point to L2 C** once that exists |
 | `writeup/evaluation/fair_comparisons/fair_comparisons.md` | Uses the fingerprint ("Recording a configuration versus enforcing it"). L2 D must not repeat that table. Chapter 5 owns record-vs-guard, chapter 7 owns contents and limits; each links to the other |
@@ -345,7 +345,7 @@ the strongest.
 ## 7. Open questions for the owner
 
 1. **Fault model, restart recovery and absent players: chapter 7 or chapter 8?** The frontend pass's
-   chapter C brief (`writeup/frontend_pass/brief.md` §5, stories 5 and 9) claims the layered fault
+   chapter C brief (`frontend/docs/frontend_pass/brief.md` §5, stories 5 and 9) claims the layered fault
    model, the house cap and the key lifecycle. The structure proposal gives the keys to chapter 7 and
    says nothing on the fault model. Proposed: chapter 7 owns keeping a game running on the server
    (the fault model as the intro table, restart, clocks, the event-log ordering), and chapter 8 owns

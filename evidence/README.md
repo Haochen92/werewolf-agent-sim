@@ -153,12 +153,6 @@ Off-the-critical-path training tracks (learning-project tier), each with its own
 | [structure_audit](refactor/structure_audit.md) | Jun 6 | Pre-v5 repo structure audit (no code moved) |
 | [eval_architecture_convention](refactor/eval_architecture_convention.md), [node_factory_pattern](refactor/node_factory_pattern.md) | — | Design/convention reference notes underpinning the refactor; provenance is documented under [tracing/fingerprinting](tracing/fingerprinting/report.md) |
 
-### [cross_project_synthesis/](../writeup/lessons/) — Lessons Across Subsystems
-
-| Note | Date | Notes |
-|---|---|---|
-| [separating_generation_from_checking](../writeup/lessons/separating_generation_from_checking.md) | Oct 13 | Extraction de-halo, tell detection, discussion echo gate: three different checks, kept apart |
-
 ## Reading Guide
 
 Reports vary in maturity. The key distinction:

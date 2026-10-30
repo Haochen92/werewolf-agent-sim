@@ -19,10 +19,10 @@ Status: candidate plan, 2026-10-29, from a subagent pass checked against the rec
 ---
 
 Context engineering: what each agent is given, and how. A plan, not page copy. Read on 2026-10-29
-against: `writeup/structure_proposal.md`; `writeup/map.md` (the model, page levels, blocks 30–33, 48–55,
+against: `writeup/_planning/structure_proposal.md`; `writeup/_planning/map.md` (the model, page levels, blocks 30–33, 48–55,
 68–72, 140–152, the factual-errors topic, lessons, the parked list); the two approved Level 1 pages and
 their "Level 1 presentation" plans; `writeup/memory/memory.md`; `writeup/evaluation/factual_errors/`;
-the writing prompt, `voice.md`, `page_types.md`; `writeup/skills_inventory.md`; `writeup/lessons/README.md`;
+the writing prompt, `voice.md`, `page_types.md`; `writeup/_planning/skills_inventory.md`; `interview_prep/lessons/README.md`;
 the reports `evidence/gameplay/turn_prompt/report.md`, `evidence/extraction/day_summary/report.md`,
 `evidence/gameplay/deduction/report.md`, `evidence/gameplay/report.md` (problems 1 and 3), and
 `evidence/gameplay/deduction/experiment_log.md` §2, §4–5 (where a claim needed it).
@@ -263,7 +263,7 @@ Notes on the arrangement:
 ### Candidate page 5 ("Prompting methods across the project's model calls"): recommend no page
 
 - The owner ruled on 2026-10-27 that cross-project lessons get no page; each instance is told in its own
-  chapter (`writeup/lessons/README.md`). A methods overview is that kind of synthesis.
+  chapter (`interview_prep/lessons/README.md`). A methods overview is that kind of synthesis.
 - Its content already has homes: directional lean, presentation order and action-space reduction in the
   dedup prompts are told in chapter 4's Level 3 "How the deduplication judge was built" ("What moved the
   judge's accuracy"); rubric design and narrow judge questions in Evaluation's LLM-judges page;

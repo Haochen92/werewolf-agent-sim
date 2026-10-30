@@ -19,7 +19,7 @@ Status: candidate plan, 2026-10-29, from a subagent pass checked against the rec
 
 ---
 
-Candidate outline, 2026-10-29. Not page copy. Starting arrangement: `writeup/structure_proposal.md`
+Candidate outline, 2026-10-29. Not page copy. Starting arrangement: `writeup/_planning/structure_proposal.md`
 ch. 6 (five Level 2 pages). Built from the sources read in full or by section (listed under
 "Disposition"). Three figures were re-derived today from the traces (marked **[re-derived]**); they are
 not yet written in any evidence record (open question 1).
@@ -269,7 +269,7 @@ one-section-one-page pattern of the references.
   - **[re-derived]** $0.2146 (197 calls) and $0.2550 (228 calls). Game 2 also made one $0.0045 call on
     Gemini 3.1 Flash-Lite, the then rescue model, so "every call on the seat model" (map) is off by one
     call.
-  - Written only in `writeup/map.md`; no evidence report states it (open question 1).
+  - Written only in `writeup/_planning/map.md`; no evidence report states it (open question 1).
   - Memory is **off** by default for players (`v8/decisions.md` §16), so this is not the default
     player's configuration (open question 5).
 - **$0.08–0.26 a game, Haiku (measured).** 16 AI-only games, 2026-10-18, memory off, low thinking,
@@ -376,7 +376,7 @@ one-section-one-page pattern of the references.
 ## 8. Open questions for the owner
 
 1. **Record the headline's numbers in evidence.** $0.215 and $0.255, the call-type split, the output
-   share, the 16–21% lookup share and the Opus repricing are written today only in `writeup/map.md` or
+   share, the 16–21% lookup share and the Opus repricing are written today only in `writeup/_planning/map.md` or
    were re-derived here. Should a short dated entry go in `evidence/caching/experiment_log.md` (or a
    cost note) so the page's first number has an evidence source?
 2. **Stage fit's home.** Evaluation's admission page already carries the full stage-fit table and the

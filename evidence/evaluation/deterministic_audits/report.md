@@ -249,7 +249,7 @@ a script someone has to run, because the repository has no CI. On 2026-10-23 eve
 passed. The tests are largely AI-written and not yet audited, so this page names specific tests and
 what each asserts, never a test count.
 
-On the owner's pending list in [`writeup/map.md`](../../../writeup/map.md):
+On the owner's pending list in [`writeup/_planning/map.md`](../../../writeup/_planning/map.md):
 - **Install the nightly leak-audit cron**, so website games are checked. It changes the host, so it
   needs the owner's yes.
 - **Add CI** that runs these tests on every change. None of them calls a model.

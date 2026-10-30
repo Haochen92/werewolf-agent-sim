@@ -1,5 +1,5 @@
 > **Write-up: no detailed read needed.** Its blocks (40–42, 45, 46) are already filed in the
-> [map](../../../writeup/map.md); read the [retrieval report](../report.md) instead.
+> [map](../../../writeup/_planning/map.md); read the [retrieval report](../report.md) instead.
 
 > **Superseded record (May 2026).** Written 2026-05-23 and kept as it was, with its 2026-10-14 addendum
 > at the end. The read path today, and this study beside the reranker and capacity studies, are in the

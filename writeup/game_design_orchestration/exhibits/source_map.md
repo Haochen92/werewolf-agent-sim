@@ -6,7 +6,7 @@ files (images, JSON exports, table files) go in this folder, named after the row
 drafted only from the source listed, never re-derived; a number in the source that has been corrected
 since is taken from the correction.
 
-Forms, as in the project exhibit menu ([`../../eval_exhibits.md`](../../eval_exhibits.md)): **content**
+Forms, as in the project exhibit menu ([`../../evaluation/exhibits/eval_exhibits.md`](../../evaluation/exhibits/eval_exhibits.md)): **content**
 (a table, quote or number written into the page), **diagram**, **export** (an interactive piece fed by a
 script-generated JSON, stamped with the commit), **link** (a replay on the live site).
 

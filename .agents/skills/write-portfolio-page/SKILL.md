@@ -30,15 +30,15 @@ follow execution order; an investigation follows successive questions. There is 
 
 Read these yourself; do not summarise them from memory.
 
-- **Rules, every level:** `writeup/portfolio-writing-prompt.md` (the copyable block is the rule set)
+- **Rules, every level:** [`references/portfolio-writing-prompt.md`](references/portfolio-writing-prompt.md) (the copyable block is the rule set)
   and this skill's [`references/voice.md`](references/voice.md) (the owner's voice).
-- **Rules for the level:** Level 2 → `writeup/portfolio-level-2-writing-prompt.md`; Level 3 →
-  `writeup/portfolio-level-3-writing-rubric.md` (it also says when a Level 3 page is justified).
+- **Rules for the level:** Level 2 → [`references/portfolio-level-2-writing-prompt.md`](references/portfolio-level-2-writing-prompt.md); Level 3 →
+  [`references/portfolio-level-3-writing-rubric.md`](references/portfolio-level-3-writing-rubric.md) (it also says when a Level 3 page is justified).
 - **Worked examples:** use [`references/examples.md`](references/examples.md) to select the example
   closest to this page's explanatory need. Read its page copy before outlining; use another only
   when it resolves a structural choice. Examples teach selection and reasoning, not fixed headings.
 - **This page:** the chapter's `content_plan.md`; the brief at the top of the page file, if any; the
-  chapter's `editorial_notes.md`; the chapter's outline in `writeup/map.md`, including its "Handle with
+  chapter's `editorial_notes.md`; the chapter's outline in `writeup/_planning/map.md`, including its "Handle with
   care" list where one exists (it names what stays off the page); the existing draft.
 - **What the reader has just read:** the parent page's introduction and the parent section that links
   here (Level 2 → the chapter page's summary of this subject; Level 3 → the Level 2 subsection).

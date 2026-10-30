@@ -120,10 +120,10 @@ In priority order. Current as of 2026-06-30.
 The cheapest improvement in every case is the same move: calibrate one judge, or connect one answer key that already exists. None of it needs new machinery.
 
 *Status (2026-10-23).*
-- **Gap 1** is still open: no record of the application calibration exists. It no longer gates anything. The memory research closed on 2026-07-21, and the write-up plan lists the memory-era judges as "not cited, not served; stated as uncalibrated" (`writeup/map.md`, "Evaluation hardening tasks").
+- **Gap 1** is still open: no record of the application calibration exists. It no longer gates anything. The memory research closed on 2026-07-21, and the write-up plan lists the memory-era judges as "not cited, not served; stated as uncalibrated" (`writeup/_planning/map.md`, "Evaluation hardening tasks").
 - **Gap 3 is fixed.** The judge marks its fewer-than-two-notes shortcut with `is_fallback=True` (`evaluation/src/judges/retrieval.py:30`). The runner excludes those rows from every judged average and reports them as a count (`evaluation/src/cli_runner/regen_replay/both/retrieval.py:97-110`, test `tests/evaluation/test_retrieval_judge_fallback.py`).
 - **Gaps 2 and 4** stand as written for the nine-seat stores.
-- **The calibration now planned** is for the hallucination-bench judge first. The plan is one owner labelling session on 50–100 verdicts. The silence-calibration readers and the rule-error screen readers follow, but only if the write-up keeps their numbers. That plan is pending (`writeup/map.md`, task 1).
+- **The calibration now planned** is for the hallucination-bench judge first. The plan is one owner labelling session on 50–100 verdicts. The silence-calibration readers and the rule-error screen readers follow, but only if the write-up keeps their numbers. That plan is pending (`writeup/_planning/map.md`, task 1).
 
 ## 7. Which judges are checked against human labels (2026-10-23)
 
@@ -205,7 +205,7 @@ In the four step 8 games, about 12 of the 19 holds in games 1, 2 and 4 were clea
 - A live hold rate. The June lines had already passed the earlier novelty gate, so the rate understates (README).
 - A precision. "About half" is one reading, not labels.
 
-**The later calibration.** On 2026-10-18 the owner widened the gate's bar to hold restatements and filler, and the gate was measured against blind labels in the silence calibration. Four Sonnet subagents labelled 65 open-floor lines without knowing whether each was spoken, held or forced. At low thinking, the v3 bar held 12 of 29 restatements and 0 of 36 worthwhile lines. As ported into `echo_gate.py`, it held 10 of 29 and 0 of 36 (`data/silence_calibration/README.md`, step 4). Those labels come from model readers. Checking them against the owner is a pending hardening task, conditional on the write-up keeping the numbers (`writeup/map.md`, task 1(b)). The method and the readers belong to [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md).
+**The later calibration.** On 2026-10-18 the owner widened the gate's bar to hold restatements and filler, and the gate was measured against blind labels in the silence calibration. Four Sonnet subagents labelled 65 open-floor lines without knowing whether each was spoken, held or forced. At low thinking, the v3 bar held 12 of 29 restatements and 0 of 36 worthwhile lines. As ported into `echo_gate.py`, it held 10 of 29 and 0 of 36 (`data/silence_calibration/README.md`, step 4). Those labels come from model readers. Checking them against the owner is a pending hardening task, conditional on the write-up keeping the numbers (`writeup/_planning/map.md`, task 1(b)). The method and the readers belong to [`../labeling/sampled_reads/`](../labeling/sampled_reads/report.md).
 
 **Code · record.** `Agents/turn/echo_gate.py`, `Agents/turn/round_filter.py`, `evaluation/experiments/line_echo_gate_check.py`, `evaluation/experiments/silence_calibration.py` (`gate_check`) · `gameplay/data/{line_echo_check,round_echo_check,silence_calibration}/`; `discussion_evidence.md` §7.4.
 

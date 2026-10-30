@@ -3,7 +3,7 @@
 Drafted 2026-10-27. Rewritten 2026-10-28 on the owner's structure: the verdict first, then what each test
 led to (only what survives in today's design), then what the next test needs. The learning loop's
 amendment and the method detail now live only in the Evaluation chapter. Claim scope is recorded in
-[`../../memory_presented_set.md`](../../memory_presented_set.md) (the Effectiveness row, extended
+[`../memory_presented_set.md`](../memory_presented_set.md) (the Effectiveness row, extended
 2026-10-28).
 
 ---

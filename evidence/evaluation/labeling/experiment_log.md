@@ -400,8 +400,8 @@ The table of every built key is in [report.md](report.md). Keys designed or plan
 | `calibration.py` + `anchor.py`: the panel measured against ~100–250 human judgments | Not built | [plan.md](plan.md) |
 | Two retrieval golds (summary recall; reranker pure-query) with a ~150-item human anchor | Deferred 2026-06-01 | `context_eval/experiment_log.md` §6 |
 | Application (strategy-adoption) judge, ~28 blind labels | Never run | `../../memory_system/strategy_adoption/judge_validation_protocol.md` |
-| Owner session on the factual-error judge, 50–100 verdicts | Pending | `writeup/map.md`, "Evaluation hardening tasks" |
-| Owner checks of the silence readers and the rule-error readers, 30–50 items each | Pending, conditional | `writeup/map.md`, same section |
+| Owner session on the factual-error judge, 50–100 verdicts | Pending | `writeup/_planning/map.md`, "Evaluation hardening tasks" |
+| Owner checks of the silence readers and the rule-error readers, 30–50 items each | Pending, conditional | `writeup/_planning/map.md`, same section |
 | Owner hand check of the discussion-evidence judge | Not done | [llm_judge](../llm_judge/report.md) |
 | Reference-point keys for the day-summary, post-game and situation-summary judges | Planned only | `../llm_judge/golden_set_method.md` |
 | 20–30 hand labels on frozen merge outputs (fabrication) | Suggested | [dedup.md](dedup.md) |

@@ -2,7 +2,7 @@
 
 The record of how the server and the browser were designed, built and debugged, 2026-06-06 to
 2026-10-24. Indexed and brought up to date on 2026-10-26 by the frontend docs pass
-(`writeup/frontend_pass/`): status lines and dated notes where a document no longer matched the code,
+(`frontend/docs/frontend_pass/`): status lines and dated notes where a document no longer matched the code,
 the browser's design record, the deploy log, nine learning tutorials and the playbook. The status
 column below is as of that day.
 
@@ -107,5 +107,5 @@ rewritten. A *lesson doc* generalises for the owner. A *dated brief or audit* is
 
 | Document | What it is | Feeds |
 |---|---|---|
-| `../../writeup/server_talking_points.md` | The server as the owner would tell it in an interview, 2026-09-13; three answers rewritten 2026-10-26 for the October rulings and who wrote what | 2, 3, 4, 5, 6, 9 |
+| `../../interview_prep/server_talking_points.md` (private, gitignored) | The server as the owner would tell it in an interview, 2026-09-13; three answers rewritten 2026-10-26 for the October rulings and who wrote what | 2, 3, 4, 5, 6, 9 |
 | `../../evidence/gameplay/` | The gameplay record the ten-seat pass and the role sheet rest on | — |

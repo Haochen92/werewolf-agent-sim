@@ -92,7 +92,7 @@ Each brief lives at the top of its page file, with its Level 3 briefs beside it.
 ## Level 3 candidates (assessed 2026-10-25)
 
 Every plausible Level 3 candidate across the eight pages, assessed against the six selection criteria
-and two tests in [`../portfolio-level-3-writing-rubric.md`](../portfolio-level-3-writing-rubric.md),
+and two tests in [`../../.agents/skills/write-portfolio-page/references/portfolio-level-3-writing-rubric.md`](../../.agents/skills/write-portfolio-page/references/portfolio-level-3-writing-rubric.md),
 "Selecting a Level 3 page". The pool: the four earlier selections, the examples proposed in earlier
 passes, and implementation walkthroughs, which the rules now admit.
 

@@ -14,7 +14,7 @@ about 28,800 words.
 | `frontend/docs/server_encountered_challenges.md` (~2,200) | Journey log (debugging records), 2026-08-19, §7 added 2026-08-24 undated | All of §1 to §5 checked and current. Entries carry no dates and the LangGraph behaviour they rest on has no version pin. The talking points' failure story (events table leads the checkpoint) has no detailed home anywhere | 2, 5, 8; learning | Dates per entry, a version pin on §1, §3, §4. New entry §8 for the failure story (its one home) |
 | `frontend/docs/event_derivation.md` (~3,400) | Living spec, mirrored by `server/game/translate.py` and pinned by the goldens. Status line correct | One section contradicts its own 2026-10-11 ruling: the pacing channel's opening lines and the "Derived (night)" row still give the night denominator as the role census, and the stage list lacks the rounds | 1, 3, 6 | Light edit of those two passages only |
 | `frontend/docs/multiplayer-audit-2026-10-15.md` (~2,200) | Dated audit | Already in the plain form. No deploy status | 3, 4, 5, 7, 8, 9; learning (realtime_and_sync); playbook | Status line naming the deploy. Index entry |
-| `writeup/server_talking_points.md` (~1,000) | Interview prep, 2026-09-13, current in most answers | The "walks away" answer omits the solo suspension and the "gone" rule. The funding answer leans on the Vertex credit date. "How much of this did you write?" does not state the authorship as §8 requires | 2, 3, 4, 5, 6, 9 | Light edit of three answers |
+| `interview_prep/server_talking_points.md` (~1,000) | Interview prep, 2026-09-13, current in most answers | The "walks away" answer omits the solo suspension and the "gone" rule. The funding answer leans on the Vertex credit date. "How much of this did you write?" does not state the authorship as §8 requires | 2, 3, 4, 5, 6, 9 | Light edit of three answers |
 | `server/README.md` (~1,600) | Living map of `server/` | The layout table misses six modules and four tables added since 2026-09-15. "~170 tests" is stale (274 test functions on 2026-10-26). The "When the engine changes" table is the only correct account of the coupling alarms | 6; playbook | Light edit of the layout table; drop the test count; note the cron status |
 | `docs/agentic_ai_encountered_issues.md` (~1,700) | Journey log, production model issues, 2026-10-01 with dated updates 2026-10-22 | Entry 3 is headed "OPEN" and ends "Next: write the timing sheet". The sheet was written and the seat's-own-turn jump built; the general jump was not | 5, 7 | Dated status note on entry 3 |
 
@@ -315,7 +315,7 @@ about 28,800 words.
 - **Terms used before definition:** "Reveal's lock" (What is solid), "the ledger", "the dock" (8),
   "hold" and "the stage" (10), "the bar" (finding 3).
 
-### writeup/server_talking_points.md
+### interview_prep/server_talking_points.md
 
 - **Kind and status:** interview prep, one page of decision, reason and cost, 2026-09-13. Not a
   frontend doc, but the brief names it as a source for stories 2 and 5.

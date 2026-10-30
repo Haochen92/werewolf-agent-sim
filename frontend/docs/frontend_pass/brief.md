@@ -1,9 +1,9 @@
 # Frontend docs pass: brief for the scan
 
 Prepared 2026-10-26. The scan is READ-ONLY: nothing in `frontend/docs/` changes. Each area's scanner
-writes exactly one file, `writeup/frontend_pass/assessments/<area>.md`, and nothing else. The owner's
+writes exactly one file, `frontend/docs/frontend_pass/assessments/<area>.md`, and nothing else. The owner's
 decisions come after, in `proposal.md`, as the evidence pass did
-([`../report_pass/proposal.md`](../report_pass/proposal.md)).
+([`../../../evidence/report_pass/proposal.md`](../../../evidence/report_pass/proposal.md)).
 
 ## 1. Why the folder is being scanned
 
@@ -79,7 +79,7 @@ the playbook, or nothing. The spine, ranked:
    the seat off first; interrupts once per nesting level; the engine redoes AI votes after a human
    answers (last-write-wins tally); cached and uncached twin nodes; the cache key from pickle vs
    canonical JSON; announcing a turn before its step ends. Sources: server_encountered_challenges
-   §1 to §5; transport §8b; writeup/server_talking_points.md.
+   §1 to §5; transport §8b; interview_prep/server_talking_points.md.
 3. *The information boundary on the wire.* Four audience tiers; whole-event filtering per
    connection at send time; audience never on the wire; role-tagged variants rejected; the X-ray is
    one boolean at game over; the side channels (status last_seq, the refusal message, night
@@ -110,7 +110,7 @@ the playbook, or nothing. The spine, ranked:
    destroyed only on a definite refusal. Sources: transport §6b; challenges §7; multiplayer 11.
 9. *A public AI demo that is not bankrupted or abused.* The house cap from the games table; the
    admin kill switch; BYOK key lifecycle; the draft cap raced across an await. Sources:
-   server_design_notes §13; multiplayer finding 4; writeup/map.md blocks 99 and 101.
+   server_design_notes §13; multiplayer finding 4; writeup/_planning/map.md blocks 99 and 101.
 
 **Tier 3, optional Level 3 page**
 
@@ -199,7 +199,7 @@ For every file in the area, record:
 
 ## 10. Output format
 
-Mirror `writeup/report_pass/assessments/gameplay.md`: a summary table (document, kind and status,
+Mirror `evidence/report_pass/assessments/gameplay.md`: a summary table (document, kind and status,
 main issue, feeds, proposed action), then a per-document section, then an area-level section
 (overlaps with one home each, placement unclear, a constraint check against §8, and the area's
 contribution to §6 or §7 where assigned). Plain prose per the style guide: no em-dashes, terms
@@ -221,7 +221,7 @@ at the end.
 
 **Area A, the server side (chapter C's spine):** `server_client_transport.md`,
 `server_design_notes.md`, `seat_continuity.md`, `server_encountered_challenges.md`,
-`event_derivation.md`, `multiplayer-audit-2026-10-15.md`, `writeup/server_talking_points.md`,
+`event_derivation.md`, `multiplayer-audit-2026-10-15.md`, `interview_prep/server_talking_points.md`,
 `server/README.md`, `docs/agentic_ai_encountered_issues.md`. Stories 1 to 6, 8, 9. Code for currency:
 `server/game/` (game_session, entitlement, seat_clocks, translate, live_game_registry),
 `server/routes/`, `server/schemas/events.py`, `server/housekeeping/`.

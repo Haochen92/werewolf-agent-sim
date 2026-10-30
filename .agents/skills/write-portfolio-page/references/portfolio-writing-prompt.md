@@ -6,7 +6,7 @@ consistency; it does not guarantee identical prose or replace factual review.
 
 This is an authoring prompt, not a Codex skill or a publication instruction. The workflow that applies
 it to a whole page (frame, outline, draft, cold editorial read, claims check) is the
-`write-portfolio-page` skill in [`.agents/skills/write-portfolio-page/`](../.agents/skills/write-portfolio-page/SKILL.md),
+`write-portfolio-page` skill in [`.agents/skills/write-portfolio-page/`](../SKILL.md),
 shared by Codex and Claude Code.
 
 ## How to use it
@@ -28,7 +28,7 @@ For this project's current task:
 
 - Structure: the chapter's `content_plan.md` and the brief at the top of the target page's file
   (for Evaluation, `writeup/evaluation/`).
-- Constraints and corrections: the chapter outline in `writeup/map.md`, including its "Handle with care"
+- Constraints and corrections: the chapter outline in `writeup/_planning/map.md`, including its "Handle with care"
   list, which is a required input: it names what stays off the page.
 - Evidence: the method reports and the more specific records cited in the page brief.
 - References: Level 1, `writeup/evaluation/evaluation.md`; Level 2,
@@ -73,7 +73,7 @@ READING STRUCTURE
   gives its main finding and essential scope before linking to a Level 2 page.
 - Level 2 develops one subject through an opening, connected subsections and one featured story, with
   exhibits inside the explanation. Its layout, length and review rubric are in the Level 2 prompt
-  (`writeup/portfolio-level-2-writing-prompt.md`); use that prompt for Level 2 work.
+  (`.agents/skills/write-portfolio-page/references/portfolio-level-2-writing-prompt.md`); use that prompt for Level 2 work.
 - Level 3 is optional technical depth or a focused investigation. It adds something distinct, a method,
   an analysis or an exhibit; it is not a longer restatement of the parent. Layout: an opening that says
   what question the investigation settles and why it mattered, then the setup, the method (including any
@@ -140,7 +140,7 @@ WRITING STYLE
   wording when it is itself evidence, and never present a paraphrase as a direct quote.
 - Check cohesion after editing: can the reader explain why each paragraph follows the previous one?
   Fix missing reasoning or an unnecessary detour rather than merely adding transition words. The
-  investigation-specific guidance is in writeup/portfolio-level-3-writing-rubric.md.
+  investigation-specific guidance is in .agents/skills/write-portfolio-page/references/portfolio-level-3-writing-rubric.md.
 - For a Level 1 summary, usually use two short paragraphs: the question and approach, then the example,
   finding and implication. An incident may open the section when that is clearer. Do not make every
   section use the same sentence pattern.

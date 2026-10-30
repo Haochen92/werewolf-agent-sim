@@ -202,7 +202,7 @@ kinds recur here:
 Outside these, code loses. A keyword count of meaning said 32 summaries named a quiet player, and
 reading the matches found 4 of 124 (below, failure modes). A regex agreed with the model's addressee
 tags on 63% of 30 cases, so tagging went to the model
-(`../../writeup/lessons/deterministic_where_reliable.md`). The prose leak pass is substring
+(`../../interview_prep/lessons/deterministic_where_reliable.md`). The prose leak pass is substring
 matching, so a paraphrased leak passes ([`deterministic_audits/`](deterministic_audits/report.md)).
 
 **2. When a model screens for a human, set it to catch too much.** A screener makes two errors: a false
@@ -345,7 +345,7 @@ Read across all the spokes, five findings recur, plus a short list of named fail
 - **A frozen transcript hides the trajectory.** The checkpoint replay could not reproduce the v7 store's
   abstain cascade: abstains ran 12–18% on frozen turns against 31% in live games.
 
-**The cheapest upgrades.** All are on the owner's pending list (`writeup/map.md`, "Evaluation hardening
+**The cheapest upgrades.** All are on the owner's pending list (`writeup/_planning/map.md`, "Evaluation hardening
 tasks"), and none is scheduled:
 1. One owner labelling session on 50–100 bench verdicts. It calibrates the judge that every prompt and
    model change goes through. A double-read and an owner slice of the silence-calibration readers would
@@ -481,7 +481,7 @@ embedding canary was built on 2026-07-02, superseding the July line that alias d
 |---|---|---|---|---|---|
 | Batch leak checks | `tests/leak_test.py` (`run_leak_tests`, `leak_inputs`); wired in `scripts/run_batch.py` and the capture runners | `agent_boundaries/report.md` §3–5, `experiment_log.md`, `leakwire_smoke.log`, `leakfix_smoke.log` | both | ✅ | **new**. Nine checks per game. One true positive (109 → 0, 2026-06-06). Three checkers were no-ops on live games until 2026-10-14 |
 | Payload leak tests | `tests/engine/test_{round,night}_payload_leaks.py`, `test_wolf_channel_day_visibility.py`, `test_night_whiff_disclosure.py` | `agent_boundaries/report.md` §3, §5 | 10 | ✅ | **new**. Each plants a leak and asserts the check catches it |
-| Served-game leak audit | `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`; `tests/server/test_leak_audit.py` | `agent_boundaries/report.md` §3, §5; `server/README.md`; cron status `writeup/map.md` | 10 | 🟡 | **new**. Built and tested. The cron was found not installed on 2026-10-23 (no crontab entry, no log); no served game is known to have been audited |
+| Served-game leak audit | `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`; `tests/server/test_leak_audit.py` | `agent_boundaries/report.md` §3, §5; `server/README.md`; cron status `writeup/_planning/map.md` | 10 | 🟡 | **new**. Built and tested. The cron was found not installed on 2026-10-23 (no crontab entry, no log); no served game is known to have been audited |
 | Information-fidelity pins | `tests/engine/test_information_fidelity.py` | `gameplay/discussion_evidence.md` §6.4–6.5; `evaluation/factual_errors/experiment_log.md` §8 | 10 | ✅ (narrow) | **new**. Module docstring on held drafts is stale; the test asserts the current rule |
 | Deduction soundness, random nights | `tests/engine/deduction/test_{own_results,public_events,candidates,conditionals}.py`; `tests/factories/{random_nights,random_claims}.py` | `gameplay/deduction/report.md` §2, §4; `gameplay/deduction/deduction_catalogue.md` "Build verification", "Build status" | 10 | ✅ | **new**. 20,000 nights per test at fixed seeds. Mutation checks at build were one-time |
 | Brute-force oracle and metamorphic leak test | `tests/factories/role_assignments.py`; `test_candidates.py`, `test_own_results.py`, `test_role_traits.py` | same | 10 | ✅ | **new**. Oracle and engine share the written rules, so a fact neither encodes is invisible to both |
@@ -538,7 +538,7 @@ Spoke: [`labeling/sampled_reads/report.md`](labeling/sampled_reads/report.md). R
 
 | Instrument | Code | Record | Game | Mark | Since July / notes |
 |---|---|---|---|---|---|
-| Case sampler | `evaluation/src/diagnosis/sampler.py`; `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`); `tests/evaluation/test_diagnosis_sampler.py` | `evaluation/labeling/sampled_reads/{plan.md,sampler_smoke/}`; `writeup/triage.md` row 68 | 9 | unrated (built, tested, never used) | **new**: the July "planned build" (below), built 2026-07-02. `assert_outcome_blind` raises on outcome-named signals |
+| Case sampler | `evaluation/src/diagnosis/sampler.py`; `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`); `tests/evaluation/test_diagnosis_sampler.py` | `evaluation/labeling/sampled_reads/{plan.md,sampler_smoke/}`; `writeup/_planning/triage.md` row 68 | 9 | unrated (built, tested, never used) | **new**: the July "planned build" (below), built 2026-07-02. `assert_outcome_blind` raises on outcome-named signals |
 | Blind packet reads | runners in `evaluation/experiments/`: `silence_calibration`, `evil_cover_screen`, `voice_rewrite_screen`, `persona_line_screen`, `visit_wording_cases`, `note_prompt_cases`, `deduction_placement_screen` | their `gameplay/data/` and `gameplay/deduction/data/` folders (packets, keys, verdicts) | 10 | 🟡 | **new**. One reader per item; agreement never measured; no owner calibration |
 | Phase 3 hand-read games | `evaluation/experiments/phase3_render_transcript.py` | `gameplay/data/phase3_reads/README.md` | 10 | 🟡 failure modes · ⚠️ counts | **new**. Not blind; rubric and reader reports not kept |
 | Discussion-quality gate | `evidence/gameplay/discussion/quality_gate/scripts/metrics.py` (study code in the record) | `gameplay/discussion/quality_gate/{experiment_log,rubric}.md` | eight-seat | 🟡 structural claim · ⚠️ deltas | **new**. Read by the implementer, arm known |
@@ -710,7 +710,7 @@ Spoke: [`model_admission/report.md`](model_admission/report.md) (untracked on 20
 
 | Record | Code | Record | Status |
 |---|---|---|---|
-| Discussion tagger | `evaluation/src/loop/discussion_tagger.py`; `evaluation/src/cli_runner/discussion_tagger_eval.py` (`eval-tagger`); `evaluation/src/instrument_validation/tagger/{tagger_validation,tagger_effectiveness}.py` | `evaluation/llm_judge/discussion_tagger.md` (moved 2026-10-23); `memory_system/v7/experiment_log.md` §12g | **retired**. 🟡 as recorded in July. Credit mode deleted 2026-07-13 (`evaluation/src/loop/driver.py:373`, "since the tagger mode's retirement"); runs in no game; out of the write-up (owner, 2026-10-22, `writeup/map.md`). Its report's consumer table is stale and is left as a record |
+| Discussion tagger | `evaluation/src/loop/discussion_tagger.py`; `evaluation/src/cli_runner/discussion_tagger_eval.py` (`eval-tagger`); `evaluation/src/instrument_validation/tagger/{tagger_validation,tagger_effectiveness}.py` | `evaluation/llm_judge/discussion_tagger.md` (moved 2026-10-23); `memory_system/v7/experiment_log.md` §12g | **retired**. 🟡 as recorded in July. Credit mode deleted 2026-07-13 (`evaluation/src/loop/driver.py:373`, "since the tagger mode's retirement"); runs in no game; out of the write-up (owner, 2026-10-22, `writeup/_planning/map.md`). Its report's consumer table is stale and is left as a record |
 | Hardening pass | — | `evaluation/hardening_pass/{report,experiment_log}.md` | dated record (2026-07-02, interim). Its fixes are rated where they now live |
 | Archive | `evaluation/src/archive/{legacy_cases,legacy_retrieval_judge,eval_retrieval_v1,situation_summary_model_comparison,dedup_model_comparison,per_role_extraction,pairwise_extraction,pairwise_extraction_prompts}.py` | — | superseded; do not import live |
 | Labelling and training structure (2026-06-29) | `training/` at the repo root; `evaluation/src/labeling/` | `evaluation/labeling/report.md` §1 | dated note: `training/` left `evaluation/` because it trains models rather than judging cases. `auto_dedup_labeler` was folded into the engine and adapter path (byte-identical prompts over 232 cases). `merger.merge` was retired after the staged pipeline showed it had never composed. Parked |

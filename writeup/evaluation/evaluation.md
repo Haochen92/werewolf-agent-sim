@@ -3,7 +3,7 @@
 Level 1 page copy. The chapter's structure is in [`content_plan.md`](content_plan.md); each Level 2 page
 has its own folder here, with its Level 3 pages beside it; exhibits and where they come from are in
 [`exhibits/source_map.md`](exhibits/source_map.md). The writing rules and the handle-with-care list are in
-[`../map.md`](../map.md), "Chapter outline: Evaluation". Lines marked **Exhibit**, **Link** and
+[`../_planning/map.md`](../_planning/map.md), "Chapter outline: Evaluation". Lines marked **Exhibit**, **Link** and
 **Evidence** are specs for the page, not page copy.
 
 ---

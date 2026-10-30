@@ -3,8 +3,8 @@
 Editorial assessment, 2026-10-26. This maps the gameplay and orchestration evidence onto portfolio pages.
 It is not page copy, and it does not claim that the pages exist. The model it follows is
 [`../evaluation/content_plan.md`](../evaluation/content_plan.md). The starting arrangement was chapter 1
-of [`../structure_proposal.md`](../structure_proposal.md) (v2). The evidence is the map's blocks 102–139
-and 165 ([`../map.md`](../map.md)), checked against the reports they cite.
+of [`../_planning/structure_proposal.md`](../_planning/structure_proposal.md) (v2). The evidence is the map's blocks 102–139
+and 165 ([`../_planning/map.md`](../_planning/map.md)), checked against the reports they cite.
 
 **Revised 2026-10-26, after the owner reorganised the chapter page.** The chapter page is now one
 narrative: the game in plain words, then five sections, each a requirement the game places on a system
@@ -506,7 +506,7 @@ reliability (execution mechanics) without claiming exactly-once execution.
 ## Level 3 candidates (assessed 2026-10-26)
 
 Every plausible Level 3 candidate from blocks 102–139 has been assessed against the six criteria and two
-tests in [`../portfolio-level-3-writing-rubric.md`](../portfolio-level-3-writing-rubric.md), "Selecting a
+tests in [`../../.agents/skills/write-portfolio-page/references/portfolio-level-3-writing-rubric.md`](../../.agents/skills/write-portfolio-page/references/portfolio-level-3-writing-rubric.md), "Selecting a
 Level 3 page". Each candidate is anchored in a Level 2 subsection that covers the same finding.
 
 | Level 3 page | Anchoring subsection |

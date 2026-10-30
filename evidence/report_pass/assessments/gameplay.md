@@ -83,7 +83,7 @@ Keep it whole. Add this as a header block. The "Feeds" column names the componen
     - §3 opens with "372 tests". The deterministic_audits exemplar names tests and never counts them, because the suite is AI-written and unaudited.
     - §4 "The levers tried before code" welds four experiments into one paragraph. Split it per lever.
     - §4 "The evil side": the report's own numbers show that the card text alone moved claims from 13 to 33 and denials from 21 to 3, and the engine's lines added 33 → 44 and 3 → 0. The 8 paired games bundle both. As placed, the reader credits the engine with a role-card intervention.
-  - `writeup/map.md` line 635 says record inconsistencies are "listed in the report's review note". The report has no review note.
+  - `writeup/_planning/map.md` line 635 says record inconsistencies are "listed in the report's review note". The report has no review note.
 - **Suspected stale mechanisms:**
   - Checked `DeductionMode = Literal["off","record","public","full"]` (`Agents/schemas/deduction.py:20`), the per-side override (`Agents/config/run.py:71`), `verified.py` and `render.py` in `Agents/deduction/`, and the `{deduction_seat_before_note}` slot ahead of memory in `Agents/prompts/memory/context.py`. The report matches all of them.
   - The catalogue's Build status slice 2 ("off / record / full") is stale against the code and the report.

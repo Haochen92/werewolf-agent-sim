@@ -186,7 +186,7 @@ where a label needs judgment, the next step is a second reader and an owner-labe
 
 | What | Code | Record |
 |---|---|---|
-| Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/triage.md` (row 68); [log](experiment_log.md), Instrument 1 |
+| Case sampler | `evaluation/src/diagnosis/sampler.py`, `evaluation/src/cli_runner/diagnosis/case_sampler.py` (`eval-case-sample`), `tests/evaluation/test_diagnosis_sampler.py` | [`plan.md`](plan.md), [`sampler_smoke/`](sampler_smoke/), `writeup/_planning/triage.md` (row 68); [log](experiment_log.md), Instrument 1 |
 | Placement screen read | `evaluation/experiments/deduction_placement_screen.py` | `gameplay/deduction/data/deduction_placement{,_n10}/` |
 | Note-rewrite read | `evaluation/experiments/note_prompt_cases.py` | `gameplay/deduction/data/note_prompt/judging/`; `gameplay/deduction/experiment_log.md` §6 |
 | Silence calibration | `evaluation/experiments/silence_calibration.py` | [`silence_calibration/README.md`](../../../gameplay/data/silence_calibration/README.md) |

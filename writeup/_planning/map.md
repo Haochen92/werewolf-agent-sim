@@ -49,7 +49,7 @@ carries four fields:
   "Design principle", "debugging" and "honest gaps" are not standalone capability tags. A skill that collects enough blocks across topics may earn its own
   section at the end; otherwise it stays inside the topics it appeared in. The tags are also the
   evidence behind the hub's capability tags; they are not published wholesale.
-- **Exhibit form**, as in [`eval_exhibits.md`](eval_exhibits.md): **content** (prose, a number, a
+- **Exhibit form**, as in [`../evaluation/exhibits/eval_exhibits.md`](../evaluation/exhibits/eval_exhibits.md): **content** (prose, a number, a
   table on the page), **export** (an interactive piece fed by script-generated JSON), **link** (a
   replay on the live site or a folder or file on GitHub). A real example is always lifted from the
   record, never invented.
@@ -216,13 +216,13 @@ The earlier five-section, single-page outline is superseded.*
 
 **Title:** Evaluation: assessing the agents and the systems around them.
 
-The detailed [Evaluation content plan](evaluation/content_plan.md) assesses all 15 reports, recommends
+The detailed [Evaluation content plan](../evaluation/content_plan.md) assesses all 15 reports, recommends
 eight Level 2 pages in three chapter groups, and specifies their subsections, examples, exhibits,
 limits and optional Level 3 investigations. These are proposed content destinations, not built pages.
 Repository reports remain evidence underneath the portfolio at every level.
 
 **Writing rules for this chapter** (owner: style, clarity and ease of reading matter as much as content):
-- Use the [portfolio authoring prompt](portfolio-writing-prompt.md) for future drafts. The revised
+- Use the [portfolio authoring prompt](../../.agents/skills/write-portfolio-page/references/portfolio-writing-prompt.md) for future drafts. The revised
   Evaluation page is a provisional editorial exemplar until the owner approves it; the prompt includes
   a worked input/output example and a review checklist.
 - Use established technical terms when they identify the engineering precisely, explaining them in
@@ -300,7 +300,7 @@ Level 1 page has an introduction and eight sections, one per subject, each a sho
 finding ending in a link to its Level 2 page. The introduction carries a compact form of the hub's "Why
 evaluating an LLM system is different" table (four or five rows, each naming the section that answers it).
 The sections sit under three question subheadings, the hub's three questions; these are headings on the
-page, never pages or navigation items. The [existing draft](evaluation/evaluation.md) supplies the introduction and
+page, never pages or navigation items. The [existing draft](../evaluation/evaluation.md) supplies the introduction and
 an opening failure story; its quote pair, four-version table and diagnosis move to the first Level 2
 page as its featured story. The project overview gets a separate shorter introduction.
 
@@ -318,7 +318,7 @@ breadcrumbs back to Evaluation and previous/next links between subjects; they ar
 items.
 
 **Level 2:** complete subject pages, not summaries of source folders. Page-by-page outlines and the
-reason for every split or combination are in the [content plan](evaluation/content_plan.md).
+reason for every split or combination are in the [content plan](../evaluation/content_plan.md).
 
 **Level 3 selected candidates:** the metric-transfer study, the memory-search field audit, the model-panel
 label review and the paired baseline reanalysis. These remain portfolio pages with connected prose and
@@ -617,7 +617,7 @@ Folder walk: `tracing/` and `tracing/fingerprinting/` → done 2026-10-26, block
 ### Topic: factual errors, measuring and containing them (skill topic, provisional, opened 2026-10-22 as "hallucination"; renamed 2026-10-23 by the owner, with hallucination as one subtopic; "how do you deal with hallucination?" is a common interview question and the project has measured answers)
 
 *2026-10-25: this topic's blocks feed the Evaluation chapter's first Level 2 page, "Finding and fixing
-factual errors" ([content plan](evaluation/content_plan.md), page 1); it is not a separate page.*
+factual errors" ([content plan](../evaluation/content_plan.md), page 1); it is not a separate page.*
 
 A factual error is a statement the game record contradicts: a grounding failure, where what the agent
 says no longer matches the true state of the game. The project measured the symptom; causes were
@@ -716,12 +716,12 @@ after the backend. Listed here so the Organisation step draws on them.
 |---|---|
 | Agent orchestration (LangGraph interrupt and resume for human seats, checkpointing, the vote-cache key bug) | `frontend/docs/server_encountered_challenges.md` §1–6; `server_design_notes.md` §5 |
 | Auth (per-seat cookie tokens; why a cookie, since `EventSource` cannot set headers) | `frontend/docs/server_client_transport.md` §6b; `server_encountered_challenges.md` §7 |
-| Abuse limits (the daily house-game cap, 402 with Retry-After, the kill switch) | `writeup/server_talking_points.md`; `server_design_notes.md` §13 |
-| Durability and crash recovery (boot recovery from games row, events and checkpoint) | `writeup/server_talking_points.md`; `server_design_notes.md` §5c, §8, §11 |
+| Abuse limits (the daily house-game cap, 402 with Retry-After, the kill switch) | `interview_prep/server_talking_points.md`; `server_design_notes.md` §13 |
+| Durability and crash recovery (boot recovery from games row, events and checkpoint) | `interview_prep/server_talking_points.md`; `server_design_notes.md` §5c, §8, §11 |
 | Streaming (SSE + POST, `Last-Event-ID` resume, events not tokens) | `frontend/docs/server_client_transport.md` §2, §7, §9; page brief decision story 2 |
-| Backend API and concurrency (contract-first types with a drift test; one task per game; the 64-thread executor) | `writeup/server_talking_points.md`; `server_design_notes.md` §5, §5b, §9; transport §10 |
+| Backend API and concurrency (contract-first types with a drift test; one task per game; the 64-thread executor) | `interview_prep/server_talking_points.md`; `server_design_notes.md` §5, §5b, §9; transport §10 |
 | Data modelling and migrations (one game identity and one event log; 14 alembic migrations) | `server_design_notes.md` §8, §13 |
-| Human-in-the-loop (seat clocks, the agent plays a walked-away seat, drafts) | `writeup/server_talking_points.md`; `server_design_notes.md` §7; transport §6d, §8b |
+| Human-in-the-loop (seat clocks, the agent plays a walked-away seat, drafts) | `interview_prep/server_talking_points.md`; `server_design_notes.md` §7; transport §6d, §8b |
 | Frontend (stage, event fold, performance) | `frontend/docs/frontend_lessons.md`, `phone_lessons.md`; page brief decision story 3 |
 | Deployment (containers behind Caddy, migrations first, `:prev` rollback; Cloudflare buffering SSE) | `frontend/docs/build_plan.md` deploy entries; `server_encountered_challenges.md` §7 |
 
@@ -946,7 +946,7 @@ One line per session: date, folders walked, blocks added, passes done.
 - 2026-10-22: `extraction/observation_quality/` walked with the owner: §4 rebuilt around the four-box table (a loser's good move called positive 23% vs a winner's 83%), checked within every phase and faction ($0, from the stored rows), with the proxy argument stated plainly; blocks 13–14 rewritten, 81–84 filed; 83 linked to lesson 15. The confusion-matrix / equalized-odds view is parked for the page.
 - 2026-10-22: `extraction/situation_dimensions/` walked with the owner: §5 rewritten (three plain questions), a check found the first rewrite had dropped sample sizes and other details, all restored; "How they were chosen" added to §3; blocks 85–91. Style guide gained "Plain presentation" (six habits); the four-layer rule and the keep rule (key to today or uniquely skilled; inside a kept finding nothing lost) recorded in memory.
 - 2026-10-22: `extraction/situation_summary/` walked with the owner: block 92 (the core-dilemma field falsified) under retrieval, 93 (query-forward golden set and its unlabelled-as-zero trap) under golden-set construction, a gap line on 91. The 96-lookup gate read is parked for `memory_system/v8/`, its full source, with its plain framing.
-- 2026-10-22: the folder-by-folder read was too slow (about 5 hours for seven folders), so the remaining 38 folders were triaged instead: headless read-only passes wrote one card per folder, then a finding-level pass on the 17 multi-document folders (one card per sub-study, every finding listed, every file accounted for, checked by a script against the folders: 0 files missed; only the sealed blind-read sheets in `tell_extraction/` left unopened, on purpose). Result in `writeup/triage.md`: 68 cards, 38 KEEP, 18 MERGE, 12 SKIP, each with its candidate blocks. Owner ruling pending; KEEP folders are then walked block-first (confirm the candidate blocks, read only the sections behind blocks the owner will defend).
+- 2026-10-22: the folder-by-folder read was too slow (about 5 hours for seven folders), so the remaining 38 folders were triaged instead: headless read-only passes wrote one card per folder, then a finding-level pass on the 17 multi-document folders (one card per sub-study, every finding listed, every file accounted for, checked by a script against the folders: 0 files missed; only the sealed blind-read sheets in `tell_extraction/` left unopened, on purpose). Result in `writeup/_planning/triage.md`: 68 cards, 38 KEEP, 18 MERGE, 12 SKIP, each with its candidate blocks. Owner ruling pending; KEEP folders are then walked block-first (confirm the candidate blocks, read only the sections behind blocks the owner will defend).
 - 2026-10-22: triage rulings with the owner: card 26 (`day_replay/`) → MERGE as one instruments Gaps line (the middle rung of the evaluation ladder); card 27 (`memory_system/report.md`) → KEEP as the memory section's spine, Organisation decided (problem first, four beats per iteration); a dated correction note added to `memory_system/report.md` (the landing links to it): decisions not wins in June, compounding tested and diagnosed in July, the halo NOT a cause of the July result (credit was anti-halo by design, which is the flip side of the abstain gap). Block 94 (why the loop did not fix itself) filed under credit as the coda to 61.
 - 2026-10-22: triage card 34 (`v8/` E) ruled: block 95 (D1 town memory at night only, with D2 and the port audit as one clause) under retrieval. "Missing is not zero" (v7's retracted +0.41 lift, July credit's zero baseline, the 21 ported metrics) kept as the owner's own engineering note in `cross_project_synthesis/README.md`, NOT a page lesson (owner: it would lose to lessons 15, 16, 80 and "grade the decision").
 - 2026-10-22: triage card 38 (`model_selection/`) ruled MERGE as block 96 (one model per job by its binding constraint) in the cost topic, renamed "cost and latency".

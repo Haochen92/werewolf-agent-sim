@@ -1,7 +1,7 @@
 # Memory Type Ablation: Observations vs Strategy Points
 
 > **Write-up: not used. No detailed read needed.** Triage card 20 (SKIP): a judge-scored null whose
-> decision was later reversed; nothing in today's design comes from it ([triage](../../../writeup/triage.md)).
+> decision was later reversed; nothing in today's design comes from it ([triage](../../../writeup/_planning/triage.md)).
 
 ## In short
 

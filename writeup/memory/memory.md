@@ -1,7 +1,7 @@
 # Memory chapter (draft)
 
 Level 1 page copy, revised 2026-10-27 against the Evaluation and Game design and orchestration
-references. Claims are bounded by [`../memory_presented_set.md`](../memory_presented_set.md).
+references. Claims are bounded by [`memory_presented_set.md`](memory_presented_set.md).
 Lines marked **Link** are editorial specifications for the five planned Level 2 pages, not live links.
 The sources note at the end ties each claim to its record.
 
@@ -156,7 +156,7 @@ over time.
 **Link:** Testing whether memory helps — the pivotal comparisons, experimental limits and current
 validation gap. Planned Level 2: `testing_memory/testing_memory.md`.
 
-<!-- Sources, for checking each claim against the claims boundary (writeup/memory_presented_set.md).
+<!-- Sources, for checking each claim against the claims boundary (writeup/memory/memory_presented_set.md).
 Shortened L1 revision (2026-10-27): adopted the supplied concise narrative, restored the RL
 rule/model-change rationale, and placed the evidence-boundary statement before the results table.
 Longer explanations, including proposed human-curated lessons, retained in l2_drafting_material.md.

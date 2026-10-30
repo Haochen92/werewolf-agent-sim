@@ -392,7 +392,7 @@ that needed test results first are left out.
 - **No night turns in the nine-seat test set**, though July found night notes the worst surface.
 - **The readers' checks are from the Gemini era.** The current Claude Haiku 5.5 default has no recorded
   check against people. Calibrating the test set's judge on a blind, owner-labelled sample is the first item
-  on the owner's pending list ([`writeup/map.md`](../../../writeup/map.md)).
+  on the owner's pending list ([`writeup/_planning/map.md`](../../../writeup/_planning/map.md)).
 
 **Bottom line.** The only error rate on record is about 3% of public messages, nine-seat, July 2026, and
 its counts are floors. Everything since asks a narrower question, whether a change stopped a known

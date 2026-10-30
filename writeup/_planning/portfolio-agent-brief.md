@@ -20,7 +20,7 @@ The portfolio also needs chapter and detail routes. The owner's reading structur
 
 All selected explanations stay on the portfolio. Repository links provide supporting records and code;
 they are not Level 3 and must not be required to understand the work. For Evaluation, use
-[`evaluation/content_plan.md`](evaluation/content_plan.md) for the proposed eight subject pages and
+[`../evaluation/content_plan.md`](../evaluation/content_plan.md) for the proposed eight subject pages and
 selected deep dives. Do not turn its entire outline into one long project page.
 
 Suggested route pattern (publish only pages with reviewed content):
@@ -190,8 +190,8 @@ the AI-generated training scripts as implementation they deeply own. Emphasize u
 trade-offs and historical findings, not current production training expertise.
 
 **Authoring sources:**
-- `/home/ubuntu/projects/werewolf-agent-sim/writeup/eval_exhibits.md`
-- `/home/ubuntu/projects/werewolf-agent-sim/writeup/server_talking_points.md`
+- `/home/ubuntu/projects/werewolf-agent-sim/writeup/evaluation/exhibits/eval_exhibits.md`
+- `/home/ubuntu/projects/werewolf-agent-sim/interview_prep/server_talking_points.md`
 - `/home/ubuntu/projects/werewolf-agent-sim/evidence/credit/blindspot_fix/experiment_log.md`
   (research closure §⑥, reasoning-scope addendum §⑦)
 - `/home/ubuntu/projects/werewolf-agent-sim/evidence/memory_system/v8/README.md`

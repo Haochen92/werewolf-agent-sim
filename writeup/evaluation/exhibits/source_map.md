@@ -5,7 +5,7 @@ it is built from, and its state. Built exhibit files (images, JSON exports, tabl
 folder, named after the row's id. An exhibit is drafted only from the source listed, never re-derived;
 a number in the source that has been corrected since is taken from the correction.
 
-Forms, as in the project exhibit menu ([`../../eval_exhibits.md`](../../eval_exhibits.md)): **content**
+Forms, as in the project exhibit menu ([`eval_exhibits.md`](eval_exhibits.md)): **content**
 (a table, quote or number written into the page), **diagram**, **export** (an interactive piece fed by a
 script-generated JSON, stamped with the commit), **link** (a replay on the live site).
 
@@ -49,7 +49,7 @@ Paths are from the repository root.
 
 ## Related entries in the project exhibit menu
 
-The menu ([`../../eval_exhibits.md`](../../eval_exhibits.md)) spans the whole project, memory included.
+The menu ([`eval_exhibits.md`](eval_exhibits.md)) spans the whole project, memory included.
 Entries whose subject matches an Evaluation page, to check before building that page's exhibits:
 
 | Menu entry | Page |

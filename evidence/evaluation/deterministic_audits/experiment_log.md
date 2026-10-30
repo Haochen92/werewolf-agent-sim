@@ -47,7 +47,7 @@ for.
 - The leak checks also run inside the capture runners under `evaluation/experiments/`.
 - Everything else is a pytest test or a script that someone has to run.
 - The repository has no CI. The `.github/` folder does not exist. CI is on the owner's pending list in
-  [`writeup/map.md`](../../../writeup/map.md).
+  [`writeup/_planning/map.md`](../../../writeup/_planning/map.md).
 
 **State on 2026-10-23.** Every test file named in this file passed on the working tree that day. That
 tree carries uncommitted edits to `Agents/deduction/`. The deduction tests took about 8 minutes, mostly
@@ -230,7 +230,7 @@ server restart is captured only from the restart. Its row is marked partial, and
 **Code and record.** `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`,
 `tests/server/test_leak_audit.py`. Record: `agent_boundaries/report.md` §3 and §5, and
 `agent_boundaries/experiment_log.md` (the 2026-10-14 entry). The cron is on the owner's pending list
-(`writeup/map.md`).
+(`writeup/_planning/map.md`).
 
 ### 1d. Tests of what each player is told: ✅ (narrow)
 
@@ -876,7 +876,7 @@ stored, and which one synthesis reads is a setting (`TickConfig.synth_outcome`).
 
 ## What would make these stronger
 
-These are on the owner's pending list in [`writeup/map.md`](../../../writeup/map.md). They are not
+These are on the owner's pending list in [`writeup/_planning/map.md`](../../../writeup/_planning/map.md). They are not
 scheduled.
 
 - **Install the nightly `leak-audit` cron.** The line is in the module docstring. This would turn §1c from
@@ -893,7 +893,7 @@ the top open item in `agent_boundaries/report.md` §5. No plan for it was found.
 |---|---|---|
 | Batch leak checks | `tests/leak_test.py`; `scripts/run_batch.py` (wiring, `leak_check` field); capture runners in `evaluation/experiments/` | `evidence/agent_boundaries/report.md` §3–5; `experiment_log.md`; `leakwire_smoke.log`, `leakfix_smoke.log` |
 | Payload leak tests | `tests/engine/test_{round,night}_payload_leaks.py`, `test_wolf_channel_day_visibility.py`, `test_night_whiff_disclosure.py` | `agent_boundaries/report.md` §3, §5 |
-| Live-site leak audit | `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`, `tests/server/test_leak_audit.py` | `agent_boundaries/report.md` §3, §5; `server/README.md`; cron status: `writeup/map.md` (checked 2026-10-23) |
+| Live-site leak audit | `server/housekeeping/leak_audit.py`, `server/storage/prompt_captures.py`, `tests/server/test_leak_audit.py` | `agent_boundaries/report.md` §3, §5; `server/README.md`; cron status: `writeup/_planning/map.md` (checked 2026-10-23) |
 | What each player is told | `tests/engine/test_information_fidelity.py` | `evidence/gameplay/discussion_evidence.md` §6.4–6.5; `../factual_errors/experiment_log.md` §8 |
 | Deduction soundness and exhaustive check | `tests/engine/deduction/`; `tests/factories/{random_nights,random_claims,role_assignments}.py` | `evidence/gameplay/deduction/report.md` §2, §4; `deduction_catalogue.md` "Build verification", "Build status" |
 | Acceptance cases | `tests/engine/deduction/test_acceptance.py` | `deduction_catalogue.md` "Acceptance cases" |

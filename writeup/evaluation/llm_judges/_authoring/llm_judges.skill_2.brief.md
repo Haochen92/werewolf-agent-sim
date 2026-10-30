@@ -5,10 +5,10 @@ Page: `writeup/evaluation/llm_judges/llm_judges.skill_2.md` · Level 2 · starte
 Authoring material, not page copy. The cold editorial reviewer never sees this file.
 
 Trial run of the write-portfolio-page skill (second version, copy without example C), steps 1–3 only.
-Inputs read: `writeup/portfolio-writing-prompt.md`, `writeup/portfolio-level-2-writing-prompt.md`, the
+Inputs read: `.agents/skills/write-portfolio-page/references/portfolio-writing-prompt.md`, `.agents/skills/write-portfolio-page/references/portfolio-level-2-writing-prompt.md`, the
 skill's `voice.md`, `examples.md`, `page_types.md`, both reviewer prompts; example B's page copy
 (`evidence_design.md`, closest: an approach tested by evidence); the chapter page and the parent excerpt
-(`parent_context.py`); `writeup/evaluation/content_plan.md`; `writeup/map.md` "Chapter outline:
+(`parent_context.py`); `writeup/evaluation/content_plan.md`; `writeup/_planning/map.md` "Chapter outline:
 Evaluation" with its Handle-with-care list; the exhibits source map; the original brief and sources comment
 (packet). The chapter has no `editorial_notes.md`. Other versions of this page were not read.
 

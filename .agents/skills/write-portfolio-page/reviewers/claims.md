@@ -6,10 +6,10 @@ WHAT TO READ
   the end, which maps claims to evidence.
 - The authoring brief named below, if it exists: its Frame, Evidence selection and Open questions.
 - The evidence the sources comment and the brief cite. Follow links into `evidence/` as needed.
-- The evidence rules in `writeup/portfolio-writing-prompt.md` (sections EVIDENCE DISCIPLINE and WHAT
+- The evidence rules in `.agents/skills/write-portfolio-page/references/portfolio-writing-prompt.md` (sections EVIDENCE DISCIPLINE and WHAT
   STAYS OFF THE PAGE) and, for a Level 2 or 3 page, the section CAUSAL AND EVIDENTIAL PRECISION in
-  `writeup/portfolio-level-2-writing-prompt.md`.
-- The chapter's outline in `writeup/map.md`, including its "Handle with care" list where one exists.
+  `.agents/skills/write-portfolio-page/references/portfolio-level-2-writing-prompt.md`.
+- The chapter's outline in `writeup/_planning/map.md`, including its "Handle with care" list where one exists.
 
 WHAT TO CHECK
 Consequential claims, the ones whose failure would mislead a reader about how the system works or

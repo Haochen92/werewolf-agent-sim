@@ -5,7 +5,7 @@ scoring step gives its reason and its limits; the baseline reasoning, matching b
 sit in step 3, with the June table in the baseline L3; the July abstention case moved to its own L3, one
 sentence kept in step 2; the page closes with limitations, what remains open, and where credit runs.
 **Link (Level 3)** specifies a planned investigation. Claim scope is recorded in
-[`../../memory_presented_set.md`](../../memory_presented_set.md).
+[`../memory_presented_set.md`](../memory_presented_set.md).
 
 ---
 

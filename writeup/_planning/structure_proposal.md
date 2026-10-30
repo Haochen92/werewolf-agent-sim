@@ -1,11 +1,11 @@
 # Proposed structure for the portfolio write-up (v2)
 
 Status: second version, 2026-10-26, after one external review and the owner's corrections. Not yet
-adopted. Once agreed, it goes into `writeup/map.md` "Organisation" as the starting arrangement, and
+adopted. Once agreed, it goes into `writeup/_planning/map.md` "Organisation" as the starting arrangement, and
 each chapter gets a content plan like `writeup/evaluation/content_plan.md`. Subsections below are
 first cuts; a chapter's content plan tests them against the map's blocks.
 
-## The model this follows (agreed earlier; `writeup/map.md`, "The model", "Page levels")
+## The model this follows (agreed earlier; `writeup/_planning/map.md`, "The model", "Page levels")
 
 - **Topics.** A topic is a component, or a skill broad enough that no single component owns it.
 - **Segments.** Every topic is told through five: Problem, Design, Verification, Case study (holding
