@@ -1,5 +1,52 @@
 # Cost and latency: portfolio content plan
 
+## Current direction — owner-approved, 2026-10-30
+
+The chapter is a **self-contained L1 with optional L3 investigations**, without required L2 pages.
+The owner approved a longer explanation (roughly 1,500–2,000 words) so a reader can understand the
+workload, choices and trade-offs without following a depth link. Draft: [cost_and_latency_codex.md](cost_and_latency_codex.md).
+
+The explanatory order is:
+1. What creates the bill: repeated decisions, substantial context, generated assessments and supporting calls.
+   Aim for inexpensive, responsive games with useful agent behaviour; lead with the owner-reported frontend averages, then a separate memory-on reference. Record frontend sample counts and memory setting before publication.
+2. Where the human waits: overlap with presentation, then sequential dependencies and measured stage waiting.
+3. Model and thinking choices by job: task quality, price and response time; selected replay evidence.
+4. Shared prompt input: layout, verified reuse, and the difference between input savings and the total bill.
+5. Workload limits: summaries, discussion caps and repetition checks, with their gameplay trade-offs.
+6. Offline work: discounted batches, the retry/cache-write investigation, and undeployed local-model exploration.
+
+Optional L3 candidates, not yet drafted:
+- **Making prompt caching work across providers**: cache boundaries, thresholds, schema interactions and probes.
+  *Owner 2026-10-31:* this is also the home of the output-mode finding, told as a consequence of implementing
+  caching: the enforced schema was dropped on 2026-10-14 so votes and night actions could share the cache; two
+  weeks later a replay pinned to the enforced mode disagreed with live play (the healer turn's read 2 of 10
+  enforced → 8 of 10 live with the engine on; the vote cases re-run in the live mode lifted both thinking
+  levels). One turn and 16 vote cases, one model; zero reported reasoning tokens do not show no reasoning
+  happened. The L1 keeps one clause where it names the two modes. Sources: `caching/experiment_log.md` §12;
+  `gameplay/deduction/experiment_log.md` §8–9; `Agents/llm_factory/catalog.py` notes. Chapter 3 only links.
+  (A note placed on the superseded L2-2 row below the same day is left as a record; this is the live ruling.)
+  *Owner 2026-10-31, later:* the field-order episode (Haiku kept the text schema's order on 15 of 24 real
+  turns, 24 of 24 once the schema matched the prompt's opening line) comes off chapter 3's page 3 and is
+  NOT added here either: an exposed bug and its repair, whose lessons (instruction position; trials pass
+  where real turns fail) this page and chapter 3 already tell. Record only: `caching/experiment_log.md`
+  §12. The drafted L3's sources comment says the episode is told on page 3; change that to "off every
+  page" when the page is next edited.
+- **Measuring when the stage waits**: reconstruction from traces and the backlog assumptions.
+- **Why a discounted batch exceeded its estimate**: accounting, cache writes and retries.
+
+Keep exhaustive logs and cost-accounting details in evidence. Use existing chapter links for conversation,
+context engineering and model admission rather than duplicating their mechanisms. Do not create empty L2
+pages to preserve the earlier hierarchy. A cross-model repricing exhibit is deferred until rates and a
+common workload are verified; it must be labelled an illustration, not a measured alternate-model game.
+
+The former plan below is retained as a source inventory and historical proposal. Its four-L2 hierarchy
+and older thinking-effort figures are superseded. The current draft uses the October 30 live-mode vote
+replay in deduction/experiment_log.md section 9; the earlier discussion replay remains separately labelled.
+
+---
+
+## Previous plan (superseded structure; source inventory retained)
+
 Status: candidate plan, 2026-10-29, from a subagent pass checked against the record. The owner chose to keep the default recommendations for now and review all plans later; nothing here is approved. The open questions at the end stay listed; the defaults taken are below.
 
 ## Defaults taken (owner 2026-10-29: keep the recommendations for now)
@@ -179,7 +226,7 @@ against the bill or the stage, not assumed.
 | # | Level 2 page | Starting pages merged | Why it deserves a page | Featured story | Exhibits |
 |---|---|---|---|---|---|
 | L2-1 | **What a game costs, and how it is counted** | "What a game costs", plus cost accounting from `caching/report.md` §5 | A cost claim is only as good as its counting. The page has distinct decisions: record tokens, not dollars, priced at read time from dated rows; price writes at their premium; split by call type; estimate an unplayed model by repricing tokens, and say what that cannot tell. It also explains why costs from different runs do not compare | The 2026-10-12 read that made memory lookups look like 40% of a Haiku game: two holes found and fixed (`caching/experiment_log.md` §10). In the two later games lookups were 16% and 21% **[re-derived]**; that fall mixes the tracing correction with a real saving, and the page says so | One game's bill by call type; a per-model table whose columns are the configuration (model, seats, memory, date, measured or estimated); the Opus estimate with its caveats |
-| L2-2 | **Sharing the transcript: the prompt-cache layout** | "The prompt-cache layout" (as proposed) | A per-provider contract (table). The layout resolves a tension: what every seat shares against a seat's own next turn (77% against 90% read). An enforced output schema is part of the cache key (cost side only; validation is chapter 1, page 4). It was verified by provider probes, paired games and a factual-error bench, and it had a side effect on behaviour | Paired games: Luna −28% per call; Haiku unchanged; Haiku's participation (openings 7–8% → 23–26%; free turns 20–35% → 53–54%) and the owner's ruling to keep it | Provider table; the prompt rendered before and after with the cache boundary marked (old render from tag `prompt-layout-baseline`); the paired-games table |
+| L2-2 | **Sharing the transcript: the prompt-cache layout** | "The prompt-cache layout" (as proposed) | A per-provider contract (table). The layout resolves a tension: what every seat shares against a seat's own next turn (77% against 90% read). An enforced output schema is part of the cache key (cost side only; validation is chapter 1, page 4). It was verified by provider probes, paired games and a factual-error bench, and it had a side effect on behaviour. **Owner 2026-10-31:** this page also tells the output-mode finding as a consequence of the caching implementation: the enforced schema, dropped on 2026-10-14 so votes and night actions could share the cache, had left Haiku with no reported reasoning tokens in some samples; found two weeks later when a replay pinned to the enforced mode disagreed with live play (healer turn read 2 of 10 enforced → 8 of 10 live, engine on; the vote cases re-run in the live mode lifted both thinking levels). One turn and 16 vote cases, one model; zero reported tokens do not show no reasoning happened. Sources: `caching/experiment_log.md` §12; `gameplay/deduction/experiment_log.md` §8–9; `Agents/llm_factory/catalog.py` notes. Chapter 3 only links | Paired games: Luna −28% per call; Haiku unchanged; Haiku's participation (openings 7–8% → 23–26%; free turns 20–35% → 53–54%) and the owner's ruling to keep it | Provider table; the prompt rendered before and after with the cache boundary marked (old render from tag `prompt-layout-baseline`); the paired-games table |
 | L2-3 | **Moving work out of the game: offline batch extraction** | "Batch and offline work" | A design decision with two motives: latency (never in a player's wait) and cost (discounted batch pricing on eligible requests). Then a diagnosis of where batch and cache interact: the schema as cache key, the warming call, retry writes, the 15% miss rate. Also: why a Vertex batch was not built (its batch and cache discounts do not stack), and the synthesis saving, to order of magnitude only | The run that cost twice its estimate, in two stages: the $2.69 check, then the $19.99 run | The three-row cost breakdown; optional figure of one shared prefix with about 30 short tails (block 74) |
 | L2-4 | **Choosing a model for each job, and keeping the stage ahead** | "Model choice by job" + "Stage fit" | Each part alone is thin. Model choice is one design block (map 96; the triage ruling allows at most one), and stage fit, standing alone, would duplicate Evaluation's admission subsection. Together they answer "why these models": the per-job constraint is the design, and stage fit is the measurement behind the seat's constraint. Also covered: thinking level as a per-job setting (seats low; summary medium with a 90 s budget; votes at medium still undecided); public benchmarks used to shortlist, never to select; the vendor in each slot follows the budget | Where Haiku makes the stage wait (passes, the morning after a night chain), and the stage-side alternative not yet chosen | The job / binding constraint / today's model / evidence table; the waits-by-beat table |
 
