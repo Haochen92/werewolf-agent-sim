@@ -4,6 +4,8 @@ Status: candidate plan, 2026-10-29, from a subagent pass checked against the rec
 
 ## Defaults taken (owner 2026-10-29: keep the recommendations for now)
 
+- Owner ruling, 2026-10-30: page 4 owns the explanation of the deduction engine's information-boundary test: change hidden roles while holding the seat's visible information fixed and require identical deductions (metamorphic testing). Chapter 2 keeps only the fact that the engine consumes the selected seat payload. Link to Evaluation for the broader correctness checks.
+
 - Section 1's lead: the Sentinel who conceded a false rule (the invented check is already Evaluation's Level 1 example).
 - Candidate page 5 (prompting methods) is dropped as a Level 2 page; page 3 closes with a short pointer paragraph.
 - The Group B intro goes on the overview page, above the group's chapter cards, reworded without "pre-registered".
@@ -12,8 +14,19 @@ Status: candidate plan, 2026-10-29, from a subagent pass checked against the rec
 - Done 2026-10-29: Evaluation's factual-errors page no longer says the higher thinking budget was not adopted; that model runs at it by default. Links from Evaluation to pages 1–2 wait for Evaluation's reconcile pass.
 - The human contrast sits in the intro only.
 - The visit-wording replay (triage card 15) stays off page 4 until checked against `evidence/gameplay/data/visit_wording_ab/`.
+  *Checked 2026-10-31 against the README's arm C table: own report errors 6/40 → 2/40, replies 17/55 unchanged,
+  6 cases better and 2 worse; on page 4 as the second "first speaker, not the replies" instance, and one
+  sentence on the Level 1 (owner 2026-10-31). The authorship sentence comes off the Level 1; page 4 keeps one.*
 - Headings name the four responsibilities; the Level 1 figure (what a player reads on one turn, five categories) is included.
 - Revised 2026-10-29 after an outside review (owner approved): four responsibilities replace the diagnostic ladder; claim-ledger and healer wording corrected to the record; section 3 cut to one lead; a plain link to Memory, not the stale note; the figure grouped into five categories by author; the chapter-wide limit moved to the close.
+- Owner 2026-10-31: page 3 retitled "Making assessments explicit and testing how they shape decisions" and
+  reorganised around the purpose of Level 1's third section (the record to inspect, getting the assessment
+  into the answer, assessment before action, testing whether more helps, accidental cues, thinking effort).
+  Compare-candidates is its main test case; the night-1 lot is a separate failure class, not the featured
+  story. The cache layout is a link to chapter 6; the tactical-advice audit goes to notes; the pointer to the
+  same pattern in other calls is one sentence. Outlines: `_authoring/l2_outlines.md`.
+  *Later the same day:* retitled again to "Making the reasoning explicit: a structured chain of thought", matching the Level 1 heading, once the
+  compare-candidates test (the page's "testing" case) was dropped; the stem stays `turn_request`.
 - Card tags: Context engineering + Structured outputs and validation; Symbolic reasoning added once the owner is ready to explain the algorithm and its test limits.
 
 ---
@@ -195,6 +208,36 @@ beside the example they qualify; the intro does not open by defending every resu
 - **Authorship in one sentence:** the engine, solver included, was written by an AI coding assistant; my
   part was the requirement, the grading rule, the acceptance cases from real failures and the
   experiments. How its conclusions are tested is linked to Evaluation's code-checks page, not retold.
+- **Computed advice must respect the boundary too (owner 2026-10-30; moved here from chapter 2's draft).**
+  Chapter 2 now says only that the engine reads a view built from the seat's payload and points here.
+  This chapter explains how that boundary on the engine's *output* is tested. On Level 1, one or two
+  sentences (the question and the rule); the full explanation, with the table, on Level 2 page 4.
+  - The question differs from chapter 2's checks: not "was private information put in the wrong input?"
+    but "did the engine use hidden information when producing its advice?" Hidden information could
+    reach a prompt indirectly, through an ordinary-looking line of advice, without copying a prohibited
+    field such as the wolves' list. So checking private fields is not enough when a component can use
+    hidden facts to write advice; the engine receives only the seat's permitted information.
+  - The test: change the hidden roles while the seat's visible evidence stays fixed, and require
+    identical deductions. Illustration (owner's wording; not the state of a specific test):
+
+    | | Test state A | Test state B |
+    |---|---|---|
+    | Actual hidden wolf | Alice | Bob |
+    | Information available to the Investigator | Identical | Identical |
+    | Expected deduction | Alice or Bob could be the wolf | Alice or Bob could be the wolf |
+
+    If the engine identified Alice in state A and Bob in state B, its output would be responding to
+    information the Investigator should not have.
+  - Name it a **metamorphic test**: it specifies a relationship that must hold (unchanged visible
+    evidence → unchanged deductions when only hidden facts change), not the exact correct advice for each
+    state.
+  - Scope beside it (from chapter 2's claims review): tests of this kind cover each part of the engine
+    that writes into a prompt, on constructed game states and on random games with hidden information
+    planted into the input. They show independence from hidden information on the cases tested, not that
+    each deduction is correct (Evaluation's code-checks page). Phrase without first person: the engine
+    and its tests are AI-written. Sources: `tests/engine/deduction/test_candidates.py`
+    (`test_hidden_roles_the_seat_cannot_see_do_not_change_its_items`), `test_evil_seat.py`,
+    `test_covers.py` and siblings; `evidence/gameplay/deduction/report.md` §3–§4.
 - **Case: the roleblocked healer.** Only the Chanteuse could block it, and a block is a visit; another
   player reported the Chanteuse's likely visitor, who admitted the visit. The healer wrote every premise
   into its notes and never connected them. With the certain step injected, all 10 replays recorded that
@@ -263,7 +306,7 @@ Notes on the arrangement:
 ### Candidate page 5 ("Prompting methods across the project's model calls"): recommend no page
 
 - The owner ruled on 2026-10-27 that cross-project lessons get no page; each instance is told in its own
-  chapter (`interview_prep/lessons/README.md`). A methods overview is that kind of synthesis.
+  chapter (`evidence/_study/lessons/README.md`, moved from `interview_prep/` 2026-10-31). A methods overview is that kind of synthesis.
 - Its content already has homes: directional lean, presentation order and action-space reduction in the
   dedup prompts are told in chapter 4's Level 3 "How the deduplication judge was built" ("What moved the
   judge's accuracy"); rubric design and narrow judge questions in Evaluation's LLM-judges page;
@@ -411,11 +454,39 @@ this page.
   the two apart.
 - **27 of 27 record checks wrong** were judged by a model reading against the transcript and the record:
   "judged wrong".
-- **Field order.** Do not call it chain-of-thought or claim it changes internal reasoning (skills
-  inventory). The May evidence partly rests on 1–5 judge scores (4.00 → 4.38), the kind Evaluation's own
+- **Field order.** *Revised 2026-10-31 (owner, from the skills inventory ruling of 2026-10-30):* "an
+  explicit chain of thought, written as fields" may name the design; the limit is on the claim: the action
+  follows the written reasoning, not that the reasoning improved, and the hidden reasoning tokens are a
+  separate chain. *Was:* do not call it chain-of-thought or claim it changes internal reasoning. The May evidence partly rests on 1–5 judge scores (4.00 → 4.38), the kind Evaluation's own
   judges page says could not rank versions: avoid those numbers; prefer counts (verdict coverage 0.27 →
   0.97 by code; Haiku order kept 15/24 → 24/24, which is compliance, not quality). Today's order is
   untested for message quality.
+  *Owner 2026-10-31, two rulings on page 3's order section.* (1) The June reorder's threat-vote drop
+  (memory-off 0.40 → 0.26) is dropped from the chapter and page 3 entirely: its "reasoning" field was
+  the inherited strategy note on a layout without reads, and the prior note's content was never checked.
+  Keep the coherence result (vote-first 25% non-committal → 5% with note first plus verdicts) and the
+  July reads-placement trade-off (t2_results.md, T3). (2) The October field-order episode (15/24 →
+  24/24) leaves page 3 and goes on no page: it is a repair of a disagreement the text schema exposed, not
+  a design choice, and its lessons (instruction position; trials pass where real turns fail) are already
+  told elsewhere. Record only: `caching/experiment_log.md` §12. Page 3 states today's order in one line
+  and that it is untested for decision quality.
+  (3) The compare-candidates test (page 3's "Testing whether a fuller assessment helps") is dropped from
+  page 3: one game, many confounds, led nowhere. Record only (decision 9, discussion_evidence.md §8.7, map
+  block 150). The earlier plan lines naming it as section 3's lead or page 3's main case are superseded.
+  Page 3's title still says "testing how they shape decisions"; what remains under that word is the order
+  section and the thinking-effort section. Retitle is the owner's call.
+  (4) Page 3's "When the prompt supplies the answer" section is removed. Its two cases split by home: the
+  example cue becomes a short Level 1 section "When an example is read as a target" (no L2); the night-1
+  seat bias and the lot move to chapter 1's day-and-night page (engine behaviour). Page 3's last section is
+  retitled "What the explicit chain of thought costs" with the trade-off as its argument.
+  (5) Page 4 (deduction engine), owner's rulings after an outside review of the revised draft: restructure as
+  what it is / how it is implemented / how it is verified / limits and constraints, told by tier (record, public,
+  full, plus the evil side), each tier as the failure it answers and the behaviour wanted; the opening frames it
+  as what still failed after the chapter's other work, plus evil seats denying instead of claiming (R11); the
+  solver described in plain terms only (no A/B/C table, no propagation exposition); verification as the
+  four-condition bar in principle; NO authorship sentence on the page (supersedes "page 4 keeps one"); length
+  about 1,600–1,900 words, not the reviewer's 1,000–1,300. Tier table and section plan in the session of
+  2026-10-31 (late); a drafting brief is the next step.
 - **Correlations stay correlations**: the wolves' blend line (38% vs 25% of games, r = +0.16).
   Tone-policing 20% → 10% was confounded with an easier board; kept on principle.
 - **Participation** under the new layout (53–54% vs 20–35%) is not better discussion.
