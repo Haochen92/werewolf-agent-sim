@@ -10,6 +10,7 @@ entry point is scripts/extract_batch.py.
 
 from __future__ import annotations
 
+import re
 from logging import getLogger
 from typing import Any
 
@@ -246,9 +247,10 @@ def extract_cases(cases: list, model: str, thinking_level: str | None = None,
     if rest:
         parsed.update(batch_parse(rest, model, thinking_level, cache_ttl="1h", schema_in_prompt=True,
                                   batch_id=journal.batch_id("extract"), on_submit=journal.on_submit("extract")))
-    again = {k: (keyed[k][3], keyed[k][4], keyed[k][5]) for k, v in parsed.items() if v is None}
+    again = {k: (keyed[k][3], keyed[k][4], keyed[k][5]) for k, v in parsed.items()
+             if v is None or any(names_a_player(o) for o in v.observations)}
     if again:
-        logger.info("%d calls lost or unvalidated; a second batch", len(again))
+        logger.info("%d calls lost, unvalidated or naming a player; a second batch", len(again))
         parsed.update(batch_parse(again, model, thinking_level, cache_ttl="1h", schema_in_prompt=True,
                                   batch_id=journal.batch_id("retry"), on_submit=journal.on_submit("retry")))
     lost = [k for k, v in parsed.items() if v is None]
@@ -324,13 +326,14 @@ def dehalo_cases(cases: list, extracted: dict[str, dict], config, journal=None) 
 
 def extracted_games(paths: list[str]) -> list[tuple[str, list]]:
     """(game id, observations as cell models) per game in the job's ``extracted.jsonl`` files, games
-    with a human seat left out (they never teach the store)."""
+    with a human seat left out (they never teach the store), and any observation that names a player
+    left out too: the extraction prompt forbids it, and only this check enforces it."""
     import json
     from pathlib import Path
 
     from Agents.schemas.memory import cell_observation_schema_for
 
-    games = []
+    games, dropped = [], 0
     for path in paths:
         for line in Path(path).read_text().splitlines():
             case = json.loads(line)["output"]["extraction_case"]
@@ -338,8 +341,22 @@ def extracted_games(paths: list[str]) -> list[tuple[str, list]]:
                 continue
             observations = [cell_observation_schema_for(o["perspective"], o["action_phase"]).model_validate(
                 _with_decision_fields(o)) for o in case["observations"]]
-            games.append((case["game_id"], observations))
+            kept = [o for o in observations if not names_a_player(o)]
+            dropped += len(observations) - len(kept)
+            games.append((case["game_id"], kept))
+    if dropped:
+        logger.warning("%d extracted observations name a player (player_N) and were left out", dropped)
     return games
+
+
+_PLAYER_ID = re.compile(r"\bplayer_\d+\b")
+
+
+def names_a_player(observation: Any) -> bool:
+    """Whether any text field of an extracted observation names a seat (``player_3``). A seat number
+    means nothing in another game, and a lesson reader could take it for a player of its own game."""
+    fields = observation.model_dump(mode="json") if hasattr(observation, "model_dump") else observation
+    return any(isinstance(v, str) and _PLAYER_ID.search(v) for v in fields.values())
 
 
 def _with_decision_fields(observation: dict) -> dict:
