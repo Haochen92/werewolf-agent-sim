@@ -1,0 +1,13 @@
+{
+  "_about": "List rates per million tokens used to reprice a recorded game's tokens on models that did not play it (evaluation/experiments/game_cost_reprice.py). Rows in Agents/llm_factory/pricing.py are the project's catalogue; the rows marked here with a source are models the catalogue does not price. write_factor: what a token written to the cache bills at, as a multiple of input (the catalogue's rule: 1.25 on Claude and GPT-6, 1.0 elsewhere).",
+  "read_on": "2026-10-30",
+  "models": [
+    {"label": "Claude Haiku 5.5 (measured)", "input": 0.10, "cached": 0.01, "output": 0.50, "write_factor": 1.25, "source": "pricing.py"},
+    {"label": "GPT-6 Luna", "input": 0.10, "cached": 0.01, "output": 0.50, "write_factor": 1.25, "source": "pricing.py"},
+    {"label": "DeepSeek V4.1 Flash", "input": 0.15, "cached": 0.003, "output": 0.60, "write_factor": 1.0, "source": "pricing.py (off-peak)"},
+    {"label": "Gemini 3.5 Flash-Lite", "input": 0.30, "cached": 0.03, "output": 2.50, "write_factor": 1.0, "source": "pricing.py"},
+    {"label": "Gemini 3.6 Flash", "input": 1.50, "cached": 0.15, "output": 7.50, "write_factor": 1.0, "source": "pricing.py"},
+    {"label": "Claude Sonnet 5.5", "input": 2.00, "cached": 0.10, "output": 10.00, "write_factor": 1.25, "source": "pricing.py"},
+    {"label": "Claude Opus 5.5", "input": 4.00, "cached": 0.20, "output": 20.00, "write_factor": 1.25, "source": "Anthropic first-party rates via the Claude API reference's model table (cached 2026-10-06), read 2026-10-30; not in pricing.py"}
+  ]
+}
