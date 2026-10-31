@@ -10,20 +10,20 @@ Pages are drafted here in Markdown and ported to the portfolio site later; only 
 ## Chapters
 
 The arrangement is [`_planning/structure_proposal.md`](_planning/structure_proposal.md) (v2): eight
-chapters in four groups, under one overview page. Status as of 2026-10-30.
+chapters in four groups, under one overview page. Status as of 2026-10-31.
 
 | # | Chapter | Folder | Status |
 |---|---|---|---|
 | | **A. How the game runs** | | |
 | 1 | Game design and orchestration | [`game_design_orchestration/`](game_design_orchestration/game_design_orchestration.md) | Level 1 page, five Level 2 pages and two Level 3 pages drafted |
-| 2 | Information boundaries | [`information_boundaries/`](information_boundaries/content_plan.md) | Content plan only (candidate, not approved) |
+| 2 | Information boundaries | [`information_boundaries/`](information_boundaries/information_boundaries.md) | Level 1 page drafted and reviewed (2026-10-30); its one Level 3 page drafted and replaced by the owner's short version (2026-10-31) |
 | | **B. Improving how agents play** | | |
-| 3 | Context engineering | [`context_engineering/`](context_engineering/content_plan.md) | Content plan only (candidate, not approved) |
+| 3 | Context engineering | [`context_engineering/`](context_engineering/context_engineering.md) | Level 1 page drafted and reviewed (2026-10-30, revised 2026-10-31); four Level 2 pages drafted and reviewed 2026-10-31, owner's review in progress; one Level 3 after page 4 |
 | 4 | Memory | [`memory/`](memory/memory.md) | Level 1 page, five Level 2 pages and their Level 3 pages drafted; claims bounded by [`memory_presented_set.md`](memory/memory_presented_set.md) |
 | | **C. Knowing whether it worked** | | |
 | 5 | Evaluation | [`evaluation/`](evaluation/evaluation.md) | Level 1 page approved 2026-10-25; eight Level 2 pages and four Level 3 pages drafted |
 | | **D. Serving it to people** | | |
-| 6 | Cost and latency | [`cost_and_latency/`](cost_and_latency/content_plan.md) | Content plan only (candidate, not approved) |
+| 6 | Cost and latency | [`cost_and_latency/`](cost_and_latency/cost_and_latency_codex.md) | Self-contained Level 1 drafted (direction approved 2026-10-30); no Level 2; one Level 3 (caching across providers) drafted 2026-10-31, owner's review pending |
 | 7 | Running it in production | [`running_in_production/`](running_in_production/content_plan.md) | Content plan only (candidate, not approved) |
 | 8 | Frontend: the live stage and replays | — | Not started; source material in [`../frontend/docs/`](../frontend/docs/README.md) |
 
