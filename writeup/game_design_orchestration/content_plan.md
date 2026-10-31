@@ -244,7 +244,7 @@ calibration that made speech the default and moved the filter after the line (12
    - **Why the round is restricted, sent at once and filtered by kind.**
    - **What it got wrong first:** the investigator-lynch chain, three of three claimants voted out
      (nine-seat, Flash-Lite, first test games).
-   - **Ownership:** the night-1 lot's evidence is chapter 3's (block 146), so this page keeps the chain
+   - **Ownership:** the night-1 lot's evidence is chapter 3's (block 146), so this page keeps the chain *(2026-10-31: the lot now lives on the day-and-night page.)*
      and the "not news" fix.
 6. *Speak by default, filter after the line* (128, 121, 123).
    - **Calibration:** a player's choice to pass did not separate value, and cutting one sentence was a
@@ -550,6 +550,8 @@ added-value cell).
 - **The summariser's framing in `e06`, and the claim ledger** (blocks 69, 71): chapter 3. Page 3 cites the
   case in one clause.
 - **The night-1 lot and seat bias** (block 146): chapter 3. Page 2 keeps only the investigator-lynch chain.
+  *Owner 2026-10-31:* reversed. The lot is told on this chapter's day-and-night page ("Night 1: the engine
+  supplies the chance"); the conversation page links to it. Chapter 3 keeps only the example cue (player_2).
 - **The cache bug's diagnosis from captures** (block 163): chapter 7. **The provider prompt cache** (block
   8): chapter 6, which points back to page 5's three-row table.
 - **The 301-second hang, stall budget and rescue model** (block 97): chapter 7. Page 4 links to it.

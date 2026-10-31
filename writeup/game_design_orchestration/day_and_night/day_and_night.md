@@ -148,6 +148,17 @@ Illusionist can hide the victim's role, so it needs the selected target before c
 The attack itself still waits for night resolution. Routing tests check this sequence, and three
 ten-seat games read in full followed it as specified.
 
+### Night 1: the engine supplies the chance
+
+On the first night no player has evidence, so the choice of whom to check, protect or attack should be
+as good as random. It was not. The model picked the lowest player number almost every time, so the
+first night's check, protection and kill often landed on the same seat. Shuffling the player lists did
+not help, because the model was reading the number in the name, not the position in the list. The
+engine now draws a seat by lot for each night-1 actor, seeded so a replay repeats it, and the prompt
+offers it as a default to take unless the player has a reason to prefer another. On the same replayed
+boards the actions spread across all nine seats. The Vigilante gets no lot, so nothing invites a shot
+without evidence.
+
 ### Passing information in, and results back out
 
 The game state contains information that individual agents must never see. Before a phase runs,
@@ -287,6 +298,12 @@ interview defence, not page text).
   subgraphs listed for rewriting) and the plan's decisions.
 
 <!-- Sources for the page copy (drafted 2026-10-26):
+Night-1 lot (subsection added 2026-10-31, owner's ruling, moved here from chapter 3): turn_prompt/report.md
+decision 5 (nine-seat games: investigator checked player_1 on night 1 in 21 of 28, serial killer hit it in
+26, healer protected it in 25; on 16 of 32 replayed boards check, protection and kill fell on one player;
+shuffled lists: lowest-numbered other seat in 95 of 96 calls against 94 of 96 in seat order; with the lot,
+taken in 95 of 96 calls, actions on all nine seats 6 to 16 each, no board with all three on one player;
+Agents/prompts/prompt_inputs.py::night_one_lot; the pack draws one lot, the vigilante none).
 Opening: content plan brief 3 ("open with the game"); orchestration/report.md "The problem"; decision 2
 (simultaneous actions; killed healer still protects; killed investigator's check not delivered).
 "Blocked player's action should never land": role_sheet.md "Visits" (a blocked player does not visit).

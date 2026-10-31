@@ -292,8 +292,8 @@ showed a chain:
    the vote piled onto it.
 
 Two fixes followed. The opening rule now says a result the morning already made public is not news.
-And on night 1 the engine draws a default target by lot, as described in [the turn-prompt
-report](../../../evidence/gameplay/turn_prompt/report.md). The record lists the fixes, not a later
+And on night 1 the engine draws a default target by lot, described on [the day and night
+page](../day_and_night/day_and_night.md). The record lists the fixes, not a later
 lynch rate for claimants.
 
 ### Giving characters a voice
