@@ -14,7 +14,9 @@ Status: candidate plan, 2026-10-29, from a subagent pass checked against the rec
 - Closing line: what each viewer's screen is sent is decided separately on the server (chapter 8).
 - Done: `skills_inventory.md` moves secrets handling to chapter 7.
 - Chapter card: Context isolation as the one public tag; invariant checks, metamorphic testing and least-privilege input construction as supporting terms.
-- Level 3 title: "Private fields in the wrong agent inputs".
+- Level 3 title: "Private fields in the wrong agent inputs". *2026-10-31: the owner replaced the drafted page with a
+  short version titled "Preventing private information leaks between agents" (`private_information_leaks.md`); the
+  long draft stays in `_authoring/wrong_agent_inputs.reviewed-draft.md`.*
 
 ---
 
