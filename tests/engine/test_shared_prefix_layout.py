@@ -98,7 +98,7 @@ def test_a_round_turns_note_is_kept_only_for_a_line_the_filter_let_through(monke
                 if e.player == "player_2" else e for e in ordered]
 
     monkeypatch.setattr(flow, "filter_openings", hold_player_2)
-    monkeypatch.setattr(flow, "_round_order", lambda state: ["player_1", "player_2"])
+    monkeypatch.setattr(flow, "_round_order", lambda state, config: ["player_1", "player_2"])
     state = {"current_day": 2, "day_round": "opening", "round_candidates": candidates,
              "day_channel": [], "human_players": []}
     out = flow.collect_round(state, {"configurable": {}})

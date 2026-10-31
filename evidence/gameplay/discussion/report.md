@@ -701,10 +701,12 @@ opening rule now says a result the morning already made public is not news
 - **The knobs were set by hand and never swept:** two cycles per pair, a reset after a table's worth
   of turns, two sweeps, three lines per player.
 
-- **The rules describe the opening order wrongly.** The game rules every player reads say the opening
-  is played "in an order drawn at random that day"; the code publishes the openings in seat order
-  (`Agents/prompts/game_rules.py`; `Agents/nodes/day/flow.py::start_opening`). Fixing the sentence
-  changes a prompt, so it starts a new prompt epoch.
+- **The rules described the opening order wrongly (fixed 2026-10-28).** The game rules every player
+  reads say the opening is played "in an order drawn at random that day"; the code published the
+  openings in seat order, so player_1's line always led. The code now matches the rule: the order is
+  drawn per game and day (`Agents/nodes/day/flow.py::_round_order`, seeded by
+  `"{game_id}:{day}:opening"`); the rules text is unchanged. Games before the fix list openings in seat
+  order, so a paired comparison across the change sees different openings.
 
 - **No factual-error count has been run on voiced lines.**
 

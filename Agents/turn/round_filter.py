@@ -1,9 +1,10 @@
 """The filter a collected opening round goes through before its lines are published.
 
-One cheap call on the opening's lines in seat order (``filter_openings``): an allow-list. An
-opening may hold a role claim, the speaker's own night action or result, or a challenge to an
-earlier claim; agents often speak when told to pass, so the call labels each line's kind and
-everything else is held, as is a repeat of an earlier opening that is not a claim (two players
+One cheap call on the opening's lines in the order they will be published, drawn that day, so a
+repeat is judged against the lines the players will read before it (``filter_openings``): an
+allow-list. An opening may hold a role claim, the speaker's own night action or result, or a
+challenge to an earlier claim; agents often speak when told to pass, so the call labels each line's
+kind and everything else is held, as is a repeat of an earlier opening that is not a claim (two players
 claiming the same role is the contest the opening is for). The label is kept on the entry for
 analysis.
 

@@ -82,10 +82,11 @@ class DayGraphState(TypedDict, total=False):
     entry node (start_opening / start_closing); fan_out_round and collect_round read it. The
     scheduler's sweep turns carry "proactive" on their entries but run no round."""
     round_players: list[str]
-    """Who is in the round now running, in the order their lines are played: every survivor in seat
-    order for the opening, the accused for the closing. Written by the round's entry node with
-    day_round; fan_out_round sends to exactly these players and collect_round plays their lines in
-    this order. The translator reads it off the entry node's chunk for the round_opened event."""
+    """Who is in the round now running: every survivor in seat order for the opening, the accused
+    as called for the closing. Written by the round's entry node with day_round; fan_out_round
+    sends to exactly these players. collect_round plays the closing's lines in this order and the
+    opening's in an order drawn that day (flow._round_order), so this list never says who spoke
+    first. The translator reads it off the entry node's chunk for the round_opened event."""
     round_candidates: Annotated[list[RoundCandidate], add]
     """The parallel round turns' lines, held until collect_round orders and numbers them into
     day_channel. The day graph's state is rebuilt every day and day_phase returns only four keys,

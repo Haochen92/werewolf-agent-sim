@@ -40,7 +40,7 @@ const STOPS: {
     name: 'Opening round',
     disc: 'sun',
     Demo: OpeningDemo,
-    text: 'Each day opens with opening statements: everyone still in the game writes one at the same time, then they are read out in seat order. On Day 1 that is the whole day, and night follows. Discussion and voting start on Day 2.',
+    text: 'Each day opens with opening statements: everyone still in the game writes one at the same time, then they are read out in an order drawn each day. On Day 1 that is the whole day, and night follows. Discussion and voting start on Day 2.',
     you: 'claim a role, share what you learned at night, challenge someone, or pass.',
   },
   {

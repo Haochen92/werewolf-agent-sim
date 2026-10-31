@@ -10,6 +10,8 @@ and the summary only. route_after_discussion holds the day's branching after the
 The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
 """
 
+import random
+import zlib
 from collections.abc import Iterable
 from logging import getLogger as _getLogger
 from typing import Literal
@@ -20,6 +22,7 @@ from langgraph.graph import END
 from langgraph.runtime import Runtime
 from langgraph.types import Send
 
+from Agents.config import game_id_from_runnable
 from Agents.game_config import GameConfig, game_config_from_runnable
 from Agents.schemas import DayChannel, DayRound, DaySummary, FiringReason, RoundCandidate
 from Agents.rules.closing import closing_announcement, closing_speakers
@@ -306,8 +309,9 @@ def _todays_entry_count(state: DayGraphState) -> int:
 
 
 def start_opening(state: DayGraphState):
-    """Entry node of the opening round: every living player gets a turn at once, their lines
-    played in seat order."""
+    """Entry node of the opening round: every living player gets a turn at once. They are listed
+    in seat order, as the round_opened event shows them; the order their lines are played in is
+    drawn when they are collected (_round_order)."""
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
     players = seat_order(surviving_players)
     return {"day_round": "opening", "round_players": players}
@@ -352,11 +356,24 @@ def fan_out_round(state: DayGraphState, config: RunnableConfig):
     return sends
 
 
-def _round_order(state: DayGraphState) -> list[str]:
-    """The order a round's lines are played in: the order the entry node listed the round's
-    players (seat order for the opening, since nobody saw anyone else's line; the accused as
-    they were called, most accused first, for the closing)."""
-    return list(state["round_players"])
+def _round_order(state: DayGraphState, config: RunnableConfig) -> list[str]:
+    """The order a round's lines are played in. The closing's is the order the accused were
+    called, most accused first. The opening's is drawn each day, as the rules tell the players:
+    nobody saw anyone else's line, so no order is the true one, and in seat order player_1's line
+    always led the transcript, where a model gives most weight to whoever is listed first. The
+    draw is seeded by the game and the day, so a paired game replays the same order; no game_id
+    (a bare unit test) draws unseeded, as initialize_game does."""
+    if state["day_round"] != "opening":
+        return list(state["round_players"])
+    players = seat_order(state["round_players"])
+    game_id = game_id_from_runnable(config)
+    if game_id:
+        seed_text = "{}:{}:opening".format(game_id, state["current_day"])
+        rng = random.Random(zlib.crc32(seed_text.encode("utf-8")))
+    else:
+        rng = random.Random()
+    rng.shuffle(players)
+    return players
 
 
 def collect_round(state: DayGraphState, config: RunnableConfig):
@@ -378,7 +395,7 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
         return {}
 
     ordered: list[DayChannel] = []
-    for player in _round_order(state):
+    for player in _round_order(state, config):
         if player in by_player:
             ordered.append(by_player.pop(player))
     # Defensive: a candidate from a player the order did not name (should not happen) still lands.

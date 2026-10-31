@@ -24,7 +24,7 @@
 
 | Tier | Events |
 | --- | --- |
-| Public | `round_opened {round: opening\|closing, players}` — the node's `round_players` delta, in the order the lines will be played (seat order; the accused as called). The stage reads "preparing" from it and derives a round's passes as players of the round with no speech, so there is no pass event for a round |
+| Public | `round_opened {round: opening\|closing, players}` — the node's `round_players` delta, in seat order for the opening (its lines are played in an order drawn each day, `flow._round_order`, since 2026-10-28) and as called for the closing (the order its lines are played). The stage reads "preparing" from it and derives a round's passes as players of the round with no speech, so there is no pass event for a round |
 | Public | `gm_message` — START_CLOSING only: the moderator's announcement of who is accused and by whom, written to `day_channel` by the node from the accusation tags (no model call) |
 | Seat | `input_request {.., round}` — a human in the round, born from the `human_turn_opened` custom chunk `fan_out_round` writes as the round starts (same mechanism as the vote's); `round` names the round so the composer can label the ask. The interrupt that ends the step then emits none |
 - `day_round` (which round runs) → IGNORED: loop control; the event carries the round.

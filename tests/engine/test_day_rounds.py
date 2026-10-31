@@ -179,9 +179,12 @@ def test_day_one_is_the_opening_and_the_summary_only(play_day):
         players.append(entry.player)
         seqs.append(entry.seq)
         assert entry.day_round == "opening"
-    assert players == SEATS                              # seat order, not the engine's buckets
+    assert sorted(players) == SEATS                      # every living player, once each
+    assert players == flow._round_order(                 # in the day's drawn order
+        {"day_round": "opening", "round_players": SEATS, "current_day": 1},
+        {"configurable": {"game_id": "rounds-test"}})
     assert seqs == [0, 1, 2, 3, 4]                       # each its own position
-    assert final["round_players"] == SEATS
+    assert final["round_players"] == SEATS               # the round is announced in seat order
 
 
 # --- day 2: the opening feeds the discussion --------------------------------------------------
@@ -371,6 +374,65 @@ def test_collect_round_plays_the_lines_in_round_order_and_numbers_them_after_tod
     for entry in written:
         summary.append((entry.player, entry.seq, entry.message))
     assert summary == [("player_5", 2, "and mine"), ("player_4", 3, "my last word")]
+
+
+def opening_order(game_id: str, day: int, players=SEATS) -> list[str]:
+    state = {"day_round": "opening", "round_players": list(players), "current_day": day}
+    return flow._round_order(state, {"configurable": {"game_id": game_id}} if game_id else {})
+
+
+def test_the_opening_order_is_drawn_by_the_game_and_the_day():
+    ten = [f"player_{i}" for i in range(1, 11)]
+
+    assert opening_order("game-a", 2, ten) == opening_order("game-a", 2, ten)
+    # The draw starts from seat order, whatever order the round was listed in.
+    assert opening_order("game-a", 2, ten) == opening_order("game-a", 2, list(reversed(ten)))
+    assert sorted(opening_order("game-a", 2, ten)) == sorted(ten)
+    # Another day, or another game, draws again: over several days the order is not one fixed list,
+    # and seat 1 does not always lead.
+    days = [opening_order("game-a", day, ten) for day in range(1, 8)]
+    assert len({tuple(order) for order in days}) > 1
+    assert {order[0] for order in days} != {"player_1"}
+    assert opening_order("game-b", 2, ten) != opening_order("game-a", 2, ten)
+
+
+def test_the_opening_order_without_a_game_id_still_lists_everyone_once():
+    assert sorted(opening_order("", 1)) == SEATS
+
+
+def test_the_closing_keeps_the_order_the_accused_were_called():
+    state = {"day_round": "closing", "round_players": ["player_5", "player_2"], "current_day": 3}
+
+    assert flow._round_order(state, {"configurable": {"game_id": "game-a"}}) == ["player_5", "player_2"]
+
+
+def test_collect_round_plays_the_opening_in_the_drawn_order_with_a_human_line_kept(monkeypatch):
+    held = []
+
+    def hold_every_agent_line(entries):
+        held.append([entry.player for entry in entries])
+        return [entry.model_copy(update={"passed": True}) for entry in entries]
+
+    monkeypatch.setattr(flow, "filter_openings", hold_every_agent_line)
+    earlier_today = [DayChannel(day=2, seq=0, player="game_master", message="Morning.")]
+    state = round_state(
+        day_round="opening",
+        round_players=SEATS,
+        human_players=["player_3"],
+        day_channel=earlier_today,
+        round_candidates=[candidate(p, "opening", f"{p} opens") for p in SEATS],
+    )
+    config = {"configurable": {"game_id": "game-a"}}
+
+    update = flow.collect_round(state, config)
+
+    drawn = opening_order("game-a", 2)
+    written = update["day_channel"]
+    assert [entry.player for entry in written] == drawn
+    assert [entry.seq for entry in written] == [1, 2, 3, 4, 5]          # contiguous after today's
+    assert held == [drawn]                                              # the filter reads the published order
+    for entry in written:
+        assert entry.passed == (entry.player != "player_3")             # a human's line is never held
 
 
 def test_collect_round_with_no_candidates_writes_nothing():

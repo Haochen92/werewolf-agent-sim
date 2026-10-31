@@ -221,7 +221,8 @@ def human_path_chunks() -> list[dict]:
                       "pass_reason": "voluntary"}}],
             "agent_strategies": {}}, day),
     ]
-    # COLLECT_ROUND plays the lines in seat order, numbered, after the opening's filter: the
+    # COLLECT_ROUND plays the lines in the day's drawn order (seat order in this fixture; the
+    # translator keeps whatever order it is given), numbered, after the opening's filter: the
     # agents' "Nothing yet." lines are held as opening_filtered passes with the text kept.
     collected = []
     for seq, player in enumerate(seats):
