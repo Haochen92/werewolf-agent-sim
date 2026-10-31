@@ -129,7 +129,9 @@ number, and for a wolf's night whether it was the pack's chat, its kill or its s
 it from the game record by a fixed table of good, neutral and bad outcomes per role and action
 (`Agents/memory/consolidation/grading.py`; the table is in the [credit report](../../credit/report.md),
 "The ten-seat rule table"). Each observation then carries both outcome signals: the model's verdict
-and the code's grade.
+and the code's grade. Lessons carry a tag of their own: a wolf night lesson names the pack's move it is
+about (`pack_move`: kill, conceal or block), and a lesson followed in the pack's chat is graded by that
+move (since 2026-10-28; decisions §18).
 
 ### 1.3 Into the store: from observations to lessons
 

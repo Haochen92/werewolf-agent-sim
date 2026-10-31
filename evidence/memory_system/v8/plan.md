@@ -672,8 +672,13 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
    - nights per §8.2 and §8.3 (the investigator on a delivered Suspicious; the vigilante by side;
      the healer against any attacker; the Chanteuse's tiers; ...); the Necromancer per game only;
    - the evil roles' concealment rule extended to the new evil roles.
-2. **A followed pack-chat lesson is graded by the pack's kill that night** (ruled). Chat, kill and
-   skill share the `night_action` namespace; each eval case carries its turn kind.
+2. **A followed pack-chat lesson is graded by the pack's move it is about** (owner, 2026-10-28;
+   it was the night's kill until then, decisions.md §18). The chat decides nothing itself, so a kill
+   lesson takes the pack kill's grade, a conceal lesson the Illusionist's conceal (a declined turn
+   included) and a block lesson the Chanteuse's block, each against memory-off play of that move.
+   Wolf night lessons carry the move as `pack_move` (written by synthesis; a lesson without one falls
+   back to the kill). Chat, kill and skill share the `night_action` namespace; each eval case carries
+   its turn kind.
 3. **Drop the conversion channel.** It credits strategies retrieved on town day turns, which no
    longer happen.
 4. **A missing baseline reads unscored, not 0.** The seeding games, graded by the same new rules,
@@ -704,9 +709,9 @@ The per-game metrics are ported (`e5763cd1`). Credit runs on per-decision grades
 
     | Turn | Good | Neutral | Bad |
     |---|---|---|---|
-    | Pack kill (carrier); pack chat takes the night's kill grade | landed on a town role, or on the Necromancer from night 2 | landed on a neutral | saved by the Healer (a target the Healer would cover is a wasted kill); target immune (Serial Killer, Necromancer night 1, Fortune Teller self-bet); the carrier seen by a Sentinel (watching the victim) or a Trailseer (following the carrier). A sigil striking the carrier is not counted against the kill |
-    | Chanteuse block | critical block (§8.3 list) | cancelled a town action that changed nothing; "did not take" (lone killer or neutral) | target had no action that night |
-    | Illusionist conceal (tried; hard to gauge) | hid a body whose will would read out a record, above all one naming a wolf | victim saved or immune (use kept); declined while the will was harmless | spent on a body with no record; declined while the victim's will named a wolf |
+    | Pack kill (carrier); a kill lesson followed in the pack chat | landed on a town role, or on the Necromancer from night 2 | landed on a neutral | saved by the Healer (a target the Healer would cover is a wasted kill); target immune (Serial Killer, Necromancer night 1, Fortune Teller self-bet); the carrier seen by a Sentinel (watching the victim) or a Trailseer (following the carrier). A sigil striking the carrier is not counted against the kill |
+    | Chanteuse block (a block lesson followed in the pack chat too) | critical block (§8.3 list) | cancelled a town action that changed nothing; "did not take" (lone killer or neutral) | target had no action that night |
+    | Illusionist conceal (tried; hard to gauge; a conceal lesson followed in the pack chat too) | hid a body whose will would read out a record, above all one naming a wolf | victim saved or immune (use kept); declined while the will was harmless | spent on a body with no record; declined while the victim's will named a wolf |
     | Serial Killer kill | landed on a non-neutral | landed on a neutral | target immune or healed; the kill seen by a Sentinel (watching the victim) or a Trailseer (following the killer) |
     | Necromancer | unscored (borrowed actions interact too much to grade: e.g. a borrowed block on the Vigilante shooting it) | | |
     | Investigator | delivered Suspicious | Not suspicious on town or a neutral; declined; blocked | checked the Serial Killer (a false clear and a spent check) |

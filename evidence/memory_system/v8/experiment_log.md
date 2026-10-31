@@ -722,6 +722,8 @@ lift, are in `credit_runs` row 1 (with the 20 game ids) and in `credit_pass.json
 | Pruned | trailseer night: follow a quiet unconfirmed player late | 14 (4 / 8) | −0.06 | −0.17 |
 | Evicted | fortune teller day vote; two necromancer nights; speculator day vote | 0 follows in 8–11 showings, mostly overridden | — | — |
 
+*Note, 2026-10-28:* this pass graded every lesson followed in the pack's chat by the night's kill. The owner has since ruled that such a lesson is graded by the move it is about (decisions §18). The pruned illusionist conceal lesson was mostly followed in the chat, so its −0.17 is a kill grade. Under the current rule it would be graded by the conceal, and the prune may not hold. The lesson is no longer in the store; rerunning from `ten_seat_v2` would show it.
+
 How to read them: the necromancer vote was pruned on neutral grades alone. An abstention grades neutral,
 and memory-off necromancers' named votes graded well (+0.83), so the lesson falls short of its base;
 that is the grading table working as ruled, and the reason a lift, not a raw rate, decides. The proven end

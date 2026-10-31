@@ -141,7 +141,7 @@ optional second example, only where records trace the exact transformation.
   (`e5763cd1`), checked by hand against one pilot game. The owner ruled the Chanteuse's fellow-wolves
   rule and the Sentinel, Trailseer and Sigilist proxies.
 - **Credit.** It needs its own port, set out in plan §9.6: side-based decision grades, the pack's
-  chat graded by that night's kill (ruled), no conversion channel, unscored missing baselines, its
+  chat graded by that night's kill (ruled; changed 2026-10-28, §18), no conversion channel, unscored missing baselines, its
   own database, memory-on data, and validated thresholds. It runs after launch, as a diagnostic.
 
 ## 9. v8
@@ -235,7 +235,8 @@ failure, exposing oneself). Four principles came out of applying it role by role
   that it is not a find).
 
 Harsh "bad" grades do not bias credit. A lesson is credited by lift: its followed outcomes against the
-memory-off outcomes of the same turn kind (the 12 seeding games, graded by the same table). A role whose
+memory-off outcomes of the same turn kind (the 12 seeding games, graded by the same table; a lesson
+followed in the pack's chat is graded and compared by the move it is about, §18). A role whose
 turns are mostly "bad" simply has a low baseline.
 
 **Left unscored.** The Necromancer: its borrowed actions interact in ways one grade cannot capture (a
@@ -283,6 +284,13 @@ Repeated per observation once each named its decision (tagged, then graded; `--g
 `data/halo/observation_summary.json`): 1,472 graded observations of all 40 games, every phase, each
 verdict against its own decision's grade. Same picture: side won +0.80 against grade +0.40 as extracted,
 +0.53 against +0.36 after de-halo; the vote and discussion verdicts follow the result most (+0.84 each).
+
+> **Correction (2026-10-28).** "On one side only" holds for the 482-observation fit above, which
+> compares all of a side's verdicts, not moves of the same grade. On the 1,472 observations, split by
+> each move's own grade, de-halo also worked on the winning side: their bad moves called positive fell
+> from 18% to 9%, mostly in discussion and votes. The current account, with a table by phase, is
+> `evidence/extraction/observation_quality/report.md` §4; the case study's note was corrected the same
+> way on 2026-10-26.
 
 The owner's rulings:
 
@@ -378,3 +386,37 @@ no good reason to serve every other side's vote lessons and not the town's.
 
 Code: `Agents/memory/retrieval/plan_gating.py` (`TOWN_UNSERVED_PHASES`, skip reason `town_discussion`);
 test `tests/memory/test_memory_plan_gating.py`. Served once the server is redeployed.
+
+## 18. A lesson followed in the pack's chat is graded by the move it is about (owner, 2026-10-28)
+
+Until now a wolf night lesson followed in the pack's chat took that night's kill grade (§8, plan §9.6
+item 2). The chat decides nothing itself, so the kill grade judged every chat-followed lesson by a move it
+might not be about. The attribution hand-check showed the case
+(`evidence/credit/attribution_check_ten_seat/`, c020): the lesson "spend a conceal only when the victim's
+role is still unclaimed…" was followed in the chat, the wolf said there it would carry and conceal, and
+credit scored the kill. That lesson was among the four the 2026-10-14 demo pass pruned.
+
+- **The move decides the grade.** A kill lesson takes the pack kill's grade, a conceal lesson the
+  Illusionist's conceal that night (a declined turn included), a block lesson the Chanteuse's block. When
+  no living wolf holds the skill, the follow is unscored.
+- **And the baseline.** A kill lesson is compared with memory-off chats (graded by the kill, as before); a
+  conceal or block lesson with the memory-off skill turns of the wolf who holds it.
+- **The tag.** Wolf night lessons carry `pack_move` (kill / conceal / block). Synthesis writes it on every
+  new one; the 38 lessons already stored were tagged by hand from their advice
+  (`scripts/backfill_pack_move.py`). A lesson without the tag falls back to the kill.
+- **Observations of the chat too.** An observation tagged `pack_turn` chat is graded by its `pack_move` when
+  it has one, and is ungraded without one, like a "several" (`observation_grade`). The decision tagger
+  writes no move, so all 3 chat-tagged observations of the 2026-10-12 runs become ungraded. Re-checked
+  without them, the halo fit (§13) is unchanged at the precision it is reported: 1,469 observations
+  instead of 1,472, a good move called positive 23% of the time when its side lost and 83% when it won,
+  coefficients within 0.004. The archived `grades.jsonl` and `data/halo/` stay as computed.
+- **Unchanged.** The scopes (a night's chat and its act each give a lesson one verdict) and the act's
+  grading.
+
+Results credited before this ruling (the demo pass's 4 pruned, 4 evicted, 50 protected) were graded by
+the kill; a rerun may move the wolf night lessons among them.
+
+Code: `Agents/memory/consolidation/grading.py` (`pack_move_grade`, `pack_move_channel`),
+`credit_rules.py` (`build_ledger`, `chat_follow_credit`), `credit.py` (`_pack_moves`),
+`Agents/schemas/memory.py` (the strategy cell's `pack_move`); tests
+`tests/memory/test_ten_seat_grading.py`, `tests/memory/test_strategy_synthesis.py`.
