@@ -19,9 +19,9 @@ Changing a sentence's scope can change its claim; identify substantive changes f
 
 ## What changes at Level 3
 
-Level 2 explains a substantial subject through methods and examples. Level 3 develops one selected
-investigation so that a reader can understand its setup, reasoning and interpretation. The language
-should remain as clear as Level 2; the additional depth comes from explaining details that Level 2
+Level 2 explains a substantial subject through methods and examples. Level 3 deepens a selected part of its L1 or L2 parent through an investigation, mechanism or
+implementation walkthrough, so the reader understands how it works or how the finding was reached. The language
+should remain as clear as Level 2; the additional depth comes from explaining details that the parent
 summarises, not from denser sentences or more jargon.
 
 Keep the Level 2 principles of reader orientation, paragraph clarity, narrative economy, technical
@@ -33,7 +33,7 @@ accessibility and integrated exhibits. Adapt the expectations as follows:
 | Use a featured story within several subsections | The whole page may be one investigation; no separate featured-story section required |
 | Select the setup details needed to assess the main finding | Explain the units, reference values, exclusions and decision rules needed to follow the analysis |
 | Summarise what the experiment established | Distinguish measured results, derived estimates, assumptions and unresolved interpretations |
-| Add depth beyond the chapter summary | Add a specific explanation beyond the Level 2 parent, while retaining enough context for direct arrival |
+| Add depth beyond the chapter summary | Add a specific explanation beyond the L1 or L2 parent, while retaining enough context for direct arrival |
 
 ## Investigation write-up versus experiment log
 
@@ -104,19 +104,19 @@ subject closely enough to understand how it works or how its conclusion was reac
 analysis, a mechanism, an implementation walkthrough or a debugging investigation. An unresolved cause
 does not disqualify a page; a carefully bounded uncertainty is a defensible outcome.
 
-All six must hold. If one fails, keep the material on Level 2, combine it with another investigation, or
+All six must hold. If one fails, keep the material on the parent, combine it with another investigation, or
 leave it unpublished.
 
 | Criterion | What must be true |
 |---|---|
-| Distinct reader question | The page answers a specific question beyond the Level 2 explanation |
+| Distinct reader question | The page answers a specific question beyond the parent explanation |
 | Substantial additional value | It adds a method, analysis, mechanism, implementation walkthrough or inspectable evidence, not more chronology |
 | A reason to separate it | Explaining it properly would interrupt the parent's main argument or need a different depth of attention |
-| Optional for the parent | Level 2 still explains its decision, finding and essential limitations; a reader can stop there without misunderstanding the work |
+| Optional for the parent | The L1 or L2 parent still explains its decision, finding and essential limitations; a reader can stop there without misunderstanding the work |
 | A bounded scope | A clear beginning and end: what it examines, how, what it establishes and what remains unresolved |
 | Defensible content | The author understands the work, the evidence supports the claims, and there is enough substance to justify a page |
 
-**Anchored in the parent (owner 2026-10-25).** Every Level 3 page belongs to a Level 2 subsection that
+**Anchored in the parent (clarified 2026-10-30).** Every Level 3 page belongs to an L1 or L2 subsection that
 covers the same finding, or a passage within one; its link sits there. The rule runs one way: a
 subsection does not need a Level 3 page. When a Level 3 page is added, dropped or renamed, update the
 parent subsection with it, so the two stay in sync.
@@ -127,7 +127,7 @@ Two tests make the criteria practical:
   example", the proposal is not specific enough.
 
 Record each candidate in five short fields: **reader question · added value · why separate · what stays on
-Level 2 · verification needed**. "Verification needed" lists the consequential claims about how something
+the parent · verification needed**. "Verification needed" lists the consequential claims about how something
 works or how an experiment was run (mechanism, configuration, version), to be checked against the
 implementation and records of that time before publication. Reading today's code alone may not explain a
 historical experiment. Exact figures are taken from the reports as they stand.
@@ -142,7 +142,7 @@ substantive claim changes or unresolved factual questions in an authoring note.
 
 Inputs:
 - Existing draft and authorised destination: [INSERT]
-- Parent Level 2 summary or brief: [ATTACH]
+- Parent L1 or L2 subsection or brief: [ATTACH]
 - Verified facts, corrections and scope limits: [ATTACH]
 - Publication constraints: [ATTACH]
 

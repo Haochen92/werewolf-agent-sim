@@ -1,8 +1,24 @@
 # Choose the explanation the reader needs
 
-Level and purpose are separate. L1 orients the reader across a chapter, L2 develops a substantial
-subject, and L3 adds optional focused depth. Investigations often fit L3, but a mechanism walkthrough
-or incident analysis can also be L3; an investigation can carry an entire L2 page.
+Level and purpose are separate. Choose levels by explanatory responsibility, not length, technical
+complexity or source-document format:
+
+- **L1** explains the chapter's overall problem, approach and major decisions. It may orient readers
+  towards L2 subjects, or be a self-contained chapter with optional L3 depth.
+- **L2** owns a substantial topic: its purpose, mechanisms, decisions and trade-offs form an explanation
+  worth reading in its own right.
+- **L3** deepens a particular part already explained by its parent: a focused investigation, case study,
+  measurement method or implementation walkthrough. It retains enough context for direct arrival.
+
+Ask: does the page own a major part of the explanation, or deepen a part already explained? The former
+usually warrants L2; the latter L3. An investigation can carry an entire L2 topic, so its format alone
+does not determine its level. A broad caching strategy could be L2; diagnosing a cache miss or showing
+how shared prompts meet provider requirements could be L3.
+
+**L1 → L3 is valid.** When the chapter itself provides the essential explanation, link directly from
+its relevant subsection to optional depth. Do not manufacture an L2 to fill a hierarchy. Without the
+link, the parent must still explain its decision and essential limitations; with it, the reader gains
+a distinct answer, not merely more words. Complete logs remain in evidence.
 
 Choose a primary purpose from the reader's question, not the filename or the format of the sources.
 These are useful modes, not an exhaustive taxonomy or mandatory heading templates. A hybrid page

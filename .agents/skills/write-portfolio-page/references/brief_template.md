@@ -1,51 +1,47 @@
-# Authoring brief: <page title>
+# Explanation prototype: <page title>
 
-Page: `<path to page.md>` · Level <1|2|3> · started <YYYY-MM-DD> · checkpoint: <pending | approved in conversation | waived by owner>
+Page: `<path>` · Level <1|2|3> · Purpose: <reader need> · Date: <YYYY-MM-DD>
+Checkpoint: <pending / existing approval and scope / waived>
 
-Authoring material, not page copy. The cold editorial reviewer never sees this file.
+Authoring material, not page copy. The cold reviewer does not see it. Keep the planning portion
+short; link the existing content plan and source inventory rather than duplicating them.
 
-## Frame
+## Reader and explanation
 
-- **Primary page type and level:** <purpose from page_types.md; depth separately>
-- **Secondary mode, if needed:** <section and why, or none>
-- **Existing outline approval:** <conversation instruction, or pending/waived>
-- **Reader's question:** <one question, in the reader's words>
-- **Central answer:** <one sentence>
-- **Reader starting point:** <what the parent establishes; what this page must still define>
-- **Opening choice:** <foundation needed before the first decision, and why this opening fits>
-- **Claim level:** <mechanism / diagnosed failure / practical choice / measured improvement; evidence
-  needed for that claim, without expanding it into an unnecessary research question>
-- **Distinctions the reader needs:** <the two or three things that must stay apart for the answer to
-  make sense, e.g. engine results vs player claims; producing a claim vs producing a consistent one>
-- **What the evidence establishes:** <short>
-- **What stays uncertain:** <short; these become scope beside the claims, not a closing disclaimer>
-- **Stays off the page:** <items from the chapter's Handle-with-care list that touch this subject, or "none">
+- **Reader outcome:** <one concrete thing the reader should understand or decide>
+- **Starting knowledge:** <what the parent supplies; necessary new concepts>
+- **Concept order:** <the few prerequisites and their relationships>
+- **Likely confusion:** <the consequential misreading, if any>
+- **Section order:** <one line per section: what the reader learns and how it is explained>
 
-## Evidence selection
+## Sample passage
 
-**Core argument, before examples or numbers:** <essential concepts and their logical connections>
+<Actual copy for one difficult explanation, including a concrete example or proposed visual when
+helpful. Label illustrative examples; do not present invented cases as project evidence.>
 
-| Essential concept | Selected evidence (source), if needed | Why this example earns space | Alternatives omitted / destination |
-|---|---|---|---|
-| | | | |
+## Evidence and scope
 
-For each proposed L3: “After L2, the interested reader may ask ___; this page answers it by ___.”
-Keep necessary explanation and material caveats in L2. Full records stay in evidence.
-
-## Argument outline
-
-Structure: <the shape chosen and why it fits this subject>
-
-| # | Section | Reader understands afterwards | Selected example, if needed | Omitted / linked | Why the next follows |
-|---|---|---|---|---|---|
-| 1 | | | | | |
-
-## Open questions
-
-<factual questions the sources did not settle, each with the claim it affects>
+- **Sources:** <links supporting the retained claims; existing inventory if useful>
+- **Claim and limits:** <mechanism, decision, diagnosis or measured result; material limits>
+- **Elsewhere:** <secondary questions and destinations; applicable Handle-with-care items>
+- **Open questions:** <unresolved facts and affected claims, or none>
 
 ## Review resolution
 
-| Reviewer | Finding (passage) | Action: explained / relocated / removed / corrected / declined (why) / flagged | Recheck needed? |
-|---|---|---|---|
-| | | | |
+| Finding | Action and reason | Whole-section recheck |
+|---|---|---|
+| | | |
+
+Check technical repairs against sources. A misunderstanding can identify a problem even when the
+reviewer's proposed solution is wrong. Record material findings, not cosmetic bookkeeping.
+
+## Trial record
+
+Draft snapshots: <first / reviewed / owner revision when available>
+Model and owner interventions: <including prototype guidance or waiver>
+
+| Owner change | Kind | Explanation redesigned or local edit? |
+|---|---|---|
+| | concept selection / order / missing connection / example or representation / prose / claim support | |
+
+Fill after feedback; do not invent an owner usability score. Word count is a guide, not a quality measure.

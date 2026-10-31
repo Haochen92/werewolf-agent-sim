@@ -69,9 +69,11 @@ What stays off the page (the chapter's "Handle with care" list): [ATTACH OR INSE
 Existing draft, if revising: [ATTACH OR INSERT]
 
 READING STRUCTURE
-- Level 1 is a chapter page: an introduction followed by substantive subject summaries. Each summary
-  gives its main finding and essential scope before linking to a Level 2 page.
-- Level 2 develops one subject through an opening, connected subsections and one featured story, with
+- Level 1 explains the chapter's overall problem, approach and major decisions. It can introduce
+  substantial L2 subjects, or be self-contained with optional L3 deep dives linked directly from the
+  relevant subsections. Do not create L2 pages merely to fill a hierarchy.
+- Level 2 owns a substantial subject: its purpose, mechanisms, decisions and trade-offs. Use an
+  opening, connected subsections and supporting examples as needed, with
   exhibits inside the explanation. Its layout, length and review rubric are in the Level 2 prompt
   (`.agents/skills/write-portfolio-page/references/portfolio-level-2-writing-prompt.md`); use that prompt for Level 2 work.
 - Level 3 is optional technical depth or a focused investigation. It adds something distinct, a method,
@@ -111,8 +113,10 @@ OPENING AND CONTENT SELECTION
   Essential concepts are not the same as essential examples. Select examples with distinct jobs.
 - When length is an issue, remove secondary branches before compressing the main explanation.
   Preserve the context, reasoning, comparison and material limitations of retained claims.
-- L3 answers a focused follow-up question after L2. State that question and what depth answers it.
-  Necessary L2 explanation cannot be relocated to meet a word count; full logs belong in evidence.
+- L3 answers a focused follow-up question after its L1 or L2 parent. State that question and what
+  depth answers it. Classify by explanatory responsibility, not length or technical difficulty:
+  L2 owns a substantial topic; L3 deepens a particular part already explained. Necessary parent
+  explanation cannot be relocated to meet a word count; full logs belong in evidence.
 
 WORK BEFORE WRITING
 1. Read the supplied evidence and correction notes. Identify each subject's question, decision,
@@ -146,7 +150,10 @@ WRITING STYLE
   section use the same sentence pattern.
 - Length. These are guides, not quotas; never cut an explanation or a scope to hit a count. The test for
   cutting is whether a paragraph explains a different decision.
-  Level 1: about 90–130 words per subject summary; the introduction 150–200.
+  Level 1 with L2 subjects: about 90–130 words per subject summary; the introduction 150–200.
+  A self-contained Level 1 needs room for mechanisms, trade-offs and selected evidence: roughly
+  1,500–2,000 words is a starting allowance, not a ceiling. Additional length must earn its place
+  through essential explanation; it does not itself justify introducing L2.
   Level 2: about 1,200–2,000 words including captions and tables (the Level 2 prompt has the detail).
   Level 3: about 800–1,500 words; the method and results may take more room than on Level 2, because
   that is what the page adds.

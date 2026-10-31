@@ -1,6 +1,6 @@
 ---
 name: write-portfolio-page
-description: Write or substantially revise a portfolio write-up page in writeup/ (Level 1 chapter, Level 2 subject or Level 3 depth). Frames the argument and outlines it before drafting, then gets a cold editorial read and a claims check from fresh-context reviewers. Use for new pages, page rewrites and section rewrites; small wording or scope fixes skip the workflow.
+description: Write or substantially revise a portfolio write-up page in writeup/ (Level 1 chapter, Level 2 subject or Level 3 depth). Prototypes the explanation before drafting, then checks reader comprehension and claims with fresh-context reviewers. Use for new pages, page rewrites and section rewrites; small wording or scope fixes skip the workflow.
 ---
 
 # Write a portfolio page
@@ -41,55 +41,64 @@ Read these yourself; do not summarise them from memory.
   chapter's `editorial_notes.md`; the chapter's outline in `writeup/_planning/map.md`, including its "Handle with
   care" list where one exists (it names what stays off the page); the existing draft.
 - **What the reader has just read:** the parent page's introduction and the parent section that links
-  here (Level 2 → the chapter page's summary of this subject; Level 3 → the Level 2 subsection).
+  here (Level 2 → the chapter subsection; Level 3 → the relevant subsection of its L1 or L2 parent).
   `python3 scripts/parent_context.py <page.md>` prints exactly that excerpt; the cold reviewer gets
   the same text.
 - **Sources:** the evidence reports and records the brief cites. Lift numbers as they stand; never
   re-derive or invent one.
 
-## 2. Frame the page
+## 2. Prototype the explanation
 
-Choose a primary explanatory purpose and reader-dependent opening using [page types](references/page_types.md). Page level is
-reading depth, not report type: an investigation can be L2, and L3 can explain a mechanism. Hybrid
-pages may borrow another mode for a section; do not force every section through one template.
-
+Choose the page's primary purpose and depth using [page types](references/page_types.md), including
+whether L1 is self-contained or delegates substantial subjects to L2. Direct L1 → L3 links are valid. These
+help select material; they do not dictate headings. Keep one writer responsible for the explanation.
 
 Create `<page dir>/_authoring/<page stem>.brief.md` from
-[`references/brief_template.md`](references/brief_template.md) and fill in **Frame** and **Evidence
-selection**. Keep both short enough to expose uncertainty rather than hide it.
+[the brief template](references/brief_template.md). Keep the planning portion short: normally one
+screen plus the sample passage, not a second content plan. Link existing source inventories rather
+than copying them. Record:
 
-- **Frame:** the reader's question and central answer; what the parent establishes and what this
-  page must still define; the opening needed before the first decision; and the claim being made
-  (mechanism, diagnosed failure, practical choice or measured improvement). Scope evidence to that
-  claim rather than demanding a general performance study for a targeted fix.
-- **Core argument:** write the essential concepts and their connections before listing experiments
-  or numbers. These are what must survive a length cut.
-- **Evidence selection:** choose examples to support those concepts. Relevant does not mean essential:
-  use the smallest set that makes the argument understandable and assessable, while retaining enough
-  explanation for each. An additional example should establish a different point or materially
-  change the interpretation. Record alternatives omitted and their destinations.
-- **Depth:** L2 keeps the complete central explanation and material caveats. An L3 proposal must
-  name a focused follow-up question and how it answers it; full logs and reproduction stay in
-  evidence. Do not create L3 merely to store overflow.
+- **Reader outcome:** what the reader should understand or be able to decide afterwards, in one
+  concrete sentence. State what the parent already supplies.
+- **Concept dependency:** the few concepts needed to reach that outcome, in the order a newcomer
+  needs them. Organise the explanation, not the source report's chronology or inventory.
+- **Likely confusion:** the consequential mistaken interpretation, if any. Do not list hypothetical
+  caveats or turn these planning distinctions into an abstract opening paragraph.
+- **Evidence:** the minimum sources and examples that establish the retained claims; material scope
+  and unresolved facts. Keep the engineering question bounded to an entry-to-mid-level role.
 
-## 3. Outline the argument
+Then **write one difficult passage as actual page copy**, including its example or proposed visual
+if useful. This is the explanation prototype, not a promise to explain later. Distinguish an
+illustration that teaches a concept from empirical evidence that supports a claim; label invented
+or simplified examples accordingly. See [examples](references/examples.md#choosing-how-to-explain-a-concept).
 
-Fill in **Argument outline** in the brief. For each section: the question it answers, its main point,
-the selected example or finding (if needed), material omitted or linked, and why the next section
-follows from it. Name the structure you chose and why it fits *this* subject (see the examples).
+Choose a representation by what the reader must understand: input/output for a transformation;
+criteria and alternatives for a choice; steps for a sequence; separate responsibilities for interacting
+components; successive questions for an investigation; comparison before numbers for a finding.
+These are options, not routing rules. Plain prose may suffice. Use a diagram when relationships,
+branches or handoffs become clearer in it, not merely because the topic contains a workflow.
 
-Check the outline before drafting: read only the main points in order. Do they answer the frame's
-question? Does any section need a term or result that a later section introduces?
+## 3. Agree the explanatory order
 
-**Checkpoint (default on).** Stop and show the owner the Frame and the Argument outline. Draft only
-after they reply, unless the conversation already contains their approval of the proposed frame
-and outline. Record existing approval and proceed without asking again. The owner may also waive
-this checkpoint for a task ("no checkpoint"); record that in the brief. Routine wording changes do
-not require renewed approval; seek clarification only for a material change outside agreed scope.
+Give each proposed section one line: **what the reader learns, and how it is explained**. Include
+only evidence that serves that point. Link secondary questions to depth; do not compress them into
+qualifications. Do not force a causal transition between independent responsibilities.
 
-## 4. Draft from the outline
+Read the order and the prototype together. Does the sample make the difficult relationship concrete?
+Does the reader need an explanation supplied only later? An approved topic list does not itself show
+that its prose will work.
 
-- Write the page copy under the guides. Keep the page file's existing layout: title, the italic
+**Checkpoint (default on).** Show the owner the central point, the short section order and the sample
+passage together, before expanding to the full page. This replaces a long outline approval packet.
+If the conversation already approves an equivalent explanation or authorises drafting without another
+stop, record that and proceed; do not request permission again. Otherwise, existing content-plan
+approval supplies the agreed topics, while this checkpoint reviews their presentation. A waiver such
+as "no checkpoint" applies to this checkpoint too. Small fixes need no prototype or approval.
+
+## 4. Expand the explanation
+
+- Expand the approved prototype into the page; preserve its clarity, not necessarily its exact wording.
+  Write the page copy under the guides. Keep the page file's existing layout: title, the italic
   header line, any historical brief, `## Page copy (draft)`, then the sources comment.
 - Build on the parent without repeating its introduction at length. A concise definition or
   orientation may still be needed to make this subject understandable independently. Explain an
@@ -107,8 +116,11 @@ If the draft is long, remove secondary branches before compressing the core expl
 context, transitions, comparisons and material limitations; do not retain every experiment as a
 dense sentence of numbers. Read the resulting prose for gaps after removing material.
 
-Before review, read only the headings, opening sentences and exhibit captions. Can a reader follow
-the argument from those alone?
+Before review, read the page as a newcomer, including the difficult passage in context. Can the
+reader explain what happens, why the choice follows, or what the comparison establishes without
+supplying a missing connection? Headings alone and a correct summary are insufficient. Save the
+first full draft as `_authoring/<stem>.first-draft.md` before reviewer edits; do not overwrite a
+previous trial's snapshot (use a dated suffix).
 
 ## 5. Review in fresh contexts
 
@@ -122,8 +134,9 @@ They return findings; they do not edit the page.
 
 - **editorial**: a cold read of the supplied page copy (no brief or source documents supplied), given
   the parent excerpt as context; it flags lengthy reintroduction while allowing concise useful
-  definitions. It checks selection as well as missing explanation. It first
-  states the argument it understood, then marks where comprehension breaks. If it needs the brief to
+  definitions. It checks selection as well as missing explanation. It states the argument, attempts
+  a concrete application question using only the page, then marks
+  where understanding required inference or unnecessary rereading. If it needs the brief to
   follow the page, the page is missing something.
 - **claims**: reads the page, the brief and the sources, and checks the consequential claims:
   mechanisms, comparisons, scope, built/run/deployed status, first-person ownership and the
@@ -148,6 +161,9 @@ Fill in **Review resolution** in the brief: one row per material finding, with t
 (fixed / declined, with the reason / flagged for the owner). The writer keeps one voice: apply
 findings yourself rather than pasting reviewer wording.
 
+- Treat a reviewer's misunderstanding as evidence of a presentation problem, not proof that its
+  proposed repair is technically correct. Check repairs against the sources. A request to clarify
+  may need a concrete example or reorganisation rather than an additional sentence.
 - Fix reasoning and selection before wording. For each request for more context, choose **explain,
   relocate or remove**; adding prose is not the default. Check whether a supporting example has
   displaced the page's main question. Do not remove a material caveat while retaining its claim.
@@ -157,13 +173,18 @@ findings yourself rather than pasting reviewer wording.
   does; otherwise move the passage to a deeper page or a supporting note.
 - After resolving, report the page-copy word count against the level's guide. Growth past the guide
   needs a reason for each addition; without one, trim.
-- Re-run a reviewer only when the structure or a central claim changed. Do not loop on taste.
+- Reread each revised section as a whole. Remove redundant explanations introduced by local fixes;
+  check that definitions, qualifications and transitions have not accumulated around a buried point.
+- Re-run a reviewer when the structure or a central explanation changed. Do not loop on taste.
 
 ## 7. Finish
 
-**Done** means: no unresolved misleading claim; no missing explanation the argument needs; open
-factual questions listed in the brief, and the affected claims qualified or flagged rather than
-smoothed over. Style preferences alone never block completion.
+**Ready for owner review** means: claims fit their evidence, the essential explanation is present,
+and the reader can follow or apply it without reconstructing missing relationships. A reviewer
+passing the page or the writer completing the steps does not establish this. Difficulty distinguishing
+components, following a mechanism or interpreting a comparison is substantive, not cosmetic taste.
+Record unresolved factual questions and qualify affected claims. Pure wording preferences need not
+block delivery.
 
 Then:
 
@@ -172,8 +193,10 @@ Then:
   verified".
 - Update the page's italic header line (status and date). Keep a parent subsection in sync when a
   Level 3 page is added, renamed or dropped.
-- Report to the owner: the brief's path, the outline in one line per section, the unresolved findings
-  and open questions. Do not mark anything approved or published.
+- Save the reviewed page copy as `_authoring/<stem>.reviewed-draft.md` (dated suffix for a new trial).
+- Report the change, unresolved issues and the brief's path concisely. Do not mark anything approved
+  or published. After owner feedback, record which changes required conceptual reconstruction versus
+  local edits; workflow completion is not evidence of writing quality.
 
 ## Maintaining and testing the workflow
 
@@ -182,14 +205,15 @@ from this skill directory. These check extraction, unique review outputs, CLI fa
 handling with simulated responses, not writing quality. Use `DRY_RUN=1` on a real page to inspect
 what each reviewer receives. A text-only review cannot validate a diagram's rendering.
 
-For a quality pilot, use an untouched topic with the same source packet and writer model for two
-runs: existing guides alone, and guides plus this workflow. Save the first draft and the reviewed
-revision separately in an isolated output directory. For an unattended comparison, obtain an
-explicit checkpoint waiver; otherwise use the normal owner checkpoint and record any owner guidance
-as an intervention. Compare anonymized drafts for understandable argument, section connections,
-evidence scope and amount of owner revision needed. Include a clear passage and deliberately flawed
-variants when testing reviewers, so both missed defects and unnecessary criticism are visible.
-Try different primary page types before claiming that the workflow transfers reliably. Model admission
-is a useful next pilot: can readers explain which question each test answers, why the checks are
-combined, and what remains unchecked? Evaluate the first draft separately from review revisions and
-record owner interventions. Script checks do not establish writing quality.
+For the next quality pilot, use three untouched topics with different explanatory needs. Keep the
+source packet fixed for any paired comparison and record model, prototype approval or waiver, and
+owner interventions. Preserve first and reviewed drafts separately; capture the owner-revised
+version when available. Do not tune only against a page whose explanation the owner already repaired.
+
+Classify required owner changes in the brief: concept selection, order, missing connection,
+example/representation, prose, or claim support. Record whether the owner had to redesign the
+explanation or mostly make local edits. A shorter page, more reviewer findings, completed steps or
+reviewer approval is not a quality score. The target is less owner reconstruction while preserving
+correctness and sufficient explanation; no numeric usability threshold is claimed without owner
+assessment. If failures persist, change the relevant decision step instead of appending another
+universal rule. Automated checks validate the runner, not writing quality.

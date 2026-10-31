@@ -3,6 +3,7 @@
 Choose the closest example and read its **page copy** (the `## Page copy (draft)` section, not the historical brief or
 the comments). A and B are Level 2 drafts the owner preferred after their 2026-10-28 revisions. C is a later
 direct rewrite used for its opening and selection choices, not an independently verified exemplar.
+Select by explanatory need rather than matching the page level.
 They are examples of a process, not templates: do not copy their headings, section count or rhythm.
 
 - A: `writeup/game_design_orchestration/day_and_night/day_and_night.md` (Multi-Agent Game Orchestration)
@@ -101,3 +102,45 @@ Page: `writeup/evaluation/llm_judges/llm_judges.md`, 2026-10-29 direct revision.
 A model-admission exemplar can be added after a trial rewrite. Its likely organising question is
 what each test establishes before accepting a candidate, not a catalogue of runner steps. Do not
 create a new exemplar merely to fill a category.
+
+## Choosing how to explain a concept
+
+These short before/after pairs are illustrative teaching examples, not additional project evidence
+or mandatory page structures. Their purpose is to show the choice of explanation.
+
+### A transformation: expose the intermediate states
+
+**Abstract:** “Filtering is incidental at rendering, so enforce access during construction.”
+
+**Concrete:** “An input may contain `wolf_names` while the template uses only `your_role`. The model
+never sees the wolf names, but the incorrect input remains. Adding that placeholder later would
+expose it. Exclude the field when constructing the recipient's input.”
+
+**Why:** the input and what the template displays make the distinction visible. A short example
+works here; a longer pipeline with branches may need a diagram. Do not generalise this into a rule
+that every mechanism needs code or that every page needs layered subsections.
+
+### A selection decision: organise by the questions answered
+
+**Inventory:** “Admission uses schema checks, replays and games, with limitations at each stage.”
+
+**Explanation:** “First check whether responses can be used by the application. Then replay selected
+situations to inspect decisions under fixed inputs. Finally, run games to see whether the model can
+complete interacting turns. Passing the format check answers only the first question.”
+
+**Why:** each method has a purpose, and the relationship among the checks explains their combination.
+A small table could compare them if the page needs more criteria; a diagram is unnecessary for this
+simple sequence. The actual page must establish which checks this project really uses.
+
+### A quantitative finding: define the comparison and consequence
+
+**Compressed:** “Caching improved input efficiency, with output-dependent end-to-end effects.”
+
+**Explanation:** “Reusing input can reduce input charges. The total bill also includes generated
+output: a model that writes more may use up that saving. Compare total cost as well as cache use.”
+
+**Why:** the relationship between a component measure and the outcome is explained before results
+are introduced. Support empirical savings with actual evidence; this illustration establishes none.
+
+Across these examples, clarity comes from making the needed relationship explicit. It does not come
+from enforcing shorter sentences, more examples, diagrams, or one preferred section order everywhere.

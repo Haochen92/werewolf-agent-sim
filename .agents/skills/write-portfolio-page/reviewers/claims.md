@@ -4,7 +4,7 @@ read-only in the project repository. Do not edit any file.
 WHAT TO READ
 - The page file named below: its page copy (the `## Page copy` section) and its sources comment at
   the end, which maps claims to evidence.
-- The authoring brief named below, if it exists: its Frame, Evidence selection and Open questions.
+- The authoring brief named below, if it exists: its reader outcome, Evidence and scope, and unresolved questions (older briefs use Frame and Evidence selection).
 - The evidence the sources comment and the brief cite. Follow links into `evidence/` as needed.
 - The evidence rules in `.agents/skills/write-portfolio-page/references/portfolio-writing-prompt.md` (sections EVIDENCE DISCIPLINE and WHAT
   STAYS OFF THE PAGE) and, for a Level 2 or 3 page, the section CAUSAL AND EVIDENTIAL PRECISION in

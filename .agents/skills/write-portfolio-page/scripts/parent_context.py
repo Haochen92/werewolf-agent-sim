@@ -1,7 +1,8 @@
 """Print what a reader has already read before arriving on a portfolio page.
 
-A Level 2 page is reached from its chapter page (writeup/<chapter>/<chapter>.md), a Level 3 page
-from its Level 2 page (<subject>/<subject>.md). The reader has read the parent's introduction and
+A Level 2 page is reached from its chapter page. A Level 3 page may be reached directly from
+a self-contained chapter or from a Level 2 subject. The conventional parent is the named page
+in the same directory, or the named page one directory above for a nested subject. The reader has read the parent's introduction and
 the parent section that links here, so the cold editorial review treats that text as known context.
 
 Usage: python3 parent_context.py <page.md>
@@ -16,7 +17,7 @@ HEADING = re.compile(r"^(#{2,6}) ")
 def main(page: Path) -> None:
     parent, link_target = find_parent(page)
     if parent is None:
-        print("(No parent page: this is a chapter page. Treat it as opened directly.)")
+        print("(No conventional parent page found. Treat this page as opened directly.)")
         return
 
     lines = page_copy_lines(parent)

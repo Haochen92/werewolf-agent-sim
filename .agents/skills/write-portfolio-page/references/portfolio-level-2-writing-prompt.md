@@ -90,7 +90,8 @@ PAGE DESIGN
   deeper case analysis can sit in a focused L3 investigation while L2 retains the decisive evidence.
 - An optional Level 3 link sits beneath the subsection it deepens. This page still states that
   finding and its essential evidence; the Level 3 page adds method and analysis. Every Level 3 page
-  has such a subsection (or a passage in one); not every subsection has a Level 3 page.
+  has such a subsection in its L1 or L2 parent (or a passage in one); not every subsection has a
+  Level 3 page. A self-contained L1 can link directly to L3 without an intervening L2.
 - Keep the result, implication and material scope together. Conclude with the remaining limits or next
   evaluation step, not a repeated summary of every method.
 - Keep substantive explanation on the portfolio. Evidence links establish provenance, not an obligation
