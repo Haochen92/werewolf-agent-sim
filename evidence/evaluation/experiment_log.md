@@ -202,7 +202,7 @@ kinds recur here:
 Outside these, code loses. A keyword count of meaning said 32 summaries named a quiet player, and
 reading the matches found 4 of 124 (below, failure modes). A regex agreed with the model's addressee
 tags on 63% of 30 cases, so tagging went to the model
-(`../../interview_prep/lessons/deterministic_where_reliable.md`). The prose leak pass is substring
+(`../_study/lessons/deterministic_where_reliable.md`). The prose leak pass is substring
 matching, so a paraphrased leak passes ([`deterministic_audits/`](deterministic_audits/report.md)).
 
 **2. When a model screens for a human, set it to catch too much.** A screener makes two errors: a false
