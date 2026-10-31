@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "silent so far, no evidence either way", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "claims trailseer; follow of player_7 to player_8 is hard info but unverified, and it cannot show who visited player_3", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "silent so far, no evidence either way", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claims investigator with a Suspicious read on player_9; a claim only, no way to check it yet", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "pressed the role claims without taking a side yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "confirmed a visit to player_8 but claimed no role; the only one of the followed visits we can test", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_9", "why": "read as Suspicious by the investigator claim; the claim is untested", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "silent so far, no evidence either way", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "I was roleblocked on night 1, so my protection of player_5 did not happen and I have no results. Stay quiet unless addressed, and do not reveal my role without need. Watch for the first vote and for role claims that can be checked against each other. Save my protection for a Town claimant who is attacked.",
+  "pass_turn": false,
+  "message": "Since the trailseer and investigator are both claims, I'd like them tested against each other. player_3, you have a follow on player_7 going to player_8. player_5, if you checked player_9 on night 1, ask whether player_9 ever went anywhere that the trailseer could show. That is one thing that could line up or not. For now I'm not voting on anyone.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_3", "addressed_form": "question", "stance": "neutral"},
+    {"target": "player_5", "addressed_form": "question", "stance": "neutral"}
+  ]
+}

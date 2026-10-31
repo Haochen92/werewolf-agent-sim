@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no claims or results yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "follow says player_7 came to me, which fits the block I got night 1", "suspected_role": "trailseer", "confidence": "high"},
+    {"player": "player_4", "why": "no claims or results yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious on player_9, nothing to test it against yet", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "pushed player_7 to answer, useful question", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits coming to me night 1, the night I was roleblocked, and claims no role", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "player_5 claims a Suspicious check on them; unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no claims or results yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "I was roleblocked night 1, so the Chanteuse came to me; player_3's follow and player_7's own admission put player_7 at my door that night, so player_7 is very likely the Chanteuse. I said I have a night action and was blocked, but kept my exact role hidden. Vote player_7 today. If player_7 goes, check whether their role confirms; tonight protect a credible info claimant (player_3 likely), and keep my role quiet unless my life depends on it.",
+  "pass_turn": false,
+  "message": "I have a night action, and last night I was roleblocked. Only the Chanteuse can block, and a block is a visit, so a wolf came to me. player_3 says player_7 went to me, and player_7 just admitted it while refusing to name a role. That's two pieces fitting together. player_7 is my vote unless they can explain that visit.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

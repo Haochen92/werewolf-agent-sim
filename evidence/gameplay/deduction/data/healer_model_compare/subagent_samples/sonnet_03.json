@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer claim: followed player_7 who went to player_8; player_7 confirms it and my night fits", "suspected_role": "trailseer", "confidence": "high"},
+    {"player": "player_4", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim, player_9 Suspicious; unverified but not contradicted", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked the useful question of player_7", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to player_8; I was roleblocked that night and only the Chanteuse can do that", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "called Suspicious by player_5, unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "updated_strategy": "I revealed healer and that I was roleblocked on night 1; only the Chanteuse can block, so player_7 (who admits visiting me) is the Chanteuse. Push player_7 for the day 2 vote. Expect wolves or the serial killer to target me tonight; if I survive, protect the investigator claimant player_5 or trailseer player_3 depending on who looks most at risk. Watch whether player_5's read on player_9 gets backed up.",
+  "pass_turn": false,
+  "message": "player_3 said player_7 went to player_8, and player_7 admits it. That was me. I'm the healer and I was roleblocked last night, my protection of player_5 never happened. Only the Chanteuse can block, and a block is a visit, so player_7 is the Chanteuse. I'd vote player_7.",
+  "claim": "healer",
+  "claimed_night_actions": [
+    {"night": 1, "action": "protect", "target": "player_5", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

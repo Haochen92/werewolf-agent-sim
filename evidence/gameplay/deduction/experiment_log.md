@@ -31,7 +31,7 @@ across samples. The model holds the same wrong belief each time it reads the sam
 
 | ID | Game, turn | What happened | Status |
 |---|---|---|---|
-| R1 | 2f19d908 day 2, healer (seat 8) | Roleblocked on night 1; the trailseer saw player_7 visit it and player_7 admitted it. The healer wrote every premise in its notes and passed three times, never naming player_7 as the Chanteuse | Two causes found (§4–5): the missing first step (injection fixes it) and its own carried-forward "stay quiet" note |
+| R1 | 2f19d908 day 2, healer (seat 8) | Roleblocked on night 1; the trailseer saw player_7 visit it and player_7 admitted it. The healer wrote every premise in its notes and passed three times, never naming player_7 as the Chanteuse | Two causes found (§4–5): the missing first step (injection fixes it) and its own carried-forward "stay quiet" note. §8 (2026-10-30): in the live output mode the engine line moves Haiku's read from 2/10 to 8/10; Sonnet and Opus make the link without it |
 | R2 | 2f19d908 day 3, the moderator's closing line | "player_8 has been accused by player_2, player_5 and player_4": one accuser had withdrawn ("player_8's visit checks out"), one had asked a question. The investigator's vote cited "accused by three players" | Fixed in code (§1) |
 | R3 | 2f19d908 day 3 votes | The investigator voted out the healer who had protected it; on replay most town voters also voted a claimant whose claim was consistent with the others' | §2 |
 | R4 | Day summaries, both Haiku games | `record_check` (meant only for a conflict with the record) written to confirm facts or back an argument | §3 |
@@ -124,6 +124,11 @@ draws; the wrong votes recur.
 **Decision (pending).** Medium is the strongest single lever measured, and it acts on votes. At about 2.7×
 the output on votes, a game would cost roughly $0.23 instead of $0.12. Moving the house setting to
 medium for votes only is the next decision for the owner.
+
+> *Note 2026-10-30.* Both arms pinned the enforced schema (`json_schema`); live Haiku turns have sent
+> the schema as text (`json_mode`) since 2026-10-14. On one R1 turn the output mode alone moved Haiku's
+> read from 2/10 to 8/10 at `low` (§8). Re-run in the live mode in §9: low 62%, medium 77% on the 16
+> cases; the levels above are the enforced mode's.
 
 ## §3 The day summary on Sonnet
 
@@ -228,6 +233,11 @@ The opening and last-sweep turns spoke 0–1 times in 10 in every cell.
 choice to stay silent, not the missing fact. The wider audit of other certain conclusions waits until
 the silence is understood (§5).
 
+> *Note 2026-10-30.* This run pinned the enforced schema (`json_schema`); live Haiku turns have sent the
+> schema as text (`json_mode`) since 2026-10-14. In the live mode the same turn reads player_7 as the
+> Chanteuse 8/10 with the injected line and about half the samples say so (§8). The numbers above stand
+> for the enforced mode.
+
 ## §5 R1: why the healer stays silent
 
 **Question.** §4 left the healer knowing the Chanteuse had visited it and still passing. The owner asked
@@ -272,6 +282,10 @@ after new evidence arrives; that is a cross-role issue in how notes are carried 
 issue, and its fix is for the owner to rule on. Separately, injecting a certain conclusion is taken up
 reliably (§4) but does not by itself produce the next inference. So the wider audit for other certain
 conclusions stays open: worth doing, but not expected to change behaviour on its own.
+
+> *Note 2026-10-30.* This run pinned the enforced schema; in the live output mode, injection plus the
+> as-played note reads player_7 as the Chanteuse 8/10 and about half the samples speak (§8). "Does not by
+> itself produce the next inference" holds for the enforced mode.
 
 
 ## §6 Rewriting the private note (not adopted)
@@ -369,6 +383,138 @@ public events are in `data/game_645228e7/events.jsonl`; its prompts are in the s
   the human had proposed nothing. The owner sees the wolf-chat UX on a phone (the chat window is too
   small) as the larger problem; a design is for the owner's review.
 
+## §8 R1 again: engine, thinking, output mode and model (2026-10-30)
+
+**Question.** Can the healer connect the dots without the engine, and if not, what does it take: the
+engine's line, more thinking, or a larger model? The owner asked while planning the write-up's chapter on
+what agents are given; no larger model had been tried on a player turn (§3 tried Sonnet on summaries
+only).
+
+**Setup.** One frozen turn: R1's turn right after player_7's admission (case `9b3219e5dc1eb831`, as
+played, memory off), 10 samples per arm. Today's code renders the engine's roleblock line into the night
+record (the §4 injection has shipped), so "engine on" is the case as rendered now and "engine off" sets
+the game's deduction mode to "off" on the payload, which brings back the game's original line ("You were
+roleblocked: your action was not carried out and you learned nothing tonight") and drops the engine
+block. Measures fixed before the runs, as in §4: the private read of player_7 (Chanteuse or not), whether
+the seat spoke, and whether its message ties player_7 to the block (read by hand). Runs used HEAD
+`fae9fc97` with uncommitted changes to round ordering (`Agents/nodes/day/flow.py`,
+`Agents/turn/round_filter.py`, `Agents/state/day.py`) and offline extraction; none touches the
+discussion-turn payload builder this case uses.
+
+Two harnesses:
+- **The game path:** the bench's own call (`get_llm`, the production template, the legal-target
+  schema), the model and settings from the environment. Output mode `json_mode` (the schema sent as text)
+  is the live mode for Haiku since 2026-10-14; §2, §4 and §5 pinned `json_schema` (enforced).
+- **Subagents:** Claude Code subagents (Haiku, Sonnet, Opus), each in a fresh context, given the rendered
+  system message, user message and schema in one file and told to act as the game model and write one
+  JSON object. Their thinking effort is Claude Code's default and cannot be set; the game's system message
+  arrives as file content, not in the system role; the output is not enforced. No API cost.
+
+**Result 1: the output mode decided most of what §4 measured.** Engine on, Haiku at `low`:
+
+| Haiku, engine on, game path | Read: player_7 = Chanteuse | Spoke | Message ties player_7 to the block | Reasoning tokens |
+|---|---|---|---|---|
+| `json_schema` (enforced; §4's mode) | 2/10 | 5/10 | 1/10 | 0 in 4 samples; at most 1,312 |
+| `json_mode` (live) | 8/10 | 7/10 | about 5/10 | 409–1,233, every sample |
+| `json_mode`, thinking `high` | 10/10 | 8/10 | about 3–5/10 | 2,933–5,042 |
+
+The enforced arm reproduces §4's low injected row (2/10). With the schema enforced, Haiku reported no
+reasoning tokens in 4 of 10 samples; with it sent as text, every sample used reasoning tokens (zero
+reasoning tokens do not show that no reasoning happened). The bench's fact check found no
+violation in any live-mode sample (0 of 20).
+
+**Result 2: without the engine, Haiku at the live setting mostly misses it; larger models do not.** All
+game path, `json_mode`, engine off:
+
+| Engine off, game path | Read: player_7 = Chanteuse | Spoke | Median time a turn | Reasoning tokens |
+|---|---|---|---|---|
+| Haiku, `low` | 2/10 | 3/10 | 6.3 s | 269–1,021 |
+| Haiku, `high` | 9/10 | 5/10 | 17.4 s | 1,759–3,437 |
+| Sonnet 5.5, `low` | 9/10 | 10/10 | — | 0 in all 10 |
+| Opus 5.5, `low` | 10/10 | 10/10 | — | 252–383 |
+
+- Haiku without the engine notes "admits visiting me … claims no role" and stops. Turning the engine on
+  moves the same arm from 2/10 to 8/10 (Result 1, live mode). *Scope (2026-10-30, claims review):* this
+  compares the whole engine against the game's original night record, whose "you learned nothing
+  tonight" §4 calls false and against the deduction; turning the engine on replaces that clause with the
+  certain line and also adds the engine's general lines (candidate roles, "No one else claims …"). The
+  run does not isolate the one certain line against a neutral record.
+- Haiku at `high` gets there alone (9/10), but its reads are hedged ("could also be innocent"), half
+  pass, and a turn takes about 2.8 times as long.
+- Sonnet makes the link with no reasoning tokens; Opus makes it every time, rates its read "high", and
+  every message sets out the chain (blocked → only the Chanteuse blocks → player_7 admits the visit).
+  One Sonnet message said "Nothing happened to me last night", which is false.
+- Cost of these 20 calls: Sonnet about $0.25 at the pricing table's rates; Opus about $0.59 at
+  $4 / $20 per million tokens, rates not in `pricing.py`. Sonnet seats cost about $2.30 a game against
+  Haiku's $0.12 (§2's question).
+
+**Result 3: the subagent harness flatters the models.** Engine on:
+
+| Engine on, subagent | Read | Spoke | Message ties player_7 to the block |
+|---|---|---|---|
+| Haiku | 6/10 | 7/10 | 0/10 (1 hedged) |
+| Sonnet | 10/10 | 10/10 | 8/10 |
+| Opus | 10/10 | 10/10 | 10/10 |
+
+Subagent Haiku reads it 6/10 against 2/10 on the game path with the schema enforced, most likely from
+its larger thinking budget. A subagent result is not a game-path result; it is kept here because it
+prompted Results 1 and 2.
+
+**What it shows.**
+- On this turn, connecting "I was blocked" with "player_7 admits visiting me" is within reach of every
+  model tested; what Haiku at the live setting lacks is the step the engine supplies, or about four times
+  the reasoning on every turn. The engine buys most of the gap at the live setting's speed.
+- §4's "the fact is absorbed, the behaviour does not change" was measured with the schema enforced. In the
+  live mode, the same turn, still carrying the healer's "stay quiet" note, reads player_7 as the
+  Chanteuse 8/10 and about half the samples say so.
+- **The output-mode effect is Haiku's evidence.** Related observations in other low-cost models, none a
+  like-for-like text-format comparison: Gemini 3.5 Flash-Lite reported 0 reasoning tokens with structured
+  output at `minimal` and `low` (its catalogue note; `discussion_evidence.md` §6.7), and a forced tool call
+  turned thinking off for DeepSeek V4 Pro and for Haiku (`evaluation/model_admission/report.md`). How much it costs a given
+  model's play is not measured beyond this turn.
+- **Not established:** anything beyond this one turn; the larger models through the game path with the
+  engine on; whether §2's and §5's results hold in the live output mode.
+
+**Decision.** For the write-up, R1 is told with the engine on and off in the live mode (Result 2 with the
+live-mode row of Result 1), and §4's result as measured in the enforced mode. Whether to re-run §2 and §5
+in the live mode is for the owner.
+
+---
+
+## §9 §2's votes again, in the live output mode (2026-10-30)
+
+**Question.** §2 pinned the enforced schema (`json_schema`); live Haiku turns send the schema as text
+(`json_mode`) since 2026-10-14, and §8 found the mode moved one turn's read from 2/10 to 8/10. Does §2's
+vote result hold in the live mode? Owner-approved re-run.
+
+**Setup.** §2's vote cases and arms unchanged except the output mode
+(`evaluation/config/hallucination_bench_haiku_effort_votes_live_mode.json`), 10 samples a case, scored by
+§2's scorer (`haiku_effort_score.py`, a vote is right when it names the actual threat). A few samples per
+arm failed to produce a vote (203 and 208 valid of 210). Same working tree as §8.
+
+**Result: the live mode lifts both levels; medium still helps.** The 16 cases as played:
+
+| Votes right | Low | Medium |
+|---|---|---|
+| §2, `json_schema` | 65/160 (41%) | 98/160 (61%) |
+| §9, `json_mode` | 97/157 (62%) | 122/158 (77%) |
+| 403f4dbc controls (right in the game) | 57/69 | 63/68 |
+| 403f4dbc positives | 9/40 | 17/40 |
+| 2f19d908 day 3, controls | 27/39 | 34/40 |
+| 2f19d908 day 3, investigator | 4/9 | 8/10 |
+
+Output per vote: about 1,440 tokens at low, 2,120 at medium. With today's closing line, the 2f19d908 day-3
+votes were right 37/46 at low and 39/50 at medium.
+
+**What it shows.** In the live mode, Haiku at `low` votes about as well as it did at `medium` under the
+enforced schema, and `medium` still adds about 15 points on these cases (20 before). §2's direction holds;
+its levels were the enforced mode's. The day-6 votes in 403f4dbc stay wrong at both levels, as in §2.
+
+**Decision.** The medium-for-votes question (§2, decision pending) stands, now with the live-mode numbers:
+about 15 points on these cases for about 1.5 times the output a vote. §5's silence test was not re-run.
+
+---
+
 ## Sources
 
 - Code: `evaluation/experiments/haiku_effort_cases.py`, `haiku_effort_score.py`,
@@ -380,5 +526,9 @@ public events are in `data/game_645228e7/events.jsonl`; its prompts are in the s
   `data/deduction_injection/` (cases); bench samples and verdicts in
   `evaluation/eval_results/hallucination_bench/{haiku_effort_votes,haiku_effort_turns,deduction_injection,healer_silence}/`.
 - The R2 fix: `Agents/rules/closing.py` (2026-10-16). `record_check` removed from the day summary (2026-10-16, §3).
+- §9: config `evaluation/config/hallucination_bench_haiku_effort_votes_live_mode.json`; samples in
+  `evaluation/eval_results/hallucination_bench/haiku_effort_votes_live_mode/`; scored with `haiku_effort_score.py`.
+- §8: `evaluation/experiments/healer_model_compare.py`; data, renders and configs in `data/healer_model_compare/`;
+  engine-on game-path samples in `evaluation/eval_results/hallucination_bench/{healer_model_anchor,healer_model_anchor_live_mode}/`.
 - §6: `evaluation/experiments/note_prompt_cases.py`; samples in `evaluation/eval_results/note_prompt_screen/`;
   judging packets, blind key and verdicts in `data/note_prompt/judging/`.

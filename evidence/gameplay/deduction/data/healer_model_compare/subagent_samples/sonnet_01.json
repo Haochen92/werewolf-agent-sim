@@ -1,0 +1,21 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no info yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer follow of player_7 matches what I saw and what player_7 admits", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no info yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim, unverified; player_9 read could be true or a frame", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "no info yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me last night, and I was roleblocked; only the Chanteuse could block", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "named Suspicious by player_5, unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no info yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "updated_strategy": "Night 1 I was roleblocked, so the Chanteuse visited me; player_7 admits going to player_8 and player_3's follow backs it, so player_7 is the Chanteuse (wolf). I did not reveal my role, only that I was blocked. Vote player_7 today. Keep the healer claim hidden unless exposure is needed; protect player_5 or player_3 at night if they look like real Town claimants, and watch whether the wolves try to kill them.",
+  "pass_turn": false,
+  "message": "player_7 did come to me last night, and I was roleblocked. Only the Chanteuse can block anyone, so player_7 is the Chanteuse, a wolf. That also backs player_3's follow. I'm voting player_7 today.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "defense"}
+  ]
+}

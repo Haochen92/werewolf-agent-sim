@@ -1,0 +1,25 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "No claims or actions yet; nothing to go on.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "Their follow of player_7 to me fits my private roleblock: a wolf did come to me night 1.", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "No claims or actions yet; nothing to go on.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "Investigator claim with a Suspicious on player_9; unconfirmed, and a bit quick to wave off player_3's follow.", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "Asked player_7 the right question; reads town-leaning but no evidence.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "Admits going to me night 1, the night the Chanteuse blocked me, and refuses to say what they did or claim a role.", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "Only player_5's claimed Suspicious read; unverified.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "No claims or actions yet; nothing to go on.", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "I was roleblocked night 1, so the Chanteuse visited me; player_7 admits going to me and won't say why, so player_7 is my top Chanteuse suspect and my vote today. I said publicly I'm town with a night action that was blocked, without naming healer. player_3's trailseer follow lines up with my block, so lean on player_3 as real and consider protecting them or player_5 tonight. Keep the healer role hidden unless I need it to save the player_7 vote.",
+  "pass_turn": false,
+  "message": "player_7 is my vote right now. I'm town with a night action and I was roleblocked night 1. Only the Chanteuse blocks, and a block is a visit, so a wolf came to me that night. player_7 admits they came to me and won't say why. player_7, what did you do at my door?",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

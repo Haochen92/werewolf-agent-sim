@@ -1,0 +1,20 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "No claims or actions yet.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "Claims trailseer; the follow on player_7 landing on me is a claim I cannot check.", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "Has not spoken yet.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "Claims investigator; the Suspicious read on player_9 is unverified.", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "Pushed for role claims; no evidence either way yet.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "Says they went to me last night; no role claim, so the visit proves no role.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_9", "why": "Accused by player_5's read; a wolf only if that read is true.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "Has not spoken yet.", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results, and only the Chanteuse blocks, so a wolf came to me that night. player_3 and player_5 both claim roles and neither can be checked yet; player_7 says they went to me, which fits a visit but not a role. I will stay quiet and keep my role hidden unless someone accuses me directly or a claim gets tested. I will abstain on the vote today, and save my protection for a Town claimant who is attacked.",
+  "pass_turn": true,
+  "message": "",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": []
+}

@@ -1,0 +1,28 @@
+{
+ "label": "healer_model_anchor_live_mode",
+ "dataset": "/tmp/claude-1001/-home-ubuntu-projects-werewolf-agent-sim/e7f59c8f-b2b6-46a4-978f-eee6338c27d1/scratchpad/healer_replay/anchor_case.jsonl",
+ "n": 10,
+ "workers": 3,
+ "arms": [
+  {
+   "model": "anthropic/claude-haiku-5-5",
+   "memory": "none",
+   "label": "haiku_low_live",
+   "env": {
+    "GOOGLE_GENAI_THINKING_LEVEL": "low",
+    "LLM_STRUCTURED_MODE": "json_mode"
+   }
+  },
+  {
+   "model": "anthropic/claude-haiku-5-5",
+   "memory": "none",
+   "label": "haiku_high_live",
+   "env": {
+    "GOOGLE_GENAI_THINKING_LEVEL": "high",
+    "LLM_STRUCTURED_MODE": "json_mode"
+   }
+  }
+ ],
+ "golden_model": "anthropic/claude-sonnet-5-5",
+ "note": "2026-10-30: the healer key turn (9b3219e5dc1eb831, engine line present) through the game path with the live output mode (schema as text), Haiku at low and high thinking; tests whether thinking explains the subagent-harness gap (subagent Haiku 6/10 reads)."
+}

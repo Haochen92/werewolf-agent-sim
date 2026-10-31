@@ -1,0 +1,26 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no claims or statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer claim that player_7 went to player_8 is confirmed by player_7 and matches my being blocked", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no claims or statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious read on player_9; unverified but no counter-claim", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked player_7 a useful question; nothing else to go on", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me on night 1, the night the Chanteuse blocked me, and refuses to claim a role", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "player_5 claims a Suspicious read on them; unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no claims or statements yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "I'm the healer; night 1 I was roleblocked trying to protect player_5, so the Chanteuse came to me, and player_7 admits visiting me. I revealed the block (wolves already know it took) but not my role. Push player_7 to claim: with player_3 trailseer and player_5 investigator, a visit to me means sentinel, sigilist or Chanteuse. Vote player_7 if they won't claim; protect a credible town claimant (player_3 or player_5) tonight.",
+  "pass_turn": false,
+  "message": "Something new: I was roleblocked last night, so the Chanteuse came to me, and player_7 just said they went to me. If player_3 is trailseer and player_5 investigator, a visit to me leaves player_7 as sentinel, sigilist or the Chanteuse. player_7, which is it? If you won't say, you're my vote today.",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "neutral"},
+    {"target": "player_5", "addressed_form": "mention", "stance": "neutral"}
+  ]
+}

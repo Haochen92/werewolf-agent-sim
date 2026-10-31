@@ -1,0 +1,24 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no claims or actions yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer claim; the follow on player_7 is confirmed by player_7, the only hard fact so far", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "silent so far", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious read on player_9; unverified, and player_3 disputes it only by claim", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "only asked for role claims, no stance yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me on night 1 and refuses to claim a role; I was roleblocked that night, so the Chanteuse visited me, and player_7 is the only visit to me anyone has named", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "named a wolf by player_5's unverified check", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "silent so far", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results and the Chanteuse came to me that night. player_7 says they went to me, which is the only visit to me anyone has named, so I will treat player_7 as the lead to test. Do not reveal the healer role without need. Protect a Town claimant who is attacked, and vote only with a stated reason.",
+  "pass_turn": false,
+  "message": "player_7 says they went to me on night 1, and player_3's follow says the same, so that visit is the one hard link we have. player_5, you're holding your second check. Spend it on player_7 now; a Suspicious read would tell us more than another claim.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "neutral"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "neutral"},
+    {"target": "player_5", "addressed_form": "question", "stance": "neutral"}
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no claims or results yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "follow of player_7 to me fits my own roleblock; the claimed visit is real by player_7's own admission", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no claims or results yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "unchallenged investigator claim with a Suspicious read on player_9; untested", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked player_7 a useful question; nothing else to go on", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me on night 1, the night I was roleblocked, and refuses to claim a role", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "player_5 claims a Suspicious read on them; only a claim so far", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no claims or results yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so the Chanteuse came to me; player_7 admits visiting me and player_3's follow says the same, so player_7 is my top Chanteuse suspect and my vote today. I said I was blocked but kept my exact role hidden to avoid becoming a target. If player_7 claims sentinel or sigilist, test it: a sentinel watching me must name the other visitor. Protect player_3 or player_5 at night if they look like real Town claimants.",
+  "pass_turn": false,
+  "message": "player_7, I was roleblocked last night, and you've admitted you came to me. Only the Chanteuse blocks, so unless you say what you did at my door, you're my vote. If you were watching me, name who else came.",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"}
+  ]
+}

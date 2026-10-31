@@ -1,0 +1,19 @@
+{
+ "label": "healer_model_anchor",
+ "dataset": "/tmp/claude-1001/-home-ubuntu-projects-werewolf-agent-sim/e7f59c8f-b2b6-46a4-978f-eee6338c27d1/scratchpad/healer_replay/anchor_case.jsonl",
+ "n": 10,
+ "workers": 3,
+ "arms": [
+  {
+   "label": "haiku_low",
+   "model": "anthropic/claude-haiku-5-5",
+   "env": {
+    "GOOGLE_GENAI_THINKING_LEVEL": "low",
+    "LLM_STRUCTURED_MODE": "json_schema"
+   },
+   "memory": "none"
+  }
+ ],
+ "golden_model": "anthropic/claude-sonnet-5-5",
+ "note": "Anchor for the 2026-10-30 subagent model comparison: case 9b3219e5dc1eb831 (as played), Haiku low through the real replay path."
+}

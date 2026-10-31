@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "claims trailseer; the follow only shows player_7 went to me, which I cannot check", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_4", "why": "silent so far", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claims investigator; the Suspicious read on player_9 is unchecked", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked for claims, has not stated a role", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "went to me on the night I was roleblocked, and only the Chanteuse blocks", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "a Suspicious read from player_5 makes it a wolf; if player_7 is the Chanteuse, this is more likely the Illusionist", "suspected_role": "illusionist", "confidence": "low"},
+    {"player": "player_10", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results and I did not protect anyone. The only visit reported to me is player_7's follow-based visit, and only the Chanteuse blocks, so player_7 is my lead for the Chanteuse, though it is still a read. Player_5's Suspicious read on player_9 is untested. Stay quiet unless addressed, do not claim healer without need, and save protection for a Town claimant who is attacked.",
+  "pass_turn": false,
+  "message": "player_3, you've put me on watch off one follow, and that follow only shows where player_7 went, not who was there. player_7, you went to player_8 last night; did you do anything there, or just visit? A plain answer lets the trailseer and investigator be checked. I wouldn't vote on this yet.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_3", "addressed_form": "response", "stance": "neutral"},
+    {"target": "player_7", "addressed_form": "question", "stance": "neutral"}
+  ]
+}

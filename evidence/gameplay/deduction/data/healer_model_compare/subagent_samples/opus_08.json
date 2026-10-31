@@ -1,0 +1,25 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no claims or night info yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer follow of player_7 to me matches my own block: the Chanteuse came to me and player_7 admits coming to me", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no claims or night info yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious read on player_9; unconfirmed", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked player_7 the right question; nothing else yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits visiting me night 1, the night I was roleblocked, and refuses to name a role; the Chanteuse must have visited me", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "player_5 claims a Suspicious read; if player_7 is the Chanteuse, player_9 could be the Illusionist", "suspected_role": "illusionist", "confidence": "low"},
+    {"player": "player_10", "why": "no claims or night info yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Fact: I was roleblocked night 1, so the Chanteuse visited me; player_3 claims player_7 went to me and player_7 admitted it. I disclosed the block without naming healer, so the SK doesn't know my role, though the wolves already know I'm a Town actor. Push the vote on player_7 unless they claim a role that explains the visit (sentinel/sigilist), then weigh it. Tonight protect a confirmed-looking info role like player_3 or player_5.",
+  "pass_turn": false,
+  "message": "player_7, that visit matters: I was roleblocked last night, and only the Chanteuse can block, so the Chanteuse came to me. player_3 says you came to me and you've admitted it. Unless you name a role that explains visiting me, you're my vote today.",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

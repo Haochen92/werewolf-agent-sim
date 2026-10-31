@@ -1,0 +1,21 @@
+{
+ "reads": [
+  {"player": "player_2", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_3", "why": "trailseer claim matches my night: a visit to me did happen", "suspected_role": "trailseer", "confidence": "high"},
+  {"player": "player_4", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_5", "why": "investigator claim unverified; player_9 read cannot be checked yet", "suspected_role": "investigator", "confidence": "low"},
+  {"player": "player_6", "why": "asked useful questions, nothing else to go on", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_7", "why": "admits going to me; I was roleblocked and only the Chanteuse can do that", "suspected_role": "chanteuse", "confidence": "high"},
+  {"player": "player_9", "why": "only accused by player_5's unverified read", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_10", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"}
+ ],
+ "updated_strategy": "Night 1 I was roleblocked, so the Chanteuse (a wolf) visited me. player_7 admitted going to me and player_3's follow fits, so player_7 is almost certainly the Chanteuse. I outed the roleblock without claiming healer; keep the healer role hidden unless a claim is needed to survive. Push the vote on player_7, and tonight protect a Town claimant such as player_3 or player_5.",
+ "pass_turn": false,
+ "message": "player_7 did come to me last night. I was roleblocked, and only the Chanteuse can do that, so player_3's follow checks out. player_7 isn't claiming a role and went to a player who got blocked. That makes player_7 a wolf, and I'm voting player_7 today.",
+ "claim": "none",
+ "claimed_night_actions": [],
+ "addressed_targets": [
+  {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+  {"target": "player_3", "addressed_form": "mention", "stance": "defense"}
+ ]
+}

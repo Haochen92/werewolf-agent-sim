@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no evidence yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "claims trailseer; the follow on player_7 is matched by player_7's own words, but it is still only a claim", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no evidence yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claims investigator and a Suspicious read on player_9; untested", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "no evidence yet; only asked player_7 to speak", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "confirmed a visit to player_8 and then refused to say what they did there", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_9", "why": "called a wolf only by player_5's unchecked claim", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no evidence yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results, and I know a Chanteuse came to me that night. player_3 and player_5 are both unchecked role claims, so I stay out of that contest for now. player_7 confirmed a visit to me, which matches player_3's follow, but I cannot say who it was. Keep my healer role hidden, protect a Town claimant who gets attacked, and abstain on votes until a result can be tested.",
+  "pass_turn": false,
+  "message": "player_7, you confirmed going to player_8, which matches player_3's follow, so that visit is now on the record twice. What did you do there? With two role claims and nothing to check yet, I'm not picking a side and would abstain on a vote today.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "neutral"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "neutral"}
+  ]
+}

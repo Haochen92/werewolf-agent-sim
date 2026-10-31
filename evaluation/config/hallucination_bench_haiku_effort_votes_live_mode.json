@@ -1,0 +1,28 @@
+{
+ "label": "haiku_effort_votes_live_mode",
+ "dataset": "evidence/gameplay/deduction/data/haiku_effort_replay/vote_cases.jsonl",
+ "n": 10,
+ "workers": 3,
+ "arms": [
+  {
+   "label": "haiku_low_live",
+   "model": "anthropic/claude-haiku-5-5",
+   "env": {
+    "GOOGLE_GENAI_THINKING_LEVEL": "low",
+    "LLM_STRUCTURED_MODE": "json_mode"
+   },
+   "memory": "none"
+  },
+  {
+   "label": "haiku_medium_live",
+   "model": "anthropic/claude-haiku-5-5",
+   "env": {
+    "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+    "LLM_STRUCTURED_MODE": "json_mode"
+   },
+   "memory": "none"
+  }
+ ],
+ "golden_model": "anthropic/claude-sonnet-5-5",
+ "note": "2026-10-30 re-run of experiment_log \u00a72 votes in the live output mode (json_mode, the schema sent as text, live for Haiku since 2026-10-14); \u00a72 pinned json_schema. Same cases, arms and scoring otherwise. Record: evidence/gameplay/deduction/experiment_log.md \u00a79."
+}
