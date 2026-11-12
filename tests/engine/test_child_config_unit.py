@@ -12,9 +12,12 @@ The helper wraps LangChain's `patch_config`. It inherits the parent recursion li
 """
 from __future__ import annotations
 
+import os
+
 from langchain_core.runnables.config import var_child_runnable_config
 
 from Agents.config import child_runnable_config
+from Agents.config.game import GameConfig
 
 
 def _parent():
@@ -105,3 +108,15 @@ def test_explicit_recursion_override_wins():
     child = child_runnable_config(parent, recursion_limit=999)
     assert child["recursion_limit"] == 999
     assert child["configurable"]["thread_id"] == "game-1"
+
+
+def test_child_carries_seat_sized_max_concurrency():
+    """The child config carries a pool size that fits every seat in one wave (Python's default
+    pool is 8 on a 4-CPU host, so two of ten seats waited), never below that default. The parent
+    stays without one: on the root of an async run it would cap the whole main graph."""
+    parent = _parent()
+    child = child_runnable_config(parent)
+    seats = GameConfig().seats
+    assert child["max_concurrency"] >= seats
+    assert child["max_concurrency"] >= min(32, (os.cpu_count() or 1) + 4)
+    assert "max_concurrency" not in parent

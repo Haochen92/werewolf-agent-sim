@@ -8,6 +8,7 @@ config -> (game, run) and never config -> tracing, so settings stay framework/ob
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 from langchain_core.runnables import RunnableConfig
@@ -100,10 +101,31 @@ def child_runnable_config(
 
     Note: propagation of the checkpointer works via ambient contextvars too, so this helper's
     correctness is pinned by tests/engine/test_child_config_unit.py, NOT by the interrupt integration test.
+
+    The child also gets a `max_concurrency` sized to the game's seats (see
+    subgraph_max_concurrency). It goes on the CHILD only: on the root of an async run LangGraph
+    turns it into a semaphore over the whole main graph, where a night step runs up to nine parts.
     """
     if recursion_limit is None:
         recursion_limit = (parent or {}).get("recursion_limit", DEFAULT_RECURSION_LIMIT)
-    return patch_config(parent or {}, recursion_limit=recursion_limit)
+    return patch_config(
+        parent or {},
+        recursion_limit=recursion_limit,
+        max_concurrency=subgraph_max_concurrency(game_config_from_runnable(parent)),
+    )
+
+
+def subgraph_max_concurrency(game: GameConfig) -> int:
+    """Thread-pool size for a subgraph's parallel seats (the day rounds and votes, the pack).
+
+    A sync subgraph run gets its own pool, sized by `max_concurrency` or else by Python's default
+    (cpu count + 4, capped at 32): 8 on a 4-CPU host, so with ten seats two waited for a second
+    wave and a round took two model calls' time. One thread per seat puts every seat in one wave;
+    the floor keeps a small game from getting a smaller pool than the default gave. The threads
+    mostly wait on the network, so the extra ones are cheap.
+    """
+    python_default = min(32, (os.cpu_count() or 1) + 4)
+    return max(game.seats, python_default)
 
 
 def game_id_from_runnable(config: dict[str, Any] | None) -> str:
