@@ -249,9 +249,15 @@ class _RetryingOpenRouterEmbeddings(OpenAIEmbeddings):
 
 
 def _create_openrouter_embeddings(model: str, output_dimensionality: int | None) -> OpenAIEmbeddings:
+    """Every request is timed, and only ``_embed_with_retries`` asks again. Left unset, the
+    client waits on a request with no limit and re-sends it twice on its own, under the five
+    attempts here: a held connection then stalls a seat's lesson lookup, and the store's lock
+    with it, for as long as the host likes (found by reading, 2026-11-11; no incident)."""
     return _RetryingOpenRouterEmbeddings(
         model=model, base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"),
         dimensions=output_dimensionality,
+        timeout=float(os.getenv("EMBED_TIMEOUT_S", "30")),
+        max_retries=0,
         # Not an OpenAI model: send raw text, not tiktoken ids.
         check_embedding_ctx_length=False,
         model_kwargs={"extra_body": {"provider": {"order": OPENROUTER_EMBEDDING_PROVIDERS,
