@@ -122,6 +122,11 @@ one sitting (`frontend_lessons.md` 25).
   seat-tier types, `uses_remaining` and `night_record`, which the nine-seat game it streams never
   carries.
 - **Sound.** The music's cue logic is unit-tested, but the browser suite never plays audio.
+- **Accessibility.** Nothing checks it (no axe, no `jsx-a11y` lint rules). The site was built with
+  care: real `<button>`s and links, `aria-*` labels, `aria-live` regions, `prefers-reduced-motion`
+  and `:focus-visible` styles. But it has never been audited or played by keyboard alone. Known
+  gaps from a 2026-11-11 scan: the lobby inputs turn their focus outline off with no
+  `:focus-visible` replacement (`Lobby.module.css`), and there is no skip link.
 
 ## Who runs the browser tests
 
@@ -150,3 +155,12 @@ desktop, and they remain the final word on how it feels.
   - picture density at several screen sizes;
   - a live burst and reconnect;
   - a soak of 15–30 minutes on a phone.
+- **Accessibility checks (added 2026-11-11, about half a day).**
+  - Add `@axe-core/playwright` to the site, lobby, live and replay specs, failing on any violation.
+  - Have an agent fix the violations it finds, with a person reviewing the diffs (colour changes
+    affect the look).
+  - Write one keyboard-only test: join a game and cast a vote with `Tab`, `Enter` and `Escape`.
+  - Fix the two known gaps above.
+
+  This would let the project claim "checked with axe and keyboard-tested", not "accessible":
+  axe finds only the mechanical third to half of real problems.
