@@ -535,3 +535,73 @@ def test_the_provider_is_named_with_its_own_short_reason():
     assert [provider_name(m) for m in ("anthropic/claude-haiku-5-5", "openai/gpt-6-luna",
                                        "deepseek/deepseek-v4-pro", "gemini-3.1-flash-lite")] == [
         "Anthropic", "OpenAI", "DeepSeek", "Google"]
+
+
+# The lookup's situation summary and the echo gate also run on the game's primary model. Until
+# 2026-11-11 they ignored the game's health: a turn already moved to the rescue still waited on the
+# stalled primary in both, and the situation summary asked a stalled model a second time.
+
+from types import SimpleNamespace  # noqa: E402
+
+from Agents.memory.retrieval import situation_agent  # noqa: E402
+from Agents.schemas import DayChannel  # noqa: E402
+from Agents.turn import echo_gate  # noqa: E402
+
+_NO_SITUATIONS = SimpleNamespace(situations=[])
+
+
+def _situations(monkeypatch, primary, rescue):
+    monkeypatch.setattr(situation_agent, "get_llm", lambda: primary)
+    monkeypatch.setattr(situation_agent, "get_llm_game_fallback", lambda: rescue)
+    monkeypatch.setattr(situation_agent, "V6_SITUATION_SUMMARY", RunnableLambda(lambda x: x))
+    monkeypatch.setattr(situation_agent, "build_agent_prompt_input", lambda p: {})
+    monkeypatch.setattr(situation_agent, "compose_cell_guidance", lambda *a: {})
+    monkeypatch.setattr(situation_agent, "_known_board_facts", lambda *a: "")
+    monkeypatch.setattr(situation_agent, "_private_state", lambda *a: "")
+    payload = {"player_id": "player_1", "player_role": "healer", "current_day": 2}
+    return situation_agent._generate_situations_for_agent(payload, "night_action")
+
+
+def test_a_stalled_situation_summary_is_not_asked_again_and_the_rescue_writes_it(monkeypatch, game_health):
+    primary, rescue = _StalledLLM(_bounce_429()), _CountingLLM(_NO_SITUATIONS)
+    assert _situations(monkeypatch, primary, rescue) == ([], [])  # not the placeholder query
+    assert primary.calls == 1 and rescue.calls == 1
+    assert game_health.stalls == 1
+
+
+def test_a_situation_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(monkeypatch, game_health):
+    game_health.note_stall(); game_health.note_stall()
+    primary, rescue = _StalledLLM(_bounce_429()), _CountingLLM(_NO_SITUATIONS)
+    assert _situations(monkeypatch, primary, rescue) == ([], [])
+    assert primary.calls == 0 and rescue.calls == 1
+
+
+def test_a_stalled_situation_summary_with_no_rescue_is_the_placeholder_query(monkeypatch, game_health):
+    primary = _StalledLLM(_bounce_429())
+    assert _situations(monkeypatch, primary, None) == (["Day 2 as healer, round 0"], [])
+    assert primary.calls == 1
+
+
+def test_a_situation_summary_with_a_wrong_answer_is_asked_again_and_is_not_a_stall(monkeypatch, game_health):
+    primary, rescue = _StalledLLM(ValueError("off-schema output")), _CountingLLM(_NO_SITUATIONS)
+    assert _situations(monkeypatch, primary, rescue) == ([], [])
+    assert primary.calls == 2 and rescue.calls == 1
+    assert game_health.stalls == 0
+
+
+_EARLIER = [DayChannel(day=2, seq=0, player="player_2", message="player_5 claimed healer late.")]
+
+
+def test_the_echo_gate_is_skipped_while_the_primary_keeps_stalling(monkeypatch, game_health):
+    game_health.note_stall(); game_health.note_stall()
+    judge = _StalledLLM(_bounce_429())
+    monkeypatch.setattr(echo_gate, "get_llm_judge", lambda *_thinking: judge)
+    assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER) == ""
+    assert judge.calls == 0
+
+
+def test_a_stalled_echo_gate_keeps_the_line_and_counts_the_stall(monkeypatch, game_health):
+    judge = _StalledLLM(_bounce_429())
+    monkeypatch.setattr(echo_gate, "get_llm_judge", lambda *_thinking: judge)
+    assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER) == ""
+    assert judge.calls == 1 and game_health.stalls == 1

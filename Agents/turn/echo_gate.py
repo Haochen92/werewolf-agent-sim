@@ -16,7 +16,10 @@ action, or confirming or denying what was said about themselves, is always kept.
 lines judged blind in the silence calibration, it held 12 of 29 restatements and none of 36
 worthwhile lines (evidence/gameplay/data/silence_calibration/). The judge never weighs
 truth. It fails open: any error keeps the line. One cheap call per sweep turn at low thinking
-(Agents/llm_factory.get_llm_judge; minimal held 9 of 29).
+(Agents/llm_factory.get_llm_judge; minimal held 9 of 29). The judge is the game's primary model,
+so while that model keeps stalling (``ModelHealth.prefer_rescue``) the gate is skipped and the
+line kept, rather than each sweep turn waiting out a stall to learn nothing; its own stalls and
+answers count towards the game's health as a turn's do.
 """
 
 from logging import getLogger
@@ -24,6 +27,8 @@ from logging import getLogger
 from langchain_core.prompts import ChatPromptTemplate
 
 from Agents.llm_factory import get_llm_judge
+from Agents.llm_factory.chat import GAME_LLM
+from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.schemas import LineEchoVerdict
 from Agents.schemas.game_events import DayChannel
 
@@ -89,6 +94,10 @@ def line_echo_of(message: str, player: str, earlier: list[DayChannel]) -> str:
         spoken.append(entry)
     if not spoken:
         return ""
+    health = GAME_LLM.get().health
+    if health.prefer_rescue():
+        logger.warning("echo gate skipped for %s: the primary model is stalling; keeping the line", player)
+        return ""
 
     numbered_lines: list[str] = []
     for index, entry in enumerate(spoken):
@@ -98,8 +107,11 @@ def line_echo_of(message: str, player: str, earlier: list[DayChannel]) -> str:
             {"earlier": "\n".join(numbered_lines), "player": player, "message": message},
             config={"run_name": f"echo_gate_{player}"},
         )
+        health.note_ok()
     except Exception as exc:  # fail open: a gate error must not silence anyone
         logger.warning("echo gate failed for %s: %s; keeping the line", player, exc)
+        if is_transient_provider_error(exc):
+            health.note_stall()
         return ""
 
     # The hold needs both answers to agree: the line adds nothing, and a named earlier line made
