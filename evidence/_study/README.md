@@ -1,3 +1,7 @@
-# Study notes (temporary home)
+# Working notes
 
-Personal learning material moved here from the gitignored `interview_prep/` on 2026-10-31 so it can be read through Claude Code on the web while travelling. `syllabus/` is the study course for chapters 7 and 8; `lessons/` is the cross-project synthesis. Neither is page copy, neither is linked from a page, and both return to `interview_prep/` afterwards. Figures in `lessons/` may predate the 2026-10-26 corrections; the reports are authoritative.
+My own working notes, kept beside the evidence they draw on. `engineering_notes/` holds one note per
+engineering topic behind write-up chapters 7 and 8: the general concept, then a review of how my
+system handles it. `lessons/` is the cross-project synthesis. Neither is page copy and neither is
+linked from a page. Figures in `lessons/` may predate the 2026-10-26 corrections; the reports are
+authoritative.
