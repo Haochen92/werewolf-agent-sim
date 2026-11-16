@@ -54,7 +54,7 @@ async def test_server_session_opens_one_named_trace_in_the_games_session(
         captured["observation"] = kwargs
         yield root
 
-    monkeypatch.setattr(rt, "langfuse", SimpleNamespace(
+    monkeypatch.setattr(rt, "get_langfuse", lambda: SimpleNamespace(
         start_as_current_observation=observation,
     ))
 

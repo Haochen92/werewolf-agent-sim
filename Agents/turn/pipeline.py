@@ -16,7 +16,7 @@ from langgraph.runtime import Runtime
 from pydantic import BaseModel
 
 
-from Agents.tracing import GraphContext, langfuse
+from Agents.tracing import GraphContext, get_langfuse
 from Agents.config.langgraph import game_config_from_runnable
 from Agents.deduction.verified import limits_verified
 from Agents.schemas.roles import ROLE_SPECS
@@ -197,7 +197,7 @@ def run_memory_informed_action(
     )
 
     span_name = action_eval_span_name(player_id, day, round_num, action_phase)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={
@@ -398,7 +398,7 @@ def run_memory_informed_night_action(
     action_phase = "night_action"
 
     span_name = action_eval_span_name(player_id, day, round_num, action_phase)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={

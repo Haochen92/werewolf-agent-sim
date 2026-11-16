@@ -24,7 +24,7 @@ from Agents.memory.dedup_gate import gate_filter_for
 from Agents.observability import EvalCaseSink, dedup_span_name, freeze_case
 from Agents.schemas import Observation, StrategyPoint
 from Agents.schemas.evaluation import DedupCase, DedupCandidate
-from Agents.tracing import langfuse
+from Agents.tracing import get_langfuse
 
 from .config import DEDUP_SIMILARITY_THRESHOLD, DEDUP_TOP_N
 from .formatting import _serialize_candidates
@@ -352,7 +352,7 @@ def _emit_dedup_span(
         similarity_scores=result.similarity_scores if result else None,
     )
 
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={"new_entry": new_entry, "item_type": item_type},

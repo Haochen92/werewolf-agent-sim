@@ -283,7 +283,7 @@ def _lynch_state() -> dict:
 
 
 def test_lynching_the_lone_killer_takes_it_out_of_the_bucket():
-    with patch("Agents.nodes.orchestrator.langfuse", _fake_langfuse()):
+    with patch("Agents.nodes.orchestrator.get_langfuse", _fake_langfuse):
         update = day_resolution(_lynch_state(), _lynch_runtime())
 
     assert update["voted_player"] == "k"
@@ -295,7 +295,7 @@ def test_winner_resolves_after_the_lone_killer_lynch():
     # Before the lynch: W=1 >= town=1 but the killer is alive -> the game continues.
     assert determine_winner(_lynch_state()) is None
 
-    with patch("Agents.nodes.orchestrator.langfuse", _fake_langfuse()):
+    with patch("Agents.nodes.orchestrator.get_langfuse", _fake_langfuse):
         update = day_resolution(_lynch_state(), _lynch_runtime())
 
     # The killer gone, W=1 >= town=1 -> wolves win.

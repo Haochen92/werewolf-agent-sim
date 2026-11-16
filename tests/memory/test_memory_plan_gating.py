@@ -322,7 +322,7 @@ def test_retrieval_metadata_carries_resolved_sp_tiering():
     from unittest.mock import MagicMock, patch
 
     def meta_for(config):
-        with patch.object(tracing_mod, "langfuse", MagicMock()), \
+        with patch.object(tracing_mod, "get_langfuse", MagicMock()), \
                 patch("Agents.memory.retrieval.pipeline._generate_situations_for_agent",
                       return_value=([], [])):
             _, meta = enrich(day=2, role="chanteuse", config=config)

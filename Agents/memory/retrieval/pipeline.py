@@ -55,8 +55,8 @@ def enrich_payload_with_memory(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     # Lazy import breaks the tracing<->retrieval init cycle: tracing's import chain loads
     # Agents.memory (hence this module) before tracing finishes initializing, so a module-level
-    # `from Agents.tracing import langfuse` would hit a partially-initialized tracing module.
-    from Agents.tracing import langfuse
+    # `from Agents.tracing import get_langfuse` would hit a partially-initialized tracing module.
+    from Agents.tracing import get_langfuse
 
     enriched_payload = dict(payload)
     active_store = runtime.store
@@ -84,7 +84,7 @@ def enrich_payload_with_memory(
     retrieval_top_k = (STAGE_FILTER_TOP_K if plan.stage_filter
                        else RERANK_TOP_K if plan.needs_wide_retrieval else 5)
 
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="retriever",
         name=(
             f"memory_retrieval_{payload['player_id']}"

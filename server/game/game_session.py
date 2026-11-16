@@ -68,7 +68,7 @@ from Agents.graphs.parent import parent_graph_compiled
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.human_player import HumanTurnRequest
 from Agents.state import fresh_game_state
-from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
+from Agents.tracing import Metrics, create_langfuse_handler, flush, get_langfuse
 from Agents.turn.drafting_agent import draft_from_notes, player_direction
 from Agents.turn.eval import TURN_CAPTURE, TurnCapture
 from Agents.turn.human_turn import validate_human_response
@@ -339,7 +339,7 @@ class GameSession:
         # id from the game id was tried and made the SDK treat this span as a child of a
         # remote parent that does not exist, so the trace had no root and lost its name.)
         try:
-            with langfuse.start_as_current_observation(
+            with get_langfuse().start_as_current_observation(
                 as_type="span", name="werewolf-game", input=trace_input,
             ) as root:
                 # The LangGraph callback nests under this root through the active context,
@@ -809,7 +809,7 @@ class GameSession:
             GAME_LLM.set(self._llm_selection)
         TURN_CAPTURE.set(self.capture)
         runtime = Runtime(context=self._context, store=getattr(self._graph, "store", None))
-        with langfuse.start_as_current_observation(
+        with get_langfuse().start_as_current_observation(
             as_type="span", name=f"draft_preview_{seat}", input={"direction": direction},
         ) as span:
             span.update_trace(name="draft_preview", session_id=self._session_id)

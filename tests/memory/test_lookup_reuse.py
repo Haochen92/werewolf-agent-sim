@@ -27,7 +27,7 @@ def calls(monkeypatch):
 
     monkeypatch.setattr(pipeline, "_generate_situations_for_agent", fake_situations)
     monkeypatch.setattr(pipeline, "_retrieve", lambda *a, **k: ([], []))
-    monkeypatch.setattr(tracing.langfuse, "start_as_current_observation", span)
+    monkeypatch.setattr(tracing.get_langfuse(), "start_as_current_observation", span)
     yield made
     lookup_cache.clear()
 

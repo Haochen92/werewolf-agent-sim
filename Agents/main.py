@@ -30,7 +30,8 @@ from Agents.tracing import (
     Metrics,
     create_langfuse_handler,
     flush,
-    langfuse,
+    get_langfuse,
+    init_tracing,
 )
 
 
@@ -110,7 +111,7 @@ def run_game(
     prompt_log.clear()
     reads_log.clear()
 
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name="werewolf-game",
         input=initial_state,
@@ -187,6 +188,7 @@ def run_game(
 
 def main():
     load_dotenv()
+    init_tracing()
     # dump_enabled=False: belt-and-braces with the in-graph poisoning guard — a human game is
     # never mined into the store, and skipping the dump also skips the redundant store re-write.
     outcome = run_game(

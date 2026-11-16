@@ -44,7 +44,7 @@ from Agents.turn.scheduler import select_next_speaker
 
 from Agents.tracing import (
     GraphContext,
-    langfuse,
+    get_langfuse,
 )
 
 logger = _getLogger(__name__)
@@ -481,7 +481,7 @@ def summarize_day_discussion(
     game_id = str(configurable.get("game_id") or "")
     span_name = day_summary_span_name(game_id, current_day)
 
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={"day": current_day, "raw_discussion": raw_discussion},

@@ -52,8 +52,8 @@ def _stub_run_dependencies(monkeypatch):
     )
     monkeypatch.setattr(
         main,
-        "langfuse",
-        SimpleNamespace(start_as_current_observation=observation),
+        "get_langfuse",
+        lambda: SimpleNamespace(start_as_current_observation=observation),
     )
     monkeypatch.setattr(main, "compute_game_metrics", lambda result, metrics: "computed")
     monkeypatch.setattr(main, "push_scores_to_langfuse", lambda *args: None)

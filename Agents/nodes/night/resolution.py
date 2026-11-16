@@ -16,7 +16,7 @@ from Agents.schemas import DayChannel, DaySummary, DeathRecord
 from Agents.schemas.night import NightReport
 from Agents.schemas.roles import ROLE_SPECS
 from Agents.state import OrchestratorGraph
-from Agents.tracing import GraphContext, NightResolutionMetric, langfuse
+from Agents.tracing import GraphContext, NightResolutionMetric, get_langfuse
 from Agents.nodes.orchestrator import remove_from_buckets, side_counts
 from Agents.rules.announcement import night_announcement
 from Agents.rules.night import is_pack_kill, resolve_night
@@ -109,7 +109,7 @@ def night_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         records=[r.model_dump(mode="json") for r in records],
     )
     runtime.context["metrics"].night_resolutions.append(metric)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=f"night_resolution_day_{current_day}",
     ) as span:

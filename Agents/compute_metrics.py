@@ -9,7 +9,7 @@ from Agents.schemas.metrics import (
     Metrics,
 )
 from Agents.ten_seat_metrics import has_night_records, ten_seat_metrics
-from Agents.tracing import langfuse
+from Agents.tracing import get_langfuse
 
 
 # Town-aligned roles (win when both the wolves and the lone killer are gone) and the roles that
@@ -753,7 +753,7 @@ def push_scores_to_langfuse(
         # DO_NOT_USE fields are renamed with a `dnu_` prefix so they stand out and can't be
         # confused with a trusted proxy; the tier is also carried in metadata for filtering.
         score_name = f"dnu_{field_name}" if tier == "do_not_use" else field_name
-        langfuse.create_score(
+        get_langfuse().create_score(
             score_id=_score_id("game_metric", "trace", trace_id, field_name),
             trace_id=trace_id,
             name=score_name,
@@ -762,7 +762,7 @@ def push_scores_to_langfuse(
             metadata={"tier": tier},
         )
         if session_id:
-            langfuse.create_score(
+            get_langfuse().create_score(
                 score_id=_score_id(
                     "game_metric",
                     "session",

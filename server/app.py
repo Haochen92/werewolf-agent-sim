@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from Agents.tracing import init_tracing
 from server.config import server_settings
 from server.error_reporting import init_error_reporting
 from server.housekeeping.catalog_refresh import catalog_dsn, refresh_catalog, run_catalog_refresh
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
     # (2026-10-17). The threads mostly wait on the network, so many are cheap.
     asyncio.get_running_loop().set_default_executor(
         ThreadPoolExecutor(max_workers=64, thread_name_prefix="graph"))
+    init_tracing()  # before recovery, which restarts games that open spans
     dsn = catalog_dsn(server_settings.WW_POSTGRES_DSN)
     if dsn:
         await refresh_catalog(dsn)  # before recovery: a recovered game needs its rescue model

@@ -256,11 +256,11 @@ def _trace(row: dict, batched: bool, model: str) -> None:
         from datetime import datetime, timezone
 
         from Agents.llm_factory.pricing import cost_usd
-        from Agents.tracing import langfuse
+        from Agents.tracing import get_langfuse
 
         cached, written = row["cache_read_input_tokens"], row["cache_creation_input_tokens"]
         usd = _cost(model, datetime.now(timezone.utc), batched, row)
-        generation = langfuse.start_observation(
+        generation = get_langfuse().start_observation(
             as_type="generation", name="claude_batch_call" if batched else "claude_call", model=model,
             metadata={"batched": batched},
             usage_details={"input": row["input_tokens"], "input_cache_read": cached,

@@ -53,7 +53,7 @@ from Agents.schemas.evaluation import ExtractionCase
 from Agents.tracing import (
     DayResolutionMetric,
     GraphContext,
-    langfuse,
+    get_langfuse,
 )
 
 
@@ -196,7 +196,7 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         no_vote=not bool(day_votes),
     )
     runtime.context["metrics"].day_resolutions.append(metric)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=f"day_resolution_day_{current_day}",
     ) as span:
@@ -562,7 +562,7 @@ def post_game_analysis(
         formatted_discussions=inputs["formatted_discussions"],
         formatted_strategy_notes=inputs["formatted_strategy_notes"],
     )
-    with langfuse.start_as_current_observation(as_type="span", name=case.span_name,
+    with get_langfuse().start_as_current_observation(as_type="span", name=case.span_name,
                                                metadata={"eval_schema": case.schema_version}) as span:
         payload = freeze_case(span, case, kind="extraction_input", case_key="extraction_case",
                               sink=runtime.context.get("eval_sink"))
