@@ -334,9 +334,8 @@ a person reads the two fingerprints.
 | 5. A hosted game has no fingerprint | 3.3 | Pass the fingerprint as metadata, as the command-line game does |
 | 6. An evaluation's manifest names the commit, not the models | An evaluation output does not say which model setup produced its inputs, unless its settings list it | Put the fingerprint in the manifest |
 
-So the backend field cannot be trusted at all, and the prompt hash only on results stamped from
-2026-11-16 on. A comparison that involves an older run has to read the commit and the model
-name.
+So the backend field and the prompt hash can be trusted only on results stamped from 2026-11-16
+on. A comparison that involves an older run has to read the commit and the model name.
 
 One gap no design closes: a provider can change what serves a model's name. The learning loop
 reduces the risk by running its two sides together in time. A comparison made outside the loop
@@ -396,9 +395,9 @@ that differ.
 Every batch game's record carries a fingerprint: the commit and a dirty flag, a hash of the
 prompt files, the models, temperature, reasoning levels and embedder. The learning loop stops
 if the fingerprint changes between its games. Evaluation outputs carry a manifest with their
-inputs' hashes. The weak points are that the backend field is wrong for Claude, the rescue
-model is not recorded, a hosted game has no fingerprint at all, and results stamped before
-2026-11-16 have a prompt hash that left out the role cards. So I can claim that drift is
+inputs' hashes. The weak points are that the rescue model is not recorded, a hosted game has
+no fingerprint at all, and results stamped before 2026-11-16 have a prompt hash that left out
+the role cards and a backend field that is wrong for Claude. So I can claim that drift is
 visible on the batch path, not that results are reproducible, and a comparison with an older
 run has to read the commit and the model name.
 
@@ -457,8 +456,9 @@ and re-checks them.
   `_prompt_source_files`; **run**, both hashes computed on one tree (`6876d34cb388c496` before,
   `4f1fb31086c1c5a6` after); **test** `tests/engine/test_run_fingerprint.py` (five tests);
   no code outside tests imports `goldens/`: **code**, a search
-- The backend field resolves only Vertex or Google: **code** `runtime_fingerprint`,
-  `Agents/llm_factory/providers/google.py`::`_use_vertex`; **run** (the stamp in 3.1)
+- The backend field is the game model's provider family, or for a Gemini id Vertex or Google:
+  **code** `_llm_backend`, `Agents/llm_factory/chat.py`::`_provider_family`; **run** (the stamp
+  in 3.1); **test** `tests/engine/test_run_fingerprint.py` (four cases)
 - The rescue model is absent from the fingerprint: **code** `runtime_fingerprint`;
   `Agents/llm_factory/accessors.py` (`GAME_FALLBACK_MODEL`)
 

@@ -391,6 +391,5 @@ Vertex, Gemini on the Google API).
 - Original analysis commit: `6011dd1`
 - Rendering-layer move: `b206747`
 - Prompt-package splits: `815f014`, `c871e80`
-- Recursive prompt hash, `fingerprint_schema` and the backend field (2026-11-16): working tree on top of `02c20ee4`,
-  not yet committed
+- Recursive prompt hash, `fingerprint_schema` and the backend field (2026-11-16): `26959b87`
 

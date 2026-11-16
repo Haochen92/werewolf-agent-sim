@@ -5,8 +5,7 @@ produced a game or evaluation result.
 
 **Version.** Revised on 2026-11-16, when the prompt hash began covering every prompt source file
 and the fingerprint gained `fingerprint_schema` (§4.2), and when the backend field began to be read
-from the game model's id (§4.3, schema 3). Those changes are in the working tree on top of
-`02c20ee4` and are not yet committed. The rest was re-verified on 2026-10-26 against the code at
+from the game model's id (§4.3, schema 3). Both changes are commit `26959b87`. The rest was re-verified on 2026-10-26 against the code at
 `5d8ea41c`; the first audit was on 2026-07-23. This report describes the implementation as it is now, including its gaps. The
 chronological reasoning is in [`experiment_log.md`](experiment_log.md). Results stamped with an older
 fingerprint belong to the code that stamped them.

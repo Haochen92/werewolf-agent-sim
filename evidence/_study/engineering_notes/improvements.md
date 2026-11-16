@@ -55,6 +55,14 @@ The size column is my sorting for that later decision:
 | 36 | The rescue model is not recorded in the fingerprint (the backend half of this row was fixed on 2026-11-16) | Take it from the code that builds the models | Small | U9 3.5 gap 3 |
 | 37 | A hosted game carries no fingerprint (the release stamp is row 34) | Pass the fingerprint as run metadata, as the command-line game does | Small | U9 3.5 gap 5 |
 | 38 | Nothing compares fingerprints across two separate runs, and a run on a dirty tree cannot be recovered | A switch that refuses a run meant to be cited unless the tree is clean; a small tool that prints the differing fields of two runs | Decision | U9 3.4, 3.5 gap 4 |
+| 39 | A failed model call logs the provider's exception without redacting the player's key, and redaction elsewhere matches the exact value only | Redact in the turn's log lines from the game's context variable; add a pattern for the known key shapes | Small | U10 3.6 gaps 1 and 3 |
+| 40 | The selection object's printed form shows the player's main key (the backup key is hidden) | `repr=False` on the field | Small | U10 3.6 gap 2 |
+| 41 | A room host's key travels in the URL; seat tokens are stored as plain text in the database and the browser | Header or body for the host key; a hash for stored tokens | Decision | U10 3.6 gaps 4 and 5 |
+| 42 | No `.dockerignore`, no scan for committed secrets, no written rotation procedure | Add the file; a scanning hook; a short rotation page | Small | U10 3.6 gaps 6 and 7 |
+| 43 | Not checked: whether a player with no backup key can have a rescue call paid by the house, when the rescue model is from another company | Read the catalogue's rescue rows, then decide | Decision | U10 3.6 gap 8 |
+| 44 | A person's line keeps its line breaks and speech is not delimited, so one message can forge a line from another seat or the game master; no test feeds forged or instruction-like speech to the agents | Strip line breaks, render each message as one marked record, say in the prompt that announcements never appear in the discussion; a small fixed set of forged lines scored by whether the vote follows them | Small | U11 3.5 gaps 1 and 2 |
+| 45 | One path into the lesson store (per-game folders) has no check for games with a human seat, and lessons are read as strategy with no label that they may be wrong | Put the check in the path; label lessons as past observations | Small | U11 3.5 gaps 3 and 4 |
+| 46 | An agent's message has no length limit in its schema; a person's turns and room creation have no rate limit | A maximum length on the field; a limit per seat and per address | Small | U11 3.5 gaps 5 and 6 |
 
 ## Done while writing the notes
 
