@@ -131,6 +131,7 @@ re-publishes by hand, `--force` after an embedder change). `WW_MEMORY_ENABLED=tr
 new game switch memory on; while the store is unpublished or was embedded by another model,
 `GET /models` says `memory_available: false` and a memory-on request is refused with 409.
 
-Production is `docker compose build wolf-server && docker compose up -d wolf-server`; the
-container logs at `LOG_LEVEL` (default INFO) show recovery, clocks, the sweep, and every
+Production is `GIT_COMMIT=$(git rev-parse HEAD) docker compose build wolf-server && docker compose up -d wolf-server`.
+`GIT_COMMIT` is stamped on the server's traces as their release; the image holds no git history, so
+a build without it stamps "unknown". The container logs at `LOG_LEVEL` (default INFO) show recovery, clocks, the sweep, and every
 stream open/close.

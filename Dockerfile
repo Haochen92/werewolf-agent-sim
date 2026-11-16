@@ -37,6 +37,13 @@ COPY pyproject.toml ./pyproject.toml
 RUN useradd --create-home --uid 1001 werewolf && chown -R werewolf:werewolf /app
 USER werewolf
 
+# The commit this image was built from, stamped on every trace as its release. The image has no
+# git history, so without it the engine can only say "unknown". Last, so that a new commit
+# rebuilds this layer and nothing above it. Build with:
+#     GIT_COMMIT=$(git rev-parse HEAD) docker compose build wolf-server
+ARG GIT_COMMIT=unknown
+ENV LANGFUSE_RELEASE=${GIT_COMMIT}
+
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
