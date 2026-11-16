@@ -31,11 +31,17 @@ evidence sits behind it. Every note has the same parts, in this order (`_note_te
 5. **Part 4, a larger scale**: what the design leaves out or would outgrow.
 6. **Part 5, worked problems**: the concept in another system, my system from memory, a draft claim
    that says slightly too much with its accurate wording, and the topic's sharp question.
-7. **Part 6, summary**: four or five rules, and my system in one paragraph.
+7. **Part 6, summary**: the note's three or four core things in plain words, each with my system's
+   answer, and my system in one paragraph. It is the page for a later read.
 8. **Appendix A**: answers to the problems. **Appendix B**: the evidence, each claim tagged by its
    support and linked. Support labels: **code** (inspected), **test** (named, not run unless stated),
    **incident** (a dated record), **none** (asserted somewhere, nothing found behind it). Also the
    incidents on record, what is not established, and the reading list.
+
+A note has two layers. The core path is the three or four ideas named in its header, taught
+with the example and the checks. How a thing is built, and what belongs to another note, is marked
+**Detail** and can wait for a second read. The first read is for learning and follows the core
+path; later reads start from the summary.
 
 Two rules hold the split together. The body never goes vague to avoid a detail: it states the
 behaviour and the numbers, and the appendix holds the proof. And each note's Part 3 is written from
@@ -68,6 +74,20 @@ note and a closing one. Notes in a theme are parts of one story.
 
 The themes show how the notes connect. The writing and reading order is the dependency order below,
 which cuts across them.
+
+### Failure patterns, and where each is covered
+
+The notes are arranged by question, not by failure. A small number of failure patterns run across
+them, and this table is the way in by pattern. A row is added to or extended when a note is written.
+
+| Pattern | What goes wrong | Covered in | In my system |
+|---|---|---|---|
+| Partial failure | Two records that must agree are written in separate steps, and a crash lands between them | U3 sections 1.5, 3.6 and 3.8; U4 sections 1.3 and 3.5 | The events table can be one step ahead of the checkpoint (U3 gap 2). dota2pred: Postgres and Redis at every stage (U4 3.6) |
+| Repeated work | The same operation runs twice, after a retry or a restart | U3 section 3.6; U4 sections 1.2 and 3.2 | The step in flight is re-run and billed again after a restart; a lesson counter may be bumped twice (U3 gaps 3 and 5) |
+| Unknown outcome | A request times out and the caller cannot tell whether it took effect | U1; U4 sections 1.1 and 3.4 | A model call the provider finished after the client gave up: nothing is done, and it is recorded as failed with zero tokens |
+| Race | Two things happen in an order the code did not expect | U2 | |
+| Stale copy | A cache or a derived view no longer matches its source | U3 section 1.5; U6 and U12 (to write) | |
+| Work lost since the last save | A crash takes whatever was done after the last save that succeeded | U3 sections 1.3 and 3.4 | Up to 30 seconds of usage counts; a human answer not yet saved (U3 gap 6) |
 
 ## Each note's guiding question, and its sharp question
 
@@ -169,19 +189,19 @@ Three rules on accuracy, added 2026-11-11 after an outside review of U2:
 | U0 | [System architecture](00_system_architecture.md) | written 2026-10-31; revised 2026-11-11 | | | |
 | U1 | [Resilience patterns for remote calls](01_resilience_patterns.md) | written 2026-10-31; revised 2026-11-11 | | | |
 | U2 | [Concurrency, blocking work and shared limits](02_concurrency_models.md) | written 2026-11-11; revised through the walkthrough | 2026-11-11 and 11-12 (Parts 1 and 3; Part 2 and the Problems skipped) | 5 to 6 hours over two days, most of it questions and corrections, against a 90 min reading estimate | My own estimate: 60 to 70% understood. A second, faster read later. Problems B and C still to do |
-| U3 | [State persistence: snapshots, event logs, replay](03_state_persistence.md) | written 2026-11-12; seed points in [u03_seed_notes.md](u03_seed_notes.md) | | | |
-| U4 | Delivery semantics and idempotency | seed points in [u04_seed_notes.md](u04_seed_notes.md) | | | |
-| U5 | Durable execution and human-in-the-loop | seed points in [u05_seed_notes.md](u05_seed_notes.md) | | | |
+| U3 | [State persistence: snapshots, event logs, replay](03_state_persistence.md) | written 2026-11-12; revised through the walkthrough; seed points in [u03_seed_notes.md](u03_seed_notes.md) | 2026-11-12 (Parts 1 to 3; Parts 4 and 5 left as optional) | One evening | Went deeper than needed into crash-window cases. Core and detail are now marked, and Part 6 is the page for a second read |
+| U4 | [Delivery and repeated work](04_delivery_and_idempotency.md) | drafted 2026-11-13, first in the core-and-detail layout; section 1.3 and sections 3.1 to 3.5 rewritten through the walkthrough; seed points in [u04_seed_notes.md](u04_seed_notes.md) | 2026-11-13 (sections 1.1 to 1.4 and 3.1 to 3.5; 1.5, Part 2, 3.6, 3.7 and Parts 4 to 6 not read) | About 4 hours | Understanding of the system not complete. To carry: the engine re-runs a paused step from its start; the three ways to handle a dual write; what makes a key too narrow or too broad |
+| U5 | [Waiting for a person: durable execution and human-in-the-loop](05_durable_execution_and_human_in_the_loop.md) | drafted 2026-11-13 from a fresh code read, restructured 2026-11-14; seed points in [u05_seed_notes.md](u05_seed_notes.md) | | | |
 | U6 | Real-time transport and client synchronisation | not started | | | |
 | U7 | Server-side authorization and side channels | not started | | | |
-| U8 | LLM observability | not started | | | |
+| U8 | [Observability: finding out what happened in a run of model calls](08_llm_observability.md) | drafted 2026-11-14 from a fresh code read; 1.6a, 1.8a, 1.9, 3.5a and the third choice in Part 4 added 2026-11-16 while reading; Part 1 and Part 3 up to 3.5a read 2026-11-16, about 3.5 hours with the walkthrough; stopped there. Left: 3.6 to 3.8, the first two tables of Part 4, the two summaries in Part 5 (about 20 minutes) | | | |
 | U9 | Experiment provenance | not started | | | |
 | U10 | Secrets management in LLM applications | not started | | | |
 | U11 | Prompt injection and trust boundaries in agents | not started | | | |
 | U12 | Client-side state and rendering | not started | | | |
 | U13 | Testing strategies and levels of verification | seed points in [u13_seed_notes.md](u13_seed_notes.md) | | | |
 | U14 | Operations: deployment, live configuration, cost control | not started | | | |
-| U15 | Capacity: limits, the bottleneck, a cap on games | seed points in [u15_seed_notes.md](u15_seed_notes.md) | | | |
+| U15 | Capacity: limits, the bottleneck, a cap on games | seed points in [u15_seed_notes.md](u15_seed_notes.md); the worker design, moved out of U5 on 2026-11-14, is in [u15_detail_workers_and_leases.md](u15_detail_workers_and_leases.md) | | | |
 
 ## Open items
 
@@ -203,9 +223,19 @@ below are about the notes themselves: what a later note has to cover.
   only measurement gives: calls per game per minute, the stall rate on a normal day, and how long a
   stall episode lasts. U8 should say which of the three the existing traces can already answer, and
   what would have to be recorded for the rest (U1 section 3.2, the table against the four inputs).
+- For U8, from U4: dota2pred's dead-letter queues (one Redis hash per stream) have an interactive
+  tool to read them (`scripts/dqltool.py`) and no count or alert; I have never read them. U8 can
+  use it as the case for "a store of failures is not seen until something counts it" (U4 section
+  3.7).
 - For U8, from U2: nothing records how many threads of the main pool are busy or how long work
   waits for one, and the trace flush at a game's end runs on the event loop for an unmeasured time
   (U2 section 3.7, gaps 2 and 3).
+- For U8 (noted 2026-11-14): the planning outline's U8 covers the server only. The frontend
+  also has Sentry (`frontend/src/instrumentation-client.ts`, `frontend/src/app/global-error.tsx`;
+  the files exist, their configuration is not read). U8 should have one section that follows a
+  single failure across both sides: what the player saw, what the server did, what the model
+  saw, and which record answers each. Open question for the treatment map: whether testing and
+  observability sit in chapter 7 once, for the whole system, with chapter 8 pointing to it.
 - For U6, from the U2 walkthrough (checked in the code, 2026-11-12): each viewer has its own
   `asyncio.Queue`, with no size limit. All three places that put onto one run on the event loop:
   `subscribe` (from the stream route), `_deliver` (from `_on_chunk`, inside the game task's
@@ -213,6 +243,12 @@ below are about the notes themselves: what a later note has to cover.
   those two and from `loop.call_later`). No worker thread touches a queue, and the server has no
   thread-safe hand-off of its own; the graph library carries the engine threads' output back to
   the game's task. U6 should cover what a slow or stuck viewer costs with unbounded queues.
+- For U6, from the U3 walkthrough (2026-11-12): the browser's catch-up is a plain replay of the
+  log (U3 section 1.4), and its hard part was showing, not rebuilding. U6 should cover the split
+  between history and news (`frontend/src/hooks/catch-up-boundary.ts`): old events are folded
+  silently and the stage lands still, only news plays as beats, and history is applied in blocks
+  because one render per old event froze a phone on a long game (`frontend_lessons.md` item 32).
+  The reason no state snapshot is sent to the browser is `server_client_transport.md` section 7.
 - For U14, from the U2 walkthrough (2026-11-12): "why Docker Compose for the whole deployment?"
   needs a checked answer. U14 should cover what Compose gives (one file, one command, services
   isolated on one host), what it does not (several machines, updates without a restart,
