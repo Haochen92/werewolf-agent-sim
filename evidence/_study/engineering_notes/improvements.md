@@ -51,6 +51,10 @@ The size column is my sorting for that later decision:
 | 32 | The prompt capture is written only when a game is over: a game that dies leaves none, and a resumed game's is partial | Write it as the game goes | Decision | U8 3.6 gap 5 |
 | 33 | No trace id is stored with the game, and the `events` table has no time column | Store the trace id on the game's row; add a time column | Decision | U8 3.6 gap 6 |
 | 34 | Hosted traces carry the release "unknown", so a hosted trace cannot be tied to the code that produced it (checked in the trace store 2026-11-16: 14 of 14 hosted traces among the latest 30) | Done in the build files on 2026-11-16 (see the Done table); it takes effect at the next deploy. Then check one hosted trace | Small | U8 3.6 |
+| 35 | Results stamped before 2026-11-16 carry a prompt hash over the 14 top-level prompt files only; model-visible text outside the prompts folder (output schemas, the deduction engine's lines) is still outside the hash | The hash itself is fixed (see the Done table). Left: decide whether the text outside the folder belongs in it | Decision | U9 3.5 gap 1 |
+| 36 | The rescue model is not recorded in the fingerprint (the backend half of this row was fixed on 2026-11-16) | Take it from the code that builds the models | Small | U9 3.5 gap 3 |
+| 37 | A hosted game carries no fingerprint (the release stamp is row 34) | Pass the fingerprint as run metadata, as the command-line game does | Small | U9 3.5 gap 5 |
+| 38 | Nothing compares fingerprints across two separate runs, and a run on a dirty tree cannot be recovered | A switch that refuses a run meant to be cited unless the tree is clean; a small tool that prints the differing fields of two runs | Decision | U9 3.4, 3.5 gap 4 |
 
 ## Done while writing the notes
 
@@ -58,6 +62,8 @@ Changed in the working tree; none of it is committed or deployed as of 2026-11-1
 
 | What | When | Detail |
 |---|---|---|
+| The prompt hash covers every prompt source file, by path (39 of 41; the two left out are test fixtures), and the fingerprint carries a version number (`fingerprint_schema`: 2). Five tests | 2026-11-16 | Row 35; U9 3.1 |
+| The fingerprint's backend field is read from the game model's name, so a Claude game is stamped `anthropic`, not `vertex` (`fingerprint_schema`: 3). Four test cases | 2026-11-16 | Row 36; U9 3.1 |
 | The server image is built with the commit id (`GIT_COMMIT` build argument, set as `LANGFUSE_RELEASE`), so hosted traces stop saying "unknown" from the next deploy. Checked in a throwaway build | 2026-11-16 | Row 34; U8 3.6 |
 | The Langfuse client is built by a call at start-up (`init_tracing()`), or on first use, where it was built when `Agents/tracing.py` was imported; the release is passed as an argument | 2026-11-16 | U8 Part 4 |
 | The per-phase thread pool is one thread per seat, where it was Python's default of 8 | 2026-11-12 | U2 3.7 gap 5 |

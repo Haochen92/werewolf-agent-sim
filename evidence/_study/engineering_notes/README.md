@@ -195,7 +195,7 @@ Three rules on accuracy, added 2026-11-11 after an outside review of U2:
 | U6 | Real-time transport and client synchronisation | not started | | | |
 | U7 | Server-side authorization and side channels | not started | | | |
 | U8 | [Observability: finding out what happened in a run of model calls](08_llm_observability.md) | drafted 2026-11-14 from a fresh code read; 1.6a, 1.8a, 1.9, 3.5a and the third choice in Part 4 added 2026-11-16 while reading; Part 1 and Part 3 up to 3.5a read 2026-11-16, about 3.5 hours with the walkthrough; stopped there. Left: 3.6 to 3.8, the first two tables of Part 4, the two summaries in Part 5 (about 20 minutes) | | | |
-| U9 | Experiment provenance | not started | | | |
+| U9 | [Experiment provenance: knowing what a result was made of](09_experiment_provenance.md) | drafted 2026-11-16 from a fresh code read, at a smaller size by my choice (about 35 minutes); the full mechanism stays in the fingerprinting report; 1.5 (designing it for a new system), the manifest and dirty-stamp passages added 2026-11-16 while reading | 2026-11-16 (Part 1 to section 3.4; 3.5, Part 4 and Part 5 left) | | |
 | U10 | Secrets management in LLM applications | not started | | | |
 | U11 | Prompt injection and trust boundaries in agents | not started | | | |
 | U12 | Client-side state and rendering | not started | | | |
