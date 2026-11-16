@@ -1,12 +1,17 @@
-"""Local eval-case sink: tee each game-time eval case to an in-process accumulator.
+"""A local copy of every evaluation case a game produces.
 
-The cases (EvalCase / ExtractionCase / DedupCase / DaySummaryCase) are built
-in-process during the game and dumped into Langfuse span output. Langfuse's
-read path is lossy on heavy traces (fetch-all 422s, ``trace.get`` truncates
-large output), so the sink keeps a local copy of every case in the EXACT
-normalized span-dict shape the eval read side produces from Langfuse — the
-``*_case_from_span`` converters and frozen-set builders consume both sources
-verbatim. ``run_batch`` persists the records as a per-game sidecar.
+An evaluation case is the record of one thing to be judged later: one decision a player made
+(EvalCase), one game's lesson extraction (ExtractionCase), one duplicate check (DedupCase) or one
+day summary (DaySummaryCase). The game builds each case as it runs and saves it to Langfuse as
+the output of a span.
+
+Reading the cases back from Langfuse is unreliable for a large game: fetching the whole trace
+can fail with a 422 error, and a large output can come back cut short. So each case is also
+added to a list kept in memory for the game. That list is the sink.
+
+A record in the list has exactly the shape the evaluation code gets when it reads the same span
+from Langfuse, so the same code reads either source. ``scripts/run_batch.py`` writes the list
+to a file beside each game's results.
 """
 
 from __future__ import annotations
