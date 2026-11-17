@@ -262,6 +262,17 @@ calibration that made speech the default and moved the filter after the line (12
 8. *How players sound* (125), if kept here.
    - Voice in the player's own prompt rather than a rewrite.
    - **Exhibit:** the drift pair beside one voice line.
+   - **A voice that changed content, caught and fixed** (added 2026-11-17; **not on the page yet:
+     owner's ruling is to consider it in the final pass, possibly as a small exhibit with a short
+     explanation** rather than as prose).
+     The Whale's voice allowed "an occasional sea phrase"; a healer then said it "kept watch over
+     player_8", the sentinel's verb for a protect (corrected a turn later). The Badger's voice quoted
+     "right then" and most of its lines opened with it. Both phrases were removed. The rule that
+     came out of it: a voice is tone only, with no quoted phrase and no word that overlaps a role.
+     Sources: `evidence/gameplay/data/silence_calibration/README.md` (voice slip),
+     `evidence/gameplay/data/persona_voice_games/README.md` (voices, on arm),
+     `Agents/prompts/voices.py` (the comments beside the two voices). One slip each in a handful of
+     games: an observed case, not a rate.
    - **Scope:** the paired-games numbers stay a lean (eight pairs, about 19% more talk on the voiced
      side).
    - **Never imply the voices made games more fun.**
