@@ -39,13 +39,15 @@ from server.game.translate import Translator
 
 # --- a scripted model -------------------------------------------------------------------------
 
-def _fill(schema: type[BaseModel], rng: random.Random) -> BaseModel:
-    """Any schema, filled: a Literal gets one of its values, so a target is always legal."""
+def _fill(schema: type[BaseModel], rng: random.Random, spare: frozenset[str] = frozenset()) -> BaseModel:
+    """Any schema, filled: a Literal gets one of its values, so a target is always legal. A
+    spared seat is never chosen while the Literal offers anything else."""
     values = {}
     for name, field in schema.model_fields.items():
         ann, origin = field.annotation, typing.get_origin(field.annotation)
         if origin is typing.Literal:
-            values[name] = rng.choice(typing.get_args(ann))
+            options = typing.get_args(ann)
+            values[name] = rng.choice([v for v in options if v not in spare] or options)
         elif ann is bool:
             values[name] = False
         elif ann is str:
@@ -55,7 +57,7 @@ def _fill(schema: type[BaseModel], rng: random.Random) -> BaseModel:
         elif origin is list or ann is list:
             item = typing.get_args(ann)[0] if typing.get_args(ann) else None
             # One read, built from the lineup's own read class, so the effects must accept it.
-            values[name] = [_fill(item, rng).model_dump()] if name == "reads" and item is not None else []
+            values[name] = [_fill(item, rng, spare).model_dump()] if name == "reads" and item is not None else []
         else:
             values[name] = None
     if "pass_turn" in values and rng.random() < 0.6:
@@ -66,17 +68,17 @@ def _fill(schema: type[BaseModel], rng: random.Random) -> BaseModel:
 class _FakeLLM:
     model = "fake"
 
-    def __init__(self, rng):
-        self.rng = rng
+    def __init__(self, rng, spare: frozenset[str] = frozenset()):
+        self.rng, self.spare = rng, spare
 
     def with_structured_output(self, schema, **kwargs):
-        return RunnableLambda(lambda prompt: _fill(schema, self.rng))
+        return RunnableLambda(lambda prompt: _fill(schema, self.rng, self.spare))
 
 
-def _script_the_model(monkeypatch, seed: int) -> None:
+def _script_the_model(monkeypatch, seed: int, spare: frozenset[str] = frozenset()) -> None:
     """Every model call answered by the scripted model, and the helper calls stubbed."""
     rng = random.Random(seed)
-    monkeypatch.setattr(agent_player, "get_llm", lambda: _FakeLLM(rng))
+    monkeypatch.setattr(agent_player, "get_llm", lambda: _FakeLLM(rng, spare))
     monkeypatch.setattr(agent_player, "get_llm_game_fallback", lambda: None)
     monkeypatch.setattr(flow, "run_day_summary_agent", lambda day, messages, max_retries=1, **kw: ("summary", "fake", {}))
     monkeypatch.setattr(flow, "filter_openings", lambda entries: entries)
@@ -158,11 +160,14 @@ def _shots_fired(state: dict, vigilante: str) -> int:
 def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(monkeypatch):
     # The night's turns pause for the human and are re-run on resume; the bullet is spent only
     # in NIGHT_RESOLUTION, the barrier after every night turn, so the pause always comes first.
-    _script_the_model(monkeypatch, seed=5)
     game = {"lone_killer": "serial_killer", "neutral": "speculator"}
     run = normalize_run_config(RunConfig(game_id="offline-human-vigilante-5", game=game, human_player=1,
                                          human_role="vigilante", memory_persistence={"dump_enabled": False}))
     config = build_runnable_config(run)
+    # No scripted player targets the Vigilante, so its first shot always goes ahead and is kept on
+    # record: a seat that dies that night gets no record, and the scripted players share one random
+    # generator across threads, so without this the game played (and the count) varied by thread order.
+    _script_the_model(monkeypatch, seed=5, spare=frozenset(initialize_game({}, config)["human_players"]))
     context = {"metrics": Metrics()}
     result = parent_graph_compiled.invoke(fresh_game_state(), config=config, context=context)
     shot_turns = 0
