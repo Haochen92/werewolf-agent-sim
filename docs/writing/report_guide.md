@@ -1,6 +1,6 @@
 # Experiment log and report guide
 
-*Draft 3, 2026-11-17. Examples come from the Werewolf project, a game played by AI agents.*
+*Draft 4, 2026-11-17. Examples come from the Werewolf project, a game played by AI agents.*
 <!-- Written to be copied unchanged into another project. -->
 
 `core_rules.md`, in this folder, covers general writing quality and is read first. When documents
@@ -20,7 +20,7 @@ question:
 | Record | What it is | When it is written |
 |---|---|---|
 | **The log** | The investigation as it happened, in date order, including approaches that failed and the reasoning at the time | Continuously. New entries are added; earlier entries are not rewritten |
-| **An experiment report** | The answer to one question that was investigated through a defined comparison | When the experiment ends. Afterwards it changes only by dated correction notes |
+| **An experiment report** | The answer to one question that was investigated through a defined comparison, or through a related series of them | When the experiment ends. Afterwards it changes only by dated correction notes |
 | **A topic report** | The current design of one part of the system, and the decisions and evidence behind it, drawn from several experiments | Maintained: revised whenever the design or the evidence changes |
 | **A decision record** | A choice made without a measurement, including a choice not to pursue an approach | When the choice is made |
 
@@ -42,21 +42,36 @@ to it. Links between files in the repository are relative paths.
 dated note beside the original. Only the log preserves what I believed before the evidence changed
 my mind, and that earlier belief is what explains why an abandoned design was reasonable.
 
-**An entry about something I ran or decided answers five questions:** what was the question, what
-was the approach, what was the result, how do I interpret it, and what did I decide. Headings are
-optional. Keep the interpretation separate from the result, so the reader can see which statements
-were measured. Something I merely noticed needs only a few sentences.
+**An entry about something I ran or decided lets a future reader reconstruct the reasoning and
+the outcome.** It records the question; the approach and why I chose it; the alternatives I
+considered, when there were any; what actually happened; how I interpret that; and what I decided.
+Say which stage each thing reached: proposed, implemented, tested or deployed. Keep the
+interpretation separate from the result, so the reader can see which statements were measured.
+Headings are optional, and something I merely noticed needs only a few sentences.
+
+**Write each entry so that it can be understood months later by someone who was not there.** It
+is not shorthand for what the writer currently has in mind. A later report may be written by
+someone, or by an agent, with no access to that context, so the entry keeps the causal reasoning
+and the background needed to understand the result.
 
 **Work is either a planned comparison or exploratory.**
 
 | | Planned comparison | Exploratory work |
 |---|---|---|
 | What it is | Runs made to answer a stated question by comparing versions | Looking: debugging, or re-running something unexpected to see whether it happens again |
-| What the log needs first | A plan, written before the first run | Nothing. It is recorded as it happens and labelled exploratory |
-| What its result is | A finding | A lead. It becomes a finding when a planned comparison tests it |
+| What the log needs first | The agreed plan, written before the first run | Nothing. It is recorded as it happens and labelled exploratory |
+| What its result may be called | A finding, limited to what was compared | It depends on the claim, as the next paragraph explains |
 | Where it is recorded | The folder for its question | The log of the work during which it came up |
 
-**The plan for a planned comparison states:**
+**What exploratory work can establish.** A defect that was reproduced directly, or behaviour of
+the code that was verified, is a finding: no comparison is needed to say that a crash happens. An
+observation that suggests a cause or an improvement is a hypothesis until suitable evidence tests
+it. An uncontrolled comparison is never presented as proof of a cause.
+
+**The plan for a planned comparison** is the design as finally agreed, not the discussion that
+led to it. If a detailed plan is saved elsewhere, link to it; do not rely on anything that is not
+saved. The entry after the run records what was actually run and any departure from the plan. The
+plan states:
 
 - the question, and the expected answer if there is one;
 - the versions being compared, called arms, and how each differs;
@@ -86,9 +101,10 @@ the decision; open items; the code and data.
 the requirements; the important mechanisms; the decisions; the limitations; links to the detailed
 records.
 
-In a topic report, write each decision in this order: the decision, the alternatives considered,
-the finding the decision rests on, and then the supporting experiments one at a time, so the
-reader can see which result supports which conclusion.
+In a topic report, write each decision in this order: the decision and the reason for it, the
+alternatives considered, the finding the decision rests on, the supporting experiments one at a
+time, and then what the decision costs and what it leaves unresolved. The reader should be able to
+see which result supports which conclusion.
 
 **A topic report states which version of the system it describes.** At the top it gives the commit
 of the implementation it describes (or the date, if there is no single commit) and the date it was
@@ -97,7 +113,7 @@ experiments in the past tense with their dates, so that the current design and t
 be confused.
 
 **A decision record** gives the options, the reason for the choice, and what evidence would change
-it. It may rest on leads if it labels them as leads.
+it. It may rest on a hypothesis if it labels it as one.
 
 ## 4. Presenting a result
 
@@ -121,9 +137,9 @@ These add to core rule 5, which covers sample size and untested explanations.
   sample size and the measure.
 - A failed version shows that the tested version failed. It does not show that the approach cannot
   work. A decision not to pursue the approach says so in those terms.
-- Report a small-sample result with no difference as "no effect detected at this sample size". Give
-  the size of effect that could have been missed only when an analysis supports that number.
-  Otherwise say that the size is unknown.
+- When a small sample shows no difference, write "no difference observed in this sample". Write
+  "no effect detected" only when a statistical test was run. Give the size of effect that could
+  have been missed only when an analysis supports that number; otherwise say that it is unknown.
 - State what the design of an experiment controls and what it does not. Example: replaying saved
   inputs fixes the data, but the model's answers still vary between calls.
 - When any result, even a weak one, points against an explanation, say so where the explanation is
@@ -131,23 +147,27 @@ These add to core rule 5, which covers sample size and untested explanations.
 
 ## 6. Traceability
 
-Each result is recorded with what produced it: the commit, whether there were uncommitted changes,
-the configuration and model settings, and where the data is stored. The experiment's code saves
-these with the data. An experiment report lists them in its last section. A topic report links
+Each result is recorded with enough to reproduce it: the commit, whether there were uncommitted
+changes, the configuration and model settings, and where the data is stored. Where code runs the
+experiment, the code saves these with the data. For an investigation done by hand, write them in
+the log entry. An experiment report lists them in its last section. A topic report links
 each result to the record that holds them.
 
 Point to code by a name that stays valid when files move, such as a command name. Give a line
 number only when that exact line is the point.
 
 A retracted number gets a dated correction note where it appears and is never cited again. Apart
-from such notes, a report mentions a mistake only when the mistake led to a change of method.
+from such notes, a report mentions a mistake only when the mistake changed the method, the
+results, how the results are interpreted, or the current implementation.
 
 ## 7. Checklist
 
 1. Is this the right record: a log entry, an experiment report, a revision of a topic report, or a
    decision record?
 2. For a planned comparison, was the plan in the log before the first run?
-3. Is exploratory work labelled, and is a lead not presented as a finding?
-4. Can the reader see which result supports each decision?
-5. Does a topic report state the version it describes?
-6. Can each number be traced to a commit, a configuration and a data file?
+3. Is exploratory work labelled, and is a hypothesis not presented as a finding?
+4. Could someone who was not there understand each new log entry, including why the approach was
+   chosen?
+5. Can the reader see which result supports each decision?
+6. Does a topic report state the version it describes?
+7. Can each number be traced to a commit, a configuration and a data file?
