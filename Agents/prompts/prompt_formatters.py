@@ -81,8 +81,10 @@ def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecor
 def format_day_channel(messages: list[DayChannel]) -> str:
     """The public transcript: published lines only, the same for every reader. Passes are hidden,
     held-back drafts included; a held-back turn's note is dropped instead (audit 2026-10-03, finding
-    2: a line nobody heard must not survive as a belief that it was said)."""
-    lines = [f"{m.player}: {m.message}" for m in messages if not m.passed]
+    2: a line nobody heard must not survive as a belief that it was said). A player's text is in
+    quotation marks so that a forged ``game_master:`` inside it reads as that player's words: this
+    roughly halved the votes such a line moved (evidence/agent_boundaries/forged_speaker/)."""
+    lines = [f"{m.player}: {_quoted_text(m)}" for m in messages if not m.passed]
     return "\n".join(lines) if lines else "No messages yet."
 
 
@@ -264,8 +266,9 @@ def _wolf_channel_line(m: WolfChannel, viewer: str | None) -> str:
         return f"{stamp} {m.wolf} has nothing else to add."
     if not m.message:
         return f"{stamp} {m.wolf} votes: {m.vote}"
-    ending = "" if m.message.endswith((".", "!", "?")) else "."
-    return f"{stamp} {m.wolf}: {m.message}{ending}" + (f"  vote: {m.vote}" if m.vote else "")
+    text = one_line(m.message)
+    ending = "" if text.endswith((".", "!", "?")) else "."
+    return f"{stamp} {m.wolf}: {text}{ending}" + (f"  vote: {m.vote}" if m.vote else "")
 
 
 def format_wolf_channel(messages: list[WolfChannel], viewer: str | None = None) -> str:
@@ -321,7 +324,7 @@ def format_day_channel_postgame(messages: list[DayChannel], roles: dict[str, str
     if not visible:
         return "No messages yet."
     return "\n".join(
-        f"[Day {m.day}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
+        f"[Day {m.day}] {m.player} ({roles.get(m.player, 'unknown')}): {_spoken_text(m)}"
         for m in visible
     )
 
@@ -377,3 +380,36 @@ def format_agent_action(
     if action_phase == "day_vote":
         return f"Vote target: {vote.votee if vote else '(not captured)'}"
     return f"Message: {message.message if message else '(silent)'}"
+
+
+# Straight and curly double quotation marks; inside a player's quoted text each becomes a single one.
+_DOUBLE_QUOTES = ('"', "\u201c", "\u201d")
+
+
+def _quoted_text(m: DayChannel) -> str:
+    """``_spoken_text`` with a player's text inside double quotation marks. A double quotation mark
+    the player typed would close the quotation early and let the rest read as outside it, so each
+    becomes a single one. The game master's announcements are not quoted: the quotes are what marks
+    a line as a player's words."""
+    text = _spoken_text(m)
+    if m.player == "game_master":
+        return text
+    for quote in _DOUBLE_QUOTES:
+        text = text.replace(quote, "'")
+    return f'"{text}"'
+
+
+def _spoken_text(m: DayChannel) -> str:
+    """A day-channel entry's text for a transcript line. The game master's announcements are
+    written by the engine and laid out over several lines on purpose (the vote result lists each
+    ballot); only a player's text, which a person or a model wrote, is held to one line."""
+    return m.message if m.player == "game_master" else one_line(m.message)
+
+
+def one_line(text: str) -> str:
+    """A spoken message as one line of prompt text. Transcripts are one ``speaker: text`` line per
+    message, and the game master's announcements sit in the same channel, so a line break inside a
+    message (a human seat can type one) would start a line that reads as the game master or another
+    seat. Collapsing every whitespace run keeps the speaker label, which code writes, over the whole
+    message. Only the rendered text changes; the stored message, which people see, stays as typed."""
+    return " ".join(text.split())

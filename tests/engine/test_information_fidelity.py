@@ -168,7 +168,7 @@ def test_a_held_back_draft_reaches_no_transcript_not_even_its_authors():
         DayChannel(day=2, seq=1, player="h", message="", passed=True, gated=True,
                    pass_reason=DiscussionPassReason.NOVELTY_GATED, gated_candidate="I revealed my role."),
     ]
-    assert format_day_channel(channel) == "t0: I think w1 is lying."
+    assert format_day_channel(channel) == 't0: "I think w1 is lying."'
 
 
 def test_previous_days_put_the_game_masters_record_above_claims_and_accusations():

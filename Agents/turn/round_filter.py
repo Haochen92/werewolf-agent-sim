@@ -22,6 +22,7 @@ from logging import getLogger
 from langchain_core.prompts import ChatPromptTemplate
 
 from Agents.llm_factory import get_llm_judge
+from Agents.prompts.prompt_formatters import one_line
 from Agents.schemas import OpeningVerdicts
 from Agents.schemas.game_events import DayChannel, DiscussionPassReason
 
@@ -109,7 +110,7 @@ def _declared_kind(entry: DayChannel) -> str | None:
 
 def _judge_kinds(spoken: list[DayChannel]) -> dict[str, str] | None:
     """player -> the kind label; None = the call failed, so the caller keeps everything."""
-    numbered = "\n".join(f"{i + 1}. {entry.player}: {entry.message}" for i, entry in enumerate(spoken))
+    numbered = "\n".join(f"{i + 1}. {entry.player}: {one_line(entry.message)}" for i, entry in enumerate(spoken))
     try:
         result = (OPENING_PROMPT | get_llm_judge().with_structured_output(OpeningVerdicts)).invoke(
             {"lines": numbered},

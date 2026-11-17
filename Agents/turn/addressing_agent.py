@@ -14,7 +14,7 @@ from typing import Any
 from langchain_core.prompts import ChatPromptTemplate
 
 from Agents.llm_factory import get_llm_extractor
-from Agents.prompts.prompt_formatters import format_day_channel_for_day
+from Agents.prompts.prompt_formatters import format_day_channel_for_day, one_line
 from Agents.schemas import AddressingExtraction
 from Agents.schemas.game_events import AddressedTarget
 
@@ -73,7 +73,7 @@ def extract_addressed_targets(
                 "roster": ", ".join(roster),
                 "day_channel": format_day_channel_for_day(payload.get("day_channel", []), current_day),
                 "player_id": self_id,
-                "message": message,
+                "message": one_line(message),
             },
             config={"run_name": f"addressing_extract_{self_id}"},
         )

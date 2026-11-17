@@ -199,7 +199,7 @@ def check_gated_candidate_isolation(
     leaks: list[str] = []
     needles = [c for c in gated_candidates if c and c.strip()]
     for entry in prompt_log:
-        blob = repr(entry.get("prompt_input", {}))
+        blob = _searchable(entry.get("prompt_input", {}))
         for needle in needles:
             if needle in blob:
                 _record_leak(
@@ -243,13 +243,13 @@ def check_reads_isolation(
          it, so a why a wolf also wrote there was shared with its packmate on purpose (2026-10-11, a
          ten-seat pilot game flagged the chanteuse's own chat line in the illusionist's prompt)."""
     leaks: list[str] = []
-    blobs = [(entry, repr(entry.get("prompt_input", {}))) for entry in prompt_log]
+    blobs = [(entry, _searchable(entry.get("prompt_input", {}))) for entry in prompt_log]
     # Recipient-authored-by-construction fields: excluded from the PROSE pass only (the structural
     # pass still sees the full prompt_input — a rendered read OBJECT anywhere stays a leak).
     _OWN_PROSE_FIELDS = ("previous_strategy", "wolf_channel")
     prose_blobs = [
-        (entry, repr({k: v for k, v in entry.get("prompt_input", {}).items()
-                      if k not in _OWN_PROSE_FIELDS}))
+        (entry, _searchable({k: v for k, v in entry.get("prompt_input", {}).items()
+                             if k not in _OWN_PROSE_FIELDS}))
         for entry in prompt_log
     ]
 
@@ -333,13 +333,21 @@ def check_held_lines_reach_only_their_author(
         for entry in prompt_log:
             if entry["player_id"] == author:
                 continue
-            if text in repr(entry.get("prompt_input", {})):
+            if text in _searchable(entry.get("prompt_input", {})):
                 _record_leak(
                     leaks,
                     f"LEAK: {entry['player_id']} ({entry['player_role']}) received "
                     f"{author}'s held line in prompt_input: {text!r}",
                 )
     return leaks
+
+
+def _searchable(prompt_input: dict[str, Any]) -> str:
+    """The prompt input as one string to search for leaked text: its repr, which the structural
+    tokens (a rendered ``'reads':`` key) are written against, then every value as plain text. The
+    repr alone misses a needle with an apostrophe once a value holds both quotation marks (the day
+    transcript quotes every player's words): repr then escapes the apostrophe as \\'."""
+    return repr(prompt_input) + "\n" + "\n".join(str(value) for value in prompt_input.values())
 
 
 def check_round_players_are_seat_ids(

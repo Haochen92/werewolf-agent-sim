@@ -68,7 +68,7 @@ def test_the_rendered_prefix_is_the_same_for_every_seat_and_call_type():
         for template in _templates().values():
             prefixes.add(_prefix(_render(template, inputs)))
     assert len(living) >= 6 and len(prefixes) == 1
-    assert "player_4: player_2, why abstain?" in prefixes.pop()  # the real transcript, not a placeholder
+    assert 'player_4: "player_2, why abstain?"' in prefixes.pop()  # the real transcript, not a placeholder
 
 
 def test_a_held_back_draft_reaches_no_prompt_not_even_its_authors():
