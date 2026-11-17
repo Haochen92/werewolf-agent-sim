@@ -196,6 +196,16 @@ def test_the_backup_key_goes_to_the_rescues_company_only(monkeypatch):
     assert "sk-ant-backup" not in repr(game)
 
 
+def test_neither_key_shows_in_the_selections_printed_form():
+    game = GameLLM(api_key="sk-main-key", model=DEEPSEEK, rescue_model=HAIKU,
+                   backup_key="sk-ant-backup")
+
+    for shown in (repr(game), str(game), f"{game}"):
+        assert "sk-main-key" not in shown
+        assert "sk-ant-backup" not in shown
+    assert DEEPSEEK in repr(game)  # the model is still shown, which is what a log line needs
+
+
 async def test_session_runs_its_rescue_on_the_backup(quiet_session):
     graph = _SelectionEchoGraph()
     session = quiet_session(graph, api_key="sk-player-123", model=DEEPSEEK,

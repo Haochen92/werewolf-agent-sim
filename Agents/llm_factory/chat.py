@@ -31,7 +31,8 @@ class GameLLM:
     still keeps the game moving. Empty model/key = the environment decides (CLI/batch/eval).
     """
 
-    api_key: str = ""
+    # repr=False on both keys: the object's printed form must never show one.
+    api_key: str = field(default="", repr=False)
     model: str = ""
     rescue_model: str | None = None
     # The player's backup key: their key for the rescue model's company, when the rescue runs
