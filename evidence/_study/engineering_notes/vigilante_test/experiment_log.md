@@ -266,3 +266,22 @@ One assumption is also made explicit. The statement that the repaired test's ass
 every game a correct engine plays" assumes that a seat which no scripted player ever targets cannot
 die, be blocked or lose its shot in some other way. The 40 replays agree with that; the engine's
 rules were not searched for an exception.
+
+## 2026-11-17, evening: why the Vigilante is also spared from votes
+
+A reader of this log asked why the repair spares the Vigilante from votes, when every observed
+failure was a death at night. The log had not said. What reading the test and the rules shows:
+
+- The repair works by filtering every choice a scripted player makes from a fixed list of seats
+  (`_fill` in the test file removes spared seats from any such list). Votes are choices of that
+  kind, so they are spared along with kills and blocks. This follows from how the filter was
+  written. It was not a separate decision with its own reason.
+- The game's rules text says day 1 has no vote, so no vote can remove the Vigilante before its
+  first night turn, which is when the test fires the shot. I read this in the rules text given to
+  the players (`Agents/prompts/game_rules.py`); I did not trace it through the graph code.
+
+So sparing the Vigilante from votes is probably not needed for the test's two assertions, and it
+narrows the test a little more than the cause required: the test also no longer plays a game in
+which the Vigilante is voted out on a later day. Whether the assertions would still hold in such a
+game (the count of shots read from the night records of a seat that was later voted out) was not
+checked. Stage: a question recorded, nothing changed.

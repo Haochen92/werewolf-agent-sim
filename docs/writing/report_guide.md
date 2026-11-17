@@ -1,6 +1,8 @@
 # Experiment log and report guide
 
-*Draft 6, 2026-11-17, after two trials on a real debugging task: writing its log, and writing a report from that log. Examples come from the Werewolf project, a game played by AI agents.*
+*In use from 2026-11-17, after two trials on a real debugging task. Not yet tested: an experiment
+report for a planned comparison, and the revision of a topic report. Change a rule only when real
+use shows a recurring fault.* Examples come from the Werewolf project, a game played by AI agents.*
 <!-- Written to be copied unchanged into another project. -->
 
 `core_rules.md`, in this folder, covers general writing quality and is read first. When documents
@@ -26,8 +28,10 @@ question:
 
 A folder has one log and usually one report. Which report depends on the work: one comparison
 gives an experiment report; a design that developed over many experiments gives a topic report.
-Exploratory work that ends in a fix needs no report: its log is the record, and a note or topic
-report that cites it gives the finding in a paragraph.
+Exploratory work that ends in a local fix normally needs only its log, and a note or topic report
+that cites it gives the finding in a paragraph. Write a separate report when the investigation
+produces wider findings, a significant design decision, or a topic that readers need to understand
+without the log.
 
 **Before creating a folder, check whether the work continues an existing investigation.** Add to
 the existing log when the work extends the same question or decision. Create a sub-folder, with
@@ -53,7 +57,9 @@ interpretation separate from the result, so the reader can see which statements 
 Headings are optional, and something I merely noticed needs only a few sentences.
 
 **Write each entry so that it can be understood months later by someone who was not there.** It
-is not shorthand for what the writer currently has in mind. A later report may be written by
+is not shorthand for what the writer currently has in mind. When a substantial investigation
+reaches its conclusion, have a fresh reader check the log (core rule 12); small entries do not
+need this. A later report may be written by
 someone, or by an agent, with no access to that context, so the entry keeps the causal reasoning
 and the background needed to understand the result.
 
