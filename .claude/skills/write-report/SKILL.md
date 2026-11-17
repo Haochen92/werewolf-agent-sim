@@ -15,14 +15,21 @@ First read `docs/writing/core_rules.md` in full. It is one page, it applies to e
 
 The full guide always; then re-read the type's discipline block ("Discipline for reference docs" / "Discipline for journey logs" / the per-type skeletons). These are the rules that erode first under a fill-in-the-blanks pass.
 
-## Step 2 — Read the matching exemplar IN FULL (mandatory, not optional)
+## Step 2 — Decide which record this is, then look at an existing one for content and depth only
 
-Writers imitate the prose they see more reliably than the prose they are told to write (the guide says this itself). Exemplars:
-- Reference doc → `evidence/agent_boundaries/report.md`
-- Build-journey log → `evidence/gameplay/discussion/experiment_log.md`
-- Experiment report (single-experiment reference pairing) → `evidence/gameplay/discussion/report.md`
+First decide, using `docs/writing/report_guide.md` sections 1 to 3: is this a new log entry, a revision of an existing topic report, or a new experiment report? Check whether the work continues an existing investigation before creating a folder.
+
+Then read an existing record of the same kind for **what it contains and how deep it goes**: which decisions it records, what evidence sits beside each one, how history is kept apart from the current design.
+
+**Do not imitate the prose of the existing records.** The owner's ruling (2026-11-17): they are the minimum acceptable standard after four or five rounds of manual revision. They hold the right substance, and they still have compressed explanations, unnatural phrasing and dense paragraphs. A writer imitates what it reads, so read them for substance and write to `docs/writing/core_rules.md`. The aim is a first draft that is easier to read than they are and keeps their technical substance.
+
+Records to consult for content and depth:
+- Topic report (several experiments and decisions explaining a current design) → `evidence/gameplay/discussion/report.md`
+- Log of a long investigation → `evidence/gameplay/discussion/experiment_log.md`
+- Experiment report (one question, one defined comparison) and its log, written to the core rules → `evidence/agent_boundaries/forged_speaker/report.md`, `experiment_log.md`
+- Reference document → `evidence/agent_boundaries/report.md`
 - Decision record → `evidence/refactor/eval_architecture_convention.md` (tension → principle → rejected alternatives → decision + named tradeoff), with `evidence/refactor/provenance_lineage_rationale.md` as a second design-rationale example.
-- Negative finding → the guide's skeleton (§Document Types) — no single canonical file; imitate the reference-doc exemplar's honesty devices.
+- A decision not to pursue an approach → written as a decision record; no single example file.
 
 ## Step 3 — Author the judgment layer BEFORE drafting
 

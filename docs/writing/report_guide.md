@@ -1,116 +1,153 @@
-# Experiment report and log guide
+# Experiment log and report guide
 
-*Draft of 2026-11-17, checked by a fresh reader, not yet read by the owner. Written to be copied
-unchanged into another project.*
+*Draft 3, 2026-11-17. Examples come from the Werewolf project, a game played by AI agents.*
+<!-- Written to be copied unchanged into another project. -->
 
-This guide covers the experiment log and the experiment report. `core_rules.md`, in this folder,
-covers general writing quality and is read first. Examples come from the Werewolf project, a game
-played by AI agents.
+`core_rules.md`, in this folder, covers general writing quality and is read first. When documents
+disagree, the order of precedence is: the core rules, then this guide, then existing records.
+Existing records show the depth and content expected. They are not models of prose; the core rules
+are.
 
-**Which document wins when two disagree:** the core rules, then this guide, then example records
-the owner has approved.
+## 1. The records, and what they are for
 
-## 1. Two records for each experiment
+The records preserve the reasoning behind how the software changed. Months later I should be able
+to answer: what problem I was solving, which alternatives I considered, what the evidence showed,
+why the current design was chosen, and what I can claim about it.
 
-Every experiment has a log and a final record, kept in one folder. The final record is usually an
-experiment report (section 3 lists the other kinds).
+Records are organised by the question they investigate. One folder holds the records for one
+question:
 
-- **The log** is written while the work happens, in date order. Its header says what the
-  experiment is, where its code is, and that later entries take precedence over earlier ones. An
-  entry is never rewritten to reflect a later result; a correction is added as a new dated entry
-  or a dated note. Each
-  round of runs ends with its result and the decision taken.
-- **The report** is written when the work ends and is organised by findings, not by the order of
-  the work. It can be read without the log. Dead ends and minor mistakes stay in the log.
+| Record | What it is | When it is written |
+|---|---|---|
+| **The log** | The investigation as it happened, in date order, including approaches that failed and the reasoning at the time | Continuously. New entries are added; earlier entries are not rewritten |
+| **An experiment report** | The answer to one question that was investigated through a defined comparison | When the experiment ends. Afterwards it changes only by dated correction notes |
+| **A topic report** | The current design of one part of the system, and the decisions and evidence behind it, drawn from several experiments | Maintained: revised whenever the design or the evidence changes |
+| **A decision record** | A choice made without a measurement, including a choice not to pursue an approach | When the choice is made |
 
-The code that ran the experiment lives with the project's evaluation code, and the records point
-to it (section 7). Werewolf example: records in `evidence/<experiment>/`, code in
-`evaluation/experiments/`.
+A folder has one log and usually one report. Which report depends on the work: one comparison
+gives an experiment report; a design that developed over many experiments gives a topic report.
 
-## 2. The plan, written in the log before any run
+**Before creating a folder, check whether the work continues an existing investigation.** Add to
+the existing log when the work extends the same question or decision. Create a sub-folder, with
+its own log and report, when the work asks a distinct question that needs its own evidence and
+conclusion. The report of the parent folder then gives each sub-folder's conclusion in a sentence
+or two and links to it.
 
-Before the first run, the log states:
+The code that ran an experiment is kept with the project's evaluation code, and the records point
+to it. Links between files in the repository are relative paths.
+
+## 2. The log
+
+**An entry is never rewritten to match a later result.** A correction is a new dated entry, or a
+dated note beside the original. Only the log preserves what I believed before the evidence changed
+my mind, and that earlier belief is what explains why an abandoned design was reasonable.
+
+**An entry about something I ran or decided answers five questions:** what was the question, what
+was the approach, what was the result, how do I interpret it, and what did I decide. Headings are
+optional. Keep the interpretation separate from the result, so the reader can see which statements
+were measured. Something I merely noticed needs only a few sentences.
+
+**Work is either a planned comparison or exploratory.**
+
+| | Planned comparison | Exploratory work |
+|---|---|---|
+| What it is | Runs made to answer a stated question by comparing versions | Looking: debugging, or re-running something unexpected to see whether it happens again |
+| What the log needs first | A plan, written before the first run | Nothing. It is recorded as it happens and labelled exploratory |
+| What its result is | A finding | A lead. It becomes a finding when a planned comparison tests it |
+| Where it is recorded | The folder for its question | The log of the work during which it came up |
+
+**The plan for a planned comparison states:**
 
 - the question, and the expected answer if there is one;
-- the arms, meaning the versions being compared, and how each differs;
-- what is held fixed (model, settings, data, prompts), and what cannot be held fixed, such as
-  random variation between repeated model calls;
-- the measures, the main one first, and the sample size for each arm;
-- which results would support the expected answer, and which would count against it;
-- the estimated cost in money, with an upper bound.
+- the versions being compared, called arms, and how each differs;
+- what is held fixed, and what cannot be held fixed (for example, a model's answers vary between
+  repeated calls);
+- the measures, the most important first, and the sample size for each arm;
+- which results would count against the expected answer;
+- the estimated cost in money, with the most I am willing to spend.
 
 If the question is about a cause, include an arm that separates that cause from other
 explanations. Before spending money, check that the arms differ only where intended, for example
-by comparing their prompts line by line, and record that check.
+by comparing their prompts line by line, and note the check in the log.
 
-Example: a Werewolf test asked whether a player could move the AI players' votes by typing a fake
-game-master announcement into a message. In round 1, one arm saw 26 of 27 votes go to the accused
-player. With no arm in which the player made the same accusation openly, round 1 could not show
-whether voters were fooled about who spoke or only persuaded. Round 2 added that arm.
+*Example.* A test asked whether a player could move the AI players' votes by typing a fake
+game-master announcement. In round 1, 26 of 27 votes went to the accused player. Round 1 had no
+arm in which the player made the same accusation openly, so it could not show whether voters were
+deceived about who spoke or only persuaded. Round 2 added that arm.
 
-## 3. Choosing the kind of final record
+## 3. The reports
 
-| Kind | Use it when |
-|---|---|
-| Experiment report | Arms were run and an outcome was measured |
-| Decision record | A design or method was chosen without a measurement |
-| Negative finding | Without a controlled comparison, the work ruled an approach out |
-| Reference document | Readers need the current design more than its history |
+**Outline of an experiment report:** the answer, with its date and what was tested; the question;
+the setup (arms, what was fixed, measures, sample size, cost); the results, one subsection per
+finding; how sure the findings are, in plain words (what they rest on and what was not checked);
+the decision; open items; the code and data.
 
-## 4. Outline of an experiment report
+**Outline of a topic report:** the current design, described as it behaves today; the problem and
+the requirements; the important mechanisms; the decisions; the limitations; links to the detailed
+records.
 
-1. Title, then a short opening: the answer, its date and its scope.
-2. The question: what the system does, and what was asked about it.
-3. Setup: the arms, what was held fixed, the measures, the sample size and the cost.
-4. Results: one subsection per finding.
-5. How sure the findings are: what they rest on, and what was not checked.
-6. Decision: what was adopted or rejected, and why.
-7. Open items: questions still open, and planned work.
-8. Artifacts: the code, the data and what produced them (section 7).
+In a topic report, write each decision in this order: the decision, the alternatives considered,
+the finding the decision rests on, and then the supporting experiments one at a time, so the
+reader can see which result supports which conclusion.
 
-## 5. Presenting a result
+**A topic report states which version of the system it describes.** At the top it gives the commit
+of the implementation it describes (or the date, if there is no single commit) and the date it was
+last reviewed. When the design changes, revise the report and update both. Describe past
+experiments in the past tense with their dates, so that the current design and the history cannot
+be confused.
 
-Open each finding with its own question and a one-line answer in bold. A table holds one
-comparison, such as the arms on one measure: state its takeaway before it, and explain any
-surprise after it.
+**A decision record** gives the options, the reason for the choice, and what evidence would change
+it. It may rest on leads if it labels them as leads.
 
-Explain each measure before the first table that uses it: what it counts, why it was chosen, and
-how it was checked. A count not checked against hand labels, such as a keyword search, is called a
-rough count and given with how often a hand check agreed with it.
+## 4. Presenting a result
 
-Quote at least one real instance of what was measured, such as a model's stated reason. A reader should understand every result without opening a link.
+These are defaults. Use each where it makes the result clearer.
 
-## 6. How strongly to state a result
+- Open a finding with its question and a one-line answer.
+- Give a table one comparison. State what it shows before it, and explain any surprise after it.
+- Explain a measure before the first table that uses it: what it counts and how it was checked.
+- When a count comes from an automatic method that was not checked item by item, such as a keyword
+  search, call it a rough count. Give it with the result of a hand check on a sample, for example
+  "a hand check of 16 agreed on 14".
+- Quote a real instance of what was measured when it helps the reader picture the result.
+- State each result and what it applies to in the report itself. A link gives the detail; the
+  reader should not need to open it to understand the result.
 
-In addition to core rule 5 (sample size, untested explanations):
+## 5. How strongly to state a result
 
-- Scope each verdict (the stated answer to a question) to what was tested: the model, the data,
-  the system version, the sample size and the measure.
-- Report a null result from a small sample as "no effect detected at this sample size", never as
-  "no effect", and say what size of change it could have missed.
-- State a design claim as a pair: what the design controls, and what it does not. Example:
-  rerunning saved inputs fixes the data, but the model's answers still vary between calls.
-- When any result in the experiment, even a weak one, points against an explanation, the verdict
-  says so.
+These add to core rule 5, which covers sample size and untested explanations.
 
-## 7. Traceability
+- Limit each conclusion to what was tested: the model, the data, the version of the system, the
+  sample size and the measure.
+- A failed version shows that the tested version failed. It does not show that the approach cannot
+  work. A decision not to pursue the approach says so in those terms.
+- Report a small-sample result with no difference as "no effect detected at this sample size". Give
+  the size of effect that could have been missed only when an analysis supports that number.
+  Otherwise say that the size is unknown.
+- State what the design of an experiment controls and what it does not. Example: replaying saved
+  inputs fixes the data, but the model's answers still vary between calls.
+- When any result, even a weak one, points against an explanation, say so where the explanation is
+  given.
 
-Each result carries what produced it: the commit, any uncommitted changes, the configuration and
-model settings, and where the data is stored. The experiment's code saves these with the data, and
-the report lists them in its artifacts section, not in the middle of sentences.
+## 6. Traceability
 
-Point to code by a name that stays valid when files move, such as a registered command name. Give
-a line number only when that exact line is the point.
+Each result is recorded with what produced it: the commit, whether there were uncommitted changes,
+the configuration and model settings, and where the data is stored. The experiment's code saves
+these with the data. An experiment report lists them in its last section. A topic report links
+each result to the record that holds them.
 
-A retracted number gets a dated correction note where it appears, in either record, and is never
-cited again. Apart from such notes, the report mentions a mistake only when it changed the method.
+Point to code by a name that stays valid when files move, such as a command name. Give a line
+number only when that exact line is the point.
 
-## 8. Checklist
+A retracted number gets a dated correction note where it appears and is never cited again. Apart
+from such notes, a report mentions a mistake only when the mistake led to a change of method.
 
-1. Was the plan, with what would count against the expected answer, logged before the first run?
-2. Are the log's earlier entries left as written, apart from dated corrections?
-3. Does each table make one comparison, with its takeaway first?
-4. Is each verdict scoped to the model, data, sample size and measure?
-5. Is each small-sample null result stated as "no effect detected at this sample size"?
+## 7. Checklist
+
+1. Is this the right record: a log entry, an experiment report, a revision of a topic report, or a
+   decision record?
+2. For a planned comparison, was the plan in the log before the first run?
+3. Is exploratory work labelled, and is a lead not presented as a finding?
+4. Can the reader see which result supports each decision?
+5. Does a topic report state the version it describes?
 6. Can each number be traced to a commit, a configuration and a data file?
-7. Are retracted numbers absent, except in their correction notes?
