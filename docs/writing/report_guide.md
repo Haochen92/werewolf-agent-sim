@@ -1,6 +1,6 @@
 # Experiment log and report guide
 
-*Draft 5, 2026-11-17, after a trial on a real debugging task. Examples come from the Werewolf project, a game played by AI agents.*
+*Draft 6, 2026-11-17, after two trials on a real debugging task: writing its log, and writing a report from that log. Examples come from the Werewolf project, a game played by AI agents.*
 <!-- Written to be copied unchanged into another project. -->
 
 `core_rules.md`, in this folder, covers general writing quality and is read first. When documents
@@ -26,6 +26,8 @@ question:
 
 A folder has one log and usually one report. Which report depends on the work: one comparison
 gives an experiment report; a design that developed over many experiments gives a topic report.
+Exploratory work that ends in a fix needs no report: its log is the record, and a note or topic
+report that cites it gives the finding in a paragraph.
 
 **Before creating a folder, check whether the work continues an existing investigation.** Add to
 the existing log when the work extends the same question or decision. Create a sub-folder, with
@@ -96,7 +98,9 @@ deceived about who spoke or only persuaded. Round 2 added that arm.
 **Outline of an experiment report:** the answer, with its date and what was tested; the question;
 the setup (arms, what was fixed, measures, sample size, cost); the results, one subsection per
 finding; how sure the findings are, in plain words (what they rest on and what was not checked);
-the decision; open items; the code and data.
+the decision, what it costs, and any check made on it afterwards; open items; the code and data.
+A report uses the log's corrected statements and does not mention a correction that left the
+results unchanged.
 
 **Outline of a topic report:** the current design, described as it behaves today; the problem and
 the requirements; the important mechanisms; the decisions; the limitations; links to the detailed

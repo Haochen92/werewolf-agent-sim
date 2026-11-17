@@ -243,3 +243,26 @@ the test names in `tests/engine` found none that says so.
 **Committed.** The test change is commit `33e67bd4`, and this log with its scripts is commit
 `4f93ecd8`. The status "not committed" in the previous entry was correct when it was written.
 Stage: implemented, tested and committed; not pushed.
+
+## 2026-11-17, later still: three more corrections, from a second reader
+
+A writer who was given only this log, to write a report from it, listed statements the log does
+not support. Three are corrected here.
+
+1. **"All 40 played different games"** (entry "the repaired test across repeated runs"). This is
+   the same error as the one corrected above. The 40 replays of the repaired test made 40 different
+   sets of night choices; the day was not compared.
+2. **"100 passes in a row would be unlikely if the cause were still there"** was stated without a
+   calculation. The calculation: if the failure rate before the repair is taken as 3 in 70 (the 1
+   failure in 30 test runs and the 2 in 40 replays), the chance of 100 passes in a row with the
+   cause still present is 0.957 to the power 100, about 1.2%. If it is taken as 1 in 30, it is
+   about 3.4%. Both rates come from very few failures, so these figures are rough. The entry
+   already says that the count is not the main evidence, and that remains the case.
+3. **The tree the repaired runs used** was not stated. The 100 runs and the 40 replays used commit
+   `a543c724` plus the uncommitted change to `tests/engine/test_ten_seat_game.py`, which was later
+   committed unchanged as `33e67bd4`.
+
+One assumption is also made explicit. The statement that the repaired test's assertions hold "in
+every game a correct engine plays" assumes that a seat which no scripted player ever targets cannot
+die, be blocked or lose its shot in some other way. The 40 replays agree with that; the engine's
+rules were not searched for an exception.
