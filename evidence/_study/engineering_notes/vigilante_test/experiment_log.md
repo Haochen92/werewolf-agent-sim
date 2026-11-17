@@ -218,3 +218,28 @@ changed, and no engine defect was found.
 vary by thread order. They passed here, but whether any of them can fail by chance was not
 examined. A scripted model that does not depend on thread order (for example, a random generator
 per seat) would make every game in the file repeatable; that is a separate change.
+
+## 2026-11-17, later: one correction, the scope of the repaired test, and the commit
+
+**Correction to the entry "the three points of the earlier diagnosis".** That entry says "Two runs
+with the same hash played the same game." The hash covers the choices made on every night
+(`night_resolutions[*].choices` in the replay script) and nothing from the day. So what the table
+establishes is narrower than its column "Distinct games" says: 40 runs with today's thread pools
+made 40 different sets of night choices, and 30 runs with one worker per pool made one set. Runs
+with different night choices did play different games. Runs with the same night choices were not
+shown to have had the same day discussion and votes. The conclusion drawn from the table does not
+depend on that: with one worker per pool the order of the random draws is fixed, and the night
+choices stopped varying, which is what identifies thread order as the cause. An outside reviewer
+pointed this out after reading the log.
+
+**The scope the repair gives up.** Because no scripted player may target the Vigilante, this test
+no longer plays games in which the Vigilante is killed, or is stopped from acting by another role,
+on a night it fires. That is deliberate: the test's question is whether one successful shot costs
+one bullet across a pause and resume, and it now always gets a successful shot. It is a limit on
+what the test covers, not only a rejected alternative. Whether another test checks the bullet
+count when the Vigilante is killed or blocked on the night it fires was not checked; a search of
+the test names in `tests/engine` found none that says so.
+
+**Committed.** The test change is commit `33e67bd4`, and this log with its scripts is commit
+`4f93ecd8`. The status "not committed" in the previous entry was correct when it was written.
+Stage: implemented, tested and committed; not pushed.

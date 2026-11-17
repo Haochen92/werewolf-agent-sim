@@ -464,20 +464,22 @@ its result depended on.
 Python changes how it orders sets of strings from one process to the next. A script replayed
 the test's game under four settings to separate the two.
 
-| Setting | Runs | Different games played | Bullet spent once |
+| Setting | Runs | Different sets of night choices | Bullet spent once |
 |---|---|---|---|
 | Normal threads, string ordering varying | 20 | 20 | 20 of 20 |
 | Normal threads, string ordering fixed | 20 | 20 | 20 of 20 |
 | One thread at a time, either ordering | 30 | 1 | 30 of 30 |
 
 Fixing the string ordering changed nothing, and running one thread at a time made every run
-play the same game. So thread order is the cause. This is debugging, not an experiment, and it
+make the same night choices. So thread order is the cause. This is debugging, not an experiment, and it
 still establishes a finding, because the cause was reproduced directly.
 
 **The repair, and the alternatives.** Section 1.6 gives two repairs for a test like this. I
 chose the first: fix the situation. No scripted player may now choose the Vigilante as a target,
 so it cannot die or be stopped from acting, its shot always goes ahead, and its record is always
 kept. The games still differ from run to run; the test no longer depends on which one is played.
+The cost is scope: this test no longer plays a game in which the Vigilante is killed or stopped
+on the night it fires, and I have not checked that another test covers the bullet count there.
 
 | Alternative | Why it was not chosen |
 |---|---|
