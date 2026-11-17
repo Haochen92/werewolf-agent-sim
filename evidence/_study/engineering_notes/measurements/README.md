@@ -16,5 +16,7 @@ production is. Run from the repository root with `poetry run python <path>`.
 | `u2_real_day.py` | 2026-11-12 | The real day phase, ten seats, model turns replaced by 0.5 s sleeps: 1.00 s on 8 threads before, 0.51 s on 10 after | U2 3.7 gap 5 |
 | `u2_compile_cost.py` | 2026-11-12 | A graph per game: compile 40 ms and 72 KiB; copy with another saver 0.1 ms and 4 KiB; a copy saves through its own saver | U2 3.7 gap 1.2 |
 | `u2_diag_vig.py`, `u2_off_plugin.py`, `u2_diag_runs.txt` | 2026-11-12 | Replays of the test that fails by thread order, with and without the pool setting, and what happened to the Vigilante's shot in each | U2 3.7 gap 5; U13 seed |
+| `u13_vig_probe.py`, `u13_vig_probe_runs.txt` | 2026-11-17 | The same replays on today's code: with the hash seed fixed, 20 runs play 20 games; with one worker per pool, 30 runs play one game; the bullet is spent once in all 70; after the repair, 40 runs play 40 games and the Vigilante is never targeted | `vigilante_test/experiment_log.md` |
+| `u13_vig_mutations.py` | 2026-11-17 | The repaired Vigilante test fails on the bullet count under two deliberate double spends, and passes on the unbroken engine | `vigilante_test/experiment_log.md` |
 | `u3_kill_resume_toy.py`, `u3_kill_rerun.out` | 2026-11-12 | What runs again after a kill and after a pause, on a small graph with an in-memory saver | U3 3.6 |
 | `u3_nested_interrupt_state.py` | 2026-11-12 | Whether the main graph's state shows a pause raised inside a nested phase | U3 3.5 |

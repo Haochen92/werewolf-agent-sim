@@ -31,7 +31,7 @@ The size column is my sorting for that later decision:
 | 12 | Nothing deletes a finished game's checkpoints or events, and one game's size is not measured | Measure, then a retention rule | Decision | U3 3.8 gap 4 |
 | 13 | A re-run turn may count twice in the lesson store | A guard on the counter update, keyed by turn | Decision | U3 3.8 gap 5; U4 |
 | 14 | The engine is blocking code on threads | Rewrite the graph steps as async code. Buys: no thread budgets, no thread locks, cancellation (which row 1 wants). Costs: proving the engine behaves the same, and finding every blocking call on the path. First step: count the functions, call sites and library calls that would change | Large | U2 3.3; U15 seed |
-| 15 | One engine test passes or fails by thread order (`test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume`) | Fix the situation the test sets up, or assert what holds in any game | Small | U2 3.7 gap 5; U13 seed |
+| 15 | One engine test passes or fails by thread order (`test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume`) | Fix the situation the test sets up, or assert what holds in any game. *2026-11-17: repaired in the working tree by fixing the situation (no scripted player targets the Vigilante); not committed. Record: `vigilante_test/experiment_log.md`* | Small | U2 3.7 gap 5; U13 seed |
 | 16 | Viewer queues have no size limit, so a slow viewer's events pile up in memory | A limit, with a rule for a viewer who falls behind | Decision | README open item for U6 |
 | 17 | A batch run's night step has up to nine parts and probably runs on a default pool of 8 (not measured) | Measure; set the size if confirmed | Small | U2 3.7 gap 5 |
 | 18 | Events are sent to viewers before they are saved, so a crash in between shows a viewer an event the log never holds (read in code, not reproduced) | Write the chunk's events, then send them; decide what a failed write does | Decision | U3 3.8 gap 7 |
@@ -68,6 +68,10 @@ The size column is my sorting for that later decision:
 | 50 | The admin endpoints are off in production (no token set), so the three house settings can be changed only in the database by hand | Set the token, or give the settings the catalogue's script | Small | U14 3.5 gap 4 |
 | 51 | The nightly leak audit is documented and not installed on the host | Add the scheduled line; check that it ran | Small | U14 3.5 gap 6 |
 | 52 | Two records disagree with the code and the database: `frontend/docs/server_design_notes.md` says the default model was changed through the stored setting (it was the catalogue), and `frontend/docs/build_plan.md` counts 72 releases where the deploy log's table has 76; the frontend release of 2026-10-22 has no log entry | Correct the two lines; add the entry | Small | U14 3.5 |
+| 53 | The paid `live` model check (170 tests) runs only by hand, and no run is recorded since 2026-09-10 | Run it on a schedule; record each run's date and result | Small | U13 3.8 gap 4 |
+| 54 | The browser test suite keeps its own copy of the server's rules for who may see which event, and it already lacks two event types (`uses_remaining`, `night_record`) | Generate the copy from the server, or check it against the server's rules in one test | Small | U13 3.8 gap 5 |
+| 55 | The default test run covers more on my machine than on a clean one: some memory tests use a real Postgres when `WW_POSTGRES_DSN` is set and are skipped otherwise | Say so in the test documentation; give automated runs a test database | Decision | U13 3.1 |
+| 56 | `frontend/docs/testing.md` lists 5 of the 8 browser test files | Add the three missing rows | Small | U13 3.8 gap 8 |
 
 ## Done while writing the notes
 
@@ -135,6 +139,11 @@ stay in the Done table only.
   (`measurements/u2_diag_vig.py`, `measurements/u2_diag_runs.txt`). The bullet was spent once in
   every run examined.
 - **Status.** Test unchanged. Two repairs in `u13_seed_notes.md`.
+- *2026-11-17 note.* The diagnosis was re-checked and the test repaired (not committed): thread
+  order confirmed as the source of the variation, with string hashing ruled out; the bullet was
+  spent once in all 70 replays; after the repair, 100 of 100 runs passed, and the test still fails
+  under two deliberate double spends. Before-and-after and the reasoning are in
+  `vigilante_test/experiment_log.md`.
 
 ### What a restart costs (chapter 7 candidate, not ready)
 

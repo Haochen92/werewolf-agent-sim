@@ -62,6 +62,8 @@ has ever run.
   The rule it means to check (the bullet is spent once) held in every run looked at. Two repairs:
   fix the situation (a night in which the Vigilante cannot die or be blocked), or assert what holds
   in any game (`uses_left` goes down by exactly one). Unchanged so far; my call.
+  *2026-11-17: repaired with the first option, not committed; the reasons for not choosing the
+  second, and the evidence, are in `vigilante_test/experiment_log.md`.*
 
 ## Scope for U13 (my ruling, 2026-11-14)
 

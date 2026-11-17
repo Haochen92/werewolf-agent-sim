@@ -615,7 +615,8 @@ code). Read against the code on 2026-11-16. Paths are from the repository root.*
 
 **Tests (3.5)**
 
-- No test uses instruction-like or forged player speech: **code**, a search of `tests/`
+- Forged player speech in tests: `tests/engine/test_transcript_quoting.py` and `test_transcript_one_line.py` check how a forged line
+  is rendered (2026-11-17). No test checks whether a model believes it; that is what the experiment measures: **code**, **test**
 
 **Further reading, only when needed:** [OWASP Prompt Injection Prevention](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html),
 "Agent-Specific Defenses", "Least Privilege" and "Human-in-the-Loop (HITL) Controls". The
