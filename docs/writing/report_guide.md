@@ -1,6 +1,6 @@
 # Experiment log and report guide
 
-*Draft 4, 2026-11-17. Examples come from the Werewolf project, a game played by AI agents.*
+*Draft 5, 2026-11-17, after a trial on a real debugging task. Examples come from the Werewolf project, a game played by AI agents.*
 <!-- Written to be copied unchanged into another project. -->
 
 `core_rules.md`, in this folder, covers general writing quality and is read first. When documents
@@ -34,7 +34,8 @@ conclusion. The report of the parent folder then gives each sub-folder's conclus
 or two and links to it.
 
 The code that ran an experiment is kept with the project's evaluation code, and the records point
-to it. Links between files in the repository are relative paths.
+to it. A one-off diagnostic script is kept beside the record it supports. Links between files in
+the repository are relative paths.
 
 ## 2. The log
 
@@ -61,7 +62,7 @@ and the background needed to understand the result.
 | What it is | Runs made to answer a stated question by comparing versions | Looking: debugging, or re-running something unexpected to see whether it happens again |
 | What the log needs first | The agreed plan, written before the first run | Nothing. It is recorded as it happens and labelled exploratory |
 | What its result may be called | A finding, limited to what was compared | It depends on the claim, as the next paragraph explains |
-| Where it is recorded | The folder for its question | The log of the work during which it came up |
+| Where it is recorded | The folder for its question | The log of the work during which it came up. If that work has no log, start a folder for the question |
 
 **What exploratory work can establish.** A defect that was reproduced directly, or behaviour of
 the code that was verified, is a finding: no comparison is needed to say that a crash happens. An

@@ -117,7 +117,7 @@ item may be rejected when fixing it would add an unsupported claim; say which it
 | How much general background | Teach the general concept and mechanism first, then connect it to my application | Only what is needed to understand this experiment | Only what is needed to understand the architecture, findings and decisions |
 | What it is organised by | The concepts and questions the reader must understand | The findings: question, answer, then evidence. The order in which the work was done belongs in the experiment log | The same as reports |
 | Question headings | Use a heading phrased as a question when it is a real question the reader needs answered | The same | The same. Do not use a rhetorical question in the prose as a dramatic opening |
-| Guidance about the document itself | A suggested reading path is useful | A log's header says that later entries replace earlier ones | Keep to what helps the reader find their way |
+| Guidance about the document itself | A suggested reading path is useful | A log's header says that where entries disagree, the later one is correct | Keep to what helps the reader find their way |
 | Facts kept off the page | None | None | Follow the chapter's "Handle with care" list. Leaving a fact off is never a reason to drop a limitation that changes how a result should be read |
 
 ## When two rules conflict
