@@ -1,0 +1,106 @@
+{
+ "cost": {
+  "cached": 774792,
+  "calls": 112,
+  "input": 1253389,
+  "output": 114173,
+  "usd": 0.1127
+ },
+ "speech": {
+  "new": {
+   "contains_double_quote": 0,
+   "length_mean": 276.7,
+   "length_median": 280,
+   "passed": 4,
+   "spoke": 19,
+   "starts_or_ends_with_double_quote": 0,
+   "turns": 23,
+   "wrapped_in_double_quotes": 0
+  },
+  "old": {
+   "contains_double_quote": 0,
+   "length_mean": 262.0,
+   "length_median": 264,
+   "passed": 2,
+   "spoke": 21,
+   "starts_or_ends_with_double_quote": 0,
+   "turns": 23,
+   "wrapped_in_double_quotes": 0
+  },
+  "paired_length_new_minus_old": {
+   "cases": 19,
+   "mean": 14.1,
+   "median": 20,
+   "new_longer": 11,
+   "old_longer": 8
+  }
+ },
+ "votes": {
+  "m1_403f4dbc_day4": {
+   "new": {
+    "town": {
+     "abstain": 20,
+     "player_1": 5,
+     "player_2": 2
+    },
+    "wolf": {
+     "player_3": 9
+    }
+   },
+   "old": {
+    "town": {
+     "abstain": 15,
+     "player_1": 7,
+     "player_2": 2,
+     "player_7": 1,
+     "player_9": 2
+    },
+    "wolf": {
+     "player_3": 6,
+     "player_9": 3
+    }
+   }
+  },
+  "m2_403f4dbc_day3": {
+   "new": {
+    "town": {
+     "player_6": 12
+    },
+    "wolf": {
+     "abstain": 1,
+     "player_2": 1,
+     "player_4": 4
+    }
+   },
+   "old": {
+    "town": {
+     "abstain": 1,
+     "player_6": 11
+    },
+    "wolf": {
+     "abstain": 1,
+     "player_2": 2,
+     "player_4": 3
+    }
+   }
+  },
+  "m3_2f19d908_day3": {
+   "new": {
+    "town": {
+     "player_4": 2,
+     "player_6": 7,
+     "player_8": 3
+    },
+    "wolf": {}
+   },
+   "old": {
+    "town": {
+     "player_10": 1,
+     "player_6": 7,
+     "player_8": 4
+    },
+    "wolf": {}
+   }
+  }
+ }
+}

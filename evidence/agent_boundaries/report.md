@@ -183,6 +183,8 @@ per-field grep, the timeline and the commit-level detail are in
 Where the boundary is not enforced or not verified, with the consequence of each. A gap stays on this
 list when minor; the list is the audit trail. Each carries the date it was last confirmed.
 
+- **A player can pose as the game master (open, 2026-11-17).** A fake `game_master:` announcement typed into a player's message still moves most AI day votes onto an innocent player after the line-break fix, and no prompt change tested brings it near the level of an open accusation: `forged_speaker/`.
+
 ### Memory retrieval is enforced by construction, not verified (open, confirmed 2026-10-14)
 
 Retrieved observations and strategy points come from role-keyed namespaces,
