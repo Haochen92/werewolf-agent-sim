@@ -62,3 +62,35 @@ has ever run.
   The rule it means to check (the bullet is spent once) held in every run looked at. Two repairs:
   fix the situation (a night in which the Vigilante cannot die or be blocked), or assert what holds
   in any game (`uses_left` goes down by exactly one). Unchanged so far; my call.
+
+## Scope for U13 (my ruling, 2026-11-14)
+
+U13 is not a catalogue of test types. With agents writing most test code, the skill I need is
+judging and directing tests, to a sufficient level, not an optimal one:
+
+1. **What to test.** Rules that must always hold, boundaries between components, past incidents.
+2. **Edge cases.** A repeatable way to find them (the four questions: dies here, runs twice,
+   two at once, was it confirmed).
+3. **Setting tests up so an agent can work with them.** Fast and deterministic, clear names and
+   failure messages, reusable fixtures, one command, a written rule for "done".
+4. **Reading and debugging a test an agent wrote.** Can it fail? Does it test the claim or the
+   implementation? What does a pass not prove? (The Vigilante test above is my example.)
+5. **What a green run establishes.** My machine against CI; "deployed" against "validated".
+
+It covers backend, frontend and the boundary between them. It feeds a planned write-up section
+on how I use agentic coding, where testing is one of the practices shown. Setting up CI is a
+separate build task after the note.
+
+## From the U10 walkthrough (2026-11-16): the planted-key test
+
+A worked example for "what to test" and "what does a pass not prove". U10 section 1.3 has the
+technique: a made-up key, run through every path with the provider replaced by a stand-in,
+then every sink searched for the exact string. My tests do this for a dead game's error text,
+its traceback and the Sentry report. They do not search the database tables, the checkpoint,
+the trace, or the log line of a failed model call (U10 section 3.2 and gap 1). Two points to
+carry into U13:
+
+- For the failing paths, the stand-in has to raise an error that contains the key. A stand-in
+  that fails with a clean message passes the test and proves nothing about scrubbing.
+- It is the same idea as the leak checks over prompts: search every output for a value that
+  must not be there.

@@ -12,6 +12,13 @@ planning outline `writeup/_planning/ch7_ch8_syllabus.md` (2026-10-30). The treat
 
 ## How a note is built
 
+**Short pass for U10 and U11, agreed 2026-11-16.** These two notes use a reduced layout and
+scope because preparation time is limited. Their Part 5 stopping checks replace the full
+template's completion requirements for this pass: explain the system, why, one trade-off and
+one gap; U11 adds one brief tool-using example. Parts 2 and 4 and Appendix B are reference.
+The [syllabus](../../../writeup/_planning/ch7_ch8_syllabus.md#organising-principle) retains the
+deeper scope and when to revisit it. This does not settle the remaining job-search priorities.
+
 Revised 2026-11-11 after the first two notes: the first layout put the code evidence in the middle
 of the explanation, which made a note read as an inventory. The explanation now comes first and the
 evidence sits behind it. Every note has the same parts, in this order (`_note_template.md`):
@@ -196,11 +203,11 @@ Three rules on accuracy, added 2026-11-11 after an outside review of U2:
 | U7 | Server-side authorization and side channels | not started | | | |
 | U8 | [Observability: finding out what happened in a run of model calls](08_llm_observability.md) | drafted 2026-11-14 from a fresh code read; 1.6a, 1.8a, 1.9, 3.5a and the third choice in Part 4 added 2026-11-16 while reading; Part 1 and Part 3 up to 3.5a read 2026-11-16, about 3.5 hours with the walkthrough; stopped there. Left: 3.6 to 3.8, the first two tables of Part 4, the two summaries in Part 5 (about 20 minutes) | | | |
 | U9 | [Experiment provenance: knowing what a result was made of](09_experiment_provenance.md) | drafted 2026-11-16 from a fresh code read, at a smaller size by my choice (about 35 minutes); the full mechanism stays in the fingerprinting report; 1.5 (designing it for a new system), the manifest and dirty-stamp passages added 2026-11-16 while reading | 2026-11-16 (Part 1 to section 3.4; 3.5, Part 4 and Part 5 left) | | |
-| U10 | [Secrets: a key's whole lifetime in a model application](10_secrets_management.md) | drafted 2026-11-16 from a fresh code read, short by my choice (about 25 minutes); not read by me yet | | | |
-| U11 | [Prompt injection: text the agent reads may carry someone else's instructions](11_prompt_injection_and_trust_boundaries.md) | drafted 2026-11-16 from a fresh code read, short by my choice (about 30 minutes); Part 1 is written for agents with tools, which my system does not have; not read by me yet | | | |
+| U10 | [Secrets: a key's whole lifetime in a model application](10_secrets_management.md) | drafted 2026-11-16 from a fresh code read, short by my choice (about 25 minutes); revised for the agreed short pass with a stopping check and scoped claims; the walkthrough on 2026-11-16 added the planted-key test (1.3), the provider check (3.6) and the three ways a value reaches code (Part 4) | 2026-11-16 (Parts 1 to 3) | | |
+| U11 | [Prompt injection: when outside content tries to control an agent](11_prompt_injection_and_trust_boundaries.md) | drafted 2026-11-16 from a fresh code read; reworded 2026-11-17 for first-read clarity (`docs/writing/core_rules.md`); Part 1 is written for agents with tools, which my system does not have; section 3.3 rewritten around a measured result (`evidence/agent_boundaries/forged_speaker/`) | 2026-11-17 (read and closed) | | |
 | U12 | Client-side state and rendering | not started | | | |
 | U13 | Testing strategies and levels of verification | seed points in [u13_seed_notes.md](u13_seed_notes.md) | | | |
-| U14 | Operations: deployment, live configuration, cost control | not started | | | |
+| U14 | [Operations: releasing safely, changing settings live, limiting spend](14_operations.md) | drafted 2026-11-16 from a fresh code and host read; reworded 2026-11-17 for first-read clarity; answers the U2 walkthrough's question on Docker Compose in Part 4; the walkthrough added data recovery (1.2), the temporary-container steps (3.1) and the prepaid balance as the monthly limit (3.4) | 2026-11-17 (read and closed) | | |
 | U15 | Capacity: limits, the bottleneck, a cap on games | seed points in [u15_seed_notes.md](u15_seed_notes.md); the worker design, moved out of U5 on 2026-11-14, is in [u15_detail_workers_and_leases.md](u15_detail_workers_and_leases.md) | | | |
 
 ## Open items
