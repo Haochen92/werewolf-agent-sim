@@ -57,7 +57,8 @@ One entry per problem, most serious first. For each:
 - **Where:** the heading, plus a short exact quote (under 20 words) of the passage.
 - **Kind:** one of: missing connection · term before introduction · more than one job in a paragraph
   · number before orientation · unit or term changes meaning · caveat reverses an earlier claim ·
-  detail that does not change understanding · claim reads stronger than its support on the page ·
+  detail that does not change understanding · sentence needed a second read · claim reads stronger
+  than its support on the page ·
   section order · repeats parent context · other.
 - **What broke:** what you, as the reader above, could not follow or would misread.
 - **Repair:** what the passage needs (e.g. "state the comparison before the table", "define a visit
@@ -68,6 +69,12 @@ One entry per problem, most serious first. For each:
 - **Severity:** blocking (the reader misreads or loses the argument) · worth fixing · taste.
 
 Look in particular for:
+- Sentences you had to read twice, even if you then understood them. Quote each one. The usual causes:
+  an ordinary word used in a figurative or invented sense ("the defence that holds", "carries the
+  poison", "raises the cost"), a missing cause or consequence the reader must supply, several ideas
+  packed into one clause, or a maxim standing in for an explanation. The repair is a plain statement
+  of who does what and what follows, even if it is longer. Rate these "worth fixing", or "blocking"
+  when there are several in one section. A short sentence whose meaning is literal is not a finding.
 - Sections that do not follow from the previous one, where you had to reconstruct the link yourself.
 - Technical terms, internal names or game roles used before they are explained.
 - Paragraphs that mix explaining the system, reporting an experiment and qualifying the evidence.
@@ -88,5 +95,7 @@ materially improves the argument; removal is not a quota. If none are needed, sa
 findings or fill a quota. A clear page may have no findings.
 
 Do not praise or score the page. Presentation is substantive when it makes relationships hard to
-follow, even if they can eventually be inferred. Pure wording preferences are taste. Recommend a
+follow, even if they can eventually be inferred. A choice between two equally clear phrasings is taste. A sentence that needed a second read is not
+taste: it is a finding of the kind above. You are a strong reader and can decode compressed prose
+easily; the reader you stand in for should not have to, so report the effort, not only the failures. Recommend a
 visual only when you can name the relationship it would clarify; adding visuals is not a quota.

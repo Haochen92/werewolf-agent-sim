@@ -30,8 +30,11 @@ follow execution order; an investigation follows successive questions. There is 
 
 Read these yourself; do not summarise them from memory.
 
-- **Rules, every level:** [`references/portfolio-writing-prompt.md`](references/portfolio-writing-prompt.md) (the copyable block is the rule set)
-  and this skill's [`references/voice.md`](references/voice.md) (the owner's voice).
+- **First, the core rules:** `docs/writing/core_rules.md` (from the repository root). One page; read it in full
+  before anything else. Then this skill's [`references/voice.md`](references/voice.md), the short portfolio voice guide.
+  When documents disagree, the order is: core rules, then the voice guide, then approved examples. The longer
+  files below are reference for their specific step; where one of them disagrees with the two short files, the short files win.
+- **Rules, every level (reference):** [`references/portfolio-writing-prompt.md`](references/portfolio-writing-prompt.md) (the copyable block is the rule set).
 - **Rules for the level:** Level 2 → [`references/portfolio-level-2-writing-prompt.md`](references/portfolio-level-2-writing-prompt.md); Level 3 →
   [`references/portfolio-level-3-writing-rubric.md`](references/portfolio-level-3-writing-rubric.md) (it also says when a Level 3 page is justified).
 - **Worked examples:** use [`references/examples.md`](references/examples.md) to select the example

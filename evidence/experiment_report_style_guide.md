@@ -1,5 +1,56 @@
 # Experiment Report Style Guide
 
+## Read this first: write so that each sentence is understood on the first read
+
+**The current, complete version of these rules is `docs/writing/core_rules.md`. Read that page first; it wins over everything below, including this section.**
+
+*Added 2026-11-17 by the owner's ruling. It applies to every document in this repository, not
+only reports. Where another rule in this guide seems to conflict with it, this one wins.*
+
+**The rule.** The goal is the least effort for the reader per idea. It is not the fewest words.
+A sentence of 25 plain words that is understood once is better than a sentence of 15 unusual
+words that has to be read twice.
+
+**When "clear" and "short" conflict, choose clear.** The rules later in this guide about cutting
+filler, avoiding repetition and controlling length are about removing sentences that explain
+nothing. They are never a reason to pack more into the sentences that remain.
+
+**How to write each sentence:**
+
+1. Say who or what does the action, what it acts on, and what happens as a result. Keep a cause
+   and its consequence in the same sentence; do not split an explanation into fragments.
+2. Use words in their literal meaning. If a statement can be made directly, do not make it with
+   a figure of speech or a phrase invented for this document. Established technical terms are
+   fine, and so is an analogy when the literal statement is given with it.
+3. State the cause and the consequence. Do not leave a step for the reader to work out.
+4. Use the standard technical term, and explain it in plain words the first time it appears.
+5. Keep a short, memorable sentence only if its meaning is already literal.
+
+**Examples from documents the owner could not read comfortably.** Each one on the left was
+short and was still hard to read.
+
+| Written first | Rewritten |
+|---|---|
+| "The defence that holds is a limit on what the agent can do, not a filter on what it reads." | "The most reliable defence is to restrict what the agent can do. Filtering malicious instructions out of its input is not enough alone." |
+| "The controls that hold are the ones outside the model." | "Controls in application code remain effective even when the model follows a malicious instruction." |
+| "A summary of a poisoned document can carry the poison." | "A summary generated from a malicious document may keep its injected instructions, so the attack can influence later model calls." |
+| "Delimiters raise the cost." | "Delimiters help the model distinguish instructions from outside content, but they cannot guarantee that the model ignores a malicious instruction." |
+| "The harm left is the one the checks allow." | "Validation cannot prevent a harmful action that satisfies the application's rules." |
+| "A spending cap is only as good as the record it counts from." | "To enforce the daily limit on free games, count the game records created that day. Unlike a counter held in memory, this count is still correct after the server restarts." |
+
+Sentences that were kept unchanged, because they are short and literal: "A permitted action can
+still be wrong." "Untrusted text does not become trusted by passing through a model."
+
+**The check.** The writer cannot do this check alone, because the writer already knows what
+each sentence means. Give the finished text, with no other context, to a fresh reader (a person,
+or a model in a new session). Ask it to identify four things: sentences likely to need a second read,
+unusual or unnecessarily figurative word choices, explanations that are missing, and concepts
+introduced before the reader has enough context to understand them. Fix what it lists.
+
+**Layout rules that go with it.** In a table comparing two or three things, put the things in
+the rows and their properties in the columns. Group a long list under two or three named goals
+or decisions.
+
 ## Purpose
 
 Each report covers one experiment or feature segment of the project. Multiple reports will later be

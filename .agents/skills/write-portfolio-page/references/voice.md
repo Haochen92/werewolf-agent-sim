@@ -1,68 +1,107 @@
-# The owner's voice and page rules
+# Portfolio voice guide
 
-Rules the owner gave across review rounds (2026-10-13 to 2026-10-28) that are not all written in the
-three `portfolio-*` guides in this folder. The guides win if the two ever disagree.
+*In use from 2026-11-17. It replaces the earlier `voice.md`, which is in git history.*
 
-## Voice
+This guide answers one question: what should a portfolio page written in my voice sound like, and
+what should it emphasise? It applies to pages under `writeup/`. General writing quality (clear
+sentences, order of explanation, terms, evidence, length) is covered by `docs/writing/core_rules.md`, which
+is always read first.
 
-1. **Name the thing first.** "The Ninth Express is a variant of the Mafia-style game played with AI
-   agents."
-2. **Familiar → specific, one layer at a time.** No term before its base. On technical pages, the
-   game's need comes before the framework term (votes must be collected independently → fan-out).
-3. **Define by what each party knows and wants;** explain a design by the tension it resolves.
-4. **Frame, then parts:** "usually through two basic mechanisms" → the day → the night.
-5. **Plain, owned, conversational.** Always "I", never "we" (solo developer), but never claim
-   AI-written code as hand-written. Counts a reader can picture.
-6. **Put material scope beside the claim it limits.** Keep dates and versions in source notes unless
-   they change the interpretation. Avoid repeated generic disclaimers; never postpone a qualification
-   needed to understand the explanation accurately.
+**Which document wins when two disagree:** the core rules, then this guide, then approved example
+pages. An example shows the intended result; it does not override a written rule.
 
-## What a page holds
+Two terms: a Level 2 page covers one subject of a chapter in depth, and a Level 3 page goes
+further into one part of that subject. The source notes are the comment at the end of each page
+file that maps claims to evidence.
 
-7. **Select evidence by its purpose.** Keep findings that explain a decision, support a mechanism,
-   test a result or expose a limitation. Full run histories belong in evidence reports.
-8. **Give each passage one main job.** Level 2 explains the decision and its strongest evidence.
-   Keep essential comparison conditions, denominators and limitations on the page so its claim can
-   be assessed without opening links. Introduce the comparison before its numbers; move exhaustive
-   variants and reproduction details to evidence or focused L3 depth.
-9. **Explain the finding, don't recount the investigation.** One path: causes → the evidence that
-   tells them apart → what was done about each. Organise by the finding, not by the order the work
-   was done. This is an organisation problem, not a word-count problem.
-10. **Topic selection over compression.** A detail that answers a different question than the
-    page's moves to a deeper page or a note, even if true and impressive. Do not shorten the
-    remaining explanations to compensate.
-11. **One term, one meaning; one unit per paragraph; one question per paragraph; one job per
-    sentence, point first.** Split a shared term before using it. Explain necessary changes of unit.
-    Keep full provenance in source notes and essential identifying context beside the claim.
-12. **Diagrams carry what; prose keeps why.** Cut a passage only when a figure shows the same facts.
-    A link to a deeper page follows a stated problem, never a bare caption.
-13. **Every sentence advances understanding.** Context, connections, reasoning, evidence and
-    consequences all earn space. Remove empty repetition and theatrical framing; do not remove the
-    connective explanation that makes facts coherent.
-14. **Observation ≠ cause.** Call a mechanism "suspected" unless a test isolated it. Rule tests show
-    the rules run as written; they do not show the behaviour is useful.
+## A. Voice and explanation
 
-## Words to avoid
+**1. Open by establishing what the page is about and why it matters.** Give the reader enough
+context to understand the first explanation. Define the subject directly when that is the clearest
+opening, as in "The Ninth Express is a variant of the Mafia-style game played with AI agents."
+Otherwise begin with the problem or requirement that motivates it.
 
-- **Technical language:** retain established terms when they help the reader understand or discuss
-  the engineering. Explain them on first use; use plain descriptions when terminology adds no value.
-  This applies to statistical methods too: do not erase a meaningful distinction to avoid a word.
-- **Model names and versions:** avoid a catalogue of names in explanatory passages. Keep names when
-  model-specific results or changes would otherwise be ambiguous; full configuration goes in sources.
-  Do not substitute “stronger” or “cheaper” unless the evidence supports that description.
-- **Habits the owner rewrote out:** abstract nominalisations ("that distinction creates the central
-  design problem"), defensive negations ("it was not a comparison of …"), trade-off jargon ("taking
-  responsibility for validation in exchange for …"), promotional adjectives, rhetorical
-  question-and-answer, repeated "Problem / Decision / Result" labels.
+**2. Introduce a technical term as the answer to a problem the reader already understands.**
+Start from what the reader knows and add one new idea at a time. Describe what the game needs
+before giving the framework's name for the technique that meets the need. Example: votes must be
+collected independently, and the technique for that is called fan-out.
 
-## Care on a public page
+**3. Write in a natural, conversational technical voice.** Use "I" when describing decisions,
+experiments or implementation work that I did. Never use "we": the project has one developer.
+An explanation of a general mechanism usually needs no pronoun.
 
-- Repository bookkeeping that is honest in `evidence/` but reflects poorly stays off: unaudited
-  AI-written tests, missing CI, uninstalled jobs, missing scripts, untracked records, runs from
-  uncommitted code, held spend, retracted numbers. Follow the chapter's Handle-with-care list exactly.
-- A fault the project caught is told as caught and what changed, with its scope; never hidden, never
-  dramatised.
-- A limitation that changes how to read a result always stays.
-- The reader will not open the evidence. Spend checking effort on whether the reasoning holds
-  (experiments kept apart, cause not overstated, scope beside the claim), not on re-auditing every
-  figure; still never invent or silently change a number.
+**4. Make only claims I can explain and defend.** Do not imply that code written by an AI was
+written by hand.
+
+**5. Avoid these habits, which I removed when rewriting earlier drafts:**
+
+- A noun made from a verb standing in for whoever acts: "that distinction creates the central
+  design problem".
+- Denying something the reader had no reason to assume: "it was not a comparison of …".
+- Describing a decision as an abstract exchange instead of saying what the code does: "taking
+  responsibility for validation in exchange for …".
+- Promotional adjectives.
+- A question in the prose asked only so that the next sentence can answer it. A heading phrased
+  as a real question is fine.
+- The labels "Problem / Decision / Result" repeated in section after section.
+
+## B. Telling the engineering story
+
+**6. Explain a design decision through the requirements that conflicted.** Name the competing
+requirements or constraints that made a decision necessary. Then explain how the chosen design
+meets them and what limitation remains. Example: a waiting game must survive a server restart,
+and a person's answer should be handled without a separate worker service. The design saves a
+checkpoint and also keeps the waiting task in memory.
+
+**7. Describe participants and components by what they have and do.** For a game participant:
+what it knows, what it is trying to achieve, and what it can do. For a software component: what
+it is responsible for, what information it receives, and what operations it performs.
+
+**8. Introduce the overall structure before its parts, when that helps.** Say how many parts
+there are and of what kind, then describe each. Example: the page says the game works "usually
+through two basic mechanisms", then describes the day and the night. A short explanation does not
+need an outline first.
+
+**9. Organise the page around what was found.** State the finding, give the evidence that
+supports it, and describe the decision or change that followed. Discuss another possible
+explanation when it matters to the conclusion. The order in which the investigation happened
+stays in the experiment log.
+
+**10. Choose each piece of evidence for its purpose.** Keep a finding if it explains a decision,
+supports the account of a mechanism, tests whether a result holds, or shows a limitation. The
+full history of runs belongs in the evidence reports.
+
+**11. Use a diagram for what the parts are and how they connect, and prose for why they are
+arranged that way.** A figure can replace a passage only when it shows the same facts. A link to
+a deeper page comes after a sentence that states the problem the deeper page addresses.
+
+## C. Publication standards
+
+**12. Put on the page what the reader needs to judge a claim without opening a link.** That is
+the conditions of the comparison, what each count is out of, and the limitations. Full lists of
+variants and the details needed to reproduce the work go to the evidence reports or to a Level 3
+page. Dates, versions and the full configuration go in the source notes, unless one changes how a
+claim should be read.
+
+**13. Name a model only where the result depends on it.** In a passage that explains how
+something works, do not list model names. Do not replace a name with "stronger" or "cheaper"
+unless the evidence supports that description.
+
+**14. Leave out internal housekeeping that does not affect a claim.** Each chapter has a "Handle
+with care" list, and it is followed exactly. Examples of what stays off a public page: tests
+written by an AI and not yet reviewed, the absence of automated testing on each change, scheduled
+jobs that were never installed, records not under version control, runs made from uncommitted
+code, paid runs that were planned and never run, and retracted numbers.
+
+**15. Never leave out a limitation that changes whether a claim is accurate, or how much
+confidence the reader should place in it.** Do not imply that a test, a monitoring process or an
+operational safeguard exists when it has not been built. If the page says a behaviour is checked
+automatically, that check must exist and run. Rule 15 takes precedence over rule 14.
+
+**16. Tell a fault the project caught as caught.** Say that it was found, what changed, and which
+results it affected. Do not hide it and do not make it sound dramatic.
+
+**17. When checking a page, assume the reader will not open the evidence.** Spend the checking
+time on whether the reasoning holds: separate experiments are kept apart, a cause is not
+overstated, and each limitation sits next to its claim. Never invent a number, and never change
+one without saying so.

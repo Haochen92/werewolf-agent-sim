@@ -9,7 +9,9 @@ Write or revise an evidence document for: $ARGUMENTS
 
 Read `evidence/experiment_report_style_guide.md` §Document Types and decide which of the five shapes fits — experiment report · build-journey log (`experiment_log.md`) · decision/design record · negative/non-feasibility finding · reference/how-it-works doc. The type determines the skeleton, the discipline rules, AND which exemplar you must read. Do not default to the experiment-report skeleton.
 
-## Step 1 — Read the guide's discipline section for that type
+## Step 1 — Read the core rules, then the guide's discipline section for that type
+
+First read `docs/writing/core_rules.md` in full. It is one page, it applies to every document, and where it disagrees with the long guide or with this skill, it wins. If `docs/writing/report_guide.md` exists, read it next and treat the long guide as reference.
 
 The full guide always; then re-read the type's discipline block ("Discipline for reference docs" / "Discipline for journey logs" / the per-type skeletons). These are the rules that erode first under a fill-in-the-blanks pass.
 
@@ -132,11 +134,12 @@ moves specifically:
   discipline remarks are process residue addressed to maintainers; replace with a compact orientation
   blockquote (what this is · companion docs · guiding principle), like the exemplar's header.
 
-## Step 5 — Two self-review passes (in order)
+## Step 5 — Self-review passes, then one fresh-reader pass (in order)
 
 1. **Argument pass** — the guide's full checklist, including the type-specific items. Explicitly check: does any section list facts without interpretation (the fact-dump smell)? Did anything drift from the Step-3 brief's selection? Then scan every verdict sentence for scope: does its strength exceed what the cited store/epoch/N/instrument can carry (the Claim-calibration rules above)?
 2. **Prose-legibility pass** — a separate read applying the guide's §Prose legibility rules mechanically: one main idea per sentence, one reasoning step per paragraph; unpack stacked modifiers; ≤ ~1 em-dash per paragraph; say what a component does before naming it; define shorthand before use; replace vague evaluations ("cleanly", "robust", "direction-grade") with the observation; plain sentence over aphorism. Grep the draft for the project's internal names and check each is introduced before use.
 3. **Outsider-and-history pass** — read as the outside engineer: mark every passage that needs unstated context or makes several jumps, and rewrite it. Then check that no historical finding reads as a current or universal claim.
+4. **Fresh-reader pass (added 2026-11-17; do not skip, and do not do it yourself).** You wrote the draft, so you already know what each sentence means and cannot see where it is dense. Give the finished text, and nothing else, to a reader with no context: a subagent started fresh, with no brief, no sources and no explanation. Ask it to identify four things, quoting each passage: sentences likely to need a second read, unusual or unnecessarily figurative word choices, explanations that are missing, and concepts introduced before the reader has enough context to understand them. Tell it that it is a strong reader and must report effort, not only failures. Then reword every listed sentence as a plain statement of who does what and what follows, even if it becomes longer, and change no fact, number or caveat while doing so. The rule and its worked examples are in the guide's opening section, "Read this first". When clear and short conflict, clear wins.
 
 ## Step 6 — Deliver
 
