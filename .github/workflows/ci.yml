@@ -14,6 +14,12 @@
 #
 # The frontend's checks are not here yet.
 
+# The runner is named exactly, not "ubuntu-latest". The project needs Python 3.11.12 exactly
+# (pyproject.toml), and GitHub builds each Python version for particular Ubuntu releases: when
+# "latest" moved to Ubuntu 26.04, 3.11.12 was not available there and the first run of this file
+# failed at "Set up Python". The ARM runner is the processor type of the machine the server is
+# developed and deployed on, so the image job builds what the host would build.
+
 name: CI
 
 # Two sizes of run:
@@ -63,15 +69,15 @@ env:
 
 jobs:
   backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 40
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11.12"
 
@@ -123,11 +129,11 @@ jobs:
 
   image:
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build the server image from the lock file
         run: docker build -t wolf-server:ci --build-arg GIT_COMMIT=${{ github.sha }} .
