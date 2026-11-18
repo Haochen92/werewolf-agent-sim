@@ -45,6 +45,15 @@ class GameLLM:
     # cache, so the key goes when the game's selection is dropped.
     clients: dict[Any, Any] = field(default_factory=dict, compare=False, repr=False)
 
+    def redact(self, text: str) -> str:
+        """``text`` with this game's keys replaced. A provider's error can quote the key it
+        refused, and such an error is logged and, when it ends a turn, saved in the game's
+        checkpoint, so the text is scrubbed where the error is caught, before either."""
+        for key in (self.api_key, self.backup_key):
+            if key:
+                text = text.replace(key, "***")
+        return text
+
 
 # Per-game model selection, optionally BYOK (pattern 2, ephemeral pass-through). The server's
 # GameSession sets it inside the game's asyncio task; LangGraph copies the task

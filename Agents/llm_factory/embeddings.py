@@ -124,15 +124,19 @@ _KEY_REJECTED_MARKERS = (
 KEY_REFUSED = "refused this game's API key"
 
 
-def provider_complaint(exc: BaseException) -> str:
+def provider_complaint(exc: BaseException, scrub: Callable[[str], str] | None = None) -> str:
     """The provider's own short reason for a failed call, e.g. "401, invalid x-api-key": the
-    status and the message from the SDK's error body (Anthropic and OpenAI shape it alike)."""
+    status and the message from the SDK's error body (Anthropic and OpenAI shape it alike).
+    ``scrub`` removes a key from the message before it is cut to length, so a key that the cut
+    would split cannot leave its first part behind."""
     status = getattr(exc, "status_code", None)
     body = getattr(exc, "body", None)
     error = body.get("error") if isinstance(body, dict) else None
     message = error.get("message") if isinstance(error, dict) else None
     if not message:
         message = str(getattr(exc, "message", "") or exc)
+    if scrub is not None:
+        message = scrub(message)
     message = message.strip()[:200]
     return f"{status}, {message}" if status else message
 

@@ -591,6 +591,71 @@ def test_a_refused_key_on_the_primary_ends_the_game():
         agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
 
+class _KeyQuotingRefusal(Exception):
+    """A provider's refusal whose message quotes the key it refused, after ``padding`` characters."""
+
+    def __init__(self, key: str, padding: int = 0):
+        self.status_code = 401
+        self.body = {"error": {"message": "x" * padding + f" invalid x-api-key: {key}"}}
+        super().__init__(f"Error code: 401 - invalid x-api-key: {key}")
+
+
+class _KeyQuotingModel:
+    """A seat model whose every call is refused with an error that quotes ``key``."""
+
+    model = "fake"
+
+    def __init__(self, key: str, padding: int = 0):
+        self.key, self.padding = key, padding
+
+    def with_structured_output(self, schema, **kwargs):
+        def refuse(prompt):
+            raise _KeyQuotingRefusal(self.key, self.padding)
+
+        return RunnableLambda(refuse)
+
+
+def test_a_refusal_that_quotes_the_key_ends_the_game_without_the_key_in_the_error_or_the_log(caplog):
+    """2026-11-18: the refusal is raised to end the game, and LangGraph saves a raised error in
+    the game's checkpoint, so a key quoted by the provider was written to the database."""
+    import pytest
+
+    from Agents.llm_factory import GAME_LLM, GameLLM
+    from Agents.llm_factory.embeddings import ProviderKeyRejected
+
+    # Arrange: a game on the player's key, and a primary whose refusal quotes that key
+    key = "sk-player-QUOTED-0001"
+    token = GAME_LLM.set(GameLLM(api_key=key, model="deepseek/deepseek-v4-pro"))
+    models = FakeModels(seat=_KeyQuotingModel(key), seat_rescue=None)
+
+    # Act
+    try:
+        with pytest.raises(ProviderKeyRejected) as raised, caplog.at_level("WARNING"):
+            agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
+    finally:
+        GAME_LLM.reset(token)
+
+    # Assert
+    assert key not in str(raised.value)
+    assert "***" in str(raised.value)  # the place of the key is still shown
+    assert key not in caplog.text
+
+
+def test_a_key_that_the_length_cut_would_split_leaves_no_part_behind():
+    from Agents.llm_factory import GameLLM
+    from Agents.llm_factory.embeddings import provider_complaint
+
+    # Arrange: a message long enough that the cut at 200 characters falls inside the key
+    key = "sk-player-QUOTED-0001"
+    refusal = _KeyQuotingRefusal(key, padding=175)
+
+    # Act
+    complaint = provider_complaint(refusal, scrub=GameLLM(api_key=key).redact)
+
+    # Assert
+    assert "sk-player" not in complaint
+
+
 def test_a_refused_rescue_key_falls_to_the_typed_fallback():
     """The rescue's own credential failing must not end a game whose primary works."""
     # Arrange: a failing primary, and a rescue that refuses its key

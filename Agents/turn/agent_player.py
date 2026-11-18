@@ -231,11 +231,16 @@ def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
     try:
         return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
     except Exception as e:
+        # A provider's error can quote the key. Only the scrubbed text is logged or kept: the
+        # refusal below is raised to end the game, and LangGraph saves a raised error in the
+        # game's checkpoint.
+        redact = GAME_LLM.get().redact
+        said = redact(str(e))
         if is_key_rejected_error(e):
-            logger.error(f"LLM call for {player_id}: the provider rejected the key: {e}")
-            return _Rejected(provider_complaint(e))
+            logger.error(f"LLM call for {player_id}: the provider rejected the key: {said}")
+            return _Rejected(provider_complaint(e, scrub=redact))
         if is_transient_provider_error(e):
-            logger.warning(f"LLM call stalled for {player_id} (slow or full): {e}")
+            logger.warning(f"LLM call stalled for {player_id} (slow or full): {said}")
             return _STALLED
-        logger.warning(f"LLM call failed for {player_id}: {e}")
+        logger.warning(f"LLM call failed for {player_id}: {said}")
         return None
