@@ -299,7 +299,7 @@ def _row(**over):
 async def _recover(monkeypatch, rows, graph, check_key=None):
     repository = RecordingGameRepository(rows=rows)
     extra = {"check_key": check_key} if check_key is not None else {}
-    games = LiveGameRegistry(repository, SimpleNamespace(graph=graph), **extra)
+    games = LiveGameRegistry(repository, SimpleNamespace(graph=graph, graph_for_game=lambda: graph), **extra)
     await recovery.recover_registry(games, repository)
     return games, repository
 
@@ -423,7 +423,8 @@ async def test_a_rebuilt_game_gets_its_cast_and_its_picks_back(monkeypatch):
         ["owl", "hare", "whale", "cat", "badger", "cyclops", "dragon", "onion", "shade"], 1)]
     repository = RecordingGameRepository(rows=[row])
     repository.stored_cast = stored
-    games = LiveGameRegistry(repository, SimpleNamespace(graph=FakeDurableGraph(state)))
+    graph = FakeDurableGraph(state)
+    games = LiveGameRegistry(repository, SimpleNamespace(graph=graph, graph_for_game=lambda: graph))
 
     # Act: recover the games at boot
     await recovery.recover_registry(games, repository)

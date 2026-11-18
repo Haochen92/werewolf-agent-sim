@@ -38,17 +38,18 @@ class StreamTrackingGraph:
     for that, and not only for the question, means no sibling node of the paused step is still
     running in a worker thread when the test stops the server."""
 
-    def __init__(self, graph):
+    def __init__(self, graph, counted_by: "StreamTrackingGraph | None" = None):
         self._graph = graph
         self.streams_running = 0
+        self._counted_by = counted_by or self  # a game's copy counts on the server's wrapper
 
     async def astream(self, *args, **kwargs):
-        self.streams_running += 1
+        self._counted_by.streams_running += 1
         try:
             async for part in self._graph.astream(*args, **kwargs):
                 yield part
         finally:
-            self.streams_running -= 1
+            self._counted_by.streams_running -= 1
 
     def __getattr__(self, name):
         return getattr(self._graph, name)
@@ -79,8 +80,10 @@ async def open_server(dsn: str, *, check_key=None) -> ServerProcess:
     provider (a test must never ask a real provider); None keeps the registry's default,
     which is only reached when a game is started with a key.
 
-    The registry is handed the runtime's compiled graph wrapped in `StreamTrackingGraph`;
-    the registry reads nothing else from the runtime (`.graph` only)."""
+    The registry asks the runtime for a graph per game (`graph_for_game`: that game's own
+    saver and lesson store). Here each of those is wrapped in a `StreamTrackingGraph` that
+    counts on the one the test holds (`ServerProcess.graph`), which wraps the startup graph and
+    reads the same database."""
     runtime = GraphRuntime(dsn)
     await runtime.startup()
     database = Database(sqlalchemy_url(dsn))
@@ -88,7 +91,10 @@ async def open_server(dsn: str, *, check_key=None) -> ServerProcess:
     repository = GameRepository(database)
     graph = StreamTrackingGraph(runtime.graph)
     extra = {} if check_key is None else {"check_key": check_key}
-    registry = LiveGameRegistry(repository, SimpleNamespace(graph=graph), **extra)
+    per_game = SimpleNamespace(
+        graph=graph,
+        graph_for_game=lambda: StreamTrackingGraph(runtime.graph_for_game(), counted_by=graph))
+    registry = LiveGameRegistry(repository, per_game, **extra)
     return ServerProcess(runtime, database, repository, registry, graph)
 
 

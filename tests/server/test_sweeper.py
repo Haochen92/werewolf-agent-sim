@@ -82,7 +82,7 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     expired = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=2))
     fresh = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=1))
     repo = _FakeGameRepository()
-    games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
+    games = LiveGameRegistry(repo, SimpleNamespace(graph=None, graph_for_game=lambda: None))
     for session in (expired, fresh):
         games._register(session)
     await games.open_room(name="x")  # a waiting room must be left alone by the sweep
@@ -147,7 +147,7 @@ async def test_a_suspended_solo_game_has_the_same_shelf_life(quiet_session):
 
     # Round 3: sweep
     repo = _FakeGameRepository()
-    games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
+    games = LiveGameRegistry(repo, SimpleNamespace(graph=None, graph_for_game=lambda: None))
     games._register(session)
     assert await sweep_parked_games(games, SETTINGS) == [session.game_id]
     assert session.error == "abandoned: suspended with its player away for 61 min"

@@ -19,7 +19,7 @@ class _FakeGameRepository:
 
 
 def _registry():
-    return LiveGameRegistry(_FakeGameRepository(), SimpleNamespace(graph=None))
+    return LiveGameRegistry(_FakeGameRepository(), SimpleNamespace(graph=None, graph_for_game=lambda: None))
 
 
 async def test_an_ended_game_nobody_watches_leaves_at_once(quiet_session):

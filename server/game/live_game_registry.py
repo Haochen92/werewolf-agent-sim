@@ -204,7 +204,7 @@ class LiveGameRegistry:
             raise PermissionError("only the host may start the game")
         session = GameSession(
             room.run_config(), api_key=room.api_key, model=room.model,
-            backup_model=room.backup_model, backup_key=room.backup_key, seat_tokens=room.tokens, picks=room.picks, graph=self._graph_runtime.graph,
+            backup_model=room.backup_model, backup_key=room.backup_key, seat_tokens=room.tokens, picks=room.picks, graph=self._graph_runtime.graph_for_game(),
             repository=self._repository)
         return await self._launch(
             session, model=room.model, byok=bool(room.api_key), room_name=room.name,
@@ -224,7 +224,7 @@ class LiveGameRegistry:
         session = GameSession(
             run_config, api_key=api_key, model=model, backup_model=backup_model,
             backup_key=backup_key, seat_tokens=seat_tokens,
-            picks=picks, graph=self._graph_runtime.graph, repository=self._repository)
+            picks=picks, graph=self._graph_runtime.graph_for_game(), repository=self._repository)
         return await self._launch(
             session, model=model, byok=bool(api_key), memory=memory,
             seats=[{"name": "human", "token": token, "character": character}
@@ -295,7 +295,7 @@ class LiveGameRegistry:
         session = GameSession(
             game_run_config(memory=row.memory, human_player=len(row.seats),
                             game_id=row.game_id),
-            model=row.model, graph=self._graph_runtime.graph,
+            model=row.model, graph=self._graph_runtime.graph_for_game(),
             seat_tokens=[s["token"] for s in row.seats],
             picks=[s.get("character") for s in row.seats],
             repository=self._repository)
@@ -328,8 +328,7 @@ class LiveGameRegistry:
         that wait began, so a game parked for a day before the restart is still a day
         old. If the checkpoint shows the game had already finished, the row is marked
         completed and None is returned."""
-        graph = self._graph_runtime.graph
-        state = await graph.aget_state(session.config)
+        state = await session._graph.aget_state(session.config)
         if not state.next:  # the game actually finished; the row was a stale 'running'
             await self._repository.complete_game(
                 session.game_id, session.log, len(session.human_players))
