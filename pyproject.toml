@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = "==3.11.12"
 authors = [{ name = "liuhaochen" }]
 dependencies = [
-    "langchain-core==1.3.3",
+    "langchain-core==1.6.0",
     "langchain-google-genai==4.2.2",
     "langchain==1.2.18",
     "langgraph==1.1.10",
@@ -20,7 +20,6 @@ dependencies = [
     "pandas (>=3.0.3,<4.0.0)",
     "matplotlib (>=3.10.9,<4.0.0)",
     "langchain-google-vertexai (>=3.2.3,<4.0.0)",
-    "sentence-transformers (>=5.5.1,<6.0.0)",
     "psycopg[binary,pool]==3.3.4",
     "langgraph-checkpoint-postgres==3.1.0",
     "fastapi==0.141.1",
@@ -29,6 +28,12 @@ dependencies = [
     "sqlmodel (>=0.0.39,<0.0.40)",
     "alembic (>=1.19.1,<2.0.0)",
     "sentry-sdk==2.71.0",
+    # The Claude and OpenAI-protocol providers (Agents/llm_factory/providers). Imported by the
+    # game since those providers were added, but installed by hand and never declared here; the
+    # first image built from the lock file (2026-11-18) failed to start without them.
+    "langchain-anthropic==1.7.0",
+    "anthropic==1.13.0",
+    "langchain-openai==1.4.1",
 ]
 
 [project.scripts]
@@ -64,7 +69,7 @@ packages = [{ include = "Agents" }, { include = "evaluation" }]
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"
-ruff = "^0.8.0"
+ruff = "0.15.16"
 modal = "^1.4.3"
 pytest = "^9.0.3"
 pytest-asyncio = "^1.3.0"
