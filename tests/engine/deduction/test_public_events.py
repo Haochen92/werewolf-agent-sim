@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 from Agents.config.game import GameConfig
 from Agents.deduction import own_result_lines, public_items, public_record, seat_view_from_payload
 from Agents.deduction.public.wills import will_items
@@ -600,6 +602,7 @@ ROWS_BUILT = {"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11"
 """The rows the random games must reach. B28–B30 give no line; B31 has no reader."""
 
 
+@pytest.mark.slow
 def test_every_fact_a_public_item_states_holds_in_the_real_game():
     """Random legal games (the pack always attacks, abilities stop when spent), at every point a
     seat reasons from: every fact holds on its night, until 20,000 nights have been played."""

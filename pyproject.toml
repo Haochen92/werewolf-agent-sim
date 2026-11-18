@@ -76,11 +76,14 @@ testpaths = ["tests"]
 # evaluation/ import without the `python -m` cwd trick).
 pythonpath = ["."]
 asyncio_mode = "auto"
-# Live tests (real models, real credentials) never run by accident: pass `-m live` to run them.
-addopts = "-m 'not live'"
+# Paid tests never run by accident, and the slow ones wait for the full local run:
+# `poetry run pytest -m "not contract"` runs everything free; `-m contract` the paid set.
+addopts = "-m 'not contract and not slow'"
 markers = [
-    "slow: long-running tests (deselect with -m 'not slow')",
-    "live: needs network/credentials (LLM calls, live Postgres) — excluded from the offline suite",
+    "slow: takes over 20 seconds in the full run on the development machine (a starting value)",
+    "integration: needs a service started for the test run, such as a database container",
+    "contract: calls a real outside provider; costs money",
+    "timing: waits real time and asserts a time window; can fail on a slow machine",
 ]
 
 [build-system]

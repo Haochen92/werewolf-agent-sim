@@ -322,16 +322,18 @@ def test_no_block_outside_full_mode_or_for_a_human_seat(change):
     {"lone_killer": "serial_killer", "neutral": "speculator"},
     {"lone_killer": "necromancer", "neutral": "fortune_teller"},
 ])
-def test_in_a_whole_game_every_seat_and_turn_kind_gets_the_same_public_block(monkeypatch, game):
+def test_in_a_whole_game_every_seat_and_turn_kind_gets_the_same_public_block(scripted_model, game_graph,
+                                                                            game):
     """On the real graph: every AI turn (discussion, vote, night, the wolf chat and the carrier) with
     the same day and dead roster has byte-identical public blocks; the block grows as the game does."""
     from Agents.turn.eval import TURN_CAPTURE, TurnCapture
-    from tests.engine.test_ten_seat_game import _play
+    from tests.factories.whole_game import play_game
 
     capture = TurnCapture()
     token = TURN_CAPTURE.set(capture)
     try:
-        _play(monkeypatch, game, seed=13)  # not 11: test_ten_seat_game plays that game id, and the checkpointer is shared
+        scripted_model(seed=13)
+        play_game(game_graph, game, seed=13)
     finally:
         TURN_CAPTURE.reset(token)
     blocks: dict[tuple, set[str]] = {}

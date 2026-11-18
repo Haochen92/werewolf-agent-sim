@@ -27,6 +27,8 @@ from __future__ import annotations
 import random
 import re
 
+import pytest
+
 from Agents.deduction import deduction_blocks, own_result_lines, seat_view_from_payload
 from Agents.deduction.comparisons import comparison_items
 from Agents.schemas.deduction import AnyOf, Compatible, NotAllTrue, OpenRoles, RoleIn
@@ -671,6 +673,7 @@ def truth_oracle(nights: int, seed: int, seats: int = 3) -> dict[str, int]:
     return counts
 
 
+@pytest.mark.slow
 def test_the_truth_oracle_on_random_games_with_claims_of_every_kind():
     counts = truth_oracle(nights=4000, seed=20261031)
     rows = {"E1", "E2a", "E2b", "E2c", "E3a", "E3b", "E4b", "E6", "E6b", "E7", "E8b", "E9", "E11", "E12",

@@ -1,10 +1,10 @@
-"""The live gate's skip check, offline: a model must be skipped for its own provider's missing key,
+"""The contract gate's skip check, offline: a model must be skipped for its own provider's missing key,
 not judged by another's (Claude seats were once checked under the Google credential)."""
 
 import pytest
 
 from Agents.llm_factory.providers import openai_compat
-from tests.live.test_model_structured_output import _KEY_ENV, _credential_missing
+from tests.contract.test_model_structured_output import _KEY_ENV, _credential_missing
 
 _GOOGLE_ENVS = ("GOOGLE_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS")
 

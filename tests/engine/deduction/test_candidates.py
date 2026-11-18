@@ -15,6 +15,8 @@ from __future__ import annotations
 import random
 import re
 
+import pytest
+
 from Agents.config.game import GameConfig
 from Agents.deduction import public_record, seat_view_from_payload
 from Agents.deduction.candidates import (
@@ -413,6 +415,7 @@ def test_the_brute_force_oracle_on_the_constructed_games():
             _check_by_brute_force(table.public(), table.seat(player), table.roles)
 
 
+@pytest.mark.slow
 def test_the_brute_force_oracle_on_random_games():
     """Every point a seat reasons from in 400 random games, the public's view and every living seat's."""
     views = 0
@@ -439,6 +442,7 @@ SENTENCES_REACHED = {
 """The forms of F3 and F7 the random games must reach, by a pattern of their sentence."""
 
 
+@pytest.mark.slow
 def test_every_fact_a_candidate_item_states_holds_in_the_real_game():
     """Random legal games until 20,000 nights: the public's items at every point a seat reasons from,
     and one living seat's at one such point per game, hold against the true roles; no legal game

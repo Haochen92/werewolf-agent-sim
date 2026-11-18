@@ -1,0 +1,200 @@
+# Testing guide
+
+For anyone changing code in this repository, including coding agents. It says what to test, how
+the tests are organised and run, and what to report before a change counts as finished. The
+frontend's own procedures are in [`../frontend/docs/testing.md`](../frontend/docs/testing.md);
+this page covers the Python side and the rules common to both.
+
+*Written 2026-11-17. The reasoning behind these rules is in
+`evidence/_study/engineering_notes/13_testing_and_verification.md`.*
+
+## 1. What to test
+
+**State the claim before writing the test.** A claim is one sentence about what the system
+does, such as "a dead player gets no record of its last night". Write the expected behaviour
+and its failure cases first, then the tests. The test's name is the claim, written as a
+sentence: `test_a_dead_player_gets_no_record_of_its_last_night`.
+
+**Assert the behaviour, not the implementation.** Check the result a caller or a player would
+see. Do not assert that a particular internal function was called.
+
+**For each change, ask these questions and add a test where the answer matters.**
+
+- For each input: what if it is empty, a single item, at a limit, invalid, or a duplicate?
+- For each step that writes or sends something: what if the process dies here, the step runs
+  twice, or two of them run at once? Was the result confirmed, or only assumed?
+
+**For a fault being fixed, write the test first and see it fail.** Then fix the fault and see
+the same test pass. If the test cannot be written first, break the fixed code on purpose
+afterwards and confirm that the test fails.
+
+**The claims that cost most if false.** A change that touches one of these needs a test of the
+claim itself, and the existing checks for it must still be able to fail:
+
+| Claim | Where it is checked |
+|---|---|
+| An AI seat's prompt never contains another seat's private information | `tests/leak_test.py`, used by the engine tests and by `scripts/run_batch.py` |
+| Each night's actions are settled by the rules | `tests/engine` (the resolution and night tests) |
+| Every fact the deduction engine writes into a prompt is true | `tests/engine/deduction` |
+| A player's own API key is never written out | `tests/server/test_byok.py` |
+| A prompt changes only on purpose | The prompt golden (section 4) |
+| The server and the browser agree on the API | `tests/server/test_openapi_snapshot.py` |
+| A game survives a server restart | `tests/server/test_durability.py`, against test doubles only (a test double is any replacement for a real dependency in a test: a stub, a mock or a fake) |
+
+`run_leak_tests` in `tests/leak_test.py` runs seven checks over every prompt of a game. The
+file holds more checks than these seven; the payload leak tests in `tests/engine` call the
+others directly.
+
+**A test cannot show what a model does.** The default tests replace the model with a scripted
+one (`tests/factories/scripted_model.py`). They show that a prompt is built as intended, and
+nothing about how a real model responds to it. A change that is meant to alter a model's behaviour needs a measured run with the real
+model, with its sample size stated. Those runs belong in `evaluation/` and `evidence/`, are not
+part of the test suite, and cost money: ask before running one.
+
+## 2. How the tests are organised and run
+
+**Commands.** Always through Poetry, from the repository root.
+
+| Command | What it runs | Time |
+|---|---|---|
+| `poetry run pytest tests/<folder>` or a single file | The tests for the part being changed | Seconds to a few minutes |
+| `poetry run pytest` | The quick default set: everything except the tests marked `contract` and those marked `slow` | About 3 minutes (3 min 12 s on 2026-11-18) |
+| `poetry run pytest -m "not contract"` | The full local run: the default set and the `slow` tests | About 9 to 10 minutes (9 min 22 s on 2026-11-18, on a quiet machine) |
+| `poetry run pytest -m slow` | The `slow` tests alone: the ten deduction tests over random games | About 6 minutes (the ten took 6 min 9 s of the full run on 2026-11-18) |
+| `poetry run pytest -m contract` | Tests that call paid models with real credentials | Costs money. Never run without the owner's agreement |
+| In `frontend/`: `npm test`, `npm run typecheck`, `npm run lint` | The frontend's unit tests, types and lint | About a minute |
+| The browser suite | See `frontend/docs/testing.md`, "How a run is done here" | About 16 minutes |
+
+**Where a test goes.**
+
+| Folder | Holds |
+|---|---|
+| `tests/engine` | The game: rules, night resolution, deduction, prompt assembly, whole games with a scripted model (`tests/engine/test_whole_game.py` and a few others) |
+| `tests/memory` | Lessons: extraction, duplicates, storage, retrieval, and the schemas of lessons and extraction (seven files moved here from `tests/engine` on 2026-11-18) |
+| `tests/evaluation` | The evaluation code |
+| `tests/server` | The game session, the API, the translator, durability |
+| `tests/<component>/integration/` | Tests that need a service started for the test run, such as a Postgres container; each carries `@pytest.mark.integration`. None exist yet |
+| `tests/contract` | Paid checks of an outside provider, such as whether each menu model still returns valid structured output; each carries `@pytest.mark.contract` |
+| `tests/fixtures` | Fixtures, one module per resource, registered in `tests/conftest.py`; the golden files |
+| `tests/factories` | Functions that build test data. Import them; they are not fixtures |
+
+The component folders (`engine`, `memory`, `evaluation`, `server`) hold every test that runs
+in one process. This includes the whole-game tests: they run several real parts together (the
+game graph, the rules, the prompts, the server's translator), but they need nothing outside the
+process, so they are not integration tests. A test goes into an `integration/` folder only when
+it needs a service that is started for the run.
+
+`tests/contract/test_credential_missing.py` costs nothing and carries no marker, so it runs in
+the default set; it checks the skip rule of the paid test beside it.
+
+Before writing a new fixture, builder or test double, look in `tests/fixtures` and
+`tests/factories` for one that already does the job. A test file must not import helpers from
+another test file: a helper that two test files need goes into `tests/factories`.
+
+**Shared setup for whole games.**
+
+- `tests/factories/scripted_model.py`: the scripted model. It fills any output schema with a
+  valid object drawn from a seeded generator. Its module docstring says what it returns for each
+  field type and what a test that uses it cannot show.
+- `tests/fixtures/model.py`: the fixture `scripted_model`. It returns a function; call it with a
+  seed (and, optionally, the seats no scripted player may choose) to answer every model call of
+  the test with the scripted model and to replace the four helper calls of a game. It is undone
+  when the test ends.
+- `tests/fixtures/graph.py`: the fixture `game_graph`. It gives each test the game graph compiled
+  with its own in-memory checkpoint store. The graph that production compiles at import keeps one
+  store for the whole process, keyed by game id, so two tests that played the same game id
+  shared one game's state.
+- `tests/factories/whole_game.py`: `play_game(graph, game, seed)` plays one game to its end and
+  returns the final state, the events the translator made and the night branches that reported.
+
+**Markers.** A marker is a label on a test that a command can select or leave out with `-m`.
+
+| Marker | What it means | In the quick default |
+|---|---|---|
+| `slow` | The test takes over 20 seconds in the full run on the development machine. The 20 seconds is a starting value | No |
+| `timing` | The test waits real time and asserts a time window, so it can fail on a slow machine | Yes |
+| `integration` | The test needs a service started for the run | Yes, when one exists |
+| `contract` | The test calls a real outside provider and costs money | No |
+
+Mark a new test `slow` when it passes the 20-second line, and run `-m "not contract"` before
+reporting a change to the code a `slow` test covers. When a `timing` test fails, run it alone
+once. If it then passes, report the failure with the load on the machine at the time; if it
+fails again, investigate it like any other failure. No plugin reruns a failed test
+automatically.
+
+**A test must give the same result on every run and on any machine.**
+
+- No call to a real model, a real network service or the live database in the default set.
+  `tests/conftest.py` switches tracing off and fixes the model list; do not undo that in a test.
+- A test that needs a real Postgres database is skipped when its address is not set. It must
+  never write to the database that the development `.env` points at.
+- Fix the seed of anything random. If code under test runs on several threads, do not let the
+  result depend on which thread draws from a shared generator first: either give the test a
+  situation where the order cannot matter, or assert something that holds in every order.
+- No fixed waits for work that can take longer.
+
+## 3. How a test is written
+
+- The name is a sentence that states the claim (section 1).
+- The body is in three blocks marked `# Arrange`, `# Act` and `# Assert`, with a blank line
+  between blocks and one step per line. A test of three statements or fewer needs no block
+  comments.
+- A test with several rounds (act, assert, act again) labels each round with a comment.
+- A short comment beside an expected value says why it is expected, when that is not obvious.
+- Use plain pytest functions and fixtures, not `unittest` classes.
+- Before adding a test that differs from another only in its inputs, parametrise the existing
+  test with `@pytest.mark.parametrize`.
+- Never write a test whose only assertion is that a mock was called. Assert what the caller or
+  the player would see.
+- Assert the claim, not the current value of a setting. A test that reads a setting and asserts
+  today's value fails when the setting changes and says nothing about the code. The cost-guard
+  tests in `tests/memory/test_store_ops.py` are the example: they set the models explicitly and
+  assert how those models reach the three environment variables a tick sets.
+
+## 4. Goldens
+
+A golden is a saved output that a test compares with the new output, whole. Regenerate one only
+after a change that was meant to alter it, and read the whole difference before keeping it.
+
+| Golden | Regenerate with |
+|---|---|
+| The day-discussion prompt | `poetry run python -m tests.fixtures.day_discuss_prompt_golden` |
+| The translator's events | `poetry run python -m tests.fixtures.translator_golden` |
+| The API description and the frontend's types | `npm run generate-api-types` in `frontend/`; commit both files |
+| Frontend beat goldens and screenshots | See `frontend/docs/testing.md` |
+
+A change to the prompt golden changes what every AI seat is sent. Evaluation results from
+before and after it are not comparable, so say so in the report.
+
+## 5. Before a change counts as finished
+
+**What to run.**
+
+- While working: the tests for the part being changed.
+- Before reporting a change to `Agents/`, `server/`, `evaluation/` or `tests/` as finished: the
+  whole default set, once. A change can weaken a check elsewhere, and only the full run shows
+  it.
+- For a frontend change: the unit tests, the type check and the lint, plus the browser specs
+  the change affects.
+- A change to documents only needs no test run.
+
+**What to report.**
+
+1. The commands that were run, and the counts: passed, failed, skipped.
+2. Each new test, with the claim it checks, and how it was shown able to fail.
+3. What the new tests replace with a test double, and so do not check.
+4. Each golden that was regenerated, and the reason for each difference.
+5. Anything that was not run, and why.
+
+**When a test fails.**
+
+- Do not weaken, skip or delete a failing test to make the run pass. If the test is wrong, say
+  why and change it as its own step.
+- Do not rerun a test until it passes. A test that passes on some runs and fails on others has
+  a cause; report it with the number of runs and failures.
+- Several agents work in this folder at once. If a failure comes from someone else's
+  uncommitted edits, report it and leave their files alone.
+
+**A passing run is evidence about the working folder on this machine.** No service runs the
+tests automatically, and no release step runs them. Say "the tests pass on the working folder",
+not "validated", unless the claim was measured.

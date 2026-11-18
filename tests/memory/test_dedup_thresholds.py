@@ -109,8 +109,8 @@ def test_obs_single_candidate_thresholds(monkeypatch, sim, expected):
     assert decision == expected
 
 
-def test_obs_uses_max_over_candidates():
-    decision, scores, _ = obs(pytest.MonkeyPatch(), [OBS_K - 0.10, OBS_D + 0.005])
+def test_obs_uses_max_over_candidates(monkeypatch):
+    decision, scores, _ = obs(monkeypatch, [OBS_K - 0.10, OBS_D + 0.005])
     assert decision == "discard"
     assert scores["max_content_sim"] == round(OBS_D + 0.005, 4)
 

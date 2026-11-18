@@ -30,6 +30,8 @@ import random
 import re
 from pathlib import Path
 
+import pytest
+
 from Agents.deduction import deduction_blocks, own_result_lines, seat_view_from_payload
 from Agents.deduction.joins import join_items
 from Agents.deduction.raised import raised_today
@@ -599,6 +601,7 @@ def _check(item, game, counts: dict[str, int]) -> None:
             counts[name] = counts.get(name, 0) + 1
 
 
+@pytest.mark.slow
 def test_the_truth_oracle_on_random_games_with_true_and_false_claims():
     counts = truth_oracle(nights=10000, seed=20261019)
     assert set(FORMS) <= set(counts), counts

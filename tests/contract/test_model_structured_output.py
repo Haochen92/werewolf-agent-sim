@@ -7,12 +7,12 @@ game fails mid-turn. This module is the regression gate: every row of
 the model menu is asked for every seat-facing schema once, with a short in-character
 prompt, and the reply must validate and fill the field the game acts on.
 
-Costs real money and needs credentials, so it is marked ``live`` and skipped by default.
+Costs real money and needs credentials, so it is marked ``contract`` and skipped by default.
 A model whose credential is absent is skipped, not failed. Run it when adding a menu row,
 after a provider announcement, or before a deploy:
 
-    poetry run pytest -m live tests/live -v
-    poetry run pytest -m live tests/live -k deepseek      # one provider only
+    poetry run pytest -m contract tests/contract -v
+    poetry run pytest -m contract tests/contract -k deepseek      # one provider only
 
 Never compare timings across runs as evidence of anything; they are printed for a feel.
 
@@ -38,7 +38,7 @@ from Agents.llm_factory.chat import create_chat_model
 from evaluation.src.model_admission.seat_schemas import SEAT_SCHEMAS, TABLE, reply_problem
 from server.game.model_catalog import menu_models
 
-pytestmark = pytest.mark.live
+pytestmark = pytest.mark.contract
 
 # The key each prefixed provider's chat model reads (Agents/llm_factory/providers/); a bare id is
 # Gemini. A Claude seat reads CLAUDE_API_KEY only: ANTHROPIC_API_KEY serves the direct SDK calls.

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import asyncio
 
-from Agents.llm_factory import GAME_LLM, GameLLM, get_llm_game_fallback
+from Agents.llm_factory import GAME_LLM, GameLLM, chat, get_llm_game_fallback
 from Agents.llm_factory.chat import create_chat_model
 from server.game.model_catalog import game_model, menu_models
 
@@ -79,15 +79,20 @@ def test_openai_and_openrouter_selections_route_the_key_to_their_provider(monkey
         assert base in str(client.openai_api_base)
 
 
-def test_off_family_models_never_receive_the_game_key():
+def test_off_family_models_never_receive_the_game_key(monkeypatch):
     # A DeepSeek game's key must not leak into a Gemini-family client (e.g. the pro
     # extraction models) — those fall back to server credentials.
-    client = _with_override(
-        GameLLM(api_key="ds-key-2", model=DEEPSEEK),
-        lambda: create_chat_model("gemini-2.5-pro", temperature=0.42))
-    google_key = getattr(client, "google_api_key", None)
-    if google_key is not None and google_key:  # vertex builds carry no key at all
-        assert google_key.get_secret_value() != "ds-key-2"
+    # Arrange
+    monkeypatch.setenv("LLM_BACKEND", "google")  # the key-carrying build; Vertex carries no key
+    monkeypatch.setenv("GOOGLE_API_KEY", "server-google-key")
+    monkeypatch.setattr(chat, "_MODEL_CACHE", {})  # a client cached by an earlier test was built without a key
+    game = GameLLM(api_key="ds-key-2", model=DEEPSEEK)
+
+    # Act
+    client = _with_override(game, lambda: create_chat_model("gemini-2.5-pro", temperature=0.42))
+
+    # Assert
+    assert client.google_api_key.get_secret_value() == "server-google-key"
 
 
 # ---- rescue: derived from the registry, same credential ----------------------------------

@@ -24,6 +24,8 @@ import random
 import re
 from pathlib import Path
 
+import pytest
+
 from Agents.deduction import own_result_lines, seat_view_from_payload
 from Agents.deduction.blocks import deduction_blocks
 from Agents.deduction.conditionals import conditional_items, for_turn
@@ -456,6 +458,7 @@ def _check(item, game, current: dict[str, str], counts: dict[str, int]) -> None:
         assert public_fact_holds(fact, item.night, game), (item.text, fact, game.roles)
 
 
+@pytest.mark.slow
 def test_the_truth_oracle_on_random_games_with_true_and_false_claims():
     counts = truth_oracle(nights=4000, seed=20261022)
     assert set(FORMS) <= set(counts), counts

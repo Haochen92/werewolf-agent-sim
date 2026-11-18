@@ -702,9 +702,13 @@ def _park(session, seat="p1", **over):
     return request
 
 
+@pytest.mark.timing
 async def test_afk_expiry_parks_when_nobody_is_connected(quiet_session, monkeypatch):
     """No human stream at all: the delegate is NOT submitted. The question keeps
-    waiting like a solo game, the graph idles, and the countdown is withdrawn."""
+    waiting like a solo game, the graph idles, and the countdown is withdrawn.
+
+    Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
+    before investigating."""
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([_interrupt_chunk()], []), seat_tokens=["t1", "t2"])
@@ -753,11 +757,15 @@ async def test_stream_drop_starts_the_grace_and_a_return_lifts_it(quiet_session,
     assert session.turn_deadlines["p1"] == thinking
 
 
+@pytest.mark.timing
 async def test_a_seat_that_left_hands_its_turns_over_at_once_until_it_returns(
         quiet_session, monkeypatch):
     """Two turns in a row played by its agent while the seat had no connection: it is taken
     to have left, and its next question goes to the agent at once instead of after the
-    grace. Connecting again ends that."""
+    grace. Connecting again ends that.
+
+    Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
+    before investigating."""
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
@@ -778,10 +786,14 @@ async def test_a_seat_that_left_hands_its_turns_over_at_once_until_it_returns(
     assert 0.4 < _seconds_left(session, "p1") <= 0.5  # the grace again
 
 
+@pytest.mark.timing
 async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session, monkeypatch):
     """A parked table (two absent seats). One human comes back: their own question gets
     a fresh thinking window; the other absent seat gets the grace, and at ITS expiry
-    the presence test now finds someone — so that turn is delegated."""
+    the presence test now finds someone — so that turn is delegated.
+
+    Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
+    before investigating."""
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"],
@@ -799,10 +811,14 @@ async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session
     assert session._pending_answers["p2"].result()["delegate"] is True
 
 
+@pytest.mark.timing
 async def test_a_long_park_gives_every_waiting_seat_a_fresh_window(quiet_session, monkeypatch):
     """The park outlasted the thinking window (a table left over lunch). When one human
     returns, the still-absent seat must get the grace, not an instant delegation off a
-    deadline that is hours in the past."""
+    deadline that is hours in the past.
+
+    Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
+    before investigating."""
     from datetime import timedelta
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
@@ -1050,7 +1066,10 @@ async def test_pacing_totals_are_the_publicly_alive_seats_and_shrink_with_every_
     assert (snapshots[-1].done, snapshots[-1].total) == (8, 8)
 
 
+@pytest.mark.timing
 async def test_pacing_real_ticks_plus_padding_never_exceed_the_total(monkeypatch):
+    """Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
+    before investigating."""
     monkeypatch.setattr("server.game.pacing._PAD_SECONDS", (0.0, 0.01))
     snapshots = []
     tracker = PacingTracker(snapshots.append)
@@ -1064,9 +1083,13 @@ async def test_pacing_real_ticks_plus_padding_never_exceed_the_total(monkeypatch
     assert all(f.total == 3 for f in snapshots)
 
 
+@pytest.mark.timing
 async def test_pacing_a_night_with_no_real_tick_still_fills_by_the_timers(monkeypatch):
     """A spent vigilante, a necromancer on night 1, a seat with no night action: no
-    turn finishes for them, and the timers fill their units all the same."""
+    turn finishes for them, and the timers fill their units all the same.
+
+    Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
+    before investigating."""
     monkeypatch.setattr("server.game.pacing._PAD_SECONDS", (0.0, 0.01))
     snapshots = []
     tracker = PacingTracker(snapshots.append)

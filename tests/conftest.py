@@ -23,5 +23,7 @@ os.environ.setdefault("WW_HOUSE_MODELS",
 pytest_plugins = [
     "tests.fixtures.stream",
     "tests.fixtures.server",
+    "tests.fixtures.model",
+    "tests.fixtures.graph",
     "tests.factories.events",
 ]

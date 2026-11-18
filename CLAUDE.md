@@ -5,6 +5,12 @@
 - Always use `poetry run` to execute Python commands (e.g. `poetry run python -c "..."`, `poetry run pytest`).
 - Do not use bare `python` or `pip` — the project uses Poetry for dependency management.
 
+## Tests
+
+- Before writing, changing or running tests, read `docs/testing.md`: what to test, where a test
+  goes, how goldens are regenerated, and what to run and report before a change counts as finished.
+- Never run `poetry run pytest -m contract` (paid model calls) without the owner's agreement.
+
 ## Schema / State Field Docs (IDE hover)
 
 Field-level docs on `Agents/schemas/` and `Agents/state/` use **attribute docstrings** (a bare

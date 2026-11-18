@@ -12,6 +12,7 @@ from Agents.schemas.game_events import NightActionRecord, WolfChannel
 from Agents.schemas.roles import ROLE_SPECS, lineup
 from server.game.translate import Translator
 from tests.leak_test import (
+    check_gated_candidate_isolation,
     check_held_lines_reach_only_their_author,
     check_night_record_isolation,
     check_round_players_are_seat_ids,
@@ -163,6 +164,30 @@ def test_the_held_line_check_flags_a_planted_leak():
 
     assert len(leaks) == 1
     assert "player_6" in leaks[0]
+
+
+def test_the_gated_candidate_check_finds_nothing_in_the_real_round_payloads():
+    # Arrange
+    log = prompt_log_for(round_payloads("opening", SEATS))
+
+    # Act
+    leaks = check_gated_candidate_isolation(log, [HELD_TEXT])
+
+    # Assert
+    assert leaks == []
+
+
+def test_the_gated_candidate_check_flags_a_held_line_planted_in_another_seats_prompt():
+    # Arrange
+    log = prompt_log_for(round_payloads("closing", ["player_6"]))
+    log[0]["prompt_input"]["day_channel"] += "\n" + HELD_TEXT  # player_3's held line, not player_6's
+
+    # Act
+    leaks = check_gated_candidate_isolation(log, [HELD_TEXT])
+
+    # Assert
+    assert len(leaks) == 1
+    assert leaks[0].startswith("LEAK: player_6 (serial_killer)")  # the held text names player_6 too
 
 
 # --- round_players on the wire --------------------------------------------------------------

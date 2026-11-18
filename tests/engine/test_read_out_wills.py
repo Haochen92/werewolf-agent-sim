@@ -57,11 +57,12 @@ def test_every_will_read_out_in_random_games_is_the_data_its_node_committed():
     {"lone_killer": "serial_killer", "neutral": "speculator"},
     {"lone_killer": "necromancer", "neutral": "fortune_teller"},
 ])
-def test_in_a_whole_game_every_ai_turn_has_exactly_the_wills_read_out_before_it(monkeypatch, game):
+def test_in_a_whole_game_every_ai_turn_has_exactly_the_wills_read_out_before_it(monkeypatch, scripted_model,
+                                                                               game_graph, game):
     """On the real graph: the state's wills equal the prose read back, and every AI turn's payload
     carries exactly the wills (and mornings) its own game-master prose had read out by then."""
     from Agents.prompts import prompt_inputs
-    from tests.engine.test_ten_seat_game import _play
+    from tests.factories.whole_game import play_game
 
     carried = []
     engine_entry = prompt_inputs._own_result_lines
@@ -71,8 +72,8 @@ def test_in_a_whole_game_every_ai_turn_has_exactly_the_wills_read_out_before_it(
         return engine_entry(payload)
 
     monkeypatch.setattr(prompt_inputs, "_own_result_lines", spy)
-    # Its own seed: a game id already played in this process would resume on that game's state.
-    result, _, _ = _play(monkeypatch, game, seed=7)
+    scripted_model(seed=7)
+    result, _, _ = play_game(game_graph, game, seed=7)
     mornings, wills = public_data_from_summaries(result["day_summaries"])
     assert result["read_out_wills"] and wills == result["read_out_wills"]
     assert mornings == result["night_announcements"]

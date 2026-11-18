@@ -73,9 +73,10 @@ def test_a_will_read_out_in_the_morning_is_not_part_of_the_data():
     {"lone_killer": "serial_killer", "neutral": "speculator"},
     {"lone_killer": "necromancer", "neutral": "fortune_teller"},
 ])
-def test_in_a_whole_game_every_morning_has_its_data_and_every_ai_turn_gets_it(monkeypatch, game):
+def test_in_a_whole_game_every_morning_has_its_data_and_every_ai_turn_gets_it(monkeypatch, scripted_model,
+                                                                             game_graph, game):
     from Agents.prompts import prompt_inputs
-    from tests.engine.test_ten_seat_game import _play
+    from tests.factories.whole_game import play_game
 
     # Every AI turn's prompt input goes through the engine's entry; record what each payload carried.
     carried = []
@@ -87,7 +88,8 @@ def test_in_a_whole_game_every_morning_has_its_data_and_every_ai_turn_gets_it(mo
         return engine_entry(payload)
 
     monkeypatch.setattr(prompt_inputs, "_own_result_lines", spy)
-    result, _, _ = _play(monkeypatch, game, seed=5)
+    scripted_model(seed=5)
+    result, _, _ = play_game(game_graph, game, seed=5)
     mornings = [message.message for message in result["day_channel"]
                 if message.player == "game_master" and message.message.startswith("Night of day")]
     assert mornings and len(mornings) == len(result["night_announcements"])

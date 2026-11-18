@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 from Agents.deduction import deduction_blocks, own_result_lines, public_record, seat_view_from_payload
 from Agents.deduction.comparisons import comparison_items
 from Agents.deduction.explanations import budget_items
@@ -323,6 +325,7 @@ def truth_oracle(nights: int, seed: int, seats: int = 3) -> dict[str, int]:
     return counts
 
 
+@pytest.mark.slow
 def test_the_truth_oracle_on_random_games():
     counts = truth_oracle(nights=4000, seed=20261041)
     assert {"F9 conceals", "F8 shoot certain", "F8 protect certain", "F8 watch certain"} <= set(counts), counts

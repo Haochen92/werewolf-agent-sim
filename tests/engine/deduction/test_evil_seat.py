@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 from Agents.deduction import seat_view_from_payload
 from Agents.deduction.comparisons import comparison_items
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
@@ -290,6 +292,7 @@ def truth_oracle(nights: int, seed: int) -> dict[str, int]:
     return counts
 
 
+@pytest.mark.slow
 def test_the_truth_oracle_on_random_games():
     counts = truth_oracle(nights=4000, seed=20261041)
     assert set(ROWS) <= set(counts), counts
@@ -297,6 +300,7 @@ def test_the_truth_oracle_on_random_games():
             "E4b+own chanteuse", "E4b+own illusionist", "E14+own serial_killer"} <= set(counts), counts
 
 
+@pytest.mark.slow
 def test_the_brute_force_oracle_for_the_hidden_role_line():
     """In every deal the seat's view allows, the body holds the role and no living player does; some deal
     the public record allows gives the seat the role (so the body another one)."""

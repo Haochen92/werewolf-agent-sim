@@ -448,6 +448,7 @@ is too rare in random play to pin here (about once in 20,000 nights): its constr
 test_morning_results.py."""
 
 
+@pytest.mark.slow
 def test_every_fact_a_line_states_holds_in_the_real_game():
     rng = random.Random(20261016)
     times_each_row_fired: dict[str, int] = {}
