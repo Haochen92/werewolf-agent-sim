@@ -17,7 +17,7 @@ SETTINGS = ServerSettings(_env_file=None, SOLO_PARK_TTL_SECONDS=3600,
                           MULTI_PARK_TTL_SECONDS=86400)
 
 
-class Repo:
+class _FakeGameRepository:
     def __init__(self):
         self.updates = []
 
@@ -81,7 +81,7 @@ async def test_sweep_drops_only_the_expired_and_is_idempotent(quiet_session):
     # Arrange: an expired game, a fresh one and a waiting room
     expired = await _parked(quiet_session, seats=["t1"], idle=timedelta(hours=2))
     fresh = await _parked(quiet_session, seats=["t1"], idle=timedelta(minutes=1))
-    repo = Repo()
+    repo = _FakeGameRepository()
     games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
     for session in (expired, fresh):
         games._register(session)
@@ -146,7 +146,7 @@ async def test_a_suspended_solo_game_has_the_same_shelf_life(quiet_session):
     session.unsubscribe(spectator)
 
     # Round 3: sweep
-    repo = Repo()
+    repo = _FakeGameRepository()
     games = LiveGameRegistry(repo, SimpleNamespace(graph=None))
     games._register(session)
     assert await sweep_parked_games(games, SETTINGS) == [session.game_id]

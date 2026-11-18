@@ -24,7 +24,7 @@ from tests.factories.scripted_model import FakeModels
 from tests.fixtures.day_discuss_prompt_golden import (
     GOLDEN,
     ROLES,
-    capturing_llm,
+    capturing_model,
     render,
     runtime,
     speaker_payload,
@@ -52,7 +52,7 @@ def test_preview_without_direction_sends_the_real_turns_prompt(monkeypatch, role
     # Arrange
     expected = _without_deductions(monkeypatch)[role]
     sent: list = []
-    models = FakeModels(seat=capturing_llm(sent))
+    models = FakeModels(seat=capturing_model(sent))
 
     # Act
     line = preview_discuss(_human_payload(role), {"configurable": {}}, runtime(), models=models)
@@ -72,7 +72,7 @@ def test_preview_with_direction_adds_one_message_and_nothing_else(monkeypatch):
     # Arrange
     golden = _without_deductions(monkeypatch)["healer"]
     sent: list = []
-    models = FakeModels(seat=capturing_llm(sent))
+    models = FakeModels(seat=capturing_model(sent))
     direction = player_direction("push on player_2 {softly}", "player_2 is odd",
                                  {"player_5": "quiet"}, "player_2")
 
@@ -88,7 +88,7 @@ def test_preview_commits_and_records_nothing(monkeypatch):
     no strategy-adoption write-back to the memory store."""
     # Arrange: a model that records what it is sent, and a strategy write-back that fails the test
     sent: list = []
-    models = FakeModels(seat=capturing_llm(sent))
+    models = FakeModels(seat=capturing_model(sent))
 
     def no_adoption(*a, **k):
         raise AssertionError("the preview must not write strategy adoption back")

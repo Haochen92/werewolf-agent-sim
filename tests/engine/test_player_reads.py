@@ -202,7 +202,7 @@ def test_reads_coverage_full_and_wolf_shape():
     assert coverage == 0.0 and missing == ["player_2", "player_3"]
 
 
-class _FakeLLM:
+class _FakeModel:
     """Stand-in for the seat's model: with_structured_output returns a runnable that ignores its input and
     yields a canned decision, so run_agent exercises the tripwire branch without a real model call."""
 
@@ -234,7 +234,7 @@ def test_tripwire_warns_on_undercoverage(caplog):
     # Arrange: a healer's reply that reads 6 of the 8 players
     payload = _healer_payload()
     result = _healer_result([f"player_{i}" for i in range(2, 8)])  # 6 of 8 -> 0.75
-    models = FakeModels(seat=_FakeLLM(result))
+    models = FakeModels(seat=_FakeModel(result))
 
     # Act
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
@@ -250,7 +250,7 @@ def test_tripwire_silent_on_full_coverage(caplog):
     # Arrange: a healer's reply that reads every player
     payload = _healer_payload()
     result = _healer_result(payload["surviving_players"])  # all 8
-    models = FakeModels(seat=_FakeLLM(result))
+    models = FakeModels(seat=_FakeModel(result))
 
     # Act
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):

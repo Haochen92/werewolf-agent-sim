@@ -10,7 +10,7 @@ from server.game.live_game_registry import LiveGameRegistry
 from tests.fixtures.server import FakeGraph
 
 
-class Repo:
+class _FakeGameRepository:
     def __init__(self):
         self.updates = []
 
@@ -19,7 +19,7 @@ class Repo:
 
 
 def _registry():
-    return LiveGameRegistry(Repo(), SimpleNamespace(graph=None))
+    return LiveGameRegistry(_FakeGameRepository(), SimpleNamespace(graph=None))
 
 
 async def test_an_ended_game_nobody_watches_leaves_at_once(quiet_session):

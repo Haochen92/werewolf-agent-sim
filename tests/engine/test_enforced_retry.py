@@ -9,7 +9,7 @@ from Agents.nodes.day import summary_agent
 from tests.factories.scripted_model import FakeModels
 
 
-class _JsonModeLLM:
+class _JsonModeModel:
     """Breaks the schema unenforced; enforced, answers ``answer``."""
 
     def __init__(self, answer):
@@ -29,7 +29,7 @@ class _JsonModeLLM:
 
 def test_the_lookups_situation_summary_retries_enforced(monkeypatch):
     # Arrange: a JSON-mode model, with the rest of the lookup stubbed out
-    llm = _JsonModeLLM(SimpleNamespace(situations=[]))
+    llm = _JsonModeModel(SimpleNamespace(situations=[]))
     models = FakeModels(seat=llm)
     monkeypatch.setattr(situation_agent, "V6_SITUATION_SUMMARY", RunnableLambda(lambda x: x))
     monkeypatch.setattr(situation_agent, "build_agent_prompt_input", lambda p: {})
@@ -46,7 +46,7 @@ def test_the_lookups_situation_summary_retries_enforced(monkeypatch):
 
 def test_the_day_summary_retries_enforced():
     # Arrange
-    llm = _JsonModeLLM(summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[]))
+    llm = _JsonModeModel(summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[]))
     models = FakeModels(summary=llm)
 
     # Act

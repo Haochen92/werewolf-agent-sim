@@ -108,7 +108,7 @@ def test_the_replay_summary_carries_cost_and_call_time_but_not_the_raw_counts():
     assert "usage" not in summary.model_dump()
 
 
-class _Repo:
+class _FakeGameRepository:
     def __init__(self):
         self.updates = []
 
@@ -125,7 +125,7 @@ class _Repo:
 
 async def test_usage_is_saved_at_most_every_30_seconds_and_always_at_the_end(quiet_session):
     # Arrange
-    repo = _Repo()
+    repo = _FakeGameRepository()
     session = quiet_session(FakeGraph([]), repository=repo)
 
     # Round 1: two saves in quick succession

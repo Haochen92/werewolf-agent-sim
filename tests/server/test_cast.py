@@ -128,7 +128,7 @@ def _deal_chunk(human_players: list[str]) -> dict:
         "roles": roles, "human_players": human_players, "current_day": 1}}}
 
 
-class CastRepository:
+class FakeCastRepository:
     """The narrow contract the session writes the cast through."""
 
     def __init__(self, accept: bool = True) -> None:
@@ -148,7 +148,7 @@ class CastRepository:
 
 async def test_the_deal_lands_each_pick_on_the_seat_its_player_was_dealt(quiet_session):
     # Arrange: two players, of whom only the first picked a puppet
-    repository = CastRepository()
+    repository = FakeCastRepository()
     session = quiet_session(
         FakeGraph([_deal_chunk(["player_4", "player_7"])]),
         seat_tokens=["tok-a", "tok-b"], picks=["whale", None], repository=repository)
@@ -170,7 +170,7 @@ async def test_the_deal_lands_each_pick_on_the_seat_its_player_was_dealt(quiet_s
 
 async def test_a_failed_cast_write_is_retried_with_the_next_save(quiet_session):
     # Round 1: the first cast write is refused
-    repository = CastRepository(accept=False)
+    repository = FakeCastRepository(accept=False)
     session = quiet_session(FakeGraph([_deal_chunk([])]), repository=repository)
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)

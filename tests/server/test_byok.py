@@ -190,7 +190,7 @@ async def test_house_model_selection_uses_server_credentials(quiet_session):
 
 # ---- failure: surfaced, but redacted ------------------------------------------------------
 
-class _AuthBoomGraph:
+class _KeyRejectedGraph:
     async def astream(self, payload, *, config, context, stream_mode, subgraphs, version):
         raise ValueError("401: API key not valid: sk-player-123")
         yield
@@ -198,7 +198,7 @@ class _AuthBoomGraph:
 
 async def test_dead_game_error_never_echoes_the_key(quiet_session):
     # Arrange: a graph that fails with an error that contains the player's key
-    session = quiet_session(_AuthBoomGraph(), api_key="sk-player-123")
+    session = quiet_session(_KeyRejectedGraph(), api_key="sk-player-123")
 
     # Act: run the session until it dies
     session.start()
@@ -262,7 +262,7 @@ async def test_session_runs_its_rescue_on_the_backup(quiet_session):
     assert session._secrets == () and session._llm_selection.backup_key == ""
 
 
-class _BackupBoomGraph:
+class _BackupKeyRejectedGraph:
     async def astream(self, payload, *, config, context, stream_mode, subgraphs, version):
         raise ValueError("401: invalid x-api-key: sk-ant-backup")
         yield
@@ -270,7 +270,7 @@ class _BackupBoomGraph:
 
 async def test_dead_game_error_never_echoes_the_backup_key(quiet_session):
     # Arrange: a graph that fails with an error that contains the backup key
-    session = quiet_session(_BackupBoomGraph(), api_key="sk-player-123", model=DEEPSEEK,
+    session = quiet_session(_BackupKeyRejectedGraph(), api_key="sk-player-123", model=DEEPSEEK,
                             backup_model=HAIKU, backup_key="sk-ant-backup")
 
     # Act: run the session until it dies

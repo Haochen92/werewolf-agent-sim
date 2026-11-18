@@ -140,12 +140,12 @@ async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session)
     # Round 1: a game whose graph raises an error
     repository = RecordingGameRepository()
 
-    class ExplodingGraph:
+    class FailingGraph:
         async def astream(self, payload, **_):
             raise RuntimeError("provider died")
             yield  # pragma: no cover
 
-    session = quiet_session(ExplodingGraph(), repository=repository)
+    session = quiet_session(FailingGraph(), repository=repository)
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert repository.updates[-1]["status"] == DROPPED

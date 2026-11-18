@@ -124,7 +124,7 @@ def speaker_payload(role: str) -> dict:
     return send.arg
 
 
-def capturing_llm(sent: list) -> SimpleNamespace:
+def capturing_model(sent: list) -> SimpleNamespace:
     """A stand-in for the seat's model: records every prompt it is sent and answers with a line."""
     reply = day_discuss_output(ROLES)(
         message="player_2, answer the question.", pass_turn=False, claim="none", claimed_night_actions=[],
@@ -158,7 +158,7 @@ def render() -> dict[str, list[list[str]]]:
     rendered = {}
     for role in ROLES:
         sent: list = []
-        discuss(speaker_payload(role), {"configurable": {}}, runtime(FakeModels(seat=capturing_llm(sent))))
+        discuss(speaker_payload(role), {"configurable": {}}, runtime(FakeModels(seat=capturing_model(sent))))
         assert len(sent) == 1, role
         rendered[role] = [list(m) for m in sent[0]]
     return rendered

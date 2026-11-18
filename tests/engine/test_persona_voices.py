@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from Agents.nodes.day.actors import discuss, preview_discuss
 from Agents.prompts.voices import PERSONA_PARAGRAPH, VOICES, house_puppet, persona_paragraph
 from tests.factories.scripted_model import FakeModels
-from tests.fixtures.day_discuss_prompt_golden import ROLES, capturing_llm, runtime, speaker_payload
+from tests.fixtures.day_discuss_prompt_golden import ROLES, capturing_model, runtime, speaker_payload
 
 TONE_END = "Make one main point, with\nthe evidence needed to understand it."
 ON = {"game_id": "g", "persona_voices": True}
@@ -17,7 +17,7 @@ ON = {"game_id": "g", "persona_voices": True}
 
 def _discuss_prompt(role: str, configurable: dict, seat_puppets: dict | None = None) -> str:
     sent: list = []
-    run = runtime(FakeModels(seat=capturing_llm(sent)))
+    run = runtime(FakeModels(seat=capturing_model(sent)))
     if seat_puppets is not None:
         run = SimpleNamespace(context={**run.context, "seat_puppets": seat_puppets}, store=run.store)
     discuss(speaker_payload(role), {"configurable": configurable}, run)
@@ -84,7 +84,7 @@ def test_a_served_seat_speaks_in_the_voice_of_the_puppet_the_server_dealt_it():
 def test_a_human_seats_draft_gets_no_voice():
     # Arrange
     sent: list = []
-    models = FakeModels(seat=capturing_llm(sent))
+    models = FakeModels(seat=capturing_model(sent))
 
     # Act: preview the draft for a human seat
     preview_discuss({**speaker_payload(ROLES[0]), "human_player": True}, {"configurable": ON}, runtime(),

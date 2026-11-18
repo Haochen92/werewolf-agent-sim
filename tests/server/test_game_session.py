@@ -598,7 +598,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     would send; notes add one message after it. The game is left as it was."""
     from Agents.nodes.day.actors import discuss
     from tests.factories.scripted_model import FakeModels
-    from tests.fixtures.day_discuss_prompt_golden import board, capturing_llm, runtime
+    from tests.fixtures.day_discuss_prompt_golden import board, capturing_model, runtime
 
     # Arrange: a real day graph paused on a human seat's round turn
     graph = _day_graph_with_a_checkpoint()
@@ -617,7 +617,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
 
     # Round 1: build the paused turn's payload
     sent: list = []
-    models = FakeModels(seat=capturing_llm(sent))
+    models = FakeModels(seat=capturing_model(sent))
     session._context["models"] = models  # the server's own call reads the models from its context
     payload = await session._turn_payload(seat)
     assert payload["player_id"] == seat and payload["human_player"] is True
