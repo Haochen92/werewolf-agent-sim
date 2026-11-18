@@ -556,7 +556,16 @@ A test that merely confirms the prompt contains an instruction establishes neith
 
 **The system in brief.** A game has ten **seats**, each played by a model agent (an AI seat) or by a person. LangGraph runs the game as a **graph**: each step, such as one seat's turn, is a **node**, and the game's state is saved after each step. Each AI seat's prompt is built from the information that seat is allowed to know. The server turns the graph's output into events for the browser (the **translator**) and decides which seat may see which event. Games are played in two ways: **hosted games** on the website, and **batch games** run from the command line for experiments. Finished games also feed **lessons**, strategy notes extracted by a model and read by AI seats in later games.
 
-Coding agents wrote most of the tests, alongside each feature. I did not write a ranked list of claims first. This part works the claims out afterwards and looks at what the tests protect. Every count and result below was read or run on 2026-11-17.
+Coding agents wrote most of the tests, alongside each feature. I did not write a ranked list of claims first. This part works the claims out afterwards and looks at what the tests protect. It was first written from counts and results read or run on 2026-11-17.
+
+**What the clean-up of 2026-11-18 changed.** The next day I went through the backend tests with the five steps, and this part now describes the suite after that work. The counts are from 2026-11-18.
+
+- **Cut.** Code left over from closed experiments was deleted together with its tests: 112 files, about 24,000 lines and 208 tests. A git tag, `pre-test-cut-2026-11-18`, marks the last commit that holds them.
+- **Database tests on a real database.** A fixture starts one Postgres container for the test run and gives each test its own empty database. The tests that need it are in `integration` folders. No test is skipped for lack of a database any more, and no test uses the database my development settings point at.
+- **Three gaps of this note closed with a test:** a restart test on real Postgres (step 1, last row), a planted-key test that searches every database table and the log after a whole game, and a test that two games on one server do not hold each other up.
+- **A fault found by one of them.** The planted-key test found a player's key in a saved checkpoint. A provider's refusal can quote the key; my code raised that text to end the game, and LangGraph saves a raised error. The text is now scrubbed where the error is caught (U10, section 3.6).
+- **Models passed in, not looked up.** The game's code used to fetch its models through module-level functions, so tests replaced those functions with `monkeypatch`. One object per game now carries the models, the player's key and the count of stalled turns, and a test passes its own.
+- **Markers.** `live` became `contract`; `slow`, `integration` and `timing` were added.
 
 ## Step 1 in my system: the claims
 
@@ -564,16 +573,16 @@ The suite has thousands of tests. The more useful starting point is the claims t
 
 | Claim | Existing evidence | Main gap |
 |---|---|---|
-| An AI seat's prompt never contains another seat's private information | Eleven leak checks in the engine tests; nine of them also run on every batch game | Hosted games: an audit that runs the same checks over a hosted game's saved prompts is written and tested, and is not scheduled, so nothing runs it. What a seat says is not checked |
+| An AI seat's prompt never contains another seat's private information | Nine leak checks in the engine tests; seven of them also run on every batch game. (Eleven and nine until 2026-11-18, when two checks that searched for fields of the old nine-seat game were removed) | Hosted games: an audit that runs the same checks over a hosted game's saved prompts is written and tested, and is not scheduled, so nothing runs it. What a seat says is not checked |
 | The engine settles each night's actions by the rules | Unit tests of the night rules | Not examined for this note |
 | Every fact the deduction engine writes into a prompt is true. (The deduction engine is code that works out what a seat can deduce and adds it to that seat's prompt) | Thousands of random legal nights from fixed seeds, each settled by the real game code | Nights the generator cannot produce |
 | A whole ten-seat game can be played to the end, and every step becomes browser events | Whole games on the real graph with a scripted model | Everything a real model does |
-| A player's own API key is never written out | Planted-key tests for a dead game's error text and traceback, the crash report sent to Sentry, and the log of a failure after the game is over. A real call to each of the five providers with a made-up key: none returned the whole key in its error, and two returned part of it (U10, section 3.6) | No test searches the database, the events or the trace; that the key is absent there rests on reading the code. The log line of a failed model call is not scrubbed, so it can hold the part of a key that a provider returns |
+| A player's own API key is never written out | Planted-key tests for a dead game's error text and traceback, the crash report sent to Sentry, and the log of a failure after the game is over. A real call to each of the five providers with a made-up key: none returned the whole key in its error, and two returned part of it (U10, section 3.6) | Since 2026-11-18 a test plants a key, plays a whole game on real Postgres and searches every table and the log; a second one does the same for a game that a refused key ended. What is sent to the tracing service is still not searched. The scrubbing matches the whole key, so the part of a key that two providers return passes it |
 | A prompt changes only on purpose | A golden of the day-discussion prompt for each of the ten roles | Whether the prompt is good. Sections that the golden's game state leaves empty |
 | The server and the browser agree on the API | A test that fails when the saved API description is out of date | The separate rules for which seat may see which event |
-| A hosted game survives a server restart | Recovery tests against test doubles; a manual restart check in August | No automatic test uses the real code that saves game state to Postgres |
+| A hosted game survives a server restart | Recovery tests against test doubles; a manual restart check in August. Since 2026-11-18, a test that stops a hosted game on real Postgres while it waits on a person, builds a new server over the same database, and plays the game to its end | The test stops the server between two steps. It does not kill a process in the middle of a write |
 
-The last row shows why the number of tests is a poor measure. Surviving a restart is near the top of the list by cost, and its automatic tests replace the main part of the real recovery mechanism. A ranked list written before the tests would have made that visible.
+The last row shows why the number of tests is a poor measure. Surviving a restart is near the top of the list by cost, and until 2026-11-18 its automatic tests replaced the main part of the real recovery mechanism. A ranked list written before the tests would have made that visible; writing this table is what made me build the test.
 
 ## Step 2 in my system: the checks, and what is real in each
 
@@ -581,13 +590,13 @@ The last row shows why the number of tests is a poor measure. Surviving a restar
 
 | Folder | Tests | What they test |
 |---|---|---|
-| `tests/engine` | 1,436 | Game rules, night resolution, the deduction engine, prompt assembly, whole games with a scripted model |
-| `tests/memory` | 334 | Lessons: extraction, removal of duplicates, storage and retrieval |
-| `tests/evaluation` | 392 | The evaluation code itself: sampling, scoring, judging, and the loop that credits and prunes lessons |
-| `tests/server` | 311 | The game session, the API, the translator, durability |
-| `tests/live` | 170 paid, 9 free | Every model a player can choose, asked for every seat's output format (170 cases, excluded by default); 9 free tests that a model is skipped when its provider's key is absent |
+| `tests/engine` | 1,321 | Game rules, night resolution, the deduction engine, prompt assembly, whole games with a scripted model |
+| `tests/memory` | 499 | Lessons: extraction, removal of duplicates, storage and retrieval, and the pruning and synthesis that run in production. 4 are integration tests |
+| `tests/evaluation` | 175 | The evaluation code itself: sampling, scoring, judging |
+| `tests/server` | 320 | The game session, the API, the translator, durability. 7 are integration tests |
+| `tests/contract` | 170 paid, 9 free | Every model a player can choose, asked for every seat's output format (170 cases, excluded by default); 9 free tests that a model is skipped when its provider's key is absent |
 
-That is 2,652 Python tests, of which 2,482 run by default. The frontend has 1,607 unit tests in 73 files (Vitest, no browser), and a browser suite of 8 spec files with about 115 tests and 99 saved screenshots (Playwright).
+That is 2,494 Python tests. The quick default runs 2,314 of them: it leaves out the 170 paid ones and the ten slowest. The full local run, `poetry run pytest -m "not contract"`, runs 2,324. (Before the cut of 2026-11-18: 2,652, of which 2,482 ran by default.) The frontend has 1,607 unit tests in 73 files (Vitest, no browser), and a browser suite of 8 spec files with about 115 tests and 99 saved screenshots (Playwright).
 
 **What is real and what is replaced.**
 
@@ -595,16 +604,17 @@ That is 2,652 Python tests, of which 2,482 run by default. The frontend has 1,60
 |---|---|---|
 | Engine unit tests | Game rules, changes to the game state, prompt formatting | Nothing large; the inputs are built for the test |
 | Whole-game engine tests | The real graph, and the server's translator | The model, by a **scripted model** that fills any output format with legal values chosen at random. Some supporting model calls are stubbed |
-| Server integration tests | A real game session, and the real API application behind a test client | The game graph, by a test double that yields scripted output. Database writes are recorded instead of sent |
+| Server tests | A real game session, and the real API application behind a test client | The game graph, by a test double that yields scripted output. Database writes are recorded instead of sent |
+| Integration tests (11, since 2026-11-18) | The real graph, the real session and registry, the Postgres checkpoint saver, the game repository and the lesson store, on a Postgres container started for the run | The model, by the scripted model. The key check with the provider |
 | Frontend unit tests | The frontend's logic, with no browser. A small group renders components to HTML to check that private data reaches only the reader allowed to see it | The server; the fixtures are saved games |
 | Browser tests | The real pages in a headless Chromium browser | The whole server: every API call is answered from saved games. So these test the pages, not the system end to end |
-| `live` tests | Calls to real model providers | A game. They check output format only |
+| `contract` tests | Calls to real model providers | A game. They check output format only |
 | Evaluations and batch games | Real models playing games, or replaying saved game states | Nothing. They are run by hand, and their results hold for the models, prompts and sample tested |
 
 Three of these replacements hide something that matters:
 
-- **The scripted model** makes it practical to check that a game runs to its end, that the state changes correctly and that every step becomes events. It cannot show what a real model says, how often its answer fails validation, or how long a turn takes. The real checks are the `live` tests, whose own description records a run on 2026-09-10 (I did not look for later runs), and the evaluations.
-- **The test-double graph in the server tests** means the recovery tests never use the code that saves game state to Postgres. A real kill and restart was last checked by hand in August (U3, section 3.8). The missing check is a scripted game that saves to a test Postgres, is killed and restarted, and is then checked for recovery. It needs no model calls.
+- **The scripted model** makes it practical to check that a game runs to its end, that the state changes correctly and that every step becomes events. It cannot show what a real model says, how often its answer fails validation, or how long a turn takes. The real checks are the `contract` tests, whose own description records a run on 2026-09-10 (I did not look for later runs), and the evaluations.
+- **The test-double graph in the server tests** means those recovery tests never use the code that saves game state to Postgres. A real kill and restart was last checked by hand in August (U3, section 3.8). The check that was missing when I first wrote this is now built (2026-11-18): a scripted game that saves to a test Postgres, is stopped and brought back, and is then checked for recovery. It needs no model calls. It stops the server object in one process; a kill of the process during a write is still not tested.
 - **The browser suite keeps its own copy of the server's rules** for which seat may see which event, and uses that copy to decide what each seat is sent. If the rules change on the server, the browser suite does not detect it. The copy already lacks two event types that only their own seat may see, `uses_remaining` and `night_record`. The API description test does not cover this, because those rules are not part of the API's shape.
 
 **Goldens.**
@@ -625,21 +635,22 @@ Failure cases in this suite were not found by asking the questions of step 3. Th
 
 - **Varied inputs.** The deduction engine's tests draw thousands of random legal nights from fixed seeds, so combinations nobody thought of are tried on every run.
 - **"What if this operation runs again?"** A person's turn stops the game and waits for their answer (U5). When the game resumes, the step that was waiting starts again from its beginning, so the night's turns run a second time. The Vigilante test (step 5 below) checks that this does not spend a bullet twice.
-- **"What if execution stops here?"** The recovery tests cover this against test doubles only.
+- **"What if execution stops here?"** The recovery tests cover this against test doubles, and since 2026-11-18 one test covers a stop between two steps on real Postgres.
+- **"What if two run at once?"** Since 2026-11-18 one test runs two games on one server and holds up the first game's saves; the second game still finishes.
 
-Not examined for this note: whether the engine and server tests cover the other two questions (two operations at once; confirmed or only requested), and whether the frontend tests cover the loading, empty and error states of each page.
+Not examined for this note: whether the engine and server tests cover the question of a result that was confirmed or only requested, or two operations at once inside one game, and whether the frontend tests cover the loading, empty and error states of each page.
 
 ## Step 4 in my system: how the tests are run
 
-**Commands.** `poetry run pytest` runs the default set. The paid tests carry the marker `live` and run only with `-m live`. On 2026-11-17 the default run gave 2,481 passed and 1 skipped in 13 minutes 38 seconds, on a machine that was also running other work. Ten deduction-engine tests over random nights took about 10 of the 13 minutes. The frontend's unit tests all passed in 56 seconds. The browser suite was not run for this note; the frontend's testing guide estimates 16 minutes.
+**Commands.** `poetry run pytest` runs the quick default. `poetry run pytest -m "not contract"` is the full local run, which adds the ten slowest tests. The paid tests carry the marker `contract` and run only with `-m contract`. On 2026-11-18 the full local run gave 2,324 passed and none skipped in 9 minutes 31 seconds. (On 2026-11-17, before the cut: 2,481 passed and 1 skipped in 13 minutes 38 seconds, on a machine that was also running other work; ten deduction-engine tests over random nights took about 10 of those minutes, and they are the ten now marked `slow`.) The frontend's unit tests all passed in 56 seconds. The browser suite was not run for this note; the frontend's testing guide estimates 16 minutes.
 
-**Layout.** The test folders follow the parts of the system. `tests/fixtures/` holds the fixtures, one file per resource, and the golden files. `tests/factories/` holds the functions that build test data, including the random nights. I asked the agent to copy this layout from my dota2pred project. In the frontend, each unit test file sits beside the code it tests, and the browser tests are in `frontend/e2e/`. Tests are named as sentences, for example `test_a_dead_player_gets_no_record_of_its_last_night`.
+**Layout.** The test folders follow the parts of the system. Inside a part, a folder named `integration` holds the tests that need the Postgres container, and they get the marker `integration` from the folder. `tests/fixtures/` holds the fixtures, one file per resource, and the golden files. `tests/factories/` holds the functions that build test data, including the random nights. I asked the agent to copy this layout from my dota2pred project. In the frontend, each unit test file sits beside the code it tests, and the browser tests are in `frontend/e2e/`. Tests are named as sentences, for example `test_a_dead_player_gets_no_record_of_its_last_night`.
 
-**A fixed environment, with one exception.** The shared setup file switches tracing off, switches off a paid model call made after each game, and takes the list of models from the code instead of the live database. The exception: a few memory tests use a real Postgres database when a database address is set, as it is on my machine, and are skipped otherwise. So the same command tests more on my machine than on a clean one, and a skipped test there is not a passed test.
+**A fixed environment.** The shared setup file switches tracing off, switches off a paid model call made after each game, and takes the list of models from the code instead of the live database. Until 2026-11-18 there was one exception: a few tests used a real Postgres database when a database address was set, as it is on my machine, and were skipped otherwise. So the same command tested more on my machine than on a clean one. Those tests now run on a Postgres container that the test run starts itself, so they need Docker and nothing from my settings. One limit remains: the whole-game tests play a different game on each run, because the scripted players share one random generator across threads (step 5 below). I chose to keep that and assert only what holds for any game.
 
 **Nothing runs automatically.** There is no CI configuration, no active git hook and no Makefile, and no step of a release runs the tests (U14, section 3.1). The tests run when I or an agent runs them, against the working folder, which often holds uncommitted edits from several pieces of work at once. So a pass in my system means: on my machine, on the files in the working folder at that moment, with the paid tests left out. It is not a record that the released revision passed.
 
-**What is written down for an agent.** [`docs/testing.md`](../../../docs/testing.md), written on 2026-11-17, holds the three things of section 4.5: the costliest claims, the commands with the folders and the way each golden is regenerated, and what to run and report before a change counts as finished. `CLAUDE.md` points to it. No change has been made under it yet, so whether agents follow it is not known.
+**What is written down for an agent.** [`docs/testing.md`](../../../docs/testing.md), written on 2026-11-17, holds the three things of section 4.5: the costliest claims, the commands with the folders and the way each golden is regenerated, and what to run and report before a change counts as finished. `CLAUDE.md` points to it. The clean-up of 2026-11-18 was done under it by coding agents that I briefed and checked; it has not yet been used by an agent working without that supervision.
 
 ## Step 5 in my system: two tests reviewed
 
@@ -693,11 +704,11 @@ The order of the rows is not an order of urgency.
 | Gap | Step | Why it matters | Possible improvement |
 |---|---|---|---|
 | 1. Nothing runs the tests automatically, and no release step runs them | 4 | A pass is not tied to the released revision | CI on every push; a release step that refuses a revision without a recorded pass |
-| 2. The recovery tests replace the real code that saves game state | 2 | A fault in recovery from Postgres would not be caught | A kill-and-restart test on a test Postgres with scripted players |
-| 3. The other whole-game tests share the scripted players that made the Vigilante test vary by thread order | 4 | One of them could fail by chance | A scripted player that does not depend on thread order, for the whole file |
-| 4. The `live` model check is run by hand | 2 | A provider change can break structured output until a real game fails | Run it on a schedule, and record each run |
+| 2. **Partly closed on 2026-11-18.** The recovery tests replaced the real code that saves game state | 2 | A fault in recovery from Postgres would not be caught | Built: a restart test on a test Postgres with scripted players. Still open: a kill of the process in the middle of a write |
+| 3. The other whole-game tests share the scripted players that made the Vigilante test vary by thread order | 4 | One of them could fail by chance | A scripted player that does not depend on thread order, for the whole file. Looked at on 2026-11-18 and left: the scripted model is not told which seat is asking, so it needs more than a small change |
+| 4. The `contract` model check is run by hand | 2 | A provider change can break structured output until a real game fails | Run it on a schedule, and record each run |
 | 5. The browser suite has its own copy of the rules for who sees what, already two event types behind | 2 | A change on the server is not detected | Generate the copy from the server, or compare the two in one test |
-| 6. The planted-key tests cover the error text, the crash report and one log. No test searches the database, the events or the trace, and the log line of a failed model call is not scrubbed | 2 | A later change could write the key to one of those places unnoticed. Today that log line can hold at most the part of a key that two providers return | Search those places in the same test, and log the error's category in place of the provider's text (U10 gaps 1 and 2) |
+| 6. **Mostly closed on 2026-11-18.** The planted-key tests covered the error text, the crash report and one log, and the log line of a failed model call was not scrubbed | 2 | The gap was real: the new test found the key in a saved checkpoint | Built: a search of every database table and the log after a whole game, and scrubbing of every model call's error. Still open: what is sent to the tracing service, and a key returned in part (U10 gap 2) |
 | 7. No check of accessibility (whether the pages can be used with a keyboard or a screen reader) runs | 1 | Nothing would catch a page that cannot be used by keyboard | An automated accessibility checker in the browser tests, and one keyboard-only test |
 | 8. No ranked list of claims was written first, and no pass over the questions of step 3 | 1, 3 | A costly claim can have a weak check without anyone having decided that | Keep the table of step 1 as a short list, and ask the step 3 questions of the game session and the API |
 | 9. The testing guide for agents is new and nothing enforces it | 4 | An agent can still report "all tests pass" after running only the tests it wrote | CI, which runs the default set whatever the agent ran |
@@ -708,19 +719,19 @@ The order of the rows is not an order of urgency.
 ## The five decisions in two minutes
 
 **1. Identify claims.** Find what must be true from four places: rules that must stay true, the tasks users must be able to finish, boundaries between components, and past faults. Rank them by what a false one would cost.
-*My system:* no list was written first. The costliest claims each have a check, and three of those checks are partial: a restart is tested against test doubles only, hosted games are not searched for leaks, and the key search does not cover the database, the events or the trace.
+*My system:* no list was written first. The costliest claims each have a check, and some of those checks are partial: a restart is tested for a stop between two steps and not for a kill during a write, hosted games are not searched for leaks, and the key search does not cover what is sent to the tracing service.
 
 **2. Design checks.** Decide what must actually run for a test to detect the fault. Replace a dependency when that is useful, and say what the replacement removes from the evidence. Unit tests, integration tests, end-to-end tests and evaluations with the real model answer different questions.
-*My system:* 2,482 Python tests by default, 1,607 frontend unit tests, a browser suite, five kinds of golden, and evaluations run by hand. The model is scripted in every default test, the graph is replaced in the server tests, and the server is replaced in the browser tests.
+*My system:* 2,314 Python tests in the quick default and 2,324 in the full local run, 1,607 frontend unit tests, a browser suite, five kinds of golden, and evaluations run by hand. The model is scripted in every default test, the graph is replaced in the server tests except the eleven integration tests, and the server is replaced in the browser tests.
 
 **3. Find failure cases.** Vary the inputs: empty, one, many, at the limit, invalid, duplicate. Ask of each operation: what if execution stops here, it runs again, two run at once, or the result was only requested and not confirmed?
 *My system:* covered by generated random nights and by particular tests, not by a pass over these questions.
 
 **4. Make testing repeatable.** Predictable commands, shared fixtures and factories, the same result on every run, and CI. For a coding agent, write down what must be protected, how tests are run, and what evidence it hands back.
-*My system:* one command and a clear layout; a testing guide for agents since 2026-11-17; no CI, so a pass describes my machine and my working folder.
+*My system:* one command and a clear layout; a database container the test run starts itself; a testing guide for agents since 2026-11-17; no CI, so a pass describes my machine and my working folder.
 
 **5. Review the evidence.** Can the test fail? Does it check the intended behaviour? What does a pass not establish?
-*My system:* the repaired Vigilante test was shown to fail against an engine broken on purpose; the full run caught a leak check that a prompt change had weakened.
+*My system:* the repaired Vigilante test was shown to fail against an engine broken on purpose; the full run caught a leak check that a prompt change had weakened; a planted-key test over the whole database found a key in a saved checkpoint.
 
 The idea behind all five: decide what must be true, then choose checks that could show when it is false.
 
@@ -772,21 +783,22 @@ For each sentence, say what evidence stands behind it and what remains uncertain
 <details>
 <summary>Answers</summary>
 
-1. The leak checks search every seat's prompt input, in the engine tests over scripted games and in the batch runner over games with real models. They do not cover hosted games, and they do not check what a seat says. Accurate wording: "In every batch game, an automatic check searches each seat's prompt input for nine kinds of private information; hosted games are not checked."
-2. The recovery logic is tested against test doubles, and a real restart was last checked by hand in August. No automatic test uses the real code that saves game state to Postgres. Accurate wording: "The recovery logic is tested against test doubles; a real restart was last checked by hand in August."
+1. The leak checks search every seat's prompt input, in the engine tests over scripted games and in the batch runner over games with real models. They do not cover hosted games, and they do not check what a seat says. Accurate wording: "In every batch game, an automatic check searches each seat's prompt input for seven kinds of private information; hosted games are not checked."
+2. The recovery logic is tested against test doubles, and since 2026-11-18 one test stops a hosted game on real Postgres while it waits on a person, rebuilds the server over the same database and plays the game to its end. It does not kill a process during a write. Accurate wording: "An automatic test restarts the server between two steps of a game and checks that the game continues; a crash in the middle of a write is not tested." (Before that test existed, the accurate wording was: "The recovery logic is tested against test doubles; a real restart was last checked by hand in August.")
 3. An experiment with real models: 438 calls at three saved points in two games, one model. Votes for the named innocent player fell from 24 of 33 to 14 of 33. "Roughly halves" matches that count. It does not establish the size of the effect for other models, games or attacks.
 </details>
 
 # Appendix — Implementation and evidence reference
 
-*Each claim carries its support: **code** (the file and symbol were read), **test** (named; not run unless stated), **run** (executed for this note), **doc** (a written record, not re-checked in the code). Read and run on 2026-11-17. Paths are from the repository root.*
+*Each claim carries its support: **code** (the file and symbol were read), **test** (named; not run unless stated), **run** (executed for this note), **doc** (a written record, not re-checked in the code). Read and run on 2026-11-17; the entries changed by the clean-up were read and run again on 2026-11-18. Paths are from the repository root.*
 
 **The suite**
 
-- Test counts per folder, 2,652 in all, 170 marked `live`: **run** (`poetry run pytest --collect-only -q`, per folder and with `-m live`)
-- `live` excluded by default: **code** `pyproject.toml` (`[tool.pytest.ini_options]`)
-- The default run: **run** (`poetry run pytest -q --durations=25`): 2,481 passed, 1 skipped, 170 deselected, 818 s
-- The skipped test and the tests that need a database address: **run** (`-rs`) `tests/server/test_replays.py`; **code** `tests/memory/test_consolidation_graduation.py`, `tests/memory/test_served_extraction.py`
+- Test counts per folder, 2,494 in all, 170 marked `contract`, 11 `integration`, 10 `slow`, 6 `timing`: **run** on 2026-11-18 (`poetry run pytest --collect-only -q -m ''`, per folder, and with each marker)
+- `contract` and `slow` excluded by default: **code** `pyproject.toml` (`[tool.pytest.ini_options]`)
+- The full local run: **run** on 2026-11-18 (`poetry run pytest -q -m "not contract"`): 2,324 passed, 170 deselected, 571 s. The run of 2026-11-17 before the cut: 2,481 passed, 1 skipped, 170 deselected, 818 s
+- The Postgres container and the database per test: **code** `tests/fixtures/database.py`; the tests that use it: `tests/server/integration/`, `tests/memory/integration/`
+- What was cut and what was kept: **doc** [`u13_cut_list.md`](u13_cut_list.md), [`u13_test_map.md`](u13_test_map.md) (the map describes the suite before the cut)
 - Frontend unit tests, 73 files, 1,607 tests, passed in 56 s: **run** (`npx vitest run` in `frontend/`)
 - Browser spec files (8), `test(` declarations (115, counted by a text search), screenshots (99): **code** `frontend/e2e/`, `frontend/playwright.config.ts`; not run
 - The shared setup, fixtures and factories: **code** [`tests/conftest.py`](../../../tests/conftest.py), `tests/fixtures/`, `tests/factories/`
@@ -794,12 +806,13 @@ For each sentence, say what evidence stands behind it and what remains uncertain
 **What is real and what is replaced**
 
 - Random legal nights from fixed seeds: **code** `tests/factories/random_nights.py`, `tests/engine/deduction/`
-- The scripted model: **code** [`tests/engine/test_ten_seat_game.py`](../../../tests/engine/test_ten_seat_game.py) (`_fill`, `_FakeLLM`, `_script_the_model`)
+- The scripted model: **code** [`tests/factories/scripted_model.py`](../../../tests/factories/scripted_model.py) (`fill`, `ScriptedModel`, `ScriptedModels`), the fixture `scripted_model` in `tests/fixtures/model.py`; the per-game models object a test passes in: `Agents/llm_factory/game_models.py`
 - The test-double graph and the API test client: **code** [`tests/fixtures/server.py`](../../../tests/fixtures/server.py)
-- Recovery without real Postgres: **code** `tests/server/test_durability.py`; the August manual check: **doc** U3 section 3.8
+- Recovery without real Postgres: **code** `tests/server/test_durability.py`; the August manual check: **doc** U3 section 3.8; the restart on real Postgres: **test** `tests/server/integration/test_restart.py` (run 2026-11-18)
+- Two games on one server: **test** `tests/server/integration/test_game_isolation.py` (run 2026-11-18; shown to fail with one shared saver)
 - The browser suite's saved answers and its own copy of the visibility rules: **doc** [`frontend/docs/testing.md`](../../../frontend/docs/testing.md); **code** `frontend/e2e/live.spec.ts`
-- The planted-key tests: **code** `tests/server/test_byok.py::test_dead_game_error_never_echoes_the_key` and `::test_dead_game_error_never_echoes_the_backup_key`; the other guarded places and the ones no test searches: **doc** U10 section 3.2; the real call to five providers: **doc** U10 section 3.6
-- The paid model check and its recorded run: **code** `tests/live/test_model_structured_output.py` (module note)
+- The planted-key tests: **code** `tests/server/test_byok.py::test_dead_game_error_never_echoes_the_key` and `::test_dead_game_error_never_echoes_the_backup_key`; the search of every table and the log: **test** `tests/server/integration/test_planted_key.py` (run 2026-11-18); the other guarded places: **doc** U10 section 3.2; the real call to five providers: **doc** U10 section 3.6
+- The paid model check and its recorded run: **code** `tests/contract/test_model_structured_output.py` (module note)
 - Evaluation runners: **code** `evaluation/README.md`, `evaluation/experiments/` (62 files)
 
 **Goldens and leak checks**
@@ -808,14 +821,14 @@ For each sentence, say what evidence stands behind it and what remains uncertain
 - Translator goldens: **code** `tests/fixtures/translator_golden.py`
 - The API description test: **code** `tests/server/test_openapi_snapshot.py`
 - Beat and screenshot goldens, the 0.5% tolerance: **code** `frontend/playwright.config.ts`; **doc** `frontend/docs/testing.md`
-- Eleven leak checks, nine run on batch games: **code** [`tests/leak_test.py`](../../../tests/leak_test.py), `scripts/run_batch.py`
+- Nine leak checks, seven run on batch games (`run_leak_tests`): **code** [`tests/leak_test.py`](../../../tests/leak_test.py), `scripts/run_batch.py`
 
 **The two reviewed tests**
 
 - The quoting change and its tests: **test** `tests/engine/test_transcript_quoting.py` (10), `tests/engine/test_transcript_one_line.py` (18)
 - The two experiments and the comparison of 22 prompts: **doc** [`evidence/agent_boundaries/forged_speaker/report.md`](../../agent_boundaries/forged_speaker/report.md) and its log; no model calls were made for this note
 - The `repr` fault and its fix: **code** `tests/leak_test.py::_searchable`; **doc** the same report
-- The Vigilante test, its replays, the repair and the two broken versions: **doc** [`vigilante_test/experiment_log.md`](vigilante_test/experiment_log.md); **code** `tests/engine/test_ten_seat_game.py`, `measurements/u13_vig_probe.py`, `measurements/u13_vig_mutations.py`
+- The Vigilante test, its replays, the repair and the two broken versions: **doc** [`vigilante_test/experiment_log.md`](vigilante_test/experiment_log.md); **code** `tests/engine/test_whole_game.py` (the test moved there on 2026-11-18), `measurements/u13_vig_probe.py`, `measurements/u13_vig_mutations.py` (the two scripts import the old file and no longer run as they are)
 
 **How tests are run**
 
@@ -827,7 +840,7 @@ For each sentence, say what evidence stands behind it and what remains uncertain
 **Not checked**
 
 - The browser suite, the type check, the lint and the production build were not run.
-- Whether the `live` tests have been run since 2026-09-10.
+- Whether the `contract` tests have been run since 2026-09-10.
 - Which test caught the `repr` fault.
 - Whether the night-rule tests leave anything out, and the two items listed as not examined under step 3.
 

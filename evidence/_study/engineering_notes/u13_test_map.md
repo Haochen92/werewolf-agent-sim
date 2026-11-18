@@ -8,6 +8,16 @@ shared setup, made on 2026-11-17 for the review that follows U13
 note: it lists what each group of tests protects, what is real in it, and what is wrong with the
 structure, so that I can decide which set each group belongs to and which tests to read closely.
 
+**This map describes the suite before the clean-up of 2026-11-18.** Its counts, its folder
+`tests/live` and several file names are from 2026-11-17. Since then: 208 tests of closed
+experiments were cut with their code ([u13_cut_list.md](u13_cut_list.md)); `tests/live` became
+`tests/contract`; the whole-game tests moved to `tests/engine/test_whole_game.py` and the scripted
+model to `tests/factories/scripted_model.py`; the tests that need a database moved to
+`integration` folders and run on a Postgres container; the findings on the shared checkpoint
+store, the restart test and the tests skipped without a database were acted on. The current
+state is in U13 Part 2 and in `docs/testing.md`. The map is kept as the record of what the
+review started from.
+
 **How it was made.** Two read-only passes by coding agents, which read the test files and ran
 only `poetry run pytest --collect-only`. No test was run for this map, so it says nothing about
 whether a test passes. Durations come from the saved full run of 2026-11-17. Ten findings were

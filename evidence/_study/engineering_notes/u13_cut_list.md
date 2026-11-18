@@ -5,14 +5,16 @@
 A list for my ruling, made on 2026-11-18. It follows the map of the tests
 ([u13_test_map.md](u13_test_map.md)).
 
-**Outcome, 2026-11-18.** I ruled the same day and the cut was made in the working folder; it is
-not committed. Cut: groups A, B, C1, C2, C3, D, E, F, G, H (the scorers only), J and K, the two
+**Outcome, 2026-11-18.** I ruled the same day and the cut was made and committed (`21d2d54d`). Cut: groups A, B, C1, C2, C3, D, E, F, G, H (the scorers only), J and K, the two
 nine-seat leak checks, and three experiment scripts that needed the cut code. That is 112 files,
 24,072 lines and 208 tests. Kept: C4, I, L, M, the manual labelling tools, the notebooks and the
 other experiment scripts. The annotated tag `pre-test-cut-2026-11-18` holds everything removed.
 38 of the 39 consolidation tests now test the production file
-(`tests/memory/test_store_ops.py`); one of them fails and waits for my ruling. The default set
-went from 2,482 tests (2,481 passed, 1 skipped) to 2,312 (2,310 passed, 1 failed, 1 skipped).
+(`tests/memory/test_store_ops.py`). One of them, a cost-guard test, failed against production's
+default models; it asserted the names of the defaults, and I had it rewritten to assert how the
+configured models reach the three environment variables. The default set went from 2,482 tests
+to 2,312 at the cut. After the rest of the day's work the suite holds 2,494 tests, 2,324 in the
+full local run, all passing.
 The rest of this file is the list as it stood before the cut.
 
 **The rule.** Code stays if it runs in production today (the server, the game engine, the
