@@ -648,7 +648,13 @@ Not examined for this note: whether the engine and server tests cover the questi
 
 **A fixed environment.** The shared setup file switches tracing off, switches off a paid model call made after each game, and takes the list of models from the code instead of the live database. Until 2026-11-18 there was one exception: a few tests used a real Postgres database when a database address was set, as it is on my machine, and were skipped otherwise. So the same command tested more on my machine than on a clean one. Those tests now run on a Postgres container that the test run starts itself, so they need Docker and nothing from my settings. One limit remains: the whole-game tests play a different game on each run, because the scripted players share one random generator across threads (step 5 below). I chose to keep that and assert only what holds for any game.
 
-**Nothing runs automatically.** There is no CI configuration, no active git hook and no Makefile, and no step of a release runs the tests (U14, section 3.1). The tests run when I or an agent runs them, against the working folder, which often holds uncommitted edits from several pieces of work at once. So a pass in my system means: on my machine, on the files in the working folder at that moment, with the paid tests left out. It is not a record that the released revision passed.
+**CI since 2026-11-18.** Until that day nothing ran the tests automatically: no CI configuration, no active git hook, no Makefile. The tests ran when I or an agent ran them, against the working folder, which often holds uncommitted edits from several pieces of work at once. So a pass meant: on my machine, on the files in the working folder at that moment, with the paid tests left out.
+
+A workflow on GitHub Actions (`.github/workflows/ci.yml`) now runs from a clean checkout of the pushed commit, with no settings file, made-up provider keys and the packages of the lock file. Every push to any branch runs the quick tests (2,296 tests in about two minutes there). A push to `main`, a pull request to `main` or a run started by hand also runs the integration tests, the slow tests, and a build of the server image in which the server must start. So a green run is a record that one named commit passed on a machine that is not mine.
+
+What it still does not give me: no step of a release checks for a green run (U14, section 3.1), so I can still deploy a commit that failed. And on 2026-11-18 only the short run had run on GitHub; the full run was rehearsed on my machine in a clean checkout, not yet run there.
+
+Two things only the real run showed. Building the server image from the lock file failed on three packages the game imports that were never declared; they had been installed by hand. And the first run on GitHub failed before any test: the runner named "latest" had moved to a newer Ubuntu release for which my exact Python version is not built. I had rehearsed every test step on my machine and neither fault could appear there.
 
 **What is written down for an agent.** [`docs/testing.md`](../../../docs/testing.md), written on 2026-11-17, holds the three things of section 4.5: the costliest claims, the commands with the folders and the way each golden is regenerated, and what to run and report before a change counts as finished. `CLAUDE.md` points to it. The clean-up of 2026-11-18 was done under it by coding agents that I briefed and checked; it has not yet been used by an agent working without that supervision.
 
@@ -703,7 +709,7 @@ The order of the rows is not an order of urgency.
 
 | Gap | Step | Why it matters | Possible improvement |
 |---|---|---|---|
-| 1. Nothing runs the tests automatically, and no release step runs them | 4 | A pass is not tied to the released revision | CI on every push; a release step that refuses a revision without a recorded pass |
+| 1. **Half closed on 2026-11-18.** Nothing ran the tests automatically, and no release step runs them | 4 | A pass is not tied to the released revision | Built: CI on every push. Still open: a release step that refuses a revision without a recorded pass |
 | 2. **Partly closed on 2026-11-18.** The recovery tests replaced the real code that saves game state | 2 | A fault in recovery from Postgres would not be caught | Built: a restart test on a test Postgres with scripted players. Still open: a kill of the process in the middle of a write |
 | 3. The other whole-game tests share the scripted players that made the Vigilante test vary by thread order | 4 | One of them could fail by chance | A scripted player that does not depend on thread order, for the whole file. Looked at on 2026-11-18 and left: the scripted model is not told which seat is asking, so it needs more than a small change |
 | 4. The `contract` model check is run by hand | 2 | A provider change can break structured output until a real game fails | Run it on a schedule, and record each run |
@@ -711,7 +717,7 @@ The order of the rows is not an order of urgency.
 | 6. **Mostly closed on 2026-11-18.** The planted-key tests covered the error text, the crash report and one log, and the log line of a failed model call was not scrubbed | 2 | The gap was real: the new test found the key in a saved checkpoint | Built: a search of every database table and the log after a whole game, and scrubbing of every model call's error. Still open: what is sent to the tracing service, and a key returned in part (U10 gap 2) |
 | 7. No check of accessibility (whether the pages can be used with a keyboard or a screen reader) runs | 1 | Nothing would catch a page that cannot be used by keyboard | An automated accessibility checker in the browser tests, and one keyboard-only test |
 | 8. No ranked list of claims was written first, and no pass over the questions of step 3 | 1, 3 | A costly claim can have a weak check without anyone having decided that | Keep the table of step 1 as a short list, and ask the step 3 questions of the game session and the API |
-| 9. The testing guide for agents is new and nothing enforces it | 4 | An agent can still report "all tests pass" after running only the tests it wrote | CI, which runs the default set whatever the agent ran |
+| 9. The testing guide for agents is new and nothing enforced it | 4 | An agent can still report "all tests pass" after running only the tests it wrote | CI, which runs the quick set whatever the agent ran (built 2026-11-18). It checks a pushed commit, so it does not check an agent's claim about uncommitted work |
 | 10. The frontend testing guide lists 5 browser spec files; the folder has 8 | 4 | The record of what is tested is incomplete | Add the three missing rows |
 
 # Part 3 — Review
@@ -728,7 +734,7 @@ The order of the rows is not an order of urgency.
 *My system:* covered by generated random nights and by particular tests, not by a pass over these questions.
 
 **4. Make testing repeatable.** Predictable commands, shared fixtures and factories, the same result on every run, and CI. For a coding agent, write down what must be protected, how tests are run, and what evidence it hands back.
-*My system:* one command and a clear layout; a database container the test run starts itself; a testing guide for agents since 2026-11-17; no CI, so a pass describes my machine and my working folder.
+*My system:* one command and a clear layout; a database container the test run starts itself; a testing guide for agents since 2026-11-17; CI since 2026-11-18, so a green run describes one pushed commit on a clean machine. No release step checks for it yet.
 
 **5. Review the evidence.** Can the test fail? Does it check the intended behaviour? What does a pass not establish?
 *My system:* the repaired Vigilante test was shown to fail against an engine broken on purpose; the full run caught a leak check that a prompt change had weakened; a planted-key test over the whole database found a key in a saved checkpoint.
@@ -832,7 +838,8 @@ For each sentence, say what evidence stands behind it and what remains uncertain
 
 **How tests are run**
 
-- No CI workflow, pre-commit configuration, Makefile or active git hook: **run** (a file search and `git config`)
+- No CI workflow, pre-commit configuration, Makefile or active git hook: **run** on 2026-11-17 (a file search and `git config`)
+- The CI workflow and its first runs: **code** `.github/workflows/ci.yml`; **run** on GitHub, 2026-11-18: commit `bd91a155` failed at "Set up Python", commit `09647513` passed the short run (quick tests in 2 min 13 s). The full run's steps were run on my machine in a clean checkout: 2,296 quick, 6 timing, 11 integration and 10 slow tests passed, 1 skipped
 - No tests in the release procedure: **doc** U14 section 3.1
 - The testing guide and the pointer to it: **doc** [`docs/testing.md`](../../../docs/testing.md), `CLAUDE.md`
 - That no ranked list of claims was written first, and that agents wrote the tests: my own account
