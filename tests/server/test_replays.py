@@ -4,34 +4,20 @@ Hermetic by construction: the autouse guard in tests/fixtures/server.py blanks
 WW_POSTGRES_DSN, so nothing here can touch the live tick database. The hook tests
 inject a small archive fake (the seam the session calls); the endpoint
 tests run against the real router with the unconfigured-503 path, plus a recorded
-fake for the storage calls. Real-Postgres coverage is one integration test gated on
-WW_REPLAY_TEST_DSN — an explicitly separate opt-in var, never the live DSN.
+fake for the storage calls. The real-Postgres round trip is in
+tests/server/integration/test_replay_storage.py, on a database in a test container.
 """
 from __future__ import annotations
 
-import os
-
 import pytest
-from sqlmodel import select
 
-from datetime import datetime, timezone
-
-from server.database_models.game import COMPLETED, DROPPED, RUNNING, EventRow, GameRow
+from server.database_models.game import COMPLETED, RUNNING, GameRow
 from server.db import Database
 from server.storage.game_repository import GameRepository
-from server.storage.replay_service import IncompleteReplay, ReplayNotFound, ReplayService
+from server.storage.replay_service import IncompleteReplay, ReplayNotFound
 from server.schemas import events as ev
 from server.schemas.replays import ReplayBase, ReplayGame
-
-def _log(*, with_over=True):
-    events: list[ev.DurableEvent] = [
-        ev.GameStarted(seq=1, day=1, seats=["p1", "p2"],
-                       cast_role_counts={"wolf": 1, "villager": 1}),
-        ev.GmMessage(seq=2, day=2, channel_seq=0, text="dawn"),
-    ]
-    if with_over:
-        events.append(ev.GameOver(seq=3, day=3, winner="wolves"))
-    return events
+from tests.factories.builders import short_event_log as _log
 
 # ---- the read API ---------------------------------------------------------------------------
 
@@ -213,108 +199,6 @@ async def test_storage_failure_does_not_acknowledge_writes(monkeypatch):
     assert not await repository.create_game("g", status=RUNNING)
     assert not await repository.update_game("g", human_players=["player_3"])
     assert not await repository.record_events("g", _log())
-
-
-# ---- optional integration (explicit opt-in var; NEVER the live DSN) -------------------------
-
-
-@pytest.mark.skipif(not os.getenv("WW_REPLAY_TEST_DSN"),
-                    reason="set WW_REPLAY_TEST_DSN to run the real-Postgres round-trip")
-async def test_postgres_round_trip():
-    from server.config import ServerSettings
-
-    from sqlmodel import SQLModel
-
-    # Arrange: a real Postgres database with the tables created
-    settings = ServerSettings(WW_POSTGRES_DSN=os.environ["WW_REPLAY_TEST_DSN"])
-    database = Database(settings.replay_database_url)
-    await database.startup()
-    repository = GameRepository(database)
-    replay_service = ReplayService(database)
-    assert database.engine is not None
-    async with database.engine.begin() as conn:  # test-only; prod uses alembic
-        await conn.run_sync(SQLModel.metadata.create_all)
-
-    # Round 1: write and update a game row, and record its events twice
-    assert await repository.create_game(
-        "itest-game", status=RUNNING, model="test-model", seats=[{"token": "test-seat"}])
-    # A partial write must update the existing row without needing its required status.
-    assert await repository.update_game("itest-game", human_players=["player_3"])
-    row = await repository.load_game("itest-game")
-    assert row.status == RUNNING and row.human_players == ["player_3"]
-    assert row.model == "test-model" and row.seats == [{"token": "test-seat"}]
-    assert not await repository.update_game("missing-game", human_players=["player_3"])
-    assert await repository.load_game("missing-game") is None
-    assert await repository.record_events("itest-game", _log())
-    assert await repository.record_events("itest-game", _log())  # retry cannot duplicate rows
-
-    # Round 2: record the game's cast
-    # The cast goes with the game: written once, listed in seat order, and the
-    # constraints refuse a puppet standing twice or one the catalogue never issued.
-    from sqlalchemy.exc import IntegrityError
-
-    from server.game.cast import CastSeat
-
-    cast = [CastSeat("player_2", "owl", False), CastSeat("player_1", "whale", True)]
-    assert await repository.record_cast("itest-game", cast)
-    assert await repository.record_cast("itest-game", cast)  # retry cannot duplicate rows
-    assert await repository.load_cast("itest-game") == [cast[1], cast[0]]
-    assert not await repository.record_cast(
-        "itest-game", [CastSeat("player_3", "owl", False)])  # owl stands at player_2
-    assert not await repository.record_cast(
-        "itest-game", [CastSeat("player_3", "nobody", False)])  # not in the catalogue
-
-    # Round 3: complete the game twice, then read it back as a replay
-    await repository.complete_game("itest-game", _log(), n_humans=2)
-    await repository.complete_game("itest-game", _log(), n_humans=2)  # idempotent
-
-    summary = await replay_service.list_replays(limit=50, offset=0)
-    game = await replay_service.get_replay("itest-game")
-    assert game.cast == ["whale", "owl"]
-    assert any(item.game_id == "itest-game" for item in summary)
-    assert await replay_service.count_replays() >= 1
-    assert game.winner == "wolves" and len(game.events) == 3
-
-    async with database.session() as sess:
-        row = await sess.get(GameRow, "itest-game")
-        event_rows = (await sess.execute(
-            select(EventRow).where(EventRow.game_id == "itest-game")
-        )).scalars().all()
-    assert row is not None and row.status == COMPLETED and row.winner == "wolves"
-    assert len(event_rows) == 3
-
-    # Round 4: a draw
-    # A draw has no winner and is a replay all the same (2026-10-17, game f2e944a3).
-    draw = [*_log(with_over=False), ev.GameOver(seq=3, day=3, winner=None)]
-    await repository.create_game("itest-draw", status=RUNNING)
-    await repository.record_events("itest-draw", draw)
-    await repository.complete_game("itest-draw", draw, n_humans=1)
-    assert (await replay_service.get_replay("itest-draw")).winner is None
-    assert any(item.game_id == "itest-draw"
-               for item in await replay_service.list_replays(limit=500, offset=0))
-
-    # Round 5: a game that lost a batch of events
-    # A batch was lost during play: completion marks the game dropped, not completed.
-    await repository.create_game("itest-short", status=RUNNING)
-    await repository.record_events("itest-short", _log()[:2])
-    await repository.complete_game("itest-short", _log(), n_humans=0)
-    async with database.session() as sess:
-        short = await sess.get(GameRow, "itest-short")
-    assert short is not None and short.status == DROPPED
-    assert short.error == "event log incomplete: 2 of 3 events stored, last seq 2"
-    with pytest.raises(ReplayNotFound):
-        await replay_service.get_replay("itest-short")
-
-    # Round 6: a completed row with a hole in its event log
-    # A row completed before the write-side check, with a hole: the read side refuses.
-    full = _log()
-    await repository.create_game(
-        "itest-holed", status=COMPLETED, finished_at=datetime.now(timezone.utc),
-        winner="wolves", days=3, n_events=2, n_humans=0, cast_role_counts={"wolf": 1})
-    await repository.record_events("itest-holed", [full[0], full[2]])
-    with pytest.raises(IncompleteReplay):
-        await replay_service.get_replay("itest-holed")
-    await database.close()
 
 
 def test_a_draw_is_a_replay_with_no_winner():

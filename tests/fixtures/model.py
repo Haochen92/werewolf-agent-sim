@@ -33,3 +33,23 @@ def scripted_model(monkeypatch):
         return ScriptedModels(random.Random(seed), spare)
 
     return install
+
+
+class RealModelRequested(AssertionError):
+    """Raised when code under test asks for a real chat model in a test that must make none."""
+
+
+@pytest.fixture
+def refuse_real_models(monkeypatch):
+    """Make every way of building a real chat model raise `RealModelRequested`, for the length
+    of the test. A test that passes its models in through the graph context should never reach
+    `create_chat_model`; if a code path it did not expect does (a session rebuilt without the
+    test's models, say), this turns what would be a paid call into a failure."""
+    from Agents import llm_factory
+    from Agents.llm_factory import accessors, chat
+
+    def refuse(model, *args, **kwargs):
+        raise RealModelRequested(f"a test asked for a real model: {model!r}")
+
+    for module in (llm_factory, accessors, chat):
+        monkeypatch.setattr(module, "create_chat_model", refuse)

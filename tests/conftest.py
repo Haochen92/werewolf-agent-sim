@@ -25,5 +25,7 @@ pytest_plugins = [
     "tests.fixtures.server",
     "tests.fixtures.model",
     "tests.fixtures.graph",
+    "tests.fixtures.database",
+    "tests.fixtures.collection",
     "tests.factories.events",
 ]

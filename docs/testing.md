@@ -36,10 +36,10 @@ claim itself, and the existing checks for it must still be able to fail:
 | An AI seat's prompt never contains another seat's private information | `tests/leak_test.py`, used by the engine tests and by `scripts/run_batch.py` |
 | Each night's actions are settled by the rules | `tests/engine` (the resolution and night tests) |
 | Every fact the deduction engine writes into a prompt is true | `tests/engine/deduction` |
-| A player's own API key is never written out | `tests/server/test_byok.py` |
+| A player's own API key is never written out | `tests/server/test_byok.py` (the error text, the crash report, the model clients); `tests/server/integration/test_planted_key.py` (every table of the database, after a whole game and after a game killed by a provider's error) |
 | A prompt changes only on purpose | The prompt golden (section 4) |
 | The server and the browser agree on the API | `tests/server/test_openapi_snapshot.py` |
-| A game survives a server restart | `tests/server/test_durability.py`, against test doubles only (a test double is any replacement for a real dependency in a test: a stub, a mock or a fake) |
+| A game survives a server restart | `tests/server/test_durability.py`, against test doubles (a test double is any replacement for a real dependency in a test: a stub, a mock or a fake); `tests/server/integration/test_restart.py`, a real game stopped and recovered on a real Postgres database |
 
 `run_leak_tests` in `tests/leak_test.py` runs seven checks over every prompt of a game. The
 file holds more checks than these seven; the payload leak tests in `tests/engine` call the
@@ -58,7 +58,7 @@ part of the test suite, and cost money: ask before running one.
 | Command | What it runs | Time |
 |---|---|---|
 | `poetry run pytest tests/<folder>` or a single file | The tests for the part being changed | Seconds to a few minutes |
-| `poetry run pytest` | The quick default set: everything except the tests marked `contract` and those marked `slow` | About 3 minutes (3 min 12 s on 2026-11-18) |
+| `poetry run pytest` | The quick default set: everything except the tests marked `contract` and those marked `slow`. It includes the `integration` tests, so Docker must be running | About 3 minutes (3 min 12 s on 2026-11-18) |
 | `poetry run pytest -m "not contract"` | The full local run: the default set and the `slow` tests | About 9 to 10 minutes (9 min 22 s on 2026-11-18, on a quiet machine) |
 | `poetry run pytest -m slow` | The `slow` tests alone: the ten deduction tests over random games | About 6 minutes (the ten took 6 min 9 s of the full run on 2026-11-18) |
 | `poetry run pytest -m contract` | Tests that call paid models with real credentials | Costs money. Never run without the owner's agreement |
@@ -73,7 +73,7 @@ part of the test suite, and cost money: ask before running one.
 | `tests/memory` | Lessons: extraction, duplicates, storage, retrieval, and the schemas of lessons and extraction (seven files moved here from `tests/engine` on 2026-11-18) |
 | `tests/evaluation` | The evaluation code |
 | `tests/server` | The game session, the API, the translator, durability |
-| `tests/<component>/integration/` | Tests that need a service started for the test run, such as a Postgres container; each carries `@pytest.mark.integration`. None exist yet |
+| `tests/<component>/integration/` | Tests that need a service started for the test run. Today the service is a Postgres database in a container. `tests/server/integration` holds the replay storage round trip, the restart test and the planted-key test; `tests/memory/integration` holds the consolidation database tests and the served-game extraction tests. Every test in a folder named `integration` gets the `integration` marker from `tests/fixtures/collection.py`, so the files do not mark themselves |
 | `tests/contract` | Paid checks of an outside provider, such as whether each menu model still returns valid structured output; each carries `@pytest.mark.contract` |
 | `tests/fixtures` | Fixtures, one module per resource, registered in `tests/conftest.py`; the golden files |
 | `tests/factories` | Functions that build test data. Import them; they are not fixtures |
@@ -117,13 +117,36 @@ another test file: a helper that two test files need goes into `tests/factories`
   its end on the models given (the fixture's `ScriptedModels`) and returns the final state, the
   events the translator made and the night branches that reported.
 
+**Shared setup for a real database.** Nothing here is autouse: the container starts only when a
+test asks for a database, and a run that selects no such test needs no Docker.
+
+- `tests/fixtures/database.py`: `postgres_container` starts one Postgres container for the run
+  (the image production's database runs, `pgvector/pgvector:pg17`) and stops it at the end. If
+  Docker cannot be reached, the test that asked for it fails with a message saying so; it is not
+  skipped. `postgres_dsn` gives each test a fresh, empty database in that container, as a
+  `postgresql://` address, and drops it after the test. `server_tables_dsn` is the same database
+  with the server's tables made by its migrations (`alembic upgrade head`), which also seed the
+  puppet and model catalogues. `sqlalchemy_url(dsn)` turns an address into the form the server's
+  SQLAlchemy engine takes. Each test gets its own database, not a rolled-back transaction,
+  because the checkpoint saver, the lesson store and the game repository commit on connections
+  of their own.
+- `tests/factories/served_game.py`: `open_server(dsn)` builds what the server's startup builds
+  (the graph runtime with the Postgres checkpoint saver and the lesson store, the game
+  repository, the live game registry), and `stop()` shuts it down the way the server does. The
+  same file has the steps of playing a hosted game: put the test's models in a session's graph
+  context, wait for a human seat's question, hand every question to the seat's agent until the
+  game ends.
+- `tests/fixtures/model.py` also has `refuse_real_models`: while it is in use, building any
+  real chat model raises. The integration tests that play a game use it, so a code path that
+  misses the test's models fails instead of calling a provider.
+
 **Markers.** A marker is a label on a test that a command can select or leave out with `-m`.
 
 | Marker | What it means | In the quick default |
 |---|---|---|
 | `slow` | The test takes over 20 seconds in the full run on the development machine. The 20 seconds is a starting value | No |
 | `timing` | The test waits real time and asserts a time window, so it can fail on a slow machine | Yes |
-| `integration` | The test needs a service started for the run | Yes, when one exists |
+| `integration` | The test needs a service started for the run (a Postgres container, so Docker must be running) | Yes |
 | `contract` | The test calls a real outside provider and costs money | No |
 
 Mark a new test `slow` when it passes the 20-second line, and run `-m "not contract"` before
@@ -136,8 +159,10 @@ automatically.
 
 - No call to a real model, a real network service or the live database in the default set.
   `tests/conftest.py` switches tracing off and fixes the model list; do not undo that in a test.
-- A test that needs a real Postgres database is skipped when its address is not set. It must
-  never write to the database that the development `.env` points at.
+- A test that needs a real Postgres database takes it from the fixtures in
+  `tests/fixtures/database.py`, which put it in a container started for the run. No test reads
+  the development database address (`WW_POSTGRES_DSN` in `.env`), and no test may write to that
+  database.
 - Fix the seed of anything random. If code under test runs on several threads, do not let the
   result depend on which thread draws from a shared generator first: either give the test a
   situation where the order cannot matter, or assert something that holds in every order.
@@ -160,6 +185,15 @@ automatically.
   today's value fails when the setting changes and says nothing about the code. The cost-guard
   tests in `tests/memory/test_store_ops.py` are the example: they set the models explicitly and
   assert how those models reach the three environment variables a tick sets.
+
+**Names of fixtures and test doubles.**
+
+- A fixture that returns a real object gets a plain name: `api_client`, `game_graph`.
+- A fixture that returns an object made with the mock library is named `mock_<thing>`.
+- A hand-written test double is a class named `Fake<Thing>`. When it exists for one behaviour, the
+  name says which: `HangingGraph`, `FailingStore`, `RecordingGameRepository`.
+- A test double used in one file only starts with an underscore.
+- A stand-in for a model is called a model, not an LLM: `ScriptedModel`, `_StalledModel`.
 
 ## 4. Goldens
 
