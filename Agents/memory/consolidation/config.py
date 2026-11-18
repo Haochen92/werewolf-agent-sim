@@ -3,8 +3,8 @@
 The credit system itself is not configurable here by design (owner ruling 2026-07-21): production
 ships exactly one grading rule — the ten-seat table of plan §9.6 item 10 — and it is hard-coded in
 ``grading``/``credit_rules``/``credit`` (the conversion channel was dropped with the port: it credited
-town day lookups, which no longer happen). The knobbed legacy-capable variants
-survive only in ``evaluation/src/loop/`` so the frozen research runs stay reproducible. What IS
+town day lookups, which no longer happen). The knobbed legacy-capable variants lived in
+``evaluation/src/loop/``, removed on 2026-11-18 and kept in the git tag pre-test-cut-2026-11-18. What IS
 configurable is the machinery around the rule: prune/evict thresholds, synthesis cadence, decay
 windows, models — the held-out-validated production params that migrated from the loop harness. One
 exception to the grading being fixed: which memory-off base a follow is compared with

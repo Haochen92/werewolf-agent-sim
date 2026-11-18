@@ -1,8 +1,9 @@
 """Production credit rules — the fixed grading, hard-coded (deterministic, zero spend).
 
 Ten-seat since the port of 2026-10-13 (plan §9.6; the per-decision grades are ``grading``). The
-nine-seat grader this module graduated from stays in ``evaluation/src/loop/credit_backfill.py`` with
-its knobs, so the frozen research runs still reproduce; production no longer mirrors it.
+nine-seat grader this module graduated from (``evaluation/src/loop/credit_backfill.py``, with its
+knobs) was removed on 2026-11-18 and is kept in the git tag pre-test-cut-2026-11-18; production no
+longer mirrors it.
 
 Sourcing contract (the production event stream): a window is a glob of game-record JSONL dumps,
 each record carrying ``roles`` / ``day_resolutions`` / ``night_resolutions`` and an

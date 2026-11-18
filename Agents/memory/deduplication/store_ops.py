@@ -198,8 +198,8 @@ def _store_new_observation(
         net_verdict=getattr(observation, "net_verdict", ""),
         # v6 gate enums + criticality + full dimension dump, mirroring the offline serializer
         # (reextract_cells.py). The LIVE post-game extractor now emits v6 cells, so these read
-        # real values; getattr(..., None) keeps the path tolerant of the remaining OFFLINE v5
-        # store-builders (build_nethorizon_store / augment) that still produce v5 Observations.
+        # real values; getattr(..., None) keeps the path tolerant of v5 Observations (the OFFLINE
+        # v5 store-builders that produced them were removed on 2026-11-18).
         # source_game_winner / role_faction_won need the game outcome + role, which this signature
         # doesn't carry — left to default None (as on legacy entries); they are soft rerank
         # signals, never dedup gates.

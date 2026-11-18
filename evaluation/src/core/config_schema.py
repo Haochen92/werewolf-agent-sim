@@ -300,7 +300,8 @@ _TAGGER_MODE_DEFAULT_GLOB = {
 
 
 class TaggerEvalConfig(_DescribedConfig):
-    """Config for the discussion-tagger validation runner (``cli_runner/discussion_tagger_eval.py``).
+    """Config for the discussion-tagger validation runner (``cli_runner/discussion_tagger_eval.py``,
+    removed on 2026-11-18 with ``instrument_validation/tagger/``; nothing reads this class now).
 
     One runner, three modes — each reproducing a frozen ``evidence/memory_system/v7`` apparatus:
     ``accuracy`` (per-field tag correctness vs a deterministic self-claim detector + faction

@@ -1,6 +1,11 @@
-"""Guard tests for the compounding loop's (b) consolidation decay levers:
-  - scope-aware SP eviction (§10b applicability funnel): override-dominant evicts, not_relevant spared;
-  - observation decay by age x frequency (old AND rare drop; old-but-recurring + recent kept).
+"""Tests of the consolidation store-ops (``Agents/memory/consolidation/store_ops.py``): scope-aware
+lesson eviction, observation decay, the new-clusters-only synthesis gate, the SP dedup gating, the
+track record and its lineage, the per-cell contested-lane cap and the gate-before-cluster ordering.
+
+Ported on 2026-11-18 from ``tests/evaluation/test_loop_consolidate.py``, which tested the research
+copy (``evaluation/src/loop/consolidate.py`` with ``LoopConfig``) before it was removed. The test
+names and assertions are the original ones; only the imports, the config class (``TickConfig``) and
+the call signatures that differ in production were adapted.
 """
 
 from __future__ import annotations
@@ -11,32 +16,35 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from evaluation.src.loop import consolidate as con
-from evaluation.src.loop.config import LoopConfig
-from evaluation.src.loop.consolidate import _evict_ok, _synth_cluster, evict_observations, prune_and_evict
-from evaluation.src.loop.driver import _stamp_obs_generations
+from Agents.memory.consolidation import store_ops as con
+from Agents.memory.consolidation.config import TickConfig
+from Agents.memory.consolidation.store_ops import _evict_ok, _synth_cluster, evict_observations, prune_and_evict
+from Agents.memory.consolidation.tick import _stamp_obs_generations
 
 
 def _sp(follow=0, retrieved=0, pos=0, neg=0, override=0, not_relevant=0, action="x"):
-    return {"value": {"follow_count": follow, "retrieved_count": retrieved, "positive_count": pos,
+    # Production's prune_and_evict lists every change by the record's key, so each record carries one
+    # (every record in a real store does).
+    return {"key": action,
+            "value": {"follow_count": follow, "retrieved_count": retrieved, "positive_count": pos,
                       "negative_count": neg, "override_count": override,
                       "not_relevant_count": not_relevant, "action": action}}
 
 
 class ScopeAwareEvictTests(unittest.TestCase):
     def test_override_dominant_is_evictable(self) -> None:
-        self.assertTrue(_evict_ok({"override_count": 9, "not_relevant_count": 1}, LoopConfig()))
+        self.assertTrue(_evict_ok({"override_count": 9, "not_relevant_count": 1}, TickConfig()))
 
     def test_not_relevant_dominant_is_spared(self) -> None:
         # the situation didn't hold = a retrieval/scoping miss, NOT bad content
-        self.assertFalse(_evict_ok({"override_count": 1, "not_relevant_count": 9}, LoopConfig()))
+        self.assertFalse(_evict_ok({"override_count": 1, "not_relevant_count": 9}, TickConfig()))
 
     def test_no_verdict_signal_is_spared(self) -> None:
         # retrieved a lot but no override/not_relevant = coverage gap, not evidence of badness
-        self.assertFalse(_evict_ok({"override_count": 0, "not_relevant_count": 0}, LoopConfig()))
+        self.assertFalse(_evict_ok({"override_count": 0, "not_relevant_count": 0}, TickConfig()))
 
     def test_legacy_blunt_evict_ignores_scope(self) -> None:
-        cfg = LoopConfig(evict_require_override=False)
+        cfg = TickConfig(evict_require_override=False)
         self.assertTrue(_evict_ok({"override_count": 0, "not_relevant_count": 9}, cfg))
 
     def test_prune_and_evict_partition(self) -> None:
@@ -47,7 +55,7 @@ class ScopeAwareEvictTests(unittest.TestCase):
             _sp(follow=25, pos=20, neg=1, retrieved=30, action="winner->keep"),
         ]}
         base = {"serial_killer/day_vote": [-0.1, 100]}
-        stats = prune_and_evict(ns, base, LoopConfig())
+        stats = prune_and_evict(ns, base, TickConfig())
         self.assertEqual(stats["pruned"], 1)
         self.assertEqual(stats["evicted"], 1)
         self.assertEqual(stats["spared"], 1)
@@ -59,14 +67,14 @@ class ScopeAwareEvictTests(unittest.TestCase):
 
     def test_positive_lift_never_pruned(self) -> None:
         ns = {"strategy_points/villager/day_vote": [_sp(follow=20, pos=18, neg=1, action="good")]}
-        stats = prune_and_evict(ns, {"villager/day_vote": [0.0, 50]}, LoopConfig())
+        stats = prune_and_evict(ns, {"villager/day_vote": [0.0, 50]}, TickConfig())
         self.assertEqual(stats["pruned"], 0)
         self.assertEqual(stats["kept"], 1)
 
     def test_proven_sp_exemption_protects_thin_positive(self) -> None:
         # edge 1: a rare-but-proven SP (positive lift, only 4 follows) survives even an AGGRESSIVE prune
         # (tau>=0, min_follow lowered) that would otherwise catch it — positive evidence beats deletion.
-        cfg = LoopConfig(prune_tau=0.5, prune_min_follow=2, protect_min_follow=2)
+        cfg = TickConfig(prune_tau=0.5, prune_min_follow=2, protect_min_follow=2)
         ns = {"strategy_points/villager/day_vote": [
             _sp(follow=4, pos=2, neg=1, retrieved=20, action="rare_good"),   # lift +0.11 -> protected
         ]}
@@ -76,7 +84,7 @@ class ScopeAwareEvictTests(unittest.TestCase):
 
     def test_exemption_below_min_follow_not_protected(self) -> None:
         # a single-follow positive SP is below protect_min_follow=2 -> NOT exempt (one follow is noise)
-        cfg = LoopConfig(prune_tau=0.5, prune_min_follow=1, protect_min_follow=2)
+        cfg = TickConfig(prune_tau=0.5, prune_min_follow=1, protect_min_follow=2)
         ns = {"strategy_points/villager/day_vote": [_sp(follow=1, pos=1, neg=0, action="one_follow")]}
         stats = prune_and_evict(ns, {"villager/day_vote": [0.0, 50]}, cfg)
         self.assertEqual(stats["pruned"], 1)
@@ -84,7 +92,7 @@ class ScopeAwareEvictTests(unittest.TestCase):
 
 class ObservationDecayTests(unittest.TestCase):
     def _run(self, recs, gen_map, current_gen, cfg=None, reinforced_map=None):
-        cfg = cfg or LoopConfig()
+        cfg = cfg or TickConfig()
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "observations.json"
             p.write_text(json.dumps({"namespaces": {"observations/villager/day_vote": recs}}))
@@ -141,15 +149,16 @@ class ObservationDecayTests(unittest.TestCase):
     def test_keep_everything_with_huge_min_age(self) -> None:
         # obs_evict_max_count is gone; the "keep everything" config is a min_age larger than the run.
         recs = [{"key": "old_rare", "value": {"observation_count": 1}}]
-        cfg = LoopConfig(obs_evict_min_age=1000)
+        cfg = TickConfig(obs_evict_min_age=1000)
         stats, survived = self._run(recs, {"old_rare": 0}, current_gen=9, cfg=cfg)
         self.assertEqual(stats["obs_dropped"], 0)
         self.assertEqual(survived, ["old_rare"])
 
 
 class StampObsGenerationsTests(unittest.TestCase):
-    """The driver sidecar that clocks obs decay: first-seen is set once; a RISE in observation_count for a
-    tracked key advances the last-reinforced gen; legacy flat-int sidecars load without spurious bumps."""
+    """The tick's decay clocks: first-seen is set once; a RISE in observation_count for a tracked key
+    advances the last-reinforced gen. Production keeps the clocks in Postgres (``db.load_obs_sidecar``)
+    and passes them in as dicts that ``_stamp_obs_generations`` updates in place."""
 
     def _store(self, d: Path, recs) -> Path:
         (d / "observations.json").write_text(
@@ -159,44 +168,59 @@ class StampObsGenerationsTests(unittest.TestCase):
     def test_count_bump_advances_reinforced_gen(self) -> None:
         with tempfile.TemporaryDirectory() as t:
             store = self._store(Path(t), [{"key": "k", "value": {"observation_count": 1}}])
-            sidecar = Path(t) / "sidecar.json"
-            first_seen, reinforced = _stamp_obs_generations(store, 1, sidecar)
+            first_seen: dict = {}
+            reinforced: dict = {}
+            counts: dict = {}
+            _stamp_obs_generations(store, 1, first_seen, reinforced, counts)
             self.assertEqual((first_seen["k"], reinforced["k"]), (1, 1))
             # count rises to 3 at gen 4 -> reinforced advances, first-seen unchanged
             self._store(Path(t), [{"key": "k", "value": {"observation_count": 3}}])
-            first_seen, reinforced = _stamp_obs_generations(store, 4, sidecar)
+            _stamp_obs_generations(store, 4, first_seen, reinforced, counts)
             self.assertEqual(first_seen["k"], 1)
             self.assertEqual(reinforced["k"], 4)
             # no further rise at gen 6 -> reinforced stays at 4
-            first_seen, reinforced = _stamp_obs_generations(store, 6, sidecar)
+            _stamp_obs_generations(store, 6, first_seen, reinforced, counts)
             self.assertEqual(reinforced["k"], 4)
-
-    def test_legacy_flat_int_sidecar_loads_without_spurious_reinforcement(self) -> None:
-        with tempfile.TemporaryDirectory() as t:
-            store = self._store(Path(t), [{"key": "k", "value": {"observation_count": 5}}])
-            sidecar = Path(t) / "sidecar.json"
-            sidecar.write_text(json.dumps({"k": 0}))  # legacy flat {key: first_seen}
-            first_seen, reinforced = _stamp_obs_generations(store, 3, sidecar)
-            self.assertEqual(first_seen["k"], 0)
-            self.assertEqual(reinforced["k"], 0)   # seeding the count is NOT a reinforcement
-            raw = json.loads(sidecar.read_text())
-            self.assertEqual(set(raw), {"first_seen", "reinforced", "counts"})
-            self.assertEqual(raw["counts"]["k"], 5)
 
 
 class CostGuardTests(unittest.TestCase):
-    """Pro-2.5 cost guard: every paid model slot the loop pins must be the cheap tier, never gemini-2.5-pro.
-    Regression guard for the $55 run (in-process synth/tagger + dedup fallback silently hitting pro)."""
+    """Cost guard: every paid model slot a tick pins comes from the tick's own config, so no slot
+    falls back to the factory's expensive default. Regression guard for the $55 run, where the
+    in-process synthesis, the tagger and the dedup fallback silently used gemini-2.5-pro.
 
-    def test_env_pins_no_pro_2_5(self) -> None:
-        env = LoopConfig().env()
+    The tests set the models explicitly and assert how they reach the three variables. They do not
+    assert the config's default model names, which change whenever a model is replaced."""
+
+    PINNED = ("GOOGLE_GENAI_PRO_MODEL", "GOOGLE_GENAI_PRO_BACKUP_MODEL", "MEMORY_BATCH_DEDUP_MODEL")
+
+    def test_a_claude_synthesis_model_pins_every_factory_slot_to_the_dedup_model(self) -> None:
+        # Arrange: a Claude synthesis model is called directly, not through the factory
+        cfg = TickConfig(model="claude-synth-x", dedup_model="cheap-dedup-x")
+
+        # Act
+        env = cfg.env()
+
+        # Assert: all three slots are pinned, and each to the dedup model
+        self.assertEqual(set(env), set(self.PINNED))
+        self.assertEqual(set(env.values()), {"cheap-dedup-x"})
+
+    def test_another_synthesis_model_is_pinned_into_the_factorys_pro_slots(self) -> None:
+        # Arrange
+        cfg = TickConfig(model="other-synth-x", dedup_model="cheap-dedup-x")
+
+        # Act
+        env = cfg.env()
+
+        # Assert: the pro slots carry the synthesis model, the dedup slot the dedup model
+        self.assertEqual(env["GOOGLE_GENAI_PRO_MODEL"], "other-synth-x")
+        self.assertEqual(env["GOOGLE_GENAI_PRO_BACKUP_MODEL"], "other-synth-x")
+        self.assertEqual(env["MEMORY_BATCH_DEDUP_MODEL"], "cheap-dedup-x")
+
+    def test_the_default_config_never_pins_the_model_of_the_55_dollar_run(self) -> None:
+        env = TickConfig().env()
+
         self.assertNotIn("gemini-2.5-pro", env.values())
-        self.assertEqual(env["GOOGLE_GENAI_PRO_MODEL"], "gemini-3.1-flash-lite")
-        self.assertEqual(env["GOOGLE_GENAI_PRO_BACKUP_MODEL"], "gemini-3.1-flash-lite")
-        self.assertEqual(env["MEMORY_BATCH_DEDUP_MODEL"], "gemini-3.1-flash-lite")
-
-    def test_dedup_model_default_is_cheap(self) -> None:
-        self.assertNotEqual(LoopConfig().dedup_model, "gemini-2.5-pro")
+        self.assertNotEqual(TickConfig().dedup_model, "gemini-2.5-pro")
 
 
 class NewClustersOnlySynthTests(unittest.TestCase):
@@ -242,7 +266,7 @@ class SpDedupGatingTests(unittest.TestCase):
                  patch.object(con, "evict_observations", return_value={}), \
                  patch.object(con, "synthesize", return_value=({"added": 2}, {})), \
                  patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
-                con.consolidate(store, LoopConfig(sp_dedup=True, synth_every_k_gens=1),
+                con.consolidate(store, TickConfig(sp_dedup=True, synth_every_k_gens=1),
                                 current_gen=1, obs_gen_map={})
             md.assert_called_once()
 
@@ -253,7 +277,7 @@ class SpDedupGatingTests(unittest.TestCase):
                  patch.object(con, "evict_observations", return_value={}), \
                  patch.object(con, "synthesize", return_value=({"added": 0}, {})), \
                  patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
-                con.consolidate(store, LoopConfig(sp_dedup=True, synth_every_k_gens=1),
+                con.consolidate(store, TickConfig(sp_dedup=True, synth_every_k_gens=1),
                                 current_gen=1, obs_gen_map={})
             md.assert_not_called()
 
@@ -265,7 +289,7 @@ class SpDedupGatingTests(unittest.TestCase):
                  patch.object(con, "evict_observations", return_value={}), \
                  patch.object(con, "synthesize", return_value=({"added": 9}, {})) as ms, \
                  patch.object(con, "_dedup_strategy_points", return_value={"ran": True}) as md:
-                con.consolidate(store, LoopConfig(sp_dedup=True, synth_every_k_gens=2),
+                con.consolidate(store, TickConfig(sp_dedup=True, synth_every_k_gens=2),
                                 current_gen=1, obs_gen_map={})
             ms.assert_not_called()   # synth skipped on gen 1 (1 % 2 != 0)
             md.assert_not_called()
@@ -283,8 +307,25 @@ class _FakeSP:
         return {"action_phase": self.action_phase}
 
 
+def _fake_synthesize_cluster_sps(role, phase, live, items, max_retries=1, track_record="", model=None,
+                                 outcome=None):
+    """The synthesis call stub. Production passes ``model`` and ``outcome`` as well."""
+    return [_FakeSP()]
+
+
+def _fake_format_cluster(cluster_keys, items_by_key, outcome="verdict"):
+    """Production writes each synthesis call's rendered cluster to ``synthesis_log.jsonl``; the stub
+    observations here are bare keys, so the rendering is stubbed too."""
+    return ""
+
+
 class TrackRecordLineageTests(unittest.TestCase):
-    """§0.3: _track_record returns the keys of exactly the SPs whose rows it rendered (the lineage set)."""
+    """§0.3: _track_record returns the keys of exactly the SPs whose rows it rendered (the lineage set).
+    Production takes the base rates and the cell (each SP's own base) instead of one base number;
+    a cell base of 0.0 reproduces the original ``base=0.0``."""
+
+    CELL = "villager/day_vote"
+    BASES = {CELL: [0.0, 100]}
 
     def _rec(self, key, follow, pos=0, neg=0, action="a"):
         return {"key": key, "value": {"follow_count": follow, "positive_count": pos,
@@ -296,7 +337,7 @@ class TrackRecordLineageTests(unittest.TestCase):
             self._rec("k_lo", follow=2, pos=2, neg=0, action="too_few"),    # below min_follow -> excluded
             self._rec("k_mid", follow=8, pos=5, neg=2, action="ok"),        # qualifies
         ]
-        text, keys = con._track_record(recs, base=0.0, min_follow=5)
+        text, keys = con._track_record(recs, self.BASES, self.CELL, min_follow=5)
         self.assertEqual(set(keys), {"k_hi", "k_mid"})
         self.assertNotIn("k_lo", keys)
         self.assertEqual(keys[0], "k_hi")   # keys follow the rendered (lift-descending) row order
@@ -304,7 +345,7 @@ class TrackRecordLineageTests(unittest.TestCase):
 
     def test_empty_when_none_qualify(self) -> None:
         recs = [self._rec("k", follow=1, pos=1)]   # single follow < min_follow
-        self.assertEqual(con._track_record(recs, base=0.0, min_follow=5), ("", []))
+        self.assertEqual(con._track_record(recs, self.BASES, self.CELL, min_follow=5), ("", []))
 
 
 class DistilledFromSynthTests(unittest.TestCase):
@@ -326,9 +367,9 @@ class DistilledFromSynthTests(unittest.TestCase):
                 patch.object(synth_mod, "fetch_observations_for_synth", lambda store, nskey: ["o1"]), \
                 patch.object(synth_mod, "cluster_observations_for_synth",
                              lambda store, nskey, cfgd, items=None, seed_keys=None: (["o1"], [["o1"]])), \
-                patch.object(synth_mod, "synthesize_cluster_sps",
-                             lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
-            con.synthesize(Path(t), ns, base, LoopConfig(incremental=False))
+                patch.object(synth_mod, "synthesize_cluster_sps", _fake_synthesize_cluster_sps), \
+                patch.object(synth_mod, "_format_cluster", _fake_format_cluster):
+            con.synthesize(Path(t), ns, base, TickConfig(incremental=False))
         return [r for r in ns["strategy_points/villager/day_vote"] if "distilled_from" in r["value"]]
 
     def test_new_sp_lists_qualifying_source_keys(self) -> None:
@@ -385,10 +426,10 @@ class CellSpCapTests(unittest.TestCase):
                 patch.object(synth_mod, "fetch_observations_for_synth", lambda store, nskey: ["o1"]), \
                 patch.object(synth_mod, "cluster_observations_for_synth",
                              lambda store, nskey, cfgd, items=None, seed_keys=None: (["o1"], [["o1"]])), \
-                patch.object(synth_mod, "synthesize_cluster_sps",
-                             lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
+                patch.object(synth_mod, "synthesize_cluster_sps", _fake_synthesize_cluster_sps), \
+                patch.object(synth_mod, "_format_cluster", _fake_format_cluster):
             stats, _ = con.synthesize(Path(t), ns, base,
-                                      LoopConfig(incremental=False, synth_cell_unproven_cap=cap))
+                                      TickConfig(incremental=False, synth_cell_unproven_cap=cap))
         return stats
 
     def test_full_proven_lane_still_synthesizes(self) -> None:
@@ -443,26 +484,22 @@ class SynthesizeGateOrderingTests(unittest.TestCase):
                 patch.object(persist_mod, "seed_memory_from_json_files_cached", lambda **kw: None), \
                 patch.object(synth_mod, "fetch_observations_for_synth", lambda store, nskey: fetch_items), \
                 patch.object(synth_mod, "cluster_observations_for_synth", cluster_mock), \
-                patch.object(synth_mod, "synthesize_cluster_sps",
-                             lambda role, phase, live, items, max_retries=1, track_record="": [_FakeSP()]):
+                patch.object(synth_mod, "synthesize_cluster_sps", _fake_synthesize_cluster_sps), \
+                patch.object(synth_mod, "_format_cluster", _fake_format_cluster):
             con.synthesize(Path(t), ns, base, cfg)
         return cluster_mock
 
     def test_capped_cell_never_clusters(self) -> None:
         m = self._cluster_mock_after_synth(
-            n_sps=12, cfg=LoopConfig(incremental=False, synth_cell_unproven_cap=12), fetch_items=["o1"])
+            n_sps=12, cfg=TickConfig(incremental=False, synth_cell_unproven_cap=12), fetch_items=["o1"])
         m.assert_not_called()
 
     def test_quiet_cell_never_clusters(self) -> None:
         # incremental, no new obs (empty fetch => new_obs 0 < synth_min_new_obs), not depleted (>=floor SPs)
-        m = self._cluster_mock_after_synth(n_sps=3, cfg=LoopConfig(incremental=True), fetch_items=[])
+        m = self._cluster_mock_after_synth(n_sps=3, cfg=TickConfig(incremental=True), fetch_items=[])
         m.assert_not_called()
 
     def test_admitted_cell_clusters_once(self) -> None:
         m = self._cluster_mock_after_synth(
-            n_sps=3, cfg=LoopConfig(incremental=False, synth_cell_unproven_cap=12), fetch_items=["o1"])
+            n_sps=3, cfg=TickConfig(incremental=False, synth_cell_unproven_cap=12), fetch_items=["o1"])
         m.assert_called_once()
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -46,7 +46,7 @@ from evaluation.src.data.sources.replay_api import load_replays as _load_replays
 from evaluation.src.data.sources.replay_api import record_from_replay  # noqa: E402,F401
 from evaluation.src.judges.config import DEFAULT_JUDGE_MODEL, get_judge_llm  # noqa: E402
 from evaluation.src.judges.role_fact_read import build_fact_sheet  # noqa: E402
-from evaluation.src.loop.decision_scoring import THREAT_ROLES  # noqa: E402
+from Agents.memory.consolidation.decision_scoring import THREAT_ROLES  # noqa: E402
 
 # The wolves' and the lone killer's roles, nine-seat and ten-seat alike.
 EVIL = THREAT_ROLES

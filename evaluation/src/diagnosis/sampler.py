@@ -48,7 +48,7 @@ from pydantic import BaseModel, Field
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.data.sampling import classify_game_phase, sample_cases
 from evaluation.src.data.sources.sidecar import LocalCaseSource
-from evaluation.src.loop.decision_scoring import (
+from Agents.memory.consolidation.decision_scoring import (
     REPLAYABLE_DECEIVER_ROLES,
     query_criticality,
     score_night_target,

@@ -44,7 +44,7 @@ from Agents.game_config import GameConfig
 from Agents.memory.retrieval.dimension_gating import _alive_bucket
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.data.sources.sidecar import LocalCaseSource
-from evaluation.src.loop.decision_scoring import query_criticality
+from Agents.memory.consolidation.decision_scoring import query_criticality
 
 TOWN_ROLES = frozenset({"villager", "healer", "investigator", "vigilante"})
 

@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from evaluation.src.loop.merge import collect_new_obs, merge_new_obs
+from Agents.memory.consolidation.obs_fold import collect_new_obs, merge_new_obs
 
 _NS = "observations/villager/day_vote"
 

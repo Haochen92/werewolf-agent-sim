@@ -1,6 +1,6 @@
 """Override validity on the ten-seat game: does an agent's "override" verdict pick out the bad lessons?
 
-The June check (`evaluation/src/instrument_validation/credit/g3a_verdict_validity.py`, nine-seat) asked
+The June check (`evaluation/src/instrument_validation/credit/g3a_verdict_validity.py`, nine-seat, removed 2026-11-18) asked
 whether lessons could be decayed on the agent's own verdict. It failed because agents almost never
 overrode (town day votes: 3 overrides against 334 follows). This runner asks the same two questions of
 ten-seat games, with the live credit rules (`Agents/memory/consolidation/credit_rules.py`):

@@ -3,9 +3,9 @@
 The production form of the v7 compounding loop's memory machinery, ported to the ten-seat game on
 2026-10-13 (plan §9.6): fixed-rule credit (``grading`` for each decision's grade, ``credit_rules``/
 ``credit`` for the ledgers, no rule switches), the consolidation store-ops (``store_ops``), Postgres
-persistence (``db``), and the batch tick entry (``tick``). The knobbed eval-era ancestors stay in
-``evaluation/src/loop/`` for frozen-run reproduction; ``decision_scoring`` and ``obs_fold`` moved
-here wholesale (eval imports them back through shims).
+persistence (``db``), and the batch tick entry (``tick``). The knobbed eval-era ancestors in
+``evaluation/src/loop/`` were removed on 2026-11-18 (the git tag pre-test-cut-2026-11-18 keeps them
+for frozen-run reproduction); ``decision_scoring`` and ``obs_fold`` moved here wholesale.
 """
 
 from Agents.memory.consolidation.config import TickConfig  # noqa: F401

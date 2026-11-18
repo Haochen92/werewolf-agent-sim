@@ -1,4 +1,4 @@
-"""The public-census criticality math (Agents/board_clocks.py): the census subtraction, the three
+"""The public-census criticality math (Agents/rules/board_clocks.py): the census subtraction, the three
 faction clocks, and the invariant that made the 2026-07-11 promotion sound — the census-derived
 criticality must equal the true-role-map criticality (deaths reveal roles truthfully, so the two
 count paths cannot diverge). No LLM, pure fixtures."""
@@ -9,7 +9,7 @@ from Agents.rules.board_clocks import (
     criticality_from_counts,
 )
 from Agents.schemas.roles import lineup
-from evaluation.src.loop.decision_scoring import query_criticality
+from Agents.memory.consolidation.decision_scoring import query_criticality
 
 
 def test_alive_role_counts_subtracts_revealed_dead():

@@ -5,9 +5,8 @@ The read side for the whole-game run records that ``run_batch`` writes (one JSON
 from ``sources/sidecar.py``, which reads the per-game eval-case sidecars nested under
 ``batch_results/eval_cases/``: this module reads the top-level game logs, sidecar reads the cases.
 
-Extracted because the deterministic $0 audits (``audits/``), the instrument-validation proxy runners
-(``instrument_validation/proxies`` + its ``metrics_common``), and the
-``studies/investigator_transmission`` runner each hand-rolled the same
+Extracted because the deterministic $0 audits (``audits/``) and the runners removed on 2026-11-18
+(``instrument_validation/proxies`` and ``studies/investigator_transmission``) each hand-rolled the same
 glob → read lines → ``json.loads`` → filter ``status == "success"`` loop; kept in one place so the
 "what counts as a loadable record" rule can't silently drift between them.
 """

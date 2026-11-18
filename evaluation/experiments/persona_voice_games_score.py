@@ -1,7 +1,7 @@
 """Score the persona-voice before/after games (evaluation/experiments/persona_voice_games.py): talk, the
 reads, the votes, per arm, paired by game id. No model call.
 
-Reads are scored as the read ledger scores them (evaluation/src/loop/read_ledger.py: a committed read
+Reads are scored as the read ledger scores them (evaluation/src/loop/read_ledger.py, removed 2026-11-18: a committed read
 against the true role, Brier at the confidence's coarse probability, 'unclear' counted apart), with the
 ten-seat knowledge mask: a pack seat's read on its packmate is not a read. Sides are the role sheet's
 (town, wolves, lone killer, neutral).

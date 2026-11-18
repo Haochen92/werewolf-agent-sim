@@ -1,6 +1,6 @@
 """Ten-seat win check: which play-quality scores go with their side winning on the ten-seat game?
 
-The nine-seat check (`evaluation/src/instrument_validation/proxies/proxy_win_monotonicity.py`, June
+The nine-seat check (`evaluation/src/instrument_validation/proxies/proxy_win_monotonicity.py`, removed 2026-11-18, June
 2026, and the July audit on 180 games) correlated each score with its own side's win. None of that
 carries over to the ten-seat game, whose cast, roles and win conditions differ, so no score is named
 in `VALIDATED_ON_TEN_SEAT_METRICS` (`Agents/compute_metrics.py`). This runner asks the same question

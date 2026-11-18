@@ -8,7 +8,8 @@ AFTER the observation tail for the upcoming dual strategy-points extraction.
 
 Built by `Agents.memory.extraction.inputs.build_cell_extraction_prompt`; run by the offline extraction
 job (`scripts/extract_batch.py`), never inside a game. The old monolithic
-V6_CELL_EXTRACTION_PROMPT (pre prefix/tail) is kept in archive.py for reference.
+V6_CELL_EXTRACTION_PROMPT (pre prefix/tail) was removed on 2026-11-18; the git tag
+`pre-test-cut-2026-11-18` holds it in `Agents/prompts/extraction/archive.py`.
 """
 
 
