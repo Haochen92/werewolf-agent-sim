@@ -1,14 +1,30 @@
 # Server image — FastAPI + the game engine.
 #
-# Installs `server/requirements-server.txt`, NOT the full Poetry environment. That file is a
-# lock-accurate `pip freeze` of the working venv with the ML stack filtered out
-# (torch / sentence-transformers / transformers / scipy / pandas / matplotlib and friends):
-# `server.app`'s entire import closure was measured and contains none of them, and live games
-# are memory-OFF by project ruling, so the retrieval stack that needs them is never reached.
-# The saving is multiple GB of GPU wheels in an image that would never import one.
+# The packages are installed from `poetry.lock`, main dependencies only: the same versions the
+# development environment and the tests run on, with no hand-kept list in between. (Until
+# 2026-11-18 the image installed `server/requirements-server.txt`, a filtered `pip freeze` of the
+# working environment, because the main dependencies then included sentence-transformers and with
+# it several GB of GPU packages. Fine-tuning now has its own environment, `training/`.)
 #
-# If a future slice turns memory back on for served games, this file is where that shows up —
-# the import will fail loudly at startup rather than silently degrade.
+# Two stages. The first has Poetry and installs the packages into a virtual environment; the
+# second copies that environment and the code, so Poetry itself is not in the served image.
+
+FROM python:3.11.12-slim AS builder
+
+ENV PIP_NO_CACHE_DIR=1 \
+    POETRY_VERSION=2.1.3 \
+    POETRY_NO_INTERACTION=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+# Poetry goes into the system Python and the application's packages into /opt/venv: Poetry
+# installs into the virtual environment that is active (VIRTUAL_ENV), and only that is copied on.
+RUN pip install "poetry==${POETRY_VERSION}" && python -m venv /opt/venv
+
+WORKDIR /app
+COPY pyproject.toml poetry.lock ./
+# --no-root: the project's own code is copied in the next stage, not installed as a package.
+RUN poetry install --only main --no-root
 
 FROM python:3.11.12-slim AS base
 
@@ -23,8 +39,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY server/requirements-server.txt ./server/requirements-server.txt
-RUN pip install --no-cache-dir -r server/requirements-server.txt
+COPY --from=builder /opt/venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
 
 # Only what the server actually serves with. Notebooks, evaluation/, evidence/ and the
 # frontend are deliberately absent.

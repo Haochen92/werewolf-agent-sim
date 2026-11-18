@@ -1,0 +1,13 @@
+# The server image is built from the repository root (docker-compose.yml, service wolf-server).
+# Everything is left out of the build context except what the Dockerfile copies, so the files
+# with secrets (.env), the virtual environment, the evidence and the frontend are never sent to
+# the Docker daemon. A new COPY in the Dockerfile needs a line here.
+*
+!Agents/
+!server/
+!alembic/
+!alembic.ini
+!pyproject.toml
+!poetry.lock
+**/__pycache__/
+**/*.pyc
