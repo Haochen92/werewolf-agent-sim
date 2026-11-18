@@ -83,6 +83,7 @@ class ScriptedModels(GameModels):
     filter and the echo check (`tests/fixtures/model.py`)."""
 
     def __init__(self, rng: random.Random, spare: frozenset[str] = frozenset()):
+        super().__init__()
         self.rng, self.spare = rng, spare
 
     def seat(self):
@@ -97,7 +98,10 @@ class FakeModels(GameModels):
     given, so a test hands the code under test exactly the models it needs and no real one."""
 
     def __init__(self, *, seat=None, seat_rescue=None, summary=None, summary_rescue=None,
-                 judge=None, extractor=None):
+                 judge=None, extractor=None, **game):
+        # `game` is the real object's own arguments (model, api_key, ...), for a test of what
+        # the turn code does with the game's key or model name.
+        super().__init__(**game)
         self._seat, self._seat_rescue = seat, seat_rescue
         self._summary, self._summary_rescue = summary, summary_rescue
         self._judge, self._extractor = judge, extractor

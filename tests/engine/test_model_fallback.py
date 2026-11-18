@@ -8,7 +8,7 @@ fallback model avoids.
 
 from langchain_core.runnables import RunnableLambda
 
-from Agents.llm_factory import accessors
+from Agents.llm_factory import GameModels, accessors
 from Agents.prompts.day_discuss import day_discuss_template
 from Agents.prompts.night import night_template, wolf_chat_template
 from Agents.schemas.game_events import DiscussionPassReason, FiringReason
@@ -185,7 +185,6 @@ import pytest
 from google.genai import errors as genai_errors
 
 from Agents.llm_factory import health as health_mod
-from Agents.llm_factory.chat import GAME_LLM, GameLLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
 
 
@@ -221,18 +220,13 @@ def _bounce_429():
                         "status": "RESOURCE_EXHAUSTED"}})
 
 
-@pytest.fixture
-def game_health():
-    """A fresh per-game selection with a short cooldown, so no test sees another's stalls."""
-    selection = GameLLM(
-        model="gemini-3.6-flash", rescue_model="gemini-3.5-flash",
-        health=health_mod.ModelHealth(rescue_after=2, cooldown_s=300),
-    )
-    token = GAME_LLM.set(selection)
-    try:
-        yield selection.health
-    finally:
-        GAME_LLM.reset(token)
+def _game(**slots) -> FakeModels:
+    """One game's fake models. Its stall record (``.health``) is its own, so no test sees
+    another's stalls, and the record's two settings are fixed here, not read from the
+    environment."""
+    models = FakeModels(**slots)
+    models.health = health_mod.ModelHealth(rescue_after=2, cooldown_s=300)
+    return models
 
 
 def test_transient_errors_are_the_provider_being_slow_or_full():
@@ -242,12 +236,11 @@ def test_transient_errors_are_the_provider_being_slow_or_full():
     assert not is_transient_provider_error(ValueError("off-schema output"))
 
 
-def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(
-        caplog, game_health):
+def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(caplog):
     # Arrange: a primary that stalls, and a working rescue
     primary = _StalledModel(_bounce_429())
     rescue = _CountingModel(_result())
-    models = FakeModels(seat=primary, seat_rescue=rescue)
+    models = _game(seat=primary, seat_rescue=rescue)
 
     # Act
     with caplog.at_level("WARNING"):
@@ -257,22 +250,21 @@ def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(
     assert out.entry == PROTECT_3
     assert primary.calls == 1  # one request budget, not the two attempts a wrong answer gets
     assert rescue.calls == 1
-    assert game_health.stalls == 1
-    assert not game_health.prefer_rescue()  # one stall is not yet a pattern
+    assert models.health.stalls == 1
+    assert not models.health.prefer_rescue()  # one stall is not yet a pattern
     assert any("stalled" in r.message for r in caplog.records)
 
 
-def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
-        caplog, game_health):
+def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(caplog):
     # Arrange: a primary that stalls, and a working rescue
     primary = _StalledModel(httpx.ReadTimeout("The read operation timed out"))
     rescue = _CountingModel(_result())
-    models = FakeModels(seat=primary, seat_rescue=rescue)
+    models = _game(seat=primary, seat_rescue=rescue)
 
     # Round 1: two turns that stall
     for _ in range(2):
         agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
-    assert primary.calls == 2 and game_health.prefer_rescue()
+    assert primary.calls == 2 and models.health.prefer_rescue()
 
     # Round 2: the third turn
     with caplog.at_level("WARNING"):
@@ -284,13 +276,13 @@ def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
                for r in caplog.records)
 
 
-def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(caplog, game_health):
+def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(caplog):
     """Under load the rescue bounces too (six games died this way on 2026-10-09): the stall
     sentinel must never reach the resolver; the turn takes the role's typed fallback."""
     # Arrange: a primary and a rescue that both stall
     primary = _StalledModel(_bounce_429())
     rescue = _StalledModel(_bounce_429())
-    models = FakeModels(seat=primary, seat_rescue=rescue)
+    models = _game(seat=primary, seat_rescue=rescue)
 
     # Act
     with caplog.at_level("WARNING"):
@@ -303,52 +295,53 @@ def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(caplog, gam
     assert any("random fallback" in r.message for r in caplog.records)
 
 
-def test_a_good_answer_from_the_primary_clears_the_count(game_health):
+def test_a_good_answer_from_the_primary_clears_the_count():
     # Arrange: one stall on record, and a working primary
-    game_health.note_stall()
-    models = FakeModels(seat=_WorkingModel(_result()), seat_rescue=_BrokenModel())
+    models = _game(seat=_WorkingModel(_result()), seat_rescue=_BrokenModel())
+    models.health.note_stall()
 
     # Act
     agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
-    assert game_health.stalls == 0 and not game_health.prefer_rescue()
+    assert models.health.stalls == 0 and not models.health.prefer_rescue()
 
 
-def test_after_the_cooldown_the_primary_is_tried_again(monkeypatch, game_health):
+def test_after_the_cooldown_the_primary_is_tried_again(monkeypatch):
     # Arrange: a clock the test controls, and two stalls on record
     now = [1000.0]
     monkeypatch.setattr(health_mod.time, "monotonic", lambda: now[0])
-    game_health.note_stall(); game_health.note_stall()
+    health = health_mod.ModelHealth(rescue_after=2, cooldown_s=300)
+    health.note_stall(); health.note_stall()
 
     # Round 1: before the cooldown ends
-    assert game_health.prefer_rescue()
+    assert health.prefer_rescue()
 
     # Round 2: after the cooldown
     now[0] += 301
-    assert not game_health.prefer_rescue()
+    assert not health.prefer_rescue()
 
     # Round 3: one more stall
     # one more stall re-arms the rescue at once: the count is still at the threshold
-    game_health.note_stall()
-    assert game_health.prefer_rescue()
+    health.note_stall()
+    assert health.prefer_rescue()
 
     # Round 4: a good answer
-    game_health.note_ok()
-    assert not game_health.prefer_rescue() and game_health.stalls == 0
+    health.note_ok()
+    assert not health.prefer_rescue() and health.stalls == 0
 
 
-def test_a_turn_on_the_rescue_leaves_the_count_alone(game_health):
+def test_a_turn_on_the_rescue_leaves_the_count_alone():
     # Arrange: two stalls on record, and a primary that stalls
-    game_health.note_stall(); game_health.note_stall()
     primary = _StalledModel(_bounce_429())
-    models = FakeModels(seat=primary, seat_rescue=_WorkingModel(_result()))
+    models = _game(seat=primary, seat_rescue=_WorkingModel(_result()))
+    models.health.note_stall(); models.health.note_stall()
 
     # Act
     agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
-    assert primary.calls == 0 and game_health.stalls == 2 and game_health.prefer_rescue()
+    assert primary.calls == 0 and models.health.stalls == 2 and models.health.prefer_rescue()
 
 
 def test_the_game_model_carries_the_request_budget(monkeypatch):
@@ -356,14 +349,10 @@ def test_the_game_model_carries_the_request_budget(monkeypatch):
     monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
     monkeypatch.delenv("GAME_LLM_TIMEOUT_S", raising=False)
     monkeypatch.delenv("GAME_LLM_ATTEMPTS", raising=False)
+    models = GameModels(model="gemini-3.6-flash", rescue_model="gemini-3.5-flash")
 
     # Act
-    token = GAME_LLM.set(GameLLM(model="gemini-3.6-flash", rescue_model="gemini-3.5-flash"))
-    try:
-        llm, rescue, summary = (accessors.get_llm(), accessors.get_llm_game_fallback(),
-                                accessors.get_llm_summary())
-    finally:
-        GAME_LLM.reset(token)
+    llm, rescue, summary = models.seat(), models.seat_rescue(), models.summary()
 
     # Assert
     assert (llm.timeout, llm.max_retries) == (30.0, 2)
@@ -371,25 +360,20 @@ def test_the_game_model_carries_the_request_budget(monkeypatch):
     assert (summary.timeout, summary.max_retries) == (90.0, 2)
 
 
-def _built(selection: GameLLM) -> dict:
-    """Every in-game model the factory builds for ``selection``, by its accessor."""
-    token = GAME_LLM.set(selection)
-    try:
-        return {"turn": accessors.get_llm(), "rescue": accessors.get_llm_game_fallback(),
-                "summary": accessors.get_llm_summary(),
-                "summary rescue": accessors.get_llm_summary_fallback(),
-                "judge": accessors.get_llm_judge(), "extractor": accessors.get_llm_extractor()}
-    finally:
-        GAME_LLM.reset(token)
+def _built(models: GameModels) -> dict:
+    """Every in-game model that ``models`` builds, by the method that builds it."""
+    return {"turn": models.seat(), "rescue": models.seat_rescue(),
+            "summary": models.summary(), "summary rescue": models.summary_rescue(),
+            "judge": models.judge(), "extractor": models.extractor()}
 
 
-@pytest.mark.parametrize("selection", [
-    GameLLM(model="gemini-3.6-flash", rescue_model="gemini-3.5-flash"),
-    GameLLM(model="deepseek/deepseek-flash", api_key="sk-test", rescue_model="deepseek/deepseek-v4-flash"),
-    GameLLM(model="anthropic/claude-haiku-5-5", api_key="sk-ant-test",
-            rescue_model="anthropic/claude-sonnet-5-5"),
+@pytest.mark.parametrize("game", [
+    dict(model="gemini-3.6-flash", rescue_model="gemini-3.5-flash"),
+    dict(model="deepseek/deepseek-flash", api_key="sk-test", rescue_model="deepseek/deepseek-v4-flash"),
+    dict(model="anthropic/claude-haiku-5-5", api_key="sk-ant-test",
+         rescue_model="anthropic/claude-sonnet-5-5"),
 ], ids=["gemini", "deepseek", "claude"])
-def test_every_in_game_model_carries_the_request_budget(monkeypatch, selection):
+def test_every_in_game_model_carries_the_request_budget(monkeypatch, game):
     """2026-10-21: only Gemini got the budget; a DeepSeek client waited the SDK's 600 s a try, three
     tries, before the rescue was asked. Every provider waits 30 s (90 s for the summary) and sends
     two attempts in all; the OpenAI and Anthropic SDKs count the second as their one retry."""
@@ -397,10 +381,10 @@ def test_every_in_game_model_carries_the_request_budget(monkeypatch, selection):
     monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
     for name in ("GAME_LLM_TIMEOUT_S", "GAME_SUMMARY_TIMEOUT_S", "GAME_LLM_ATTEMPTS"):
         monkeypatch.delenv(name, raising=False)
-    gemini = "/" not in selection.model
+    gemini = "/" not in game["model"]
 
-    # Act and assert, once for each model the factory builds
-    for name, llm in _built(selection).items():
+    # Act and assert, once for each model the game's object builds
+    for name, llm in _built(GameModels(**game)).items():
         timeout = llm.timeout if gemini else (getattr(llm, "request_timeout", None)
                                               or getattr(llm, "default_request_timeout", None))
         assert timeout == (90.0 if name.startswith("summary") else 30.0), name
@@ -416,10 +400,10 @@ def _summarise(models):
     return summary_agent.run_day_summary_agent(2, [], lineup=LINEUP, models=models)
 
 
-def test_a_stalled_summary_goes_to_the_rescue_model(caplog, game_health):
+def test_a_stalled_summary_goes_to_the_rescue_model(caplog):
     # Arrange: a primary that stalls, and a working rescue
     primary, rescue = _StalledModel(_bounce_429()), _CountingModel(_SUMMARY)
-    models = FakeModels(summary=primary, summary_rescue=rescue)
+    models = _game(summary=primary, summary_rescue=rescue)
 
     # Act
     with caplog.at_level("WARNING"):
@@ -428,14 +412,14 @@ def test_a_stalled_summary_goes_to_the_rescue_model(caplog, game_health):
     # Assert
     assert structured == {"accusations": [], "role_claims": []}  # not the raw channel's {}
     assert primary.calls == 1 and rescue.calls == 1  # a stall is not asked again
-    assert game_health.stalls == 1
+    assert models.health.stalls == 1
     assert any("written by the rescue model" in r.message for r in caplog.records)
 
 
-def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries(game_health):
+def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries():
     # Arrange: a primary that gives wrong answers, and a working rescue
     primary, rescue = _StalledModel(ValueError("off-schema output")), _CountingModel(_SUMMARY)
-    models = FakeModels(summary=primary, summary_rescue=rescue)
+    models = _game(summary=primary, summary_rescue=rescue)
 
     # Act
     _, _, structured = _summarise(models)
@@ -443,14 +427,14 @@ def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries(game_
     # Assert
     assert structured == {"accusations": [], "role_claims": []}
     assert primary.calls == 2 and rescue.calls == 1
-    assert game_health.stalls == 0  # a wrong answer is not a stall
+    assert models.health.stalls == 0  # a wrong answer is not a stall
 
 
-def test_a_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(game_health):
+def test_a_summary_starts_on_the_rescue_while_the_primary_keeps_stalling():
     # Arrange: two stalls on record
-    game_health.note_stall(); game_health.note_stall()
     primary, rescue = _StalledModel(_bounce_429()), _CountingModel(_SUMMARY)
-    models = FakeModels(summary=primary, summary_rescue=rescue)
+    models = _game(summary=primary, summary_rescue=rescue)
+    models.health.note_stall(); models.health.note_stall()
 
     # Act
     _summarise(models)
@@ -460,7 +444,7 @@ def test_a_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(game_he
 
 
 @pytest.mark.parametrize("rescue", ["none", "fails", "cannot be built"])
-def test_a_summary_with_no_working_rescue_is_the_raw_channel(caplog, game_health, rescue):
+def test_a_summary_with_no_working_rescue_is_the_raw_channel(caplog, rescue):
     # Arrange: a stalled primary, and a rescue that is missing, fails or cannot be built
     class _UnbuildableRescue(FakeModels):
         def summary_rescue(self):
@@ -620,20 +604,16 @@ def test_a_refusal_that_quotes_the_key_ends_the_game_without_the_key_in_the_erro
     the game's checkpoint, so a key quoted by the provider was written to the database."""
     import pytest
 
-    from Agents.llm_factory import GAME_LLM, GameLLM
     from Agents.llm_factory.embeddings import ProviderKeyRejected
 
     # Arrange: a game on the player's key, and a primary whose refusal quotes that key
     key = "sk-player-QUOTED-0001"
-    token = GAME_LLM.set(GameLLM(api_key=key, model="deepseek/deepseek-v4-pro"))
-    models = FakeModels(seat=_KeyQuotingModel(key), seat_rescue=None)
+    models = FakeModels(seat=_KeyQuotingModel(key), seat_rescue=None,
+                        api_key=key, model="deepseek/deepseek-v4-pro")
 
     # Act
-    try:
-        with pytest.raises(ProviderKeyRejected) as raised, caplog.at_level("WARNING"):
-            agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
-    finally:
-        GAME_LLM.reset(token)
+    with pytest.raises(ProviderKeyRejected) as raised, caplog.at_level("WARNING"):
+        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert key not in str(raised.value)
@@ -642,7 +622,6 @@ def test_a_refusal_that_quotes_the_key_ends_the_game_without_the_key_in_the_erro
 
 
 def test_a_key_that_the_length_cut_would_split_leaves_no_part_behind():
-    from Agents.llm_factory import GameLLM
     from Agents.llm_factory.embeddings import provider_complaint
 
     # Arrange: a message long enough that the cut at 200 characters falls inside the key
@@ -650,7 +629,7 @@ def test_a_key_that_the_length_cut_would_split_leaves_no_part_behind():
     refusal = _KeyQuotingRefusal(key, padding=175)
 
     # Act
-    complaint = provider_complaint(refusal, scrub=GameLLM(api_key=key).redact)
+    complaint = provider_complaint(refusal, scrub=GameModels(api_key=key).redact)
 
     # Assert
     assert "sk-player" not in complaint
@@ -703,7 +682,7 @@ from Agents.turn import echo_gate  # noqa: E402
 _NO_SITUATIONS = SimpleNamespace(situations=[])
 
 
-def _situations(monkeypatch, primary, rescue):
+def _situations(monkeypatch, models):
     monkeypatch.setattr(situation_agent, "V6_SITUATION_SUMMARY", RunnableLambda(lambda x: x))
     monkeypatch.setattr(situation_agent, "build_agent_prompt_input", lambda p: {})
     monkeypatch.setattr(situation_agent, "compose_cell_guidance", lambda *a: {})
@@ -711,64 +690,68 @@ def _situations(monkeypatch, primary, rescue):
     monkeypatch.setattr(situation_agent, "_private_state", lambda *a: "")
     payload = {"player_id": "player_1", "player_role": "healer", "current_day": 2}
     return situation_agent._generate_situations_for_agent(
-        payload, "night_action", models=FakeModels(seat=primary, seat_rescue=rescue))
+        payload, "night_action", models=models)
 
 
-def test_a_stalled_situation_summary_is_not_asked_again_and_the_rescue_writes_it(monkeypatch, game_health):
+def test_a_stalled_situation_summary_is_not_asked_again_and_the_rescue_writes_it(monkeypatch):
     # Arrange
     primary, rescue = _StalledModel(_bounce_429()), _CountingModel(_NO_SITUATIONS)
+    models = _game(seat=primary, seat_rescue=rescue)
 
     # Act and assert
-    assert _situations(monkeypatch, primary, rescue) == ([], [])  # not the placeholder query
+    assert _situations(monkeypatch, models) == ([], [])  # not the placeholder query
     assert primary.calls == 1 and rescue.calls == 1
-    assert game_health.stalls == 1
+    assert models.health.stalls == 1
 
 
-def test_a_situation_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(monkeypatch, game_health):
+def test_a_situation_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(monkeypatch):
     # Arrange: two stalls on record
-    game_health.note_stall(); game_health.note_stall()
     primary, rescue = _StalledModel(_bounce_429()), _CountingModel(_NO_SITUATIONS)
+    models = _game(seat=primary, seat_rescue=rescue)
+    models.health.note_stall(); models.health.note_stall()
 
     # Act and assert
-    assert _situations(monkeypatch, primary, rescue) == ([], [])
+    assert _situations(monkeypatch, models) == ([], [])
     assert primary.calls == 0 and rescue.calls == 1
 
 
-def test_a_stalled_situation_summary_with_no_rescue_is_the_placeholder_query(monkeypatch, game_health):
+def test_a_stalled_situation_summary_with_no_rescue_is_the_placeholder_query(monkeypatch):
     primary = _StalledModel(_bounce_429())
-    assert _situations(monkeypatch, primary, None) == (["Day 2 as healer, round 0"], [])
+    models = _game(seat=primary, seat_rescue=None)
+    assert _situations(monkeypatch, models) == (["Day 2 as healer, round 0"], [])
     assert primary.calls == 1
 
 
-def test_a_situation_summary_with_a_wrong_answer_is_asked_again_and_is_not_a_stall(monkeypatch, game_health):
+def test_a_situation_summary_with_a_wrong_answer_is_asked_again_and_is_not_a_stall(monkeypatch):
     # Arrange: a primary that gives wrong answers, and a working rescue
     primary, rescue = _StalledModel(ValueError("off-schema output")), _CountingModel(_NO_SITUATIONS)
+    models = _game(seat=primary, seat_rescue=rescue)
 
     # Act and assert
-    assert _situations(monkeypatch, primary, rescue) == ([], [])
+    assert _situations(monkeypatch, models) == ([], [])
     assert primary.calls == 2 and rescue.calls == 1
-    assert game_health.stalls == 0
+    assert models.health.stalls == 0
 
 
 _EARLIER = [DayChannel(day=2, seq=0, player="player_2", message="player_5 claimed healer late.")]
 
 
-def test_the_echo_gate_is_skipped_while_the_primary_keeps_stalling(game_health):
+def test_the_echo_gate_is_skipped_while_the_primary_keeps_stalling():
     # Arrange: two stalls on record, and a judge that stalls
-    game_health.note_stall(); game_health.note_stall()
     judge = _StalledModel(_bounce_429())
-    models = FakeModels(judge=judge)
+    models = _game(judge=judge)
+    models.health.note_stall(); models.health.note_stall()
 
     # Act and assert
     assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER, models=models) == ""
     assert judge.calls == 0
 
 
-def test_a_stalled_echo_gate_keeps_the_line_and_counts_the_stall(game_health):
+def test_a_stalled_echo_gate_keeps_the_line_and_counts_the_stall():
     # Arrange: a judge that stalls
     judge = _StalledModel(_bounce_429())
-    models = FakeModels(judge=judge)
+    models = _game(judge=judge)
 
     # Act and assert
     assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER, models=models) == ""
-    assert judge.calls == 1 and game_health.stalls == 1
+    assert judge.calls == 1 and models.health.stalls == 1

@@ -601,7 +601,7 @@ def test_draft_on_the_pack_talk_still_rewrites_the_notes(api_client, seated_sess
     # Arrange: a seat that owes a pack-talk turn
     session, _ = seated_session
     monkeypatch.setattr(rt, "draft_from_notes",
-                        lambda request, notes: f"{request.player_id} to the pack: {notes}")
+                        lambda request, notes, models=None: f"{request.player_id} to the pack: {notes}")
     session.pending_requests["player_3"] = human_turn_request(
         player_id="player_3", phase="wolf_channel", valid_targets=[])
 

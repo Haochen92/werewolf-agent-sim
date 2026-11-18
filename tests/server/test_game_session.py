@@ -592,7 +592,7 @@ def _day_graph_with_a_checkpoint():
     return parent.compile(checkpointer=InMemorySaver())
 
 
-async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_session):
+async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_session, refuse_real_models):
     """The draft reads the paused turn's own input back from the checkpoint and runs the
     seat's agent on it: with no notes, the model gets exactly the prompt the real turn
     would send; notes add one message after it. The game is left as it was."""
@@ -1086,7 +1086,8 @@ async def test_an_ended_game_lets_the_players_key_go(quiet_session, fixture_chun
 
     # Assert
     assert session._api_key == ""
-    assert session._llm_selection.api_key == "" and not session._llm_selection.clients
+    assert session._models._api_key == "" and not session._models._clients
+    assert session._context["models"] is session._models  # the engine's copy is the keyless one too
     assert session.model == "gemini-3.6-flash"  # what the game ran on is still known
 
 

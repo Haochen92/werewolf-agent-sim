@@ -472,8 +472,9 @@ async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_
     await games.resume_with_key("g-1", "sk-good")
     assert probed == [("gemini-2.5-pro", "sk-bad"), ("gemini-2.5-pro", "sk-good")]
     assert not session.awaiting_key
-    assert session._llm_selection.api_key == "sk-good"
-    assert session._llm_selection.model == "gemini-2.5-pro"
+    assert session._models._api_key == "sk-good"
+    assert session._models.model == "gemini-2.5-pro"
+    assert session._context["models"] is session._models  # the object the engine is handed
     assert "player_3" in session.pending_requests and session._task is not None
     with pytest.raises(LookupError):  # not waiting any more
         await games.resume_with_key("g-1", "sk-again")
@@ -490,7 +491,7 @@ async def test_house_selected_model_survives_restart(monkeypatch):
         monkeypatch, [_row(model=model, byok=False)], FakeDurableGraph(state))
 
     # Assert
-    assert games.get("g-1")._llm_selection.model == model
+    assert games.get("g-1")._models.model == model
 
 
 async def test_memory_switch_survives_restart(monkeypatch):

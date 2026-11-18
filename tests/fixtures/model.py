@@ -42,14 +42,15 @@ class RealModelRequested(AssertionError):
 @pytest.fixture
 def refuse_real_models(monkeypatch):
     """Make every way of building a real chat model raise `RealModelRequested`, for the length
-    of the test. A test that passes its models in through the graph context should never reach
-    `create_chat_model`; if a code path it did not expect does (a session rebuilt without the
+    of the test. A test that passes its models in through the graph context should never build
+    a client; if a code path it did not expect does (a session rebuilt without the
     test's models, say), this turns what would be a paid call into a failure."""
-    from Agents import llm_factory
-    from Agents.llm_factory import accessors, chat
+    from Agents.llm_factory import chat
 
     def refuse(model, *args, **kwargs):
         raise RealModelRequested(f"a test asked for a real model: {model!r}")
 
-    for module in (llm_factory, accessors, chat):
-        monkeypatch.setattr(module, "create_chat_model", refuse)
+    # The one function every client is built by, on the server's credentials or a player's key
+    # (create_chat_model and GameModels both end here), looked up in its module at call time.
+    monkeypatch.setattr(chat, "_build_chat_model", refuse)
+    monkeypatch.setattr(chat, "_MODEL_CACHE", {})  # a client built earlier must not be handed out

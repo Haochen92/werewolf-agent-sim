@@ -102,8 +102,16 @@ def give_models(session: GameSession, models) -> None:
     them (`Agents/llm_factory/game_models.py`). Call it before the session's task first runs:
     a session's task starts at the event loop's next turn, so right after `start_instant` or
     `recover_registry` returns is in time. The context dict is updated in place, because the
-    session hands that same dict to every stream."""
-    session._context["models"] = models
+    session hands that same dict to every stream.
+
+    The session's own models object holds the game's model names and the player's keys, and the
+    turn code scrubs a provider's error with them. The test's object takes its place, so it is
+    given the same names and keys: the game then still carries the keys where the engine can
+    reach them, which is what a planted-key test needs."""
+    own = session._models
+    models.model, models.rescue_model = own.model, own.rescue_model
+    models._api_key, models._backup_key = own._api_key, own._backup_key
+    session._use_models(models)
 
 
 async def wait_for_question(session: GameSession, graph: StreamTrackingGraph) -> str:

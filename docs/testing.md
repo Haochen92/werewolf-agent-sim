@@ -101,6 +101,12 @@ another test file: a helper that two test files need goes into `tests/factories`
   (`context["models"]`); a function called on its own takes it as the argument `models=`. A test
   hands its fake models over this way and does not patch the functions that build the real ones.
   `FakeModels(seat=..., judge=..., ...)` returns the fake given for each kind of model.
+  The same object holds what belongs to one game: the player's key, the count of stalled
+  turns (`models.health`) and the scrubbing of a key from an error text (`models.redact`).
+  So a test of stalls asserts `health` on the object it passed in, and a test about a key
+  gives its fake the key: `FakeModels(seat=..., api_key=..., model=...)`. For a hosted game,
+  `give_models(session, models)` (`tests/factories/served_game.py`) copies the session's
+  model names and keys onto the test's object before it takes the session's place.
 - `tests/fixtures/model.py`: the fixture `scripted_model`. It returns a function; call it with a
   seed (and, optionally, the seats no scripted player may choose). It returns a `ScriptedModels`,
   which the test puts in the graph context: every seat's turn then runs on the scripted model,
@@ -139,6 +145,10 @@ test asks for a database, and a run that selects no such test needs no Docker.
 - `tests/fixtures/model.py` also has `refuse_real_models`: while it is in use, building any
   real chat model raises. The integration tests that play a game use it, so a code path that
   misses the test's models fails instead of calling a provider.
+- Never change engine or server code to make a test fail (to show the test can fail) while
+  another test run is in progress in the same folder: the other run sees the broken code. On
+  2026-11-18 this sent one real request to a provider. Use `refuse_real_models` in the test
+  first, and check that no other run is going.
 
 **Markers.** A marker is a label on a test that a command can select or leave out with `-m`.
 
