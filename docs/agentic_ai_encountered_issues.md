@@ -47,7 +47,7 @@ banner, printed on every call, and this project registers no tool functions.
   (`is_transient_provider_error`); the primary is not asked again that turn, and the rescue
   model takes it. The rescue for `gemini-3.6-flash` is `gemini-3.5-flash`: a different family
   and quota pool, stable GA, so it is a genuine rescue and not the same pool under another name.
-- *Two stalls in a row move the game.* `GameLLM.health` counts stalls; after
+- *Two stalls in a row move the game.* `GameModels.health` counts stalls; after
   `GAME_STALL_RESCUE_AFTER` (2) in a row, every turn starts on the rescue model for
   `GAME_STALL_RESCUE_COOLDOWN_S` (300 s), then the primary gets one try, and a good answer
   clears the count. Drafts for the human seat share the path.

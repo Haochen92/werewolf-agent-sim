@@ -1,763 +1,834 @@
-# U13. Testing: what a passing test shows, and what it does not
+# U13. Testing: what to check, how to check it, and what a pass proves
 
-**Reading time:** about 35 minutes for Parts 1, 3 and 5 (estimate) · **Builds on:** U0 (which part holds which fact) · **Related:** U3 (the restart path, tested against stand-ins), U9 (what a result was made of), U10 (the planted-key test), U11 (the forged game-master line), U14 (no tests before a release) · **Feeds write-up chapters:** 7 and 8
+<!-- Writing rules: docs/writing/core_rules.md. -->
 
-**The question:** the tests pass. What do I now know, and what do I still not know?
+**Reading time:** about 45 minutes for Parts 1 and 2 (estimate). The two-minute summary is in Part 3.
 
-**First answer, before reading on:** two or three sentences, with an example that is not from
-this project.
+**Why this note.** A coding agent writes most of my test code. My part is to decide what has to be tested, to direct the agent, and to judge whether its tests are meaningful evidence. That needs an order of work that is short enough to remember.
 
-**Suggested first read (2026-11-17).** Parts 1, 3 and 5. Parts 2 and 4 and Appendix B are
-reference. A coding agent writes most of my test code, so the aim of this reading is to judge
-and direct tests well enough, not to learn a catalogue of test types: what to test, how to read
-a test, and what a run in which every test passes establishes. Setting up continuous
-integration is a separate build task after this note.
+Builds on U0 · Related: U3 (recovery), U5 (pause and resume), U10 (API-key leakage), U11 (prompt injection), U14 (release safety) · Feeds write-up chapters 7 and 8.
 
-## The core idea
+**The question:** When building or reviewing an application, how do I decide what deserves testing, which checks to use, and whether passing those checks means the application works?
 
-A test runs some code under conditions it sets up, and checks one claim about the result. A
-pass is a fact about that run only.
+## The central idea
 
-```text
-A pass establishes:   for this revision of the code,
-                      in this environment,
-                      on these inputs,
-                      with these parts replaced by stand-ins,
-                      the property the test checks held.
+A passing test establishes less than it might seem.
 
-It says nothing about: other inputs, the parts that were replaced,
-                       and any property the test does not check.
-```
+Suppose a test sends a €150 refund request for an order worth €100 and checks that the request is rejected. A pass shows that the refund was rejected under the conditions that test created. It does not show whether two refund requests arriving at the same time could get past the limit, whether the real payment provider behaves as expected, or whether an AI model will request sensible amounts. Each of those is a different claim that needs its own evidence.
 
-An LLM application needs two kinds of verification. Tests check the code around the model:
-how the prompt is built, how the answer is validated, what each user is allowed to do. They
-give the same result every time, so they can run on every change. Evaluations send real inputs
-to the real model and count what it does. They cost money, they give rates rather than pass or
-fail, and they are the only way to learn whether a change altered the model's behaviour.
+**A test checks a particular claim about the system under particular conditions.** A testing strategy is the process of deciding which claims matter and what evidence would justify believing them.
 
----
+There are five decisions to make.
 
-# Part 1 — Fundamentals
 
-Throughout Part 1, the example is the support assistant from U8 to U11. A language model reads
-customer emails and decides what to do: look up an order, request a refund, send a reply. The
-model's requests go to ordinary code, and a refund service in that code checks every refund
-before it is paid.
+| Step                       | Question                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------- |
+| 1. Identify the claims     | What must work, what must never happen, and which failures matter most?                           |
+| 2. Design the checks       | What must the test exercise, which dependencies can be replaced, and what will remain unverified? |
+| 3. Find failure cases      | Which unusual inputs, failures and sequences of events could violate the claims?                  |
+| 4. Make testing repeatable | How will people and coding agents run the checks reliably and automatically?                      |
+| 5. Review the evidence     | Can the tests detect real faults, and what exactly do their results establish?                    |
 
-## 1.1 What a passing test establishes
+The steps serve three uses. For a new system, the five decisions are made once when the testing strategy is set up, and revisited when a feature brings a new risk. For a design that exists only on paper, steps 1 to 3 are the reasoning. For tests that an agent wrote, steps 1, 2 and 5 are the ones to apply.
 
-A test has three parts: it sets up a situation, performs an action, and checks the result
-with an **assertion**, a statement in code that must be true or the test fails. For the
-support assistant:
+# Part 1 — Designing a testing strategy
 
-```text
-Set up:  an order of 100 euros
-Action:  ask the refund service to refund 150 euros
-Assert:  the refund is refused
-```
+The running example is a customer-support assistant. A language model reads customer emails and can request actions such as checking an order or issuing a refund. Ordinary application code decides whether a requested refund is allowed and communicates with the payment provider. Customers and staff use a website to view orders and refunds.
 
-When this test passes, it establishes that the refund service refused that request, in that
-run. It does not establish that the service refuses 101 euros, that no money reaches the real
-payment provider when a refund is refused, or that the model ever asks for the right amount.
-Each of those is a separate claim, and needs its own check.
+## 1. Identify what needs testing
 
-Three questions decide what a test is worth. They matter most when someone else, or a coding
-agent, wrote it:
+### 1.1 Why start with claims instead of tests?
 
-| Question | Why it matters |
-|---|---|
-| Can it fail? | A test whose assertion is true whatever the code does proves nothing. The usual check is to break the code on purpose and see the test fail |
-| Does it check the claim, or the implementation? | "The refund is refused" is the claim. "The function called `check_limit` once" is the implementation. A test of the implementation fails when the code is reorganised and still passes when the rule is wrong |
-| What does a pass not prove? | The inputs not tried, the parts replaced by simplified stand-ins during the test (1.3), and everything the assertion does not mention |
+An application contains far more behaviour than anyone can test completely. Writing tests function by function can test simple calculations thoroughly and still overlook an important rule that several components can break. So the work begins by asking what the system must do correctly.
 
-Because a pass is so narrow, two claims about a change must be kept apart. **Deployed** means
-it is running where users can reach it. **Validated** means a test or a measurement has shown
-that it works. A change can be deployed without being validated, and validated on one machine
-without being deployed.
+A **claim** is a statement about behaviour that should hold under specified conditions. Examples include:
 
-## 1.2 Levels of verification
+* A refund request above the remaining refundable amount is rejected.
+* Customers can view the status of their refunds.
+* The refund service reads the correct order total from the order service.
+* A previously fixed double-refund bug does not recur.
 
-Tests are grouped by how much of the system each one runs.
+These statements describe what deserves verification. They do not yet specify how to verify it.
 
-| Level | What it runs | What it is for | What it misses, or costs |
+### 1.2 Four places to discover important claims
+
+
+| Look for                          | Question to ask                                                    | Example                                                              |
+| --------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| **Rules that must remain true**   | What must never happen, or must remain true as the system changes? | An order cannot be refunded for more than was paid                   |
+| **Essential user workflows**      | What must users be able to complete?                               | A customer can request a refund and see its status                   |
+| **Boundaries between components** | Where does one component rely on another's behaviour or data?       | The refund service receives the correct total from the order service |
+| **Previous failures**             | What has already gone wrong and must not recur?                    | Retrying a request previously produced a second refund               |
+
+These are sources of testing requirements, **not four separate categories of tests**.
+
+A claim discovered through any of them may be tested at the unit, integration or end-to-end level, depending on what it involves.
+
+Only the first row needs explaining before a claim can be written, and section 1.2.1 does that. For the other three rows the claim is easy to state and the difficulty is in the check, so they are taken up in step 2: user workflows under end-to-end tests (2.2) and the frontend levels (2.6), boundaries under contract tests (2.5), and previous failures under regression tests (2.5).
+
+#### 1.2.1 The first row: what is an invariant, and when do I test one?
+
+Consider an order for which the customer paid €100.
+
+The customer may request a refund through the website. An employee may issue one through an administration tool. A background worker may retry a failed refund.
+
+These operations use different parts of the application, but all can affect the amount refunded.
+
+**The total successfully refunded must never exceed the €100 originally paid.**
+
+This is a *system-state invariant*: a condition that must remain true as valid operations change the system's stored state.
+
+It is different from asking whether an individual feature works. The website could correctly submit a refund request while the system still allows two concurrent requests to refund the same money.
+
+An invariant is useful when a rule needs to survive multiple operations, different entry points, or sequences of state changes.
+
+**How it affects testing.** First identify which operations could violate the rule. Then look at whether existing tests cover those risks.
+
+For the refund invariant:
+
+
+| Possible violation                                          | Useful check                                                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| A single request exceeds the remaining refundable amount    | Unit test of the refund validation logic                                                       |
+| Two concurrent requests both read the same available amount | Integration test using concurrent requests and the real database                               |
+| A completed request is processed again after a retry        | Test that repeats the operation and checks the cumulative refund                               |
+| Several operations interact in an unexpected order | A test that performs a sequence of actions and checks the rule after each one (sometimes called a stateful test) |
+
+These are ordinary testing techniques. There is no separate framework required simply because the claim is an invariant.
+
+Some invariants deserve dedicated tests, particularly when many operations can violate them. Others can be checked inside existing feature tests.
+
+**Not every test needs an invariant.** A test that formats a date or verifies that a button displays the correct text can simply check its expected output.
+
+The practical value of identifying invariants is that they reveal important risks that might be missed when tests are written only feature by feature.
+
+Invariants also exist in algorithms and other contexts. Here the term refers specifically to rules that should remain true of the application's state.
+
+### 1.3 Prioritise the claims
+
+Identifying claims does not mean writing a test for every one immediately.
+
+Ask what would happen if each claim were false. Consider the consequences, how likely the failure is, and whether another check already covers the risk.
+
+For the refund system, a possible ranking is:
+
+| Rank | Claim | If the claim were false |
+|---|---|---|
+| 1 | An order cannot be refunded twice | Money is lost every time |
+| 2 | Total refunds never exceed the amount paid | Money is lost |
+| 3 | The refund service reads the correct order total | The check behind claim 2 uses a wrong number, so claim 2 fails without anyone seeing it |
+| 4 | The correct currency is used | The customer is paid too much or too little |
+| 5 | Customers can see their refund status | The customer has to write again, which costs staff time |
+| 6 | The "approved" label is green | Almost nothing |
+
+Testing effort goes to the top of the list first. Claim 6 may have no test at all, and that is acceptable when it was decided and not overlooked.
+
+The precise ranking depends on the application. The important part is making the choice deliberately.
+
+A short list of high-risk claims is more useful than a large inventory treated as equally important.
+
+**How this works during development:** write the main claims when establishing the project. When a new feature is introduced, ask whether it creates a new important claim or can violate an existing one. Add or revise tests accordingly.
+
+The whole testing strategy does not need to be worked out again for every change.
+
+## 2. Design a check that can establish the claim
+
+Once a claim is identified, the next decision is:
+
+**Which parts of the system must actually run for a test to show whether the claim holds?**
+
+This decision covers both the *test level* and which dependencies are real or replaced.
+
+They should be considered together because replacing a dependency changes what the test can establish.
+
+### 2.1 Start with the failure the check must detect
+
+Take four different claims about refunds.
+
+
+| Claim                                                 | What needs to run                                                 | What this check cannot establish                                          |
+| ----------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| The refund validation rejects €150 for a €100 order | The validation code with fixed inputs                             | Whether concurrent operations bypass the limit                            |
+| Two concurrent refunds cannot exceed the order total  | Refund service and a real test database, with concurrent requests | Whether the external payment provider processes requests correctly        |
+| A customer can request a refund through the website   | Browser, application and relevant backend services                | Every possible failure of the external provider                           |
+| The AI assistant rarely proposes excessive refunds    | The real model, tested on representative customer requests        | Behaviour on every future input, or whether the backend enforces the limit |
+
+A test that replaces the database cannot demonstrate that the database transaction prevents concurrent double refunds. A test that replaces the model cannot show how often the real model requests an invalid refund.
+
+This is why choosing the test boundary matters more than simply attaching a label such as "unit test" or "integration test."
+
+### 2.2 The main test levels
+
+Test levels describe how much of the system is exercised together.
+
+
+| Level           | What runs                                                                            | Best suited to                                                                     |
+| --------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| **Unit**        | A small piece of application logic, usually with dependencies controlled or replaced | Rules, calculations, validation and local edge cases                               |
+| **Integration** | Multiple components working together, with the relevant real dependencies            | Database operations, API boundaries, persistence and interactions between services |
+| **End-to-end**  | A complete user workflow through the system                                          | Whether the system's parts work together to accomplish a user's task               |
+
+For example, a unit test might check the refund amount calculation. An integration test might verify that two concurrent transactions cannot both refund the same balance. An end-to-end test might complete a refund through the website.
+
+The usual testing pyramid recommends many fast unit tests, fewer integration tests, and a smaller number of slower end-to-end tests.
+
+This is a practical guideline, not a fixed ratio. The appropriate balance depends on the application and the risks being protected.
+
+**Choose the smallest meaningful test boundary for a claim, then add broader checks for failures that the smaller boundary cannot detect.**
+
+A unit test is attractive because it is cheap and isolates faults, but it is inadequate if the behaviour depends on a database transaction that is not being exercised.
+
+### 2.3 What happens when a dependency is replaced?
+
+A dependency may be slow, costly, unavailable during tests, or produce variable results. Common examples include payment providers, databases, clocks and language models.
+
+A test can replace that dependency with a controlled implementation. The general term is a **test double**. Developers also often use "mock" informally to refer to test doubles.
+
+The main forms are:
+
+
+| Kind     | What it provides                                | Example                                             |
+| -------- | ----------------------------------------------- | --------------------------------------------------- |
+| **Stub** | A predetermined response                        | A model that always returns a valid refund request  |
+| **Mock** | A replacement whose interactions can be checked | A payment client that records whether it was called |
+| **Fake** | A simplified working implementation             | An order store implemented with a Python dictionary |
+
+The three names matter less than the trade-off they share.
+
+**Replacing a dependency gives control over it, but removes that dependency's real behaviour from the test.**
+
+A scripted model can return perfectly valid JSON on every call. This makes it possible to verify that the rest of the application processes the response correctly. It shows nothing about how often the real model returns malformed JSON.
+
+A dictionary-based order store might implement basic reads and writes correctly, but it does not reproduce the database's transaction isolation, uniqueness constraints or concurrency behaviour.
+
+The replacement can even make a faulty test pass.
+
+Suppose application code removes API keys from provider error messages before storing them. A test supplies a made-up API key and searches the stored error for it (U10 calls this a planted-key test).
+
+If the test double produces a harmless error that never contains the key, the test passes even when the redaction code is broken.
+
+To exercise the protection, the replacement must produce an error containing the planted key.
+
+This is a recurring question when reviewing agent-written tests:
+
+**Did the test create the conditions in which the claimed failure could actually happen?**
+
+### 2.4 Real dependencies do not necessarily mean production dependencies
+
+Not every test needs a replacement.
+
+For example, an integration test can start the same Postgres software used by the application in a temporary container. That exercises real SQL and database constraints without using production data.
+
+A payment provider might offer a sandbox environment that exercises its API without moving actual money.
+
+Such tests can provide stronger evidence about the relevant dependency, but still do not reproduce every condition of production, such as live configuration, traffic volume or provider-specific production behaviour.
+
+The options form one trade-off. The more of a check that is real, the more a pass shows, the more each run costs, and so the less often it can run (step 4):
+
+| Choice | What a pass can show | Cost of a run | How often it can run |
 |---|---|---|---|
-| **Unit test** | One function or class, with its dependencies replaced | A rule or calculation, checked on many inputs in milliseconds | Whether the parts work together |
-| **Integration test** | Several real parts together, such as the code and a database, or two services | The boundaries between parts: formats, order of calls, error handling | Any part that is still replaced, and the user's task as a whole |
-| **End-to-end test** | The whole system as a user meets it, usually through a browser | That a complete task works from the outside | Each test takes seconds or minutes, and a failure does not say which part is at fault |
+| Test doubles around the code | The code's own logic | Milliseconds, free | On every change |
+| A real dependency in a test environment | The code working with that dependency. Production's configuration, data size and load are still not reproduced | Seconds | On every change, or on every push |
+| The full application with real services or the real model | The user's task, or the model's behaviour | Minutes, and often money | Before a release, on a schedule, or when a change is meant to alter behaviour |
 
-The usual advice is many unit tests, fewer integration tests and a few end-to-end tests,
-because the lower levels are fast and point at the fault, and the higher levels catch what the
-lower levels cannot. This shape is often called the **test pyramid**.
+This does not mean that the most realistic check is always best.
 
-Two kinds of test sit at the boundaries. A **contract test** checks that both sides of an
-interface still agree, for example that the order service's response still has the fields the
-assistant's code reads. A **smoke test** (U14) sends a few real requests to a newly started
-system to check that it is serving at all.
+For each important claim, choose a check that is strong enough to detect the failures that matter. Use additional checks where replacing a dependency leaves an important gap.
 
-## 1.3 Test doubles: what a stand-in hides
+### 2.5 Special checks for particular problems
 
-A dependency that is slow, costs money, or gives a different answer each time is usually
-replaced in tests. The general term for the replacement is a **test double**; this note also
-calls it a stand-in. There are several kinds:
+Some testing techniques are best understood by the specific risk they address.
 
-| Kind | What it does | Support-assistant example |
+**Contract tests: when two components disagree**
+
+Imagine the backend changes an API response from `order_total` to `total_amount`.
+
+The backend's tests may pass. The frontend's tests may also pass if they use saved responses with the old field name.
+
+The application can still break when the components are connected.
+
+A contract test checks that both sides agree on the interface they use.
+
+One approach uses the server's API description, a file the server can produce that lists every request it accepts and every field it returns (OpenAPI is the usual format). The description is saved, and the client's types are generated from the saved copy. A test then fails when the server's current description no longer matches the saved one, which means the client was built from a description that is out of date. The test must compare against the description the server produces now; comparing two saved copies with each other shows nothing.
+
+This checks the shape of requests and responses. It does not check the rules or permissions behind the API.
+
+**Golden or snapshot tests: when an output changes unnoticed**
+
+A long model prompt can contain hundreds of lines. Someone may make a legitimate change in one part and accidentally alter another.
+
+A golden test stores an approved version of the complete output and compares future output with it.
+
+Any difference causes a failure.
+
+That is useful for prompts, serialized events, generated API descriptions and screenshots.
+
+But a golden only establishes that the output has or has not changed relative to the saved version. It does not establish that the saved output was correct.
+
+It also stops protecting against accidental changes if the golden is regenerated without reviewing the difference.
+
+**Regression tests: when a previous defect might return**
+
+Suppose a refund was once issued twice because a worker retried a completed operation.
+
+After fixing the defect, keep a test that reproduces the original scenario.
+
+Ideally, demonstrate that it fails against the faulty behaviour and passes with the fix.
+
+That test now protects against the same regression.
+
+**Evaluations: when the behaviour belongs to the language model**
+
+Suppose the refund assistant's prompt is changed to say:
+
+"Never request a refund larger than the amount paid."
+
+A test is **deterministic** when the same code and inputs give the same result on every run. A model's answer is not. A deterministic test can check whether that sentence appears in the generated prompt.
+
+It cannot establish that the real model follows the instruction.
+
+To investigate that, run a set of customer requests through the real model and measure how often it produces excessive refund requests.
+
+For example, "7 of 50 requests exceeded the limit" is evidence from that sample, not a universal pass-or-fail guarantee.
+
+A before-and-after comparison should use comparable inputs and scoring methods. Model variability, sample size and uncertainty matter when interpreting the result.
+
+Where a rule must hold every time, enforce it in ordinary application code rather than depending solely on model behaviour.
+
+### 2.6 Backend, frontend and LLM testing
+
+The underlying reasoning is the same in all three areas. The claims and useful test boundaries differ.
+
+
+| Area            | Typical questions                                                      | Useful checks                                                                     |
+| --------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Backend         | Are rules enforced? Is data stored correctly? Are permissions checked? | Unit, integration and contract tests, including real database checks where needed |
+| Frontend        | Can users complete tasks? Do screens reflect the current state?        | Logic/component tests, browser tests and screenshot comparisons                   |
+| LLM application | Is the prompt correct? Is the model's output valid and useful?         | Deterministic tests of application code, plus evaluations with real model calls   |
+
+Frontend testing has its own levels:
+
+| Level | What runs | What it is for |
 |---|---|---|
-| **Stub** | Returns fixed answers | A model that always replies `{"action": "refund", "amount": 40}` |
-| **Mock** | Records how it was called, so the test can check the calls | A payment client; the test asserts it was called once with 40 euros |
-| **Fake** | A working but simplified implementation | An order store held in a Python dictionary instead of the database |
+| Unit | The logic with no browser: the functions that turn server data into what the page shows | Fast checks of every state the data can be in |
+| Component | One piece of the page rendered alone, with its data supplied by the test | That a piece shows the right text and reacts to a click |
+| Browser | The real pages in a real browser, driven by a script that clicks and types | That a whole task works. Few of these, because each is slow |
+| Screenshot comparison | A golden test on a picture of the page | An unintended change in appearance. A person has to look at each difference |
 
-A stand-in makes a test fast and repeatable. The cost is that the test says nothing about the
-real dependency. A stub model always produces a valid refund request, so the test cannot show
-what the real model asks for, how often its answer is malformed, or how long it takes. A fake
-order store does not have the real database's constraints or its behaviour under two writes at
-once.
+A browser test is not necessarily an end-to-end test of the entire application. If Playwright drives the real page but every server response is replaced with saved data, it exercises the frontend, not the actual backend.
 
-A stand-in can also make a test pass for the wrong reason. Suppose the assistant holds an API key
-for its model provider, and the code removes the key from any error message before the message
-is logged. U10 described a **planted-key test** for this: a made-up key is used for a whole
-conversation, and every place the system writes to (logs, database, error reports) is searched
-for that exact string. It is also called a canary, after the bird miners used to detect gas: it
-reveals a leak that would otherwise go unseen. To test the failing path, the stand-in provider
-must fail with an error that contains the key, as a real provider's error may. A stand-in that
-fails with a clean message passes the test without ever running the code that removes the key.
+Similarly, a whole-game test that uses the real LangGraph graph with a scripted model can verify orchestration without verifying the real model's decisions.
 
-## 1.4 Deterministic tests and evaluations of the model
+**The practical question is always: what was real in this check, and what was not?**
 
-A test is **deterministic** when the same code and inputs give the same result every time. A
-model's answer is not: the same prompt can give a different answer on each call. So an LLM
-application is checked in two different ways.
+## 3. Find the failure cases
 
-| | Deterministic test | Evaluation with the real model |
+A test that checks only the normal path can pass while important failures remain.
+
+Consider the refund service. A valid €20 refund against a €100 order is a useful normal case, but it says little about the conditions most likely to cause serious errors.
+
+Two approaches help discover additional cases.
+
+### 3.1 Vary the inputs
+
+For each important input, consider empty values, one item, many items, values at the limit, invalid values and duplicates.
+
+For a refund amount, that might mean €0, exactly €100, €100.01, a negative amount, text instead of a number, and a request that repeats an earlier refund.
+
+These cases often exercise different branches of validation logic.
+
+Not every variation needs a dedicated test. Focus on the cases that could change whether an important claim holds.
+
+### 3.2 Examine what can happen between operations
+
+Many difficult failures arise not from unusual inputs but from the sequence in which operations occur.
+
+Suppose the service performs two actions: sends a refund to the payment provider, then records that refund in the database.
+
+Four questions are particularly useful:
+
+1. **What if execution stops here?** The provider may have processed the refund before the application records it.
+2. **What if this operation runs again?** A retry may send the refund twice.
+3. **What if two operations happen concurrently?** Both may read the same available balance.
+4. **Was the result confirmed, or merely requested?** Sending a refund request does not necessarily mean the payment provider accepted it.
+
+Each question suggests specific failure scenarios and tests.
+
+These questions are especially relevant to asynchronous workers, distributed systems and agent workflows that resume after interruptions.
+
+### 3.3 Area-specific failure cases
+
+A frontend adds situations such as loading, empty and error states, smaller screens, repeated clicks, lost connections and returning to an interrupted task.
+
+An LLM application adds malformed structured output, refusal, timeouts, unexpected tool calls, hostile instructions embedded in retrieved content, and variation between repeated calls.
+
+A backend adds permission failures, concurrent writes, retries, partial failures and database constraints.
+
+Rather than treating this as an exhaustive checklist, ask which situations could violate the prioritised claims from Step 1.
+
+## 4. Make testing repeatable, automatic and usable by coding agents
+
+Good tests provide little protection if nobody runs them or if their results cannot be trusted.
+
+This part matters particularly when coding agents write and execute much of the test suite.
+
+### 4.1 Give the project predictable test commands
+
+A developer or coding agent should not need to discover the correct command for each change.
+
+Establish a default set that runs without paid services or private credentials. Keep slower integration, browser and live-model checks separately selectable.
+
+For example, a project might distinguish:
+
+
+| Set              | What belongs in it                                 | When to run                                          |
+| ---------------- | -------------------------------------------------- | ---------------------------------------------------- |
+| Fast checks      | Unit tests, relevant static checks                 | During development and on pull requests              |
+| Broader checks   | Real-database integration tests, browser workflows | Before merging, or on relevant changes               |
+| Live evaluations | Calls to real models and external services         | On relevant behavioural changes or a planned schedule |
+
+The exact commands depend on the project.
+
+The important part is knowing which checks ran and which were excluded.
+
+A test skipped because a database isn't configured is not equivalent to a test that passed against that database.
+
+### 4.2 Use shared fixtures and test-data factories
+
+Many tests require the same kinds of objects and environments.
+
+A *fixture* supplies reusable test setup, such as a database connection, an API test client or a logged-in user.
+
+A *factory* builds test data, such as an order with particular values or a legal game state.
+
+Centralising these reduces duplicated setup and makes it easier to create realistic failure cases.
+
+Tests should also have names that describe the claim being checked.
+
+For example, `test_refund_above_remaining_amount_is_rejected` communicates its purpose more clearly than `test_refund_4`.
+
+Folder organisation should make tests discoverable. Backend tests can follow the components they protect, while frontend tests may sit near the components or features they exercise. Integration and browser tests often benefit from separate locations because they require different environments.
+
+The important requirement is consistency, not a universal directory structure.
+
+### 4.3 Keep tests from depending on uncontrolled variation
+
+A *flaky test* passes on some runs and fails on others without a relevant code change.
+
+Common causes include:
+
+
+| Cause                      | Example                                                                   |
+| -------------------------- | ------------------------------------------------------------------------- |
+| Shared random state        | Two threads consume numbers from one seeded generator in different orders |
+| Timing assumptions         | A test waits a fixed half-second for work that sometimes takes longer     |
+| Shared state between tests | One test leaves data that changes another test's result                   |
+| External services          | A real service varies in response time or availability                    |
+
+Flakiness damages confidence because people learn to rerun failing tests until they pass.
+
+The repair depends on the cause.
+
+Sometimes the environment should be controlled, such as by isolating test data or avoiding shared random generators. Sometimes the assertion should describe a property that remains true regardless of valid execution order.
+
+For example, checking that a refund changes the stored balance by the correct amount can be more robust than requiring a particular log message to appear third.
+
+**A test should fail when the protected behaviour is wrong, not because harmless variation changed the scenario.**
+
+### 4.4 Continuous integration
+
+Continuous integration (CI) runs selected checks automatically against a known code revision, usually when a change is pushed or proposed for merging.
+
+It helps with three problems:
+
+* Tests no longer depend entirely on someone remembering to run them.
+* The checks execute in a reproducible environment rather than relying on files and packages left on one developer's machine.
+* Results are associated with a particular revision.
+
+CI does not make weak assertions strong. It only runs the checks that exist.
+
+For a release guarantee, the release procedure must also ensure that the tested revision is the revision being deployed.
+
+A successful CI run on one commit does not prove that a different deployed commit was tested.
+
+**Detail: coverage.** **Test coverage** is the share of the code's lines that the tests executed. A high number shows little, because a line can run without any assertion checking its result. It is more useful the other way round: a line that no test runs is certainly not tested.
+
+### 4.5 Setting up a project for agent-written tests
+
+A coding agent can create hundreds of tests, but that does not mean those tests protect the system's most important behaviour.
+
+Before delegating substantial work, establish three things in the project's instructions or testing guide.
+
+**First: what correctness means.** Give the agent the relevant system claims, the behaviour expected from the change, and important failure cases. It can propose additional cases, but should not choose coverage solely by what is easy to test.
+
+**Second: how testing works in the repository.** Document the test commands, folder organisation, reusable fixtures, test environments, test categories and rules for updating goldens.
+
+**Third: what evidence is required before work is complete.** Require the agent to report the tests it ran, failures, skips, real or replaced dependencies, and the reason for changed goldens. For a defect fix, ask for evidence that the regression test detects the defect, when practical.
+
+For a substantial change, the workflow is:
+
+1. Agree on the expected behaviour and relevant failure cases.
+2. Have the agent propose or write the checks.
+3. Confirm that the checks can detect the intended fault, when feasible.
+4. Implement or repair the behaviour.
+5. Run affected tests and the agreed broader regression suite.
+6. Review what passed and what remains unverified.
+
+The agent can perform much of this work. The person reviewing remains responsible for deciding whether the evidence supports the important claims.
+
+This is especially important when the same agent writes both the implementation and its tests: the agent may encode the same mistaken assumption in both.
+
+The broader practices of managing coding agents belong in a separate note. U13 needs only the testing responsibilities and the reasoning behind them.
+
+## 5. Review whether the evidence is meaningful
+
+A large number of passing tests is not automatically strong evidence.
+
+Three questions are particularly useful when reviewing a test written by someone else.
+
+
+| Question                                 | What to inspect                                                                         |
+| ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Can this test detect the fault?**      | Does the test fail when the relevant behaviour is deliberately broken?                   |
+| **Does it check the intended behaviour?** | Is the assertion about the observable result, or merely about an implementation detail? |
+| **What remains unverified?**             | Which inputs, dependencies, environments and behaviours were not exercised?              |
+
+### 5.1 Can the test actually fail?
+
+Suppose a test asserts that a function returned a non-null object. That assertion may pass even when the object contains an incorrect refund amount.
+
+One useful verification technique is to introduce a deliberate fault and see whether the test detects it.
+
+For a refund limit, temporarily remove the limit in a controlled test environment. If the test still passes, it was not protecting the rule.
+
+This is the principle behind mutation testing: changing the implementation in ways that should violate behaviour to assess whether the tests detect those changes.
+
+It need not be applied to every single test manually. It is particularly valuable for critical rules, regressions and tests whose assertions are difficult to judge.
+
+### 5.2 Test behaviour, not only implementation details
+
+Consider two assertions:
+
+* "The function `check_refund_limit` was called once."
+* "The excessive refund was rejected and no payment was issued."
+
+The first checks an implementation detail. It may pass even if the function's result is ignored. It may also fail after a harmless refactor that preserves the behaviour.
+
+The second checks the outcome that matters.
+
+Interaction assertions are still useful when the interaction itself is part of the requirement, such as ensuring a payment provider is called at most once. But they should not substitute for checking the final state when the final state is what matters.
+
+### 5.3 Be precise about what passed
+
+A passing test establishes that an asserted property held for the tested code, inputs, environment and dependency behaviour.
+
+It does not establish correctness on inputs that were not tried, against dependencies that were replaced, or for claims the test never asserted.
+
+For model evaluations, the same discipline applies differently. Report the observed counts, sample sizes, relevant conditions and limitations rather than treating a favourable result as a universal guarantee.
+
+Keep two terms separate:
+
+* **Validated:** A particular behaviour was checked using specified tests or measurements.
+* **Deployed:** A version is running where users can reach it.
+
+A change can be deployed without adequate validation. It can also be validated locally without ever being deployed.
+
+## One change taken through the five decisions
+
+Suppose the support-assistant team wants to stop excessive refunds.
+
+
+| Decision             | What the team does                                                                                                                                   |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Claims**        | Separate two claims: no excessive refund may be paid, and the model should rarely request one                                                        |
+| **2. Checks**        | Test the refund service's enforcement in code, including a real-database check for concurrent refunds. Evaluate the model on saved customer requests |
+| **3. Failure cases** | Exactly at the limit, one cent above it, partial refunds, repeated requests, concurrent requests and provider failures                               |
+| **4. Running**       | Put deterministic checks in the routine suite; run the model evaluation when the prompt or model changes                                             |
+| **5. Review**        | Show that removing enforcement makes the relevant test fail. Report the model evaluation's observed counts and limitations                           |
+
+The table holds two separate claims. The application should not pay an excessive refund, even when the model asks for one. That guarantee belongs in the refund service.
+
+The model evaluation answers a separate question: how often the model produces an excessive request.
+
+A test that merely confirms the prompt contains an instruction establishes neither of those claims.
+
+# Part 2 — The five decisions applied to my Werewolf project
+
+**The system in brief.** A game has ten **seats**, each played by a model agent (an AI seat) or by a person. LangGraph runs the game as a **graph**: each step, such as one seat's turn, is a **node**, and the game's state is saved after each step. Each AI seat's prompt is built from the information that seat is allowed to know. The server turns the graph's output into events for the browser (the **translator**) and decides which seat may see which event. Games are played in two ways: **hosted games** on the website, and **batch games** run from the command line for experiments. Finished games also feed **lessons**, strategy notes extracted by a model and read by AI seats in later games.
+
+Coding agents wrote most of the tests, alongside each feature. I did not write a ranked list of claims first. This part works the claims out afterwards and looks at what the tests protect. Every count and result below was read or run on 2026-11-17.
+
+## Step 1 in my system: the claims
+
+The suite has thousands of tests. The more useful starting point is the claims that would cost most if false, with the evidence behind each:
+
+| Claim | Existing evidence | Main gap |
 |---|---|---|
-| What it checks | The code around the model: prompt assembly, validation, permissions | What the model does with that prompt |
-| Result | Pass or fail | A count or a rate with its sample size, such as "an over-large offer in 7 of 50 test emails" |
-| Cost and speed | Free, seconds | Model calls that cost money, minutes or hours |
-| When it runs | On every change | When a change is meant to alter behaviour, or on a schedule |
+| An AI seat's prompt never contains another seat's private information | Eleven leak checks in the engine tests; nine of them also run on every batch game | Hosted games: an audit that runs the same checks over a hosted game's saved prompts is written and tested, and is not scheduled, so nothing runs it. What a seat says is not checked |
+| The engine settles each night's actions by the rules | Unit tests of the night rules | Not examined for this note |
+| Every fact the deduction engine writes into a prompt is true. (The deduction engine is code that works out what a seat can deduce and adds it to that seat's prompt) | Thousands of random legal nights from fixed seeds, each settled by the real game code | Nights the generator cannot produce |
+| A whole ten-seat game can be played to the end, and every step becomes browser events | Whole games on the real graph with a scripted model | Everything a real model does |
+| A player's own API key is never written out | Planted-key tests for a dead game's error text and traceback, the crash report sent to Sentry, and the log of a failure after the game is over. A real call to each of the five providers with a made-up key: none returned the whole key in its error, and two returned part of it (U10, section 3.6) | No test searches the database, the events or the trace; that the key is absent there rests on reading the code. The log line of a failed model call is not scrubbed, so it can hold the part of a key that a provider returns |
+| A prompt changes only on purpose | A golden of the day-discussion prompt for each of the ten roles | Whether the prompt is good. Sections that the golden's game state leaves empty |
+| The server and the browser agree on the API | A test that fails when the saved API description is out of date | The separate rules for which seat may see which event |
+| A hosted game survives a server restart | Recovery tests against test doubles; a manual restart check in August | No automatic test uses the real code that saves game state to Postgres |
 
-Neither replaces the other. Suppose the support assistant's prompt gains the sentence "Never
-offer a refund larger than the order total." A unit test can check that the sentence is in the
-prompt, in the right place. Only an evaluation can show whether the model now offers smaller
-refunds. And the guarantee that matters does not come from either: it comes from the refund
-service refusing large refunds in code (U11, section 1.5).
+The last row shows why the number of tests is a poor measure. Surviving a restart is near the top of the list by cost, and its automatic tests replace the main part of the real recovery mechanism. A ranked list written before the tests would have made that visible.
 
-## 1.5 Exact-text tests: what a golden protects
+## Step 2 in my system: the checks, and what is real in each
 
-A **golden test**, also called a **snapshot test**, saves an approved output once and compares
-every later output with it, whole. For the support assistant, the golden could be the complete
-prompt sent to the model for one saved email. Any change to the prompt, intended or not, makes
-the test fail.
-
-That is what a golden protects: it detects a change anywhere in a long output that nobody
-would think to check line by line. A golden is said to **pin** the output: the output cannot
-change without the test failing. A prompt is a good candidate, because a stray change to one
-sentence changes the model's behaviour and is easy to miss.
-
-It does not establish that the saved output was correct. It establishes only that the output
-has not changed since someone last approved it.
-
-A golden stops protecting in two ways:
-
-- **It is regenerated without being read.** An intended change makes the test fail, and the
-  fix is to regenerate the golden. If regenerating becomes routine and nobody reads the
-  difference, an unintended change is approved along with the intended one.
-- **Its input is not representative.** A golden built from one saved email pins what happens
-  to that email. It says nothing about an email with an attachment, if none of the saved
-  inputs has one.
-
-## 1.6 Flaky tests
-
-A **flaky test** passes on some runs and fails on others, with the same code. The usual
-causes:
-
-| Cause | Example |
-|---|---|
-| Shared random state | A test fixes the generator's starting value (its **seed**) so that every run draws the same numbers. But two threads draw from that one generator, so which thread gets which number depends on which runs first, and the runs differ after all |
-| Timing | A test waits a fixed half second for work that sometimes takes longer |
-| Order between tests | One test leaves data behind that another test depends on |
-| Outside services | A test calls a real model or a real network service |
-
-A flaky failure does not mean the rule under test is broken. It means the test does not
-control everything its result depends on. The cost is that people learn to rerun a failed test
-until it passes, and then a real failure is rerun and ignored too.
-
-There are two ways to repair one. Either control the source of variation, for example by giving
-each thread its own generator or by setting up a situation where the variation cannot matter.
-Or change the assertion to a property that holds in every run: for a refund test, "the
-customer's balance went up by exactly the refund", not "the third log line says refunded".
-
-## 1.7 Regression tests and finding edge cases
-
-A **regression** is something that used to work and stopped. A **regression test** is written
-from a real fault: first a test that fails because of the fault, then the fix, then the same
-test passing. Writing the test first shows that it can fail, and it stays in the suite so the
-same fault cannot return unnoticed.
-
-The cases most worth testing are the rules that must always hold (called **invariants**), the
-boundaries between components, and past faults. Edge cases can be found by asking four
-questions of each step in a piece of work, such as "pay the refund, then send the reply":
-
-1. What if the process dies here?
-2. What if this runs twice?
-3. What if two of these happen at once?
-4. Was the result confirmed, or only assumed?
-
-For the support assistant: what if the server restarts after the refund is paid and before the
-reply is sent? What if the customer clicks "refund" twice? What if two refund requests for one
-order arrive together? Does the reply say "refunded" because the payment provider confirmed
-it, or because the request was sent?
-
-## 1.8 Continuous integration, and what coverage measures
-
-**Continuous integration** (CI) is a service that runs the tests automatically on every change
-pushed to the shared repository, on a clean machine, and marks the change as failed when a test
-fails. Without it, three things are lost:
-
-- **The tests run only when someone remembers.** A broken test can sit unnoticed for weeks.
-- **A pass describes the developer's machine.** Installed packages, environment variables and
-  files left over from earlier work can make a test pass locally and fail anywhere else.
-- **There is no record of which revision passed.** A pass on a working folder with uncommitted
-  edits says nothing about the commit that was released.
-
-CI does not make untested behaviour correct. It runs the same tests, with the same stand-ins,
-as a developer would run by hand; what it adds is that they run every time, on a known
-revision. Tests that need credentials or cost money are usually
-left out of it, or run on a schedule.
-
-**Test coverage** is the share of the code's lines that the tests executed, or of its
-branches (both sides of every `if`). A
-high number proves little, because a line can run without any assertion checking its result:
-a test that calls the refund service and checks nothing raises the coverage as much as one
-that checks the refusal. Coverage is more useful the other way round: a line that no test runs
-is certainly not tested.
-
-### Check your understanding
-
-The support assistant's team adds the sentence "Never offer a refund larger than the order
-total" to the prompt. A unit test checks that the sentence appears in the prompt, and it
-passes in CI. The release note says: "The assistant no longer offers refunds above the order
-total." What does the test establish, and what would support the release note?
-
-<details>
-<summary>Answer</summary>
-
-The test establishes that the prompt is built with the sentence, on the revision CI ran. It
-says nothing about what the model does with it.
-
-To support the release note, an evaluation is needed: a set of saved emails that tempt the
-model to offer too much, run against the real model before and after the change, with the
-number of over-large offers counted each time and the sample size stated. Even a good result
-would be a rate, not a guarantee. The guarantee comes from the refund service refusing any
-amount above the order total in code, and a unit test of that check is the test that matters
-most.
-</details>
-
-## 1.9 A checklist for a new system
-
-| Question | What it establishes |
-|---|---|
-| 1. Which rules must always hold? | The invariants (1.7) that deserve unit tests over many inputs |
-| 2. Where are the boundaries between components? | Where integration and contract tests are needed |
-| 3. Which dependencies are replaced by stand-ins, and what does each hide? | The list of behaviours no test checks |
-| 4. Which past faults have a test? | Whether each fault can return unnoticed |
-| 5. What is measured with the real model, and when? | Which behaviour claims are supported, and how old the evidence is |
-| 6. What runs automatically on each change, and on which machine? | Whether a pass describes the released revision |
-| 7. Does every test control its own randomness and timing? | Whether a failure can be trusted |
-
----
-
-# Part 2 — What the tools do, and what my application does
-
-| Responsibility | The tool | My application |
-|---|---|---|
-| Find and run the Python tests; select by marker | pytest, configured in `pyproject.toml` | Marks tests that call paid models as `live`, and excludes them by default |
-| Replace a dependency for one test | pytest's `monkeypatch` | Decides which dependency is replaced, and writes the stand-ins (a scripted model, stand-in graphs) |
-| Run the frontend's logic tests | Vitest, in Node with no browser | Chooses the fixtures: real games saved from the server |
-| Drive a browser and compare screenshots | Playwright, with a pixel tolerance | Answers every API call from saved games, so no server runs |
-| Run the game's graph in a test | LangGraph, with its in-memory checkpoint saver | Runs whole games on the real graph with the model scripted |
-| Decide what counts as correct | No tool | The assertions, the goldens, and the leak checks |
-| Run the tests on every change | None configured | Nothing runs them automatically (3.6) |
-
----
-
-# Part 3 — How my Werewolf system does it
-
-**The system in brief.** A game has ten **seats**, each played by a model agent (an AI seat) or
-by a person. The game itself is a **graph** (LangGraph): each step of the game, such as one
-seat's turn, is a **node**, and the game's state is saved after each step. The **game master**
-is the game's own voice: its announcements, such as who died in the night, appear in the same
-discussion the players write in. Each AI seat's prompt is built from the state it is allowed to
-see. The server turns the graph's output into events for the browser (the **translator**) and
-decides which seat may see which event. Games are played in two ways: **hosted games** on the
-website, and **batch games** run from the command line for experiments. Finished games also
-feed **lessons**, strategy notes extracted by a model and read by AI seats in later games.
-
-**The case at the centre.** On 2026-11-17 I changed how a player's words appear in the AI
-seats' prompts: each message is now one line inside quotation marks, and a fixed caption line
-under the discussion heading says that a player's words are inside quotation marks. The change
-was a defence against a person typing a fake game-master announcement into their own message,
-which AI seats had believed (U11, section 3.3). Four questions had to be answered about the
-change, and tests answered only the first. That case (3.5) is the centre of this part. Sections
-3.1 to 3.4 describe the suite it ran in.
-
-## 3.1 What the suite contains
-
-The Python tests are in four folders by the part of the system they test, plus one folder for
-tests that call paid models. One command, `poetry run pytest`, runs everything except those.
+**What the suite contains.**
 
 | Folder | Tests | What they test |
 |---|---|---|
-| `tests/engine` | 1,436 | The game: its rules, the step that settles each night's actions, the deduction engine (code that writes facts a seat can deduce into its prompt), prompt assembly, whole games with a scripted model (3.2) |
-| `tests/memory` | 334 | The lessons: extraction from finished games, removal of duplicates, storage and retrieval |
-| `tests/evaluation` | 392 | The evaluation code itself: sampling, scoring and judging pipelines, and the loop that credits and prunes lessons |
-| `tests/server` | 311 | The game session, the API, the translator into browser events, durability |
+| `tests/engine` | 1,436 | Game rules, night resolution, the deduction engine, prompt assembly, whole games with a scripted model |
+| `tests/memory` | 334 | Lessons: extraction, removal of duplicates, storage and retrieval |
+| `tests/evaluation` | 392 | The evaluation code itself: sampling, scoring, judging, and the loop that credits and prunes lessons |
+| `tests/server` | 311 | The game session, the API, the translator, durability |
 | `tests/live` | 170 paid, 9 free | Every model a player can choose, asked for every seat's output format (170 cases, excluded by default); 9 free tests that a model is skipped when its provider's key is absent |
 
-That is 2,652 Python tests, of which 2,482 run by default. On 2026-11-17 the default run
-passed: 2,481 passed and 1 was skipped, in 13 minutes 38 seconds (on a machine also running the
-frontend tests and another agent's work). A few memory tests use a real Postgres database
-whenever a database address is set, as it is on my machine, and are skipped otherwise; the one
-skipped test is a replay test of the same kind that needs its own address. So the same command
-tests more on my machine than it would on a clean one. Ten tests that check the deduction engine
-on thousands of random games took about 10 of the 13 minutes.
+That is 2,652 Python tests, of which 2,482 run by default. The frontend has 1,607 unit tests in 73 files (Vitest, no browser), and a browser suite of 8 spec files with about 115 tests and 99 saved screenshots (Playwright).
 
-The frontend has its own tests:
+**What is real and what is replaced.**
 
-| Kind | Size | Run for this note? |
+| Check | What actually runs | What is replaced or left out |
 |---|---|---|
-| Unit tests (Vitest, no browser) | 73 files, 1,607 tests | Yes: all passed, in 56 seconds (while the Python suite was running alongside) |
-| Browser tests (Playwright) | 8 spec files, about 115 tests, 99 saved screenshots | No. It needs a server started by hand first; the frontend's testing guide estimates about 16 minutes |
-| Types, lint, production build | One command each | No |
+| Engine unit tests | Game rules, changes to the game state, prompt formatting | Nothing large; the inputs are built for the test |
+| Whole-game engine tests | The real graph, and the server's translator | The model, by a **scripted model** that fills any output format with legal values chosen at random. Some supporting model calls are stubbed |
+| Server integration tests | A real game session, and the real API application behind a test client | The game graph, by a test double that yields scripted output. Database writes are recorded instead of sent |
+| Frontend unit tests | The frontend's logic, with no browser. A small group renders components to HTML to check that private data reaches only the reader allowed to see it | The server; the fixtures are saved games |
+| Browser tests | The real pages in a headless Chromium browser | The whole server: every API call is answered from saved games. So these test the pages, not the system end to end |
+| `live` tests | Calls to real model providers | A game. They check output format only |
+| Evaluations and batch games | Real models playing games, or replaying saved game states | Nothing. They are run by hand, and their results hold for the models, prompts and sample tested |
 
-Test names are written as sentences that state the claim, for example
-`test_a_dead_player_gets_no_record_of_its_last_night`. A failure then says which rule broke
-without opening the file. A shared setup file pins the environment for every test: tracing is
-switched off, a paid model call made after each game is switched off, and the list of models
-comes from the code instead of the live database. A test therefore does not depend on my
-machine's database, and does not send traces to the tracing service.
+Three of these replacements hide something that matters:
 
-## 3.2 Levels, and what each stand-in hides
+- **The scripted model** makes it practical to check that a game runs to its end, that the state changes correctly and that every step becomes events. It cannot show what a real model says, how often its answer fails validation, or how long a turn takes. The real checks are the `live` tests, whose own description records a run on 2026-09-10 (I did not look for later runs), and the evaluations.
+- **The test-double graph in the server tests** means the recovery tests never use the code that saves game state to Postgres. A real kill and restart was last checked by hand in August (U3, section 3.8). The missing check is a scripted game that saves to a test Postgres, is killed and restarted, and is then checked for recovery. It needs no model calls.
+- **The browser suite keeps its own copy of the server's rules** for which seat may see which event, and uses that copy to decide what each seat is sent. If the rules change on the server, the browser suite does not detect it. The copy already lacks two event types that only their own seat may see, `uses_remaining` and `night_record`. The API description test does not cover this, because those rules are not part of the API's shape.
 
-| Level | In my system | What is replaced |
+**Goldens.**
+
+| Golden | What it protects | Built from |
 |---|---|---|
-| Unit | Most of the engine tests: the night rules, the deduction engine, the code that formats prompts | Nothing, or small inputs built by hand |
-| Integration: the engine | Whole ten-seat games run on the real graph, streamed through the server's translator | The model, by a **scripted model** that fills any output format with legal values chosen at random. The day's summary, and two checks on what a seat says, are replaced by stubs |
-| Integration: the server | A real game session; the real application behind a test client for the API | The game graph, by a stand-in that yields scripted output. The database writes are recorded instead of sent |
-| Browser tests | The real pages, driven in a headless Chromium browser | The whole server: every API call is answered from saved games. So these are not end-to-end tests in the sense of 1.2: they test the pages, not the system |
-| End-to-end | A hosted game, or a batch run of games with real models | Nothing. Not automated as a test |
-
-The deduction engine's unit tests generate thousands of random legal nights from fixed seeds,
-settle each one with the real game code, and check that every fact the engine writes into a
-seat's prompt is true in that night.
-
-What the stand-ins hide, row by row:
-
-- **The scripted model** proves that a whole game can be played to the end on the real graph
-  with legal moves, and that the browser accepts every event. It cannot show what a real model
-  says, how often its answer fails validation, or how long a turn takes.
-- **The stand-in graph** in the server tests means that bringing games back after a server
-  restart is tested without the code that saves game state to Postgres (the checkpoint saver).
-  No test uses that saver. A real kill and restart was last checked by hand in August (U3,
-  section 3.8).
-- **The browser suite's answers** come from its own copy of the server's rules for which seat
-  may see which event. If those rules change on the server, the browser suite still passes,
-  because its copy has not changed. The copy already lacks two event types that only their own
-  seat may see, `uses_remaining` and `night_record` (checked 2026-11-17).
-
-The **planted-key test** from 1.3 exists for one path. In
-`test_dead_game_error_never_echoes_the_key`, the stand-in graph fails with the error
-`401: API key not valid: sk-player-123`, the way a provider's error can. The test checks that
-the game's stored error text no longer contains the key. That is the correct form of the test.
-It covers the error text and the error report sent to Sentry only. It does not search the other
-places the key could be written: the database tables, the saved game state, the trace, or the
-log line of a failed model call (U10, section 3.2).
-
-**Where the model is tested for real.** Two places, both run by hand:
-
-- The `live` tests ask every model a player can choose for every seat's output format. They
-  exist to catch a provider change that breaks structured output. The test file's own
-  description records a first run on 2026-09-10. Whether they have been run since was not
-  checked.
-- Everything about behaviour, such as whether a prompt change moves votes, is measured by
-  evaluations in `evaluation/` and by experiment scripts in `evaluation/experiments/` (62 of
-  them), with the results and their sample sizes recorded in `evidence/`.
-
-## 3.3 Golden tests
-
-| Golden | What it pins | Built from |
-|---|---|---|
-| The day-discussion prompt | The exact prompt each of the ten roles is sent on a discussion turn, in one fixed game state on day 3 | A game state written by hand to have something in every section of the prompt, run through the real discussion step with the model replaced by one that only records what it was sent |
-| Two translator goldens | Every browser event the server's translator produces for a whole game | Two real games, one of them with a human seat |
-| The saved API description | The server's API description, which the frontend's types are generated from | The server itself. A changed route or response fails the test until the types are regenerated. This is a contract test (1.2) |
-| Frontend beat goldens | The list of moments the replay shows one after another (each called a beat), cut from a saved game | Real games |
+| The day-discussion prompt | The exact text sent to each of the ten roles, in one game state on day 3 | A game state written by hand to have something in every section of the prompt |
+| Two translator goldens | Every browser event produced for a whole game | Two real games, one with a human seat |
+| The saved API description | The server's declared API, from which the frontend's types are generated. This is the contract test | The server itself |
+| Frontend beat goldens | The list of moments the replay shows one after another (each called a beat) | Real games |
 | Screenshot goldens | 99 pictures of pages and scenes, with 0.5% of pixels allowed to differ | The rendered pages |
 
-The prompt golden fails on a change of one character in any role's prompt. A prompt change
-alters the AI's behaviour, so this test makes every such change deliberate: the golden is
-regenerated by a command, and the difference is read. What it cannot show is that the new
-prompt is better. And it pins one game state: a section of the prompt that this state leaves
-empty is not pinned.
+The prompt golden matters most, because a prompt change alters how the AI seats behave without changing any Python interface. It protects only the game state it was built from: a section of the prompt that this state leaves empty is not checked. And it shows that the prompt has not changed, not that the prompt is good.
 
-## 3.4 The leak checks
+## Step 3 in my system: the failure cases
 
-The leak checks search what each AI seat was given for private information it must not have:
-the wolves' identities, another seat's night results, the wolves' private chat. There are
-eleven checks in `tests/leak_test.py`. They return a list of leaks instead of failing, so that
-one function can be used in two places:
+Failure cases in this suite were not found by asking the questions of step 3. They were added feature by feature. Three parts of the suite do correspond to those questions:
 
-- in engine tests, over games played with the scripted model;
-- in the batch runner, over every game it plays with real models. Nine of the eleven run there;
-  the other two check data that only specific engine tests produce. A game with a leak is
-  recorded and the batch exits with an error.
+- **Varied inputs.** The deduction engine's tests draw thousands of random legal nights from fixed seeds, so combinations nobody thought of are tried on every run.
+- **"What if this operation runs again?"** A person's turn stops the game and waits for their answer (U5). When the game resumes, the step that was waiting starts again from its beginning, so the night's turns run a second time. The Vigilante test (step 5 below) checks that this does not spend a bullet twice.
+- **"What if execution stops here?"** The recovery tests cover this against test doubles only.
 
-The batch run is the only place where a check runs automatically on games with real models. A
-nightly audit of hosted games is written but not scheduled on the host (U14). The checks
-inspect what goes into a seat's prompt. They do not inspect what a seat says.
+Not examined for this note: whether the engine and server tests cover the other two questions (two operations at once; confirmed or only requested), and whether the frontend tests cover the loading, empty and error states of each page.
 
-## 3.5 Case one: a prompt change, what the tests showed, and what they could not
+## Step 4 in my system: how the tests are run
 
-The change of 2026-11-17 renders each player's message as one line inside quotation marks, and
-adds a caption under the discussion heading. Each question about it needed a different kind of
-check:
+**Commands.** `poetry run pytest` runs the default set. The paid tests carry the marker `live` and run only with `-m live`. On 2026-11-17 the default run gave 2,481 passed and 1 skipped in 13 minutes 38 seconds, on a machine that was also running other work. Ten deduction-engine tests over random nights took about 10 of the 13 minutes. The frontend's unit tests all passed in 56 seconds. The browser suite was not run for this note; the frontend's testing guide estimates 16 minutes.
 
-| Question | What answered it | Result |
+**Layout.** The test folders follow the parts of the system. `tests/fixtures/` holds the fixtures, one file per resource, and the golden files. `tests/factories/` holds the functions that build test data, including the random nights. I asked the agent to copy this layout from my dota2pred project. In the frontend, each unit test file sits beside the code it tests, and the browser tests are in `frontend/e2e/`. Tests are named as sentences, for example `test_a_dead_player_gets_no_record_of_its_last_night`.
+
+**A fixed environment, with one exception.** The shared setup file switches tracing off, switches off a paid model call made after each game, and takes the list of models from the code instead of the live database. The exception: a few memory tests use a real Postgres database when a database address is set, as it is on my machine, and are skipped otherwise. So the same command tests more on my machine than on a clean one, and a skipped test there is not a passed test.
+
+**Nothing runs automatically.** There is no CI configuration, no active git hook and no Makefile, and no step of a release runs the tests (U14, section 3.1). The tests run when I or an agent runs them, against the working folder, which often holds uncommitted edits from several pieces of work at once. So a pass in my system means: on my machine, on the files in the working folder at that moment, with the paid tests left out. It is not a record that the released revision passed.
+
+**What is written down for an agent.** [`docs/testing.md`](../../../docs/testing.md), written on 2026-11-17, holds the three things of section 4.5: the costliest claims, the commands with the folders and the way each golden is regenerated, and what to run and report before a change counts as finished. `CLAUDE.md` points to it. No change has been made under it yet, so whether agents follow it is not known.
+
+## Step 5 in my system: two tests reviewed
+
+### A prompt change, and a check it weakened
+
+On 2026-11-17 I changed how a player's words appear in the AI seats' prompts. Each message is now one line inside quotation marks, with a caption line saying so. The change was a defence against a person typing a fake game-master announcement into their own message (U11, section 3.3). Four questions had to be answered, and each needed a different kind of evidence:
+
+| Question | Evidence | Result |
 |---|---|---|
-| Does the prompt render as intended? | 10 new tests of the quotation marks and 18 of the one-line rendering; the day-discussion golden regenerated and its difference read | Passed. A double quotation mark typed by a player becomes a single one, so it cannot end the quotation early, and a forged `game_master:` line stays inside the attacker's quoted message |
-| Is the prompt in the game the prompt the experiment measured? | The experiment had built its prompts with its own copy of the quoting. A script rebuilt the 22 attacked prompts through the game's code and compared them with the experiment's | Identical, character for character, in all 22 |
-| Does it reduce the effect of a forged announcement? | An experiment with real model calls: 438 calls, $0.34 | Across three saved moments, the town votes cast for the innocent player named in the forged line fell roughly by half (24 of 33 to 14 of 33). The attack still worked often |
-| Does it change ordinary play? | A second experiment with no attack: 112 calls, $0.11 | No change it could detect. With 27 votes at the main moment, it could miss a change of a few votes |
+| Does the prompt render as intended? | 10 tests of the quotation marks, 18 of the one-line rendering, and the prompt golden regenerated with its difference read | Passed |
+| Does quoting reduce the effect of a forged announcement? | An experiment with real model calls (438 calls, $0.34), at three saved points in two games | The forged line named an innocent player. Votes for that player by seats on the village side fell from 24 of 33 to 14 of 33. The attack still worked often |
+| Is the prompt the game now builds the same as the prompt the experiment tested? | The experiment had its own copy of the quoting code. A script rebuilt, through the game's code, the 22 prompts that contained a forged announcement | Identical, character for character, in all 22 |
+| Does quoting change ordinary play? | A second experiment with no attack: 112 calls, $0.11 | No change it could detect. With 27 votes at the saved point it mainly used, it could miss a change of a few votes |
 
-The tests answered the first question completely and could say nothing about the third: a
-test with a scripted model cannot show whether a real model believes a forged line.
+The deterministic tests answered the first question completely and could say nothing about the second: a test with a scripted model cannot show whether a real model believes a forged line. The result itself is a count from a few game states and one model. It shows that the effect fell, not by how much it falls in general.
 
-**The fault the full run caught.** Three of the leak checks turned a seat's prompt input into
-one string with Python's `repr` and searched that string for private text. `repr` puts a string
-inside single quotation marks, and when the string itself contains both a single and a double
-quotation mark, it writes each apostrophe as `\'`. Once the discussion always contains double
-quotation marks, every apostrophe in it was written as `\'`. A leaked line such as `I'm the
-healer` would then appear as `I\'m the healer`, and a search for the original text would not
-have found it. The full engine test run caught this, and the checks now search the plain text
-as well. The game was not at fault. The change to the game had quietly weakened a check on the
-game, and only running every test, not just the ones written for the change, showed it.
+The full run of the engine tests also showed a fault that the new tests could not. (Which test failed in that run is not recorded.) Three of the leak checks turned a seat's prompt input into one string with Python's `repr` and searched that string for private text. `repr` puts a string inside single quotation marks, and when the string itself contains both a single and a double quotation mark, it writes each apostrophe as `\'`. Once the discussion always contained double quotation marks, a leaked line such as `I'm the healer` would appear as `I\'m the healer`, and a search for the original text would not have found it. The checks now search the plain text as well. The game was not at fault. The change to the game had weakened a check on the game, and only running every test, not just the tests written for the change, showed it.
 
-## 3.6 Case two: a test whose failure did not mean the rule was broken
+### A test that failed without the rule being broken
 
-`test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume` plays a whole game in
-which seat 1 is a human Vigilante, a role with one bullet to fire at night. When a person's
-seat has a turn, the game stops and waits for their answer, then carries on from where it
-stopped (U5). In the test, the answer at each stop is scripted. The test checks that the bullet
-is spent exactly once across these stops.
+`test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume` plays a whole game in which a person's seat is the Vigilante, a role with two bullets to fire at night. The person's answers are scripted: shoot once, then hold fire. A shot goes ahead when it is fired and no other role has blocked the Vigilante that night. The test asserts that one shot went ahead and that one bullet is left.
 
-It failed in 2 of 10 runs in one measurement and 4 of 10 in another (2026-11-12, U2 section
-3.7), and in 1 of 30 on 2026-11-17. Two things in the test caused it, not the game:
+It failed in 2 of 10 runs in one measurement and 4 of 10 in another (2026-11-12), and in 1 of 30 on 2026-11-17, with no change to the code. Two things in the test caused it:
 
-- **Shared random state.** The scripted players draw from one random-number generator with a
-  fixed seed, but the seats' night turns run on several threads. Which seat receives which
-  number depends on which thread runs first, so a different game is played on each run.
-- **The count it relied on.** It counts shots from the night records, and the engine, by its
-  own rule, keeps no record of that night for a seat that dies the same night. In such a game
-  the shot was fired and the test counted zero.
+- **Shared random state.** The scripted players draw from one random generator with a fixed seed, but the seats' night turns run on several threads. Which seat receives which number depends on which thread runs first, so a different game was played on each run.
+- **The record it counted.** The test counts shots from the night records, and the engine, by its own rule, keeps no record of that night for a seat that dies the same night. In the failing runs the Vigilante fired, spent one bullet, and was killed that night, so the test counted zero shots.
 
-The bullet was spent once in every run examined. The rule held; the test did not control what
-its result depended on.
+A second explanation fitted the same symptom: Python changes how it orders sets of strings from one process to the next. A script replayed the test's game under four settings to separate the two:
 
-**How the cause was confirmed (2026-11-17).** A second explanation fitted the same symptom:
-Python changes how it orders sets of strings from one process to the next. A script replayed
-the test's game under four settings to separate the two.
-
-| Setting | Runs | Different sets of night choices | Bullet spent once |
-|---|---|---|---|
-| Normal threads, string ordering varying | 20 | 20 | 20 of 20 |
-| Normal threads, string ordering fixed | 20 | 20 | 20 of 20 |
-| One thread at a time, either ordering | 30 | 1 | 30 of 30 |
-
-Fixing the string ordering changed nothing, and running one thread at a time made every run
-make the same night choices. So thread order is the cause. This is debugging, not an experiment, and it
-still establishes a finding, because the cause was reproduced directly.
-
-**The repair, and the alternatives.** Section 1.6 gives two repairs for a test like this. I
-chose the first: fix the situation. No scripted player may now choose the Vigilante as a target,
-so it cannot die or be stopped from acting, its shot always goes ahead, and its record is always
-kept. The games still differ from run to run; the test no longer depends on which one is played.
-The cost is scope: this test no longer plays a game in which the Vigilante is killed or stopped
-on the night it fires, and I have not checked that another test covers the bullet count there.
-
-| Alternative | Why it was not chosen |
-|---|---|
-| Assert only that the remaining bullets went down by one | In a game where no shot goes ahead, the test would pass while checking nothing about a second spend |
-| Give each seat its own random-number generator | Each seed would then play one fixed game. That hides the dependence on thread order without removing it, and it changes the games of the other tests in the file |
-| Run the night turns on one thread | The test exists to check turns that run in parallel around a pause, so this changes what it tests |
-
-**Can the repaired test still fail?** This is the first question of section 1.1, and a repair
-that removes a failure has to answer it. The engine was broken on purpose in two ways, inside
-the test process: the bullet spent twice for one shot, and the bullet spent once for each time
-the Vigilante's turn starts, which is the fault the test exists to catch, because a person's
-turn starts once before the pause and again after it. The repaired test failed on its bullet
-count under both, and passed on the unbroken engine.
-
-After the repair the test passed in 100 of 100 runs, and the full engine suite passed. The
-stronger evidence is not the count but the reason: in 40 replays the Vigilante was never
-targeted, so the event behind every observed failure can no longer happen. The record is
-[vigilante_test/experiment_log.md](vigilante_test/experiment_log.md).
-
-One thing is left open. The other whole-game tests in that file use the same scripted players,
-so their games also vary by thread order. They passed, and whether any of them can fail by
-chance was not examined.
-
-The deduction engine's random tests show the deterministic version: they draw thousands of
-random nights from a fixed seed, on one thread, so every run draws the same nights.
-
-## 3.7 What runs automatically
-
-Nothing. There is no CI configuration in the repository, no active git hook and no Makefile.
-The tests run when I or an agent runs them, on this machine, against the working folder, which
-often holds uncommitted edits from several pieces of work at once. Releases are made by hand,
-and no step of the release runs the tests (U14, section 3.1).
-
-So a pass in my system means: on my machine, on the files in the working folder at that moment,
-with the paid tests left out. It is not a record that the released revision passed.
-
-## 3.8 Known limitations and possible improvements
-
-| Gap | Why it matters | Possible improvement |
+| Setting | Replays | Different games played |
 |---|---|---|
-| 1. Nothing runs the tests automatically, and no release step runs them | A broken test can go unnoticed, and no pass is tied to the revision that was released | CI on every push running the default suite; a release step that refuses a revision without a recorded pass |
-| 2. The restart path is tested against stand-ins only | A fault in the real Postgres saver or a real restart would not be caught | A kill-and-restart test on a test Postgres with scripted players. It needs no model calls |
-| 3. **Repaired 2026-11-17.** One engine test failed on some runs because its result depended on thread order | The other whole-game tests in the same file use the same scripted players, so their games also vary by thread order; none was seen to fail | A scripted player that does not depend on thread order, for the whole file |
-| 4. The `live` model check is run by hand; its last run is not recorded since 2026-09-10 | A provider change can break structured output until a real game fails | Run it on a schedule, and record each run's date and result |
-| 5. The browser suite uses its own copy of the server's rules for who sees what, already two event types behind | A change on the server passes the browser suite | Generate the copy from the server, or test it against the server's rules in one test |
-| 6. The planted-key test covers the error text and the error report only | The key could reach the database, the saved game state, the trace or a log line unnoticed | Search those places in the same test (U10 gap 1) |
-| 7. No accessibility check runs | Nothing would catch a page that cannot be used by keyboard | axe (an automated accessibility checker) in the browser tests, and one keyboard-only test (the frontend testing guide's plan) |
-| 8. The frontend testing guide lists 5 browser spec files; the folder has 8 | The record of what is tested is incomplete | Add the three missing rows |
+| Normal threads, string ordering varying | 20 | 20 |
+| Normal threads, string ordering fixed | 20 | 20 |
+| One thread at a time, string ordering varying | 20 | 1 |
+| One thread at a time, string ordering fixed | 10 | 1 |
 
----
+Fixing the string ordering changed nothing, and one thread at a time made every replay play the same game. So thread order is the source of the variation. In all 70 replays the bullet was spent once. The rule held; the test did not control what its result depended on.
 
-# Part 4 — Design choices
+**The repair** sets up a situation in which the variation cannot affect the result (the first kind of repair in section 4.3). No scripted player may choose the Vigilante as a target, so it cannot die and cannot be blocked, and its shot always goes ahead. The games still differ from run to run. The cost is that this test no longer covers games in which the Vigilante is killed or blocked. The alternative, asserting only that the bullets went down by one, was not chosen: in a game where no shot goes ahead, that test would pass while checking nothing.
 
-**Replace the dependency, or use the real one?**
+**Can the repaired test still fail?** A repair that removes a failure has to answer the first question of step 5. The test was run against two deliberately broken versions of the engine. In the first, one shot spends two bullets. In the second, a bullet is spent every time the Vigilante's turn starts, so a turn that runs again after the pause spends a second bullet; this is the fault the test exists to catch. The repaired test failed on its bullet count under both, and passed on the unbroken engine. Each broken version was run once.
 
-| Design | Benefit | Cost | My system |
+After the repair the test passed in 100 of 100 runs, and the full engine suite passed. The 100 passes alone would not show that the test still means anything; the two broken versions show that. The record is [vigilante_test/experiment_log.md](vigilante_test/experiment_log.md).
+
+The other whole-game tests in the same file use the same scripted players, so their games also vary by thread order. None was seen to fail, and whether any can fail by chance was not examined.
+
+## Known gaps and possible improvements
+
+The order of the rows is not an order of urgency.
+
+| Gap | Step | Why it matters | Possible improvement |
 |---|---|---|---|
-| A stand-in | Fast, free, repeatable | Says nothing about the real dependency | The model in every default test; the graph in the server tests; the server in the browser tests |
-| The real dependency | Tests what will actually run | Slow, may cost money, may vary between runs | The paid `live` tests and the experiments, both by hand |
+| 1. Nothing runs the tests automatically, and no release step runs them | 4 | A pass is not tied to the released revision | CI on every push; a release step that refuses a revision without a recorded pass |
+| 2. The recovery tests replace the real code that saves game state | 2 | A fault in recovery from Postgres would not be caught | A kill-and-restart test on a test Postgres with scripted players |
+| 3. The other whole-game tests share the scripted players that made the Vigilante test vary by thread order | 4 | One of them could fail by chance | A scripted player that does not depend on thread order, for the whole file |
+| 4. The `live` model check is run by hand | 2 | A provider change can break structured output until a real game fails | Run it on a schedule, and record each run |
+| 5. The browser suite has its own copy of the rules for who sees what, already two event types behind | 2 | A change on the server is not detected | Generate the copy from the server, or compare the two in one test |
+| 6. The planted-key tests cover the error text, the crash report and one log. No test searches the database, the events or the trace, and the log line of a failed model call is not scrubbed | 2 | A later change could write the key to one of those places unnoticed. Today that log line can hold at most the part of a key that two providers return | Search those places in the same test, and log the error's category in place of the provider's text (U10 gaps 1 and 2) |
+| 7. No check of accessibility (whether the pages can be used with a keyboard or a screen reader) runs | 1 | Nothing would catch a page that cannot be used by keyboard | An automated accessibility checker in the browser tests, and one keyboard-only test |
+| 8. No ranked list of claims was written first, and no pass over the questions of step 3 | 1, 3 | A costly claim can have a weak check without anyone having decided that | Keep the table of step 1 as a short list, and ask the step 3 questions of the game session and the API |
+| 9. The testing guide for agents is new and nothing enforces it | 4 | An agent can still report "all tests pass" after running only the tests it wrote | CI, which runs the default set whatever the agent ran |
+| 10. The frontend testing guide lists 5 browser spec files; the folder has 8 | 4 | The record of what is tested is incomplete | Add the three missing rows |
 
-**Where do golden inputs come from?**
+# Part 3 — Review
 
-| Design | Benefit | Cost | My system |
-|---|---|---|---|
-| Real games | Realistic: they hold the situations that actually occur | A situation no saved game reached is not covered; a change to the game makes many goldens differ at once | Translator goldens, frontend beat goldens |
-| A game state written by hand | Can put something in every section on purpose | Only as realistic as its author made it | The day-discussion prompt golden |
+## The five decisions in two minutes
 
-**How do the server and the browser stay in agreement?**
+**1. Identify claims.** Find what must be true from four places: rules that must stay true, the tasks users must be able to finish, boundaries between components, and past faults. Rank them by what a false one would cost.
+*My system:* no list was written first. The costliest claims each have a check, and three of those checks are partial: a restart is tested against test doubles only, hosted games are not searched for leaks, and the key search does not cover the database, the events or the trace.
 
-| Design | Benefit | Cost | My system |
-|---|---|---|---|
-| Types generated from the server's description, with a test that fails when the saved description is out of date | A changed field fails a test on the day it changes | A regeneration step after every API change | Yes |
-| A contract written by hand on both sides | No generation tooling | The two copies drift apart unnoticed | The browser suite's copy of who sees what (gap 5) |
-| Checking only at run time | Nothing to maintain | A mismatch is found by a user | Not used alone |
+**2. Design checks.** Decide what must actually run for a test to detect the fault. Replace a dependency when that is useful, and say what the replacement removes from the evidence. Unit tests, integration tests, end-to-end tests and evaluations with the real model answer different questions.
+*My system:* 2,482 Python tests by default, 1,607 frontend unit tests, a browser suite, five kinds of golden, and evaluations run by hand. The model is scripted in every default test, the graph is replaced in the server tests, and the server is replaced in the browser tests.
 
-**How is a prompt change verified?**
+**3. Find failure cases.** Vary the inputs: empty, one, many, at the limit, invalid, duplicate. Ask of each operation: what if execution stops here, it runs again, two run at once, or the result was only requested and not confirmed?
+*My system:* covered by generated random nights and by particular tests, not by a pass over these questions.
 
-| Design | Benefit | Cost | My system |
-|---|---|---|---|
-| Tests and a prompt golden | Free, on every run; prove the prompt is the intended text | Nothing about behaviour | Yes |
-| An evaluation with the real model | Measures the effect on behaviour | Money, time, and a result with a sample size | Yes, for changes meant to alter behaviour |
+**4. Make testing repeatable.** Predictable commands, shared fixtures and factories, the same result on every run, and CI. For a coding agent, write down what must be protected, how tests are run, and what evidence it hands back.
+*My system:* one command and a clear layout; a testing guide for agents since 2026-11-17; no CI, so a pass describes my machine and my working folder.
 
----
+**5. Review the evidence.** Can the test fail? Does it check the intended behaviour? What does a pass not establish?
+*My system:* the repaired Vigilante test was shown to fail against an engine broken on purpose; the full run caught a leak check that a prompt change had weakened.
 
-# Part 5 — Review
-
-## In 30 seconds: five ideas
-
-1. **A pass is a fact about one run.** It holds for that revision, environment, set of inputs
-   and set of stand-ins, and for the property asserted, and for nothing else.
-2. **Each level catches what the others miss.** Unit tests point at the fault, integration
-   tests check the boundaries, end-to-end tests check the user's task. A stand-in at any level
-   is a part that level does not test.
-3. **An LLM application needs tests and evaluations.** Tests check the code around the model
-   on every change. Only an evaluation with the real model shows what a change did to its
-   behaviour.
-4. **A golden pins the output, not its correctness.** It is useful only while each difference
-   is read before the golden is regenerated.
-5. **A flaky failure means the test does not control its result.** Find the source, then
-   control it or assert something that holds in every run.
-
-## My Werewolf system in one paragraph
-
-I have 2,652 Python tests, 2,482 of which run by default, and 1,607 frontend unit tests, plus
-a browser suite that answers every API call from saved games. Whole games run on the real graph
-with a scripted model that picks legal moves at random, so the rules, the event stream and the
-prompts are tested without a model call; the prompt each role is sent is pinned by a golden. The
-leak checks run in the tests, and nine of the eleven also run on every batch game played with
-real models. Nothing runs
-automatically: there is no CI, and a pass describes my machine and my working folder. The
-2026-11-17 quoting change shows the split: the tests proved the prompt renders as intended, an
-experiment with real models was needed to show it roughly halves a forged announcement's
-effect, and the full test run caught a leak check the change had weakened. The restart path is
-tested against stand-ins only, and one engine test fails by thread order (repair in progress).
+The idea behind all five: decide what must be true, then choose checks that could show when it is false.
 
 ## Stopping check
 
 Without looking back at the note, explain:
 
-- what a pass of the day-discussion prompt golden establishes, and what remains untested even
-  if CI ran it on every push;
-- why the scripted model cannot tell me whether the quotation marks work as a defence;
-- why the Vigilante test's failures did not mean the bullet rule was broken.
+1. why looking for invariants finds tests that feature-by-feature testing misses, although most tests do not assert an invariant;
+2. why testing a refund rule with a fake database can miss a fault that appears only when two requests arrive at once;
+3. why the prompt golden cannot show that the quotation marks work as a defence;
+4. why a coding agent can produce hundreds of passing tests without protecting the behaviour that matters most;
+5. why 100 passing runs of the repaired Vigilante test did not, alone, show that the test still meant anything.
 
-Then answer Problem B. That is enough for this first reading. Problem A is an optional transfer
-check.
+## Problem A: a new system
 
-## Problems
+A team is building a service that accepts uploaded invoices, uses a language model to extract the supplier, the date and the total, and shows the result to an accountant to approve. Coding agents will write most of the code and the tests. Design the testing:
 
-**Problem A: transfer to another application.** A Python API and its TypeScript client drifted
-apart for a week: the server renamed a field, and the client kept reading the old name. Which
-test would have caught it on the first day? What would a run in which every test passed on the
-developer's machine not have proved?
+1. Three important claims, ranked.
+2. A check for each claim, and which components must be real in it.
+3. The dependencies that are replaced, and what each replacement hides.
+4. At least four failure cases.
+5. How the project is set up so that coding agents can run the tests reliably.
+6. The evidence required before the work is accepted.
 
-**Problem B: my own system.** For each sentence, say what kind of evidence stands behind it:
-code that I have read and that does what the sentence says, a named test, a run with real
-models, or nothing.
+<details>
+<summary>One possible answer</summary>
+
+**Claims.** (1) The stored invoice is what the accountant approved. (2) An invoice submitted twice is not stored twice. (3) The model extracts the correct total often enough for the workflow, which is a rate.
+
+**Checks.** Claims 1 and 2 are rules in code: unit tests of the approval and storage logic, plus an integration test against a real test database for claim 2, because a fake store has no uniqueness constraint and no behaviour under two writes at once. Claim 3 needs an evaluation: invoices with known totals, run through the real model, with the number correct and the sample size stated.
+
+**Dependencies.** The model is replaced in the deterministic tests, which hides every wrong or malformed extraction. The database is real where its constraints matter. A fake file store hides size limits and failed uploads.
+
+**Failure cases.** An empty file; the same invoice uploaded twice; an invoice with two totals, or a total in another currency; the model returning text where a number is required; the process stopping after the model answers and before the result is stored; two accountants approving the same invoice at once.
+
+**Set up for the agents.** The claims and failure cases are given before the code is written. There is a default test command that needs no model and no credentials, a second command for the integration tests against a test database, and a separately started evaluation. Fixtures and factories are shared. Each change comes back with what ran, what passed and failed, what was skipped, and which dependencies were replaced. CI runs the default set and the integration tests on every push.
+
+**Review.** The assertions for claims 1 and 2 are read by a person, and each is shown to fail against a deliberately broken version. A good evaluation result is reported as a count from a sample, not as a guarantee for every future invoice.
+</details>
+
+## Problem B: claims about my own system
+
+For each sentence, say what evidence stands behind it and what remains uncertain.
 
 1. "The AI seats' prompts never contain another seat's private information."
 2. "A game survives a server restart."
-3. "Putting players' words in quotation marks roughly halves the effect of a forged
-   game-master line."
+3. "Putting players' words in quotation marks roughly halves the effect of a forged game-master line."
 
----
+<details>
+<summary>Answers</summary>
 
-# Appendix A — Answers to the problems
+1. The leak checks search every seat's prompt input, in the engine tests over scripted games and in the batch runner over games with real models. They do not cover hosted games, and they do not check what a seat says. Accurate wording: "In every batch game, an automatic check searches each seat's prompt input for nine kinds of private information; hosted games are not checked."
+2. The recovery logic is tested against test doubles, and a real restart was last checked by hand in August. No automatic test uses the real code that saves game state to Postgres. Accurate wording: "The recovery logic is tested against test doubles; a real restart was last checked by hand in August."
+3. An experiment with real models: 438 calls at three saved points in two games, one model. Votes for the named innocent player fell from 24 of 33 to 14 of 33. "Roughly halves" matches that count. It does not establish the size of the effect for other models, games or attacks.
+</details>
 
-**Problem A.** A contract test: the server's API description is saved beside the client, the
-client's types are generated from it, and a test fails when the server's live description no
-longer matches the saved one. The rename fails that test on the day it is made, before any
-user sees it. A test that only checks the client against its own hand-written types would
-still pass.
+# Appendix — Implementation and evidence reference
 
-A run in which every test passes on the developer's machine does not prove that the committed revision passes, that
-the client and server that are deployed are the ones tested, or that the tests ran at all for
-the other developer's change. CI on every push removes the first and third of these.
+*Each claim carries its support: **code** (the file and symbol were read), **test** (named; not run unless stated), **run** (executed for this note), **doc** (a written record, not re-checked in the code). Read and run on 2026-11-17. Paths are from the repository root.*
 
-**Problem B.**
+**The suite**
 
-1. *A named test and a run, for prompt inputs only.* The leak checks search every seat's prompt
-   input, in engine tests over scripted games and in the batch runner over games with real
-   models. They do not cover hosted games (the audit is not scheduled), and they do not check
-   what a seat says. Accurate wording: "In every batch game, an automatic check searches each
-   seat's prompt input for nine kinds of private information; hosted games are not checked."
-2. *Code and tests against stand-ins; a manual check in August.* The recovery logic is tested
-   with a stand-in graph and recorded database writes; no test uses the real Postgres saver.
-   Accurate wording: "The recovery logic is tested against stand-ins; a real restart was last
-   checked by hand in August."
-3. *A run with real models.* 438 calls at three saved moments from two games, one model. It
-   shows an effect, not a rate. The tests show only that the shipped prompt is the measured one.
+- Test counts per folder, 2,652 in all, 170 marked `live`: **run** (`poetry run pytest --collect-only -q`, per folder and with `-m live`)
+- `live` excluded by default: **code** `pyproject.toml` (`[tool.pytest.ini_options]`)
+- The default run: **run** (`poetry run pytest -q --durations=25`): 2,481 passed, 1 skipped, 170 deselected, 818 s
+- The skipped test and the tests that need a database address: **run** (`-rs`) `tests/server/test_replays.py`; **code** `tests/memory/test_consolidation_graduation.py`, `tests/memory/test_served_extraction.py`
+- Frontend unit tests, 73 files, 1,607 tests, passed in 56 s: **run** (`npx vitest run` in `frontend/`)
+- Browser spec files (8), `test(` declarations (115, counted by a text search), screenshots (99): **code** `frontend/e2e/`, `frontend/playwright.config.ts`; not run
+- The shared setup, fixtures and factories: **code** [`tests/conftest.py`](../../../tests/conftest.py), `tests/fixtures/`, `tests/factories/`
 
----
+**What is real and what is replaced**
 
-# Appendix B — Implementation and evidence reference
-
-*Each claim carries its support: **code** (the file and symbol were read), **test** (named;
-not run unless stated), **run** (executed for this note), **doc** (a written record, not
-re-checked in the code). Read and run on 2026-11-17. Paths are from the repository root.*
-
-**The suite (3.1)**
-
-- Test counts per folder, 2,652 in all, 170 marked `live`: **run**
-  (`poetry run pytest --collect-only -q`, per folder and with `-m live`)
-- `live` excluded by default; the repository root on the import path: **code**
-  `pyproject.toml` (`[tool.pytest.ini_options]`, `addopts = "-m 'not live'"`)
-- The full default run: **run** (`poetry run pytest -q --durations=25`, 2026-11-17): 2,481
-  passed, 1 skipped, 170 deselected, 818 s. The ten slowest are deduction-engine tests over
-  random games, 73 to 101 s each for the six slowest
-- The skipped test: **run** (`-rs`) `tests/server/test_replays.py` line 202, "set
-  WW_REPLAY_TEST_DSN to run the real-Postgres round-trip"
-- Memory tests that run on a real Postgres when `WW_POSTGRES_DSN` is set, skipped otherwise:
-  **code** `tests/memory/test_consolidation_graduation.py`, `tests/memory/test_served_extraction.py`
-  (`needs_db`); that they ran here is inferred from the single skip. Which database they used
-  was not checked
-- Frontend unit tests, 73 files, 1,607 tests, all passed in 56 s: **run** (`npx vitest run` in
-  `frontend/`, alongside the Python run)
-- Browser spec files (8), `test(` declarations (115, counted by a text search, so tests
-  generated in loops are not counted separately), screenshots (99): **code**
-  `frontend/e2e/`, `frontend/playwright.config.ts`; not run
-- The browser suite's time (about 16 min) and the guide's list of 5 specs: **doc**
-  [`frontend/docs/testing.md`](../../../frontend/docs/testing.md)
-- The environment pinned for every test: **code**
-  [`tests/conftest.py`](../../../tests/conftest.py)
-
-**Levels and stand-ins (3.2)**
-
-- Random legal nights from fixed seeds, thousands per test: **code**
-  `tests/factories/random_nights.py`, `tests/engine/deduction/test_own_results.py`
-- The scripted model and the stubbed helpers: **code**
-  [`tests/engine/test_ten_seat_game.py`](../../../tests/engine/test_ten_seat_game.py)
-  (`_fill`, `_FakeLLM`, `_script_the_model`)
-- The stand-in graph and the API test client: **code**
-  [`tests/fixtures/server.py`](../../../tests/fixtures/server.py) (`FakeGraph`, `api_client`)
-- The restart path without real Postgres: **code** `tests/server/test_durability.py` (module
-  note: "The real-Postgres path is exercised by the manual restart smoke, not here"); the
-  August manual check: **doc** U3 section 3.8
-- The browser suite answers API calls from saved games: **doc** `frontend/docs/testing.md`;
-  its own copy of the entitlement sets, without `uses_remaining` or `night_record`: **code**
-  `frontend/e2e/live.spec.ts` (`OBSERVER`, `FACTION`, `SEAT`), read 2026-11-17
-- The planted-key test and its failing stand-in: **code** `tests/server/test_byok.py`
-  (`_AuthBoomGraph`, `test_dead_game_error_never_echoes_the_key`); the places it does not
-  cover: **doc** U10 section 3.2
-- The paid model check and its first recorded run: **code**
-  `tests/live/test_model_structured_output.py` (module note); later runs not checked
+- Random legal nights from fixed seeds: **code** `tests/factories/random_nights.py`, `tests/engine/deduction/`
+- The scripted model: **code** [`tests/engine/test_ten_seat_game.py`](../../../tests/engine/test_ten_seat_game.py) (`_fill`, `_FakeLLM`, `_script_the_model`)
+- The test-double graph and the API test client: **code** [`tests/fixtures/server.py`](../../../tests/fixtures/server.py)
+- Recovery without real Postgres: **code** `tests/server/test_durability.py`; the August manual check: **doc** U3 section 3.8
+- The browser suite's saved answers and its own copy of the visibility rules: **doc** [`frontend/docs/testing.md`](../../../frontend/docs/testing.md); **code** `frontend/e2e/live.spec.ts`
+- The planted-key tests: **code** `tests/server/test_byok.py::test_dead_game_error_never_echoes_the_key` and `::test_dead_game_error_never_echoes_the_backup_key`; the other guarded places and the ones no test searches: **doc** U10 section 3.2; the real call to five providers: **doc** U10 section 3.6
+- The paid model check and its recorded run: **code** `tests/live/test_model_structured_output.py` (module note)
 - Evaluation runners: **code** `evaluation/README.md`, `evaluation/experiments/` (62 files)
 
-**Goldens (3.3)**
+**Goldens and leak checks**
 
-- The day-discussion prompt golden: **code** `tests/fixtures/day_discuss_prompt_golden.py`,
-  `.json`; **test** `tests/engine/test_draft_preview.py::test_ai_discuss_prompt_is_byte_identical_to_the_golden`;
-  regenerated in commit `6577f79c` (20 lines changed)
-- Translator goldens from two real games: **code** `tests/fixtures/translator_golden.py`,
-  `translator_golden.jsonl`, `translator_golden_human.jsonl`
+- The prompt golden: **code** `tests/fixtures/day_discuss_prompt_golden.py`; **test** `tests/engine/test_draft_preview.py::test_ai_discuss_prompt_is_byte_identical_to_the_golden`
+- Translator goldens: **code** `tests/fixtures/translator_golden.py`
 - The API description test: **code** `tests/server/test_openapi_snapshot.py`
-- Beat and screenshot goldens, the 0.5% tolerance: **code** `frontend/playwright.config.ts`;
-  **doc** `frontend/docs/testing.md`
+- Beat and screenshot goldens, the 0.5% tolerance: **code** `frontend/playwright.config.ts`; **doc** `frontend/docs/testing.md`
+- Eleven leak checks, nine run on batch games: **code** [`tests/leak_test.py`](../../../tests/leak_test.py), `scripts/run_batch.py`
 
-**Leak checks (3.4)**
+**The two reviewed tests**
 
-- Eleven `check_` functions returning lists; nine in `run_leak_tests`: **code**
-  [`tests/leak_test.py`](../../../tests/leak_test.py)
-- Run on every batch game; a leak recorded and the batch exits non-zero: **code**
-  `scripts/run_batch.py`
-- The hosted audit not scheduled: **doc** U14 section 3.5 gap 6
+- The quoting change and its tests: **test** `tests/engine/test_transcript_quoting.py` (10), `tests/engine/test_transcript_one_line.py` (18)
+- The two experiments and the comparison of 22 prompts: **doc** [`evidence/agent_boundaries/forged_speaker/report.md`](../../agent_boundaries/forged_speaker/report.md) and its log; no model calls were made for this note
+- The `repr` fault and its fix: **code** `tests/leak_test.py::_searchable`; **doc** the same report
+- The Vigilante test, its replays, the repair and the two broken versions: **doc** [`vigilante_test/experiment_log.md`](vigilante_test/experiment_log.md); **code** `tests/engine/test_ten_seat_game.py`, `measurements/u13_vig_probe.py`, `measurements/u13_vig_mutations.py`
 
-**Case one (3.5)**
+**How tests are run**
 
-- The change and its tests: **code** commit `6577f79c`; **test**
-  `tests/engine/test_transcript_quoting.py` (10), `tests/engine/test_transcript_one_line.py` (18)
-- The experiment, the equivalence check and the adoption check: **doc**
-  [`evidence/agent_boundaries/forged_speaker/report.md`](../../agent_boundaries/forged_speaker/report.md)
-  and its `experiment_log.md`; no model calls were made for this note
-- The `repr` fault and the fix: **code** `tests/leak_test.py::_searchable`; **doc** the report,
-  "One fault the change exposed". Which test failed in that run is not recorded
-
-**Case two (3.6)**
-
-- The test, its shared generator and its two assertions: **code**
-  `tests/engine/test_ten_seat_game.py`, read 2026-11-17 before the repair
-- 2 of 10 and 4 of 10 failures; the bullet spent once in every run examined: **doc** U2
-  section 3.7, `measurements/u2_diag_runs.txt`
-- Its result in this note's run: **run**, passed. The test file was edited at 05:09 by the
-  repair in progress, after this run had started and collected its tests, so the run is taken
-  to have used the unrepaired version (not confirmed)
-
-**What runs automatically (3.7)**
-
-- No CI workflow, `.pre-commit-config.yaml`, Makefile or husky folder; `core.hooksPath` points
-  at `.git/hooks`, which holds only the sample files: **run** (a file search and `git config`)
-- No coverage tool configured: **code** `pyproject.toml`, `frontend/package.json`
+- No CI workflow, pre-commit configuration, Makefile or active git hook: **run** (a file search and `git config`)
 - No tests in the release procedure: **doc** U14 section 3.1
+- The testing guide and the pointer to it: **doc** [`docs/testing.md`](../../../docs/testing.md), `CLAUDE.md`
+- That no ranked list of claims was written first, and that agents wrote the tests: my own account
 
 **Not checked**
 
-- The browser suite, the type check, the lint and the production build.
+- The browser suite, the type check, the lint and the production build were not run.
 - Whether the `live` tests have been run since 2026-09-10.
-- Which test caught the `repr` fault on 2026-11-17.
+- Which test caught the `repr` fault.
+- Whether the night-rule tests leave anything out, and the two items listed as not examined under step 3.
 
-**Further reading, only when needed:** the "Practical Test Pyramid" by Ham Vocke on Martin
-Fowler's site, the sections on unit, integration and contract tests. Martin Fowler's
-"Eradicating Non-Determinism in Tests", for the causes of flaky tests.
+**Further reading, only when needed:** Ham Vocke, "The Practical Test Pyramid", on Martin Fowler's site. Martin Fowler, "Eradicating Non-Determinism in Tests", for flaky tests.

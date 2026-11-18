@@ -484,7 +484,7 @@ project). Scrub by pattern (catches unknown paths; false positives) versus scrub
 misses values not registered). Probe the key with a trivial call (costs a call; catches a dead key early)
 versus fail on first use.
 
-**This project.** Key in a per-game context variable (`llm_factory/chat.py::GAME_LLM`; code); the games
+**This project.** Key in a per-game models object passed in LangGraph's `context` (`llm_factory/game_models.py::GameModels`; code; until 2026-11-18 a context variable, `GAME_LLM`); the games
 row stores only a boolean; provider clients built on it are cached with the game and dropped at its end
 (`game_session.py::_end`); `***` replaces it in error text, trace error output and tracebacks
 (`_redact`); Sentry drops it (`error_reporting.py::_drop_private`); one "OK" call with a 20-second limit

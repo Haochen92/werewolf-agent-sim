@@ -1229,8 +1229,11 @@ on 2026-11-11.*
   [house.py](../../../server/house.py)
 - Per-object locks: **code** [health.py](../../../Agents/llm_factory/health.py),
   [usage.py](../../../server/game/usage.py), [chat.py](../../../Agents/llm_factory/chat.py)
-- The game's model selection is a context variable set in the game's task and copied to worker
-  threads by the libraries. **code** [chat.py](../../../Agents/llm_factory/chat.py)::`GAME_LLM`;
+- The game's model selection was a context variable set in the game's task and copied to worker
+  threads by the libraries. (Removed on 2026-11-18: one object per game is now passed to the
+  engine in LangGraph's `context`, [game_models.py](../../../Agents/llm_factory/game_models.py);
+  U10 Part 4. The prompt capture, `TURN_CAPTURE`, is still a context variable.) **code** as
+  measured: [chat.py](../../../Agents/llm_factory/chat.py)::`GAME_LLM`;
   seen by all ten seat threads of a parallel round. **measured**; **test**
   `test_two_games_running_at_once_never_write_into_each_others_capture`
 

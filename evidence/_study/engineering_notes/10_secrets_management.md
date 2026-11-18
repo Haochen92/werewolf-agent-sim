@@ -11,6 +11,14 @@ the cost of that choice? A rough answer is enough; Part 5 is the stopping check.
 U8 ended on what must never be recorded. This note follows one secret from end to end, and
 then lists the server's own.
 
+**Changed on 2026-11-18.** While cleaning the tests I changed two things this note describes,
+and corrected the note where it described them. First, the key is no longer carried on a
+context variable: one object per game, `GameModels`, holds the key, and the session passes it
+to the engine in LangGraph's `context` (3.1, Part 4). Second, a test that plants a key and
+searches every database table found the key in a saved checkpoint; the cause was the
+unredacted error in gap 1, which is now fixed (3.6). Both changes are committed and not yet
+deployed.
+
 **Reading path.** Part 1 is the idea: a lifetime with five stages, and the list of places a
 secret can leak to. Part 3 is my system and its gaps. Part 4 is two design choices. Part 5 is
 the summary. This note is short on purpose.
@@ -208,25 +216,29 @@ Browser   A password field. Kept in the page's memory.
 Server    1. Probe: one call, "Reply with the single word OK", 20-second limit.
              A refusal goes back as a 422 with the provider's reason.
           2. Held in the game's session object, in memory.
-          3. Set on a context variable inside the game's own task, so every model call
-             in that game receives that selection. This is task scoping, not a security
-             barrier against other code in the same process.
+          3. Put in the game's models object, which the session hands to the engine with
+             each run, so every model call in that game asks that object for its client.
+             This keeps games apart; it is not a security barrier against other code in
+             the same process.
           4. Clients built with it are cached with the game, not in the process-wide cache.
    │
    ▼
 Provider  Sent only to the company the game's model belongs to.
    │
    ▼
-Game ends The session clears both keys and rebuilds its selection without the key
-          or its clients.
+Game ends The session clears both keys and replaces the game's models object with one
+          that has no key and none of the clients built on it.
 ```
 
-The key rides a context variable and not the run's configuration for one reason: the
-configuration is recorded by those paths. Keeping the key out closes that route into saved
-records; it does not prove absence from all records, since errors and other objects can carry it.
+The key is held in the game's models object and not in the run's configuration for one
+reason: the configuration is recorded by those paths. LangGraph's `context`, which carries the
+object, is kept in memory for the run and is not saved. Keeping the key out of the
+configuration closes that route into saved records; it does not prove absence from all
+records, since errors and other objects can carry it. That happened: on 2026-11-18 a provider's
+refusal that quoted the key was found saved in a checkpoint (3.6, gap 1).
 
 **Code:** `server/game/key_check.py::check_key`; `server/game/game_session.py` (`_api_key`,
-`_llm_selection`, `_end`); `Agents/llm_factory/chat.py` (`GameLLM`, `GAME_LLM`).
+`_models`, `_end`); `Agents/llm_factory/game_models.py` (`GameModels`).
 
 ## 3.2 Which recording paths are guarded
 
@@ -237,7 +249,7 @@ game, so the question for each place is what gets saved there in its place, and 
 |---|---|---|
 | The game's row in the database | Only whether the game used a player's key: a true-or-false column, `byok`. Recovery needs that fact after a restart (3.4) | By reading the code that writes the row |
 | The trace sent to Langfuse | The same true or false, in the trace's metadata | By reading the code that builds the metadata |
-| The run's configuration, which is copied into checkpoints and run records | Nothing. The key is never put in it; it travels on the context variable | By the design |
+| The run's configuration, which is copied into checkpoints and run records | Nothing. The key is never put in it; it travels in the game's models object | By the design, and since 2026-11-18 by a test that plants a key, plays a whole game and searches every table |
 | The error text and traceback of a game that died | The text with each key replaced by `***` | A test, for the key and for the backup key |
 | The crash report sent to Sentry | Bodies, headers and local variables are off; the key's value is replaced | A test |
 | The log of a failure after the game is over | The traceback with the key replaced | A test |
@@ -295,7 +307,7 @@ The admin page needs a token that is not set in production, so it answers "not f
 
 | Gap | Consequence | Possible direction |
 |---|---|---|
-| 1. A failed model call logs the provider's exception as it is | Whatever the provider says about the key reaches the container's log. Today none of the five echoes a refused key in full; two show part of it (below). Only a dead game's text is redacted | Log the error's category and the request identifier in place of the exception's text (1.4). The code already sorts a failed call into three kinds before logging: the key was rejected (a refused key and an empty account together), the provider stalled (rate limit, timeout, server error), or anything else. Each log line names its kind in a fixed phrase and then prints the exception's text |
+| 1. **Fixed on 2026-11-18.** A failed model call logged the provider's exception as it was, and a refused key's error was raised with the same text | The second half was worse than I had written: LangGraph saves a raised error in the game's checkpoint, so a key quoted by a provider was written to the database, not only to the log. A test that plants a key and searches every table found it. The error text is now scrubbed with the game's keys where the error is caught, before it is logged or raised, in every model call of a game. As I first wrote this row: whatever the provider says about the key reaches the container's log. Today none of the five echoes a refused key in full; two show part of it (below). Only a dead game's text is redacted | Log the error's category and the request identifier in place of the exception's text (1.4). The code already sorts a failed call into three kinds before logging: the key was rejected (a refused key and an empty account together), the provider stalled (rate limit, timeout, server error), or anything else. Each log line names its kind in a fixed phrase and then prints the exception's text |
 | 2. Redaction is by exact value only | A key shown in part by a provider passes. OpenAI and DeepSeek do show part | Add a pattern for the known key shapes |
 | 3. The host's key for a room travels in the URL | Access logs on the way may hold it. It controls one room for its life, not money | Move it to a header or the body |
 | 4. Seat tokens are stored as plain text, in the database and in the browser | Anyone who can read the table can act as a seat in a live game | Store a hash; accepted today because a token is worth one seat for one day |
@@ -317,8 +329,9 @@ each company on the menu and searched the error for it.
 | OpenAI | Shown in part: the first eight characters and the last four, the rest as `*` |
 | DeepSeek | Shown in part: the last four characters |
 
-So no provider echoed the whole key, and the unredacted log line (gap 1) would hold at most
-those fragments. A provider can change its wording at any time, so the scrubbing is still
+So no provider echoed the whole key, and the unredacted log line (gap 1, fixed on 2026-11-18)
+would have held at most those fragments. The fragments still pass the scrubbing, which
+matches the whole key only (gap 2). A provider can change its wording at any time, so the scrubbing is still
 written for the worst case, and this check is worth repeating when a provider is added.
 
 ---
@@ -336,7 +349,7 @@ written for the worst case, and this check is worth repeating when a provider is
 
 | Design | Benefit | Cost | My system |
 |---|---|---|---|
-| Keep it out of the written object | Closes that object’s route to each sink | Needs a separate channel to carry the key | Yes: the context variable |
+| Keep it out of the written object | Closes that object’s route to each sink | Needs a separate channel to carry the key | Yes: the game's models object, passed in LangGraph's `context` |
 | Scrub by exact value | Exact, no false matches | Misses a changed form of the key | Yes, for error text and reports |
 | Scrub by pattern | Catches keys nobody registered | False matches; misses new shapes | No |
 
@@ -411,16 +424,23 @@ line without a request id is a working program. A model call without its client 
 | The current span, inside the tracing library | Ambient | Yes: side information |
 | The Langfuse callback, the metrics object, the evaluation sink | Explicit: the run's configuration and LangGraph's `context` | Yes |
 | The prompt capture (`TURN_CAPTURE`) | Ambient | Borderline: a recording, but the leak audit depends on it |
-| The model selection, the key and the clients (`GAME_LLM`) | Ambient | No. It is a core dependency, and nothing in `get_llm()` shows that its result depends on a value set in the session's task |
+| The model selection, the key and the clients | Explicit since 2026-11-18: one object per game (`GameModels`) in LangGraph's `context`. Ambient before (a context variable, `GAME_LLM`) | Yes now. Before, no: it is a core dependency, and nothing in `get_llm()` showed that its result depended on a value set in the session's task |
 
-The last row is the one I would do differently. The context variable was correct for keeping
-games apart, and it kept the key out of the saved configuration. The cost is the hidden
-dependency, and tests that must set and reset the variable around each case. The explicit
-form would pass one object, the models for this game, through LangGraph's `context`. It cannot
-be fixed in a constructor, because the server compiles the graph once and shares it across
-games, so a per-game value has to arrive with each call. The reason it was not built that way
-is the order of the work: the engine came first, for batch runs, with accessors that read the
+The last row is the one I changed. The context variable was correct for keeping games apart,
+and it kept the key out of the saved configuration. Its cost was the hidden dependency, and
+tests that had to set and reset the variable around each case. The explicit form passes one
+object, the models for this game, through LangGraph's `context`. It cannot be fixed in a
+constructor, because the server compiles the graph once and shares it across games, so a
+per-game value has to arrive with each call. The reason it was not built that way at first is
+the order of the work: the engine came first, for batch runs, with accessors that read the
 environment, and a context variable added a player's key without changing every model call.
+
+What the change cost: ten places in the engine that asked for a model now receive the object
+as an argument, and about sixty test lines changed. What it risks: a place that does not
+receive the object would run on the server's own credentials without any error, where the
+context variable reached every call. Three tests that play a whole game block the building of
+any client that is not handed in, so such a place makes them fail. The object also refuses to
+be pickled or copied, so the key cannot be saved by accident with whatever carries it.
 
 ---
 
@@ -438,13 +458,13 @@ call does not, because nothing fails when the wrong party pays.
 
 ## My Werewolf system in one paragraph
 
-A player's key arrives in a request body, is probed with one call, and is held in memory on a
-context variable inside that game's task. It is kept out of the run's configuration, closing
+A player's key arrives in a request body, is probed with one call, and is held in memory in
+that game's models object, which the session passes to the engine. It is kept out of the run's configuration, closing
 that route into saved records; the games table records BYOK as true or false. This does not
 establish absence from every log or trace. It is sent only to the company the model belongs to, the rule a past fault made me
 test. It is cleared when the game ends, and a restart means the player supplies it again. The
 server's own keys come from one ignored file through the environment. The weak points: a
-failed call's log line is not redacted, redaction matches the exact value only, the room host's
+redaction matches the exact value only, what is sent to the tracing service is not searched for the key, the room host's
 key travels in the URL, and nothing scans for a committed secret.
 
 ## Stopping check
@@ -475,13 +495,18 @@ asking the user again.
 
 **Problem B.** Supported: the games table stores only true or false; the key is not in the
 run's configuration; a dead game's error and traceback, and the Sentry report, are redacted,
-each with a test. Not supported: "never logged", since a failed call's log line carries the
-provider's exception without redaction (gap 1), and no test asserts the key's absence from the
-database, the events or the trace. Also the browser stores it when the player asks. Accurate
+each with a test. Not supported when I wrote this problem: "never logged", since a failed
+call's log line carried the provider's exception without redaction (gap 1), and no test
+asserted the key's absence from the database, the events or the trace. Since 2026-11-18 the
+log line is scrubbed and a test searches every database table and the log after a whole game;
+the trace is still not searched. Also the browser stores it when the player asks. Accurate
 wording: "The server holds a player’s key in memory rather than deliberately persisting it
 in the game row or run configuration. Named tests cover redaction in game-failure text and
 Sentry reports. Model-call exception logs remain an unguarded path if a provider echoes a key;
-absence from every stored record has not been demonstrated."
+absence from every stored record has not been demonstrated." Since 2026-11-18 the last
+sentence of that wording can be replaced: "Model-call errors are scrubbed with the game's keys
+before they are logged or raised, and a test searches every database table and the log for a
+planted key after a whole game. What is sent to the tracing service has not been searched."
 
 ---
 
@@ -500,9 +525,12 @@ on 2026-11-16. Paths are from the repository root.*
   `frontend/src/lib/api.ts`, `server/schemas/requests.py` (`NewSoloGame`, `BackupKey`, `FundGame`)
 - The probe, its 20-second limit, and the key replaced in the refusal text: **code**
   `server/game/key_check.py::check_key`
-- Held on the session and set on the context variable in the game's task: **code**
-  `server/game/game_session.py`; **test** `tests/server/test_byok.py`
-  (`test_session_sets_the_selection_inside_its_own_task_only`)
+- Held on the session and passed to the engine in the game's models object: **code**
+  `server/game/game_session.py`, `Agents/llm_factory/game_models.py`; **test**
+  `tests/server/test_byok.py`
+  (`test_the_session_drives_the_graph_with_its_own_models_carrying_the_players_model_and_key`)
+- The key is in no database table and not in the log after a whole game, and after a game a
+  refused key ended: **test** `tests/server/integration/test_planted_key.py` (2026-11-18)
 - Clients cached with the game: **test** `test_a_players_key_is_cached_with_its_game_not_the_process`
 - Cleared at the end: **code** `game_session.py::_end`; **test** `tests/server/test_game_session.py`
 - The games row and the trace metadata hold a true-or-false value: **code**
@@ -535,18 +563,21 @@ on 2026-11-16. Paths are from the repository root.*
 
 **The gaps (3.6)**
 
-- Gap 1: **code** `Agents/turn/agent_player.py` (the three log lines in the model-call wrapper)
+- Gap 1 and its fix: **code** `Agents/turn/agent_player.py` (the three log lines in the
+  model-call wrapper), `GameModels.redact`; **test**
+  `test_a_refusal_that_quotes_the_key_ends_the_game_without_the_key_in_the_error_or_the_log`
 - The three styles (Part 4): the two-games output is a **run** on 2026-11-16 of a 20-line script,
   two tasks under `asyncio.gather`; the graph compiled once and shared: **code**
   `server/graph_runtime.py`; nodes reading LangGraph's context: **code** `Agents/graphs/parent.py`,
-  `Agents/nodes/orchestrator.py`; the two context variables: **code** `Agents/llm_factory/chat.py`
-  (`GAME_LLM`), `Agents/turn/eval.py` (`TURN_CAPTURE`)
+  `Agents/nodes/orchestrator.py`; the remaining context variable: **code**
+  `Agents/turn/eval.py` (`TURN_CAPTURE`); the one removed on 2026-11-18 was `GAME_LLM` in
+  `Agents/llm_factory/chat.py`
 - The model client libraries hold the key in a masked type (Part 2): **run** on 2026-11-16. A
   client was built for each of the five companies with a made-up key; the key field is a
   `SecretStr` in each, and the key is absent from the client's printed form, its field dump
-  and its LangChain serialisation. My own `GameLLM` hides both keys from its printed form:
-  **code** `Agents/llm_factory/chat.py`; **test**
-  `test_neither_key_shows_in_the_selections_printed_form`
+  and its LangChain serialisation. My own `GameModels` hides both keys from its printed form:
+  **code** `Agents/llm_factory/game_models.py`; **test**
+  `test_neither_key_shows_in_the_printed_form_of_a_games_models`
 - Gap 3: **code** `frontend/src/lib/api.ts` (`host_key` as a query parameter)
 - Gap 4: **code** `server/routes/games.py`, `server/database_models/game.py`
 - Gaps 5 and 6: **code**, searches for `.dockerignore`, CI workflows, hooks and "rotat"
