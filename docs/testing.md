@@ -252,3 +252,28 @@ before and after it are not comparable, so say so in the report.
 **A passing run is evidence about the working folder on this machine.** No service runs the
 tests automatically, and no release step runs them. Say "the tests pass on the working folder",
 not "validated", unless the claim was measured.
+
+## 6. What CI runs
+
+`.github/workflows/ci.yml` (GitHub Actions) runs the backend's tests from a clean checkout:
+no `.env`, made-up provider keys, and the packages of `poetry.lock`.
+
+| When | What runs |
+|---|---|
+| Every push to any branch | The lock check (`poetry check --lock`), the lint report, the quick tests, the timing tests |
+| A push to `main`, a pull request to `main`, or "Run workflow" by hand | The same, then the integration tests, the slow tests, and a build of the server image in which the server must start and answer |
+
+A push that changes only Markdown files, `writeup/`, `frontend/` or `evidence/` starts no run.
+The exception is `evidence/gameplay/deduction/data/`, which four test files read.
+
+What this means for a test:
+
+- It must pass without `.env` and without a real provider key. A test that needs one belongs
+  in `tests/contract`, which CI never runs.
+- A data file it reads must be committed. A test that reads a file git ignores skips in CI
+  (one does today: `tests/evaluation/test_model_admission_pipeline.py`, which says so in its
+  skip reason).
+- The lint report and the timing tests are shown and do not fail the run. Everything else does.
+
+CI does not replace the full local run before a change is reported as finished: on a branch
+other than `main`, CI runs the quick tests only.
