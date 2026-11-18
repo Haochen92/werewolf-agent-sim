@@ -48,8 +48,11 @@ def _checks(update) -> list:
 
 
 def test_result_delivered_when_investigator_survived():
+    # Act
     update = night_resolution(_state(check="w0"), _runtime())
     (result,) = _checks(update)
+
+    # Assert
     assert (result.actor, result.target, result.result) == ("inv", "w0", "suspicious")
     assert result.outcome == "w0 reads Suspicious."
 
@@ -72,8 +75,13 @@ def test_no_act_no_delivery():
 
 
 def test_metric_records_act_even_when_investigator_died():
+    # Arrange
     metrics = Metrics()
+
+    # Act
     night_resolution(_state(kill="inv", check="w0"), _runtime(metrics))
+
+    # Assert
     nr = metrics.night_resolutions[-1]
     # the act is on the diagnostic record
     assert {"actor": "inv", "role": "investigator", "kind": "investigate", "target": "w0",

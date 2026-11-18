@@ -37,30 +37,40 @@ def test_editing_a_file_in_a_nested_folder_changes_the_hash(prompts):
 
 
 def test_two_files_with_the_same_name_in_different_folders_are_told_apart(prompts):
+    # Arrange: hash a prompt file in one folder
     (prompts / "memory").mkdir()
     (prompts / "memory" / "context.py").write_text("TEXT = 'same bytes'\n")
     in_memory = fresh_hash()
+
+    # Act: replace it with a file of the same name and bytes in another folder
     (prompts / "memory" / "context.py").unlink()
     (prompts / "extraction").mkdir()
     (prompts / "extraction" / "context.py").write_text("TEXT = 'same bytes'\n")
 
+    # Assert
     assert fresh_hash() != in_memory
 
 
 def test_compiled_files_and_the_goldens_folder_do_not_affect_the_hash(prompts):
+    # Arrange
     before = fresh_hash()
+
+    # Act: add a compiled file and a goldens folder
     (prompts / "roles" / "__pycache__").mkdir()
     (prompts / "roles" / "__pycache__" / "healer.py").write_text("stale copy\n")
     (prompts / "goldens").mkdir()
     (prompts / "goldens" / "render.py").write_text("def main(): ...\n")
     (prompts / "goldens" / "rules.txt").write_text("rendered text\n")
 
+    # Assert
     assert fresh_hash() == before
 
 
 def test_the_fingerprint_carries_its_schema_version_first(prompts):
+    # Act
     fingerprint = run_fingerprint.runtime_fingerprint()
 
+    # Assert
     assert next(iter(fingerprint)) == "fingerprint_schema"
     assert fingerprint["fingerprint_schema"] == 3
     assert fingerprint["prompt_bundle_hash"] == fresh_hash()
@@ -74,10 +84,13 @@ def test_the_fingerprint_carries_its_schema_version_first(prompts):
 ])
 def test_the_backend_is_the_one_the_game_model_is_routed_to(
         prompts, monkeypatch, game_model, google_route, backend):
+    # Arrange
     monkeypatch.setenv("GOOGLE_GENAI_MODEL", game_model)
     monkeypatch.setenv("LLM_BACKEND", google_route)
 
+    # Act
     fingerprint = run_fingerprint.runtime_fingerprint()
 
+    # Assert
     assert fingerprint["llm_backend"] == backend
     assert ("vertex_location" in fingerprint) == (backend == "vertex")

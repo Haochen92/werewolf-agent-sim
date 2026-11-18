@@ -48,10 +48,15 @@ def test_ai_discuss_prompt_is_byte_identical_to_the_golden(monkeypatch):
 
 @pytest.mark.parametrize("role", ROLES)
 def test_preview_without_direction_sends_the_real_turns_prompt(monkeypatch, role):
+    # Arrange
     expected = _without_deductions(monkeypatch)[role]
     sent: list = []
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+
+    # Act
     line = preview_discuss(_human_payload(role), {"configurable": {}}, runtime())
+
+    # Assert
     assert line == "player_2, answer the question."
     assert [list(m) for m in sent[0]] == expected
 
@@ -63,18 +68,24 @@ def test_the_ai_turn_has_deduction_lines_the_human_draft_does_not(monkeypatch):
 
 
 def test_preview_with_direction_adds_one_message_and_nothing_else(monkeypatch):
+    # Arrange
     golden = _without_deductions(monkeypatch)["healer"]
     sent: list = []
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
     direction = player_direction("push on player_2 {softly}", "player_2 is odd",
                                  {"player_5": "quiet"}, "player_2")
+
+    # Act
     preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime(), direction)
+
+    # Assert
     assert [list(m) for m in sent[0]] == golden + [["human", direction]]
 
 
 def test_preview_commits_and_records_nothing(monkeypatch):
     """No state write (the payload is untouched and only a line comes back), no eval case,
     no strategy-adoption write-back to the memory store."""
+    # Arrange: a model that records what it is sent, and a strategy write-back that fails the test
     sent: list = []
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
 
@@ -85,13 +96,18 @@ def test_preview_commits_and_records_nothing(monkeypatch):
     payload = _human_payload("chanteuse")
     before = copy.deepcopy(payload)
     rt = runtime()
+
+    # Act
     line = preview_discuss(payload, {"configurable": {}}, rt, "be brief")
+
+    # Assert
     assert isinstance(line, str) and line
     assert payload == before
     assert rt.context["eval_sink"].records == []
 
 
 def test_preview_reports_a_pass_as_empty_and_a_failure_as_an_error(monkeypatch):
+    # Round 1: the model passes the turn
     passing = day_discuss_output(ROLES)(message="", pass_turn=True, claim="none", claimed_night_actions=[],
                                         updated_strategy="note",
                                         addressed_targets=[], strategy_verdicts=[],
@@ -100,6 +116,7 @@ def test_preview_reports_a_pass_as_empty_and_a_failure_as_an_error(monkeypatch):
     payload = {**_human_payload("healer"), "firing_reason": None}  # proactive-free turn
     assert preview_discuss(payload, {"configurable": {}}, runtime()) == ""
 
+    # Round 2: the model and the rescue model both fail
     monkeypatch.setattr(agent_player, "get_llm", lambda: _answering(None))
     monkeypatch.setattr(agent_player, "get_llm_game_fallback", lambda: None)
     with pytest.raises(RuntimeError):
@@ -120,6 +137,7 @@ def _answering(reply):
 
 
 def test_direction_block_wording():
+    # Act and assert
     assert player_direction("") == ""
     assert player_direction("", current="a line") == ""  # a draft alone asks nothing
     assert player_direction("  ", seat_notes={"player_4": "  "}) == ""

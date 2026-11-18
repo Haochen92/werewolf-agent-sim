@@ -78,8 +78,11 @@ def _to_wire(data: dict) -> ev.DurableEvent:
 
 
 def test_consulted_lesson_carries_the_store_dimensions_verbatim(monkeypatch):
+    # Act: announce the consulted lessons, then translate the chunk to the wire
     chunk = _consulted(monkeypatch, sp_dims=_STORE_DIMS, ob_dims=_STORE_DIMS)
     event = _to_wire(chunk)
+
+    # Assert
     assert isinstance(event, ev.MemoryConsulted)
     assert event.lessons[0].dimensions == _STORE_DIMS
     assert event.observations[0].dimensions == _STORE_DIMS
@@ -118,8 +121,13 @@ class _Output:
 
 
 def test_extracted_v6_cells_carry_their_structured_fields():
+    # Arrange
     obs, sp = _v6_cells()
+
+    # Act
     event = _to_wire(memory_extracted_payload(_Output([obs], [sp]), day=3))
+
+    # Assert
     assert isinstance(event, ev.MemoryExtracted)
     # the same dump the store write keeps (store_ops: dimensions=model_dump)
     assert event.observations[0].dimensions == obs.model_dump(mode="json")
@@ -129,6 +137,7 @@ def test_extracted_v6_cells_carry_their_structured_fields():
 
 
 def test_extracted_legacy_models_give_none():
+    # Arrange: a legacy observation and strategy point, with no structured fields
     legacy = Observation(perspective="healer", action_phase="night_action", situation="s",
                          information_landscape="i", game_phase="early", consensus_texture=None,
                          agent_exposure=None, approach="a", impact_on_final_game_outcome="o",
@@ -136,6 +145,10 @@ def test_extracted_legacy_models_give_none():
     legacy_sp = StrategyPoint(perspective="healer", action_phase="night_action", situation="s",
                               information_landscape="i", game_phase="early",
                               consensus_texture=None, agent_exposure=None, action="act")
+
+    # Act
     event = _to_wire(memory_extracted_payload(_Output([legacy], [legacy_sp]), day=3))
+
+    # Assert
     assert event.observations[0].dimensions is None
     assert event.strategy_points[0].dimensions is None

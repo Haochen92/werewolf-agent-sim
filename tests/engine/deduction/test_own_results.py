@@ -86,10 +86,15 @@ def _the_one_line(lines):
 # --- A6, A7, A8: the roleblock ---------------------------------------------------------------
 
 def test_a_block_by_the_living_chanteuse_says_she_came_to_you_and_replaces_the_record():
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "block", player_of["healer"]),
                NightChoice(player_of["healer"], "healer", "protect", player_of["investigator"])]
+
+    # Act
     records, lines, _ = _after_night(choices, roles, 1, player_of["healer"])
+
+    # Assert
     assert format_night_actions(records, current_day=2, implications=lines) == (
         f"Night 1 (last night): You were roleblocked: your protection of {player_of['investigator']} did not "
         "happen. Only the "
@@ -100,22 +105,32 @@ def test_a_block_by_the_living_chanteuse_says_she_came_to_you_and_replaces_the_r
 
 
 def test_a_chanteuse_revealed_dead_this_morning_still_blocked_last_night():
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "block", player_of["healer"]),
                NightChoice(player_of["healer"], "healer", "protect", player_of["investigator"]),
                NightChoice(player_of["vigilante"], "vigilante", "kill", player_of["chanteuse"])]
+
+    # Act
     _, lines, outcome = _after_night(choices, roles, 2, player_of["healer"])
+
+    # Assert
     assert player_of["chanteuse"] in outcome.deaths
     assert _the_one_line(lines).row == "A6"
 
 
 def test_a_block_after_the_chanteuse_was_lynched_is_the_necromancer_through_her_body():
+    # Arrange
     roles, player_of = _game("necromancer", "speculator")
     lynched = DeathRecord(player=player_of["chanteuse"], role="chanteuse", day=2, phase="day")
     choices = [NightChoice(player_of["necromancer"], "necromancer", "block", player_of["healer"],
                            via=player_of["chanteuse"]),
                NightChoice(player_of["healer"], "healer", "protect", player_of["investigator"])]
+
+    # Act
     records, lines, _ = _after_night(choices, roles, 2, player_of["healer"], earlier_deaths=[lynched])
+
+    # Assert
     assert format_night_actions(records, current_day=3, implications=lines) == (
         f"Night 2 (last night): You were roleblocked: your protection of {player_of['investigator']} did not "
         "happen. The Chanteuse was "
@@ -125,12 +140,17 @@ def test_a_block_after_the_chanteuse_was_lynched_is_the_necromancer_through_her_
 
 
 def test_the_lone_illusionist_carrier_blocked_through_the_chanteuse_reads_the_pack_line():
+    # Arrange
     roles, player_of = _game("necromancer", "speculator")
     lynched = DeathRecord(player=player_of["chanteuse"], role="chanteuse", day=2, phase="day")
     choices = [NightChoice(player_of["illusionist"], "illusionist", "kill", player_of["healer"]),
                NightChoice(player_of["necromancer"], "necromancer", "block", player_of["illusionist"],
                            via=player_of["chanteuse"])]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 2, player_of["illusionist"], earlier_deaths=[lynched])
+
+    # Assert
     line = _the_one_line(lines)
     assert line.row == "A8"
     assert line.text.startswith("The pack's carrier was roleblocked: the kill did not happen.")
@@ -139,10 +159,15 @@ def test_the_lone_illusionist_carrier_blocked_through_the_chanteuse_reads_the_pa
 # --- A13–A19: an attack that met immunity -----------------------------------------------------
 
 def test_the_pack_hitting_an_immune_player_in_sk_sp_names_the_serial_killer():
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     killer = player_of["serial_killer"]
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", killer)]
+
+    # Act
     records, lines, _ = _after_night(choices, roles, 1, player_of["illusionist"])
+
+    # Assert
     assert format_night_actions(records, implications=lines) == (
         f"Night 1: your pack attacked {killer}. {killer} was unharmed: immune to night kills tonight. The "
         f"public was told nothing about this attack. Only the Serial Killer could survive that attack, so "
@@ -152,11 +177,16 @@ def test_the_pack_hitting_an_immune_player_in_sk_sp_names_the_serial_killer():
 
 def test_in_sk_ft_a_silent_immune_target_is_the_serial_killer():
     """R10: a self-bet that stops an attack is announced, so a silent one is the serial killer."""
+    # Arrange
     roles, player_of = _game("serial_killer", "fortune_teller")
     killer = player_of["serial_killer"]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", killer),
                NightChoice(player_of["fortune_teller"], "fortune_teller", "bet", player_of["fortune_teller"])]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 2, player_of["vigilante"])
+
+    # Assert
     line = _the_one_line(lines)
     assert (line.row, line.grade) == ("A13", "certain")
     assert line.text == f"Only the Serial Killer could survive that attack, so {killer} is the Serial Killer."
@@ -165,28 +195,43 @@ def test_in_sk_ft_a_silent_immune_target_is_the_serial_killer():
 def test_the_immune_target_lynched_later_is_still_named_by_the_line():
     """A role revealed on the target itself does not rule the target out, only one revealed on
     someone else does."""
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     killer = player_of["serial_killer"]
     lynched_next_day = [DeathRecord(player=killer, role="serial_killer", day=2, phase="day")]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", killer)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 1, player_of["vigilante"], later_deaths=lynched_next_day)
+
+    # Assert
     assert _the_one_line(lines).text.endswith(f"so {killer} is the Serial Killer.")
 
 
 def test_on_night_one_in_ne_ft_a_silent_immune_target_is_the_necromancer():
+    # Arrange
     roles, player_of = _game("necromancer", "fortune_teller")
     necromancer = player_of["necromancer"]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", necromancer)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 1, player_of["vigilante"])
+
+    # Assert
     assert _the_one_line(lines).text == (f"Only the Necromancer (it cannot be killed on nights 1 and 2) could "
                                          f"survive that attack, so {necromancer} is the Necromancer.")
 
 
 def test_on_night_one_in_ne_sp_the_immune_target_is_the_necromancer():
+    # Arrange
     roles, player_of = _game("necromancer", "speculator")
     necromancer = player_of["necromancer"]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", necromancer)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 1, player_of["vigilante"])
+
+    # Assert
     assert _the_one_line(lines).text == (f"Only the Necromancer (it cannot be killed on nights 1 and 2) could "
                                          f"survive that attack, so {necromancer} is the Necromancer.")
 
@@ -194,11 +239,16 @@ def test_on_night_one_in_ne_sp_the_immune_target_is_the_necromancer():
 # --- A53, A54: an attack the fortune teller's self-bet stopped ---------------------------------
 
 def test_a_shot_stopped_by_a_self_bet_names_the_fortune_teller():
+    # Arrange
     roles, player_of = _game("serial_killer", "fortune_teller")
     fortune_teller = player_of["fortune_teller"]
     choices = [NightChoice(player_of["vigilante"], "vigilante", "kill", fortune_teller),
                NightChoice(fortune_teller, "fortune_teller", "bet", fortune_teller)]
+
+    # Act
     records, lines, _ = _after_night(choices, roles, 2, player_of["vigilante"])
+
+    # Assert
     assert format_night_actions(records, implications=lines) == (
         f"Night 2: you shot {fortune_teller}. {fortune_teller} survived: the fortune teller's self-bet saved "
         f"them. Only the Fortune Teller's own bet saves a player like this, so {fortune_teller} is the "
@@ -209,11 +259,16 @@ def test_a_shot_stopped_by_a_self_bet_names_the_fortune_teller():
 
 
 def test_the_serial_killer_hitting_a_self_betting_fortune_teller_names_it():
+    # Arrange
     roles, player_of = _game("serial_killer", "fortune_teller")
     fortune_teller = player_of["fortune_teller"]
     choices = [NightChoice(player_of["serial_killer"], "serial_killer", "kill", fortune_teller),
                NightChoice(fortune_teller, "fortune_teller", "bet", fortune_teller)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 2, player_of["serial_killer"])
+
+    # Assert
     line = _the_one_line(lines)
     assert line.row == "A53"
     assert line.text == (f"Only the Fortune Teller's own bet saves a player like this, so {fortune_teller} "
@@ -221,12 +276,17 @@ def test_the_serial_killer_hitting_a_self_betting_fortune_teller_names_it():
 
 
 def test_a_healer_whose_target_survived_on_its_own_self_bet_learns_it_is_the_fortune_teller():
+    # Arrange
     roles, player_of = _game("necromancer", "fortune_teller")
     fortune_teller = player_of["fortune_teller"]
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", fortune_teller),
                NightChoice(fortune_teller, "fortune_teller", "bet", fortune_teller),
                NightChoice(player_of["healer"], "healer", "protect", fortune_teller)]
+
+    # Act
     records, lines, _ = _after_night(choices, roles, 2, player_of["healer"])
+
+    # Assert
     assert format_night_actions(records, implications=lines) == (
         f"Night 2: you protected {fortune_teller}. {fortune_teller} was attacked by the wolves and survived: "
         f"the fortune teller's self-bet saved them, not your protection. Only the Fortune Teller's own bet "
@@ -239,11 +299,16 @@ def test_a_healer_whose_target_survived_on_its_own_self_bet_learns_it_is_the_for
 def test_a_self_bet_with_no_attack_leaves_the_healer_the_plain_no_attack_line():
     """No attack on the self-betting fortune teller: nothing announced, and its immunity is not
     among the explanations (in NE+FT after night 2 nobody is silently immune)."""
+    # Arrange
     roles, player_of = _game("necromancer", "fortune_teller")
     fortune_teller = player_of["fortune_teller"]
     choices = [NightChoice(fortune_teller, "fortune_teller", "bet", fortune_teller),
                NightChoice(player_of["healer"], "healer", "protect", fortune_teller)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 3, player_of["healer"])
+
+    # Assert
     line = _the_one_line(lines)
     assert (line.row, line.text) == ("A4", f"No attack reached {fortune_teller} that night.")
 
@@ -251,35 +316,50 @@ def test_a_self_bet_with_no_attack_leaves_the_healer_the_plain_no_attack_line():
 # --- A1, A11, A12: saves ------------------------------------------------------------------------
 
 def test_the_healer_learns_its_saved_target_is_neither_the_killer_nor_a_wolf():
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     target = player_of["investigator"]
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", target),
                NightChoice(player_of["healer"], "healer", "protect", target)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 1, player_of["healer"])
+
+    # Assert
     assert _the_one_line(lines).text == (f"{target} can be killed at night, so {target} is not the Serial "
                                          f"Killer. The wolves attacked {target}, so {target} is not a wolf.")
 
 
 def test_saved_from_the_wolves_and_a_sigil_is_the_vigilante():
+    # Arrange
     roles, player_of = _game("necromancer", "speculator")
     vigilante = player_of["vigilante"]
     choices = [NightChoice(vigilante, "vigilante", "kill", player_of["sentinel"]),
                NightChoice(player_of["chanteuse"], "chanteuse", "kill", vigilante),
                NightChoice(player_of["sigilist"], "sigilist", "sigil", vigilante),
                NightChoice(player_of["healer"], "healer", "protect", vigilante)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 2, player_of["healer"])
+
+    # Assert
     assert _the_one_line(lines).text.endswith(
         f"so {vigilante} attacked someone in their own name that night and is not a wolf: {vigilante} is the "
         f"Vigilante.")
 
 
 def test_a_save_by_a_reanimated_healer_is_explained_to_the_attacker():
+    # Arrange
     roles, player_of = _game("necromancer", "speculator")
     lynched = DeathRecord(player=player_of["healer"], role="healer", day=2, phase="day")
     target = player_of["sentinel"]
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", target),
                NightChoice(player_of["necromancer"], "necromancer", "protect", target, via=player_of["healer"])]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 2, player_of["illusionist"], earlier_deaths=[lynched])
+
+    # Assert
     line = _the_one_line(lines)
     assert line.row == "A12"
     # Night 2: the Necromancer acts through a body and is immune, so the save also rules the target out.
@@ -289,20 +369,30 @@ def test_a_save_by_a_reanimated_healer_is_explained_to_the_attacker():
 
 
 def test_the_serial_killer_is_not_told_its_saved_target_is_not_itself():
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     choices = [NightChoice(player_of["serial_killer"], "serial_killer", "kill", player_of["sentinel"]),
                NightChoice(player_of["healer"], "healer", "protect", player_of["sentinel"])]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 1, player_of["serial_killer"])
+
+    # Assert
     assert lines == [None]
 
 
 # --- A2–A5: no attack announced on the protected player ----------------------------------------
 
 def test_no_attack_in_sk_sp_keeps_the_immune_branch():
+    # Arrange
     roles, player_of = _game("serial_killer", "speculator")
     target = player_of["sentinel"]
     choices = [NightChoice(player_of["healer"], "healer", "protect", target)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 1, player_of["healer"])
+
+    # Assert
     line = _the_one_line(lines)
     assert line.grade == "possible"
     assert line.text == (f"Either no attack reached {target} that night, or {target} could not be killed: "
@@ -310,10 +400,15 @@ def test_no_attack_in_sk_sp_keeps_the_immune_branch():
 
 
 def test_no_attack_in_ne_sp_after_night_two_is_certain():
+    # Arrange
     roles, player_of = _game("necromancer", "speculator")
     target = player_of["sentinel"]
     choices = [NightChoice(player_of["healer"], "healer", "protect", target)]
+
+    # Act
     _, lines, _ = _after_night(choices, roles, 3, player_of["healer"])
+
+    # Assert
     assert _the_one_line(lines).text == f"No attack reached {target} that night."
 
 
@@ -330,9 +425,12 @@ def _blocked_healer_payload(**extra) -> dict:
 
 def test_the_seat_view_reads_only_the_seats_own_payload_fields():
     """Anything else on a payload (here, planted hidden state) cannot reach the engine."""
+    # Act: a view of a plain payload, and of one with hidden state planted on it
     plain = seat_view_from_payload(_blocked_healer_payload())
     with_hidden_state = seat_view_from_payload(_blocked_healer_payload(
         roles={"player_1": "investigator"}, night_choices=["secret"], surviving_wolves=["player_7"]))
+
+    # Assert
     assert plain == with_hidden_state
     assert set(SeatView.__dataclass_fields__) == {
         "player_id", "role", "cast_role_counts", "dead_roster", "night_records", "pack_roles", "announcements",
@@ -347,40 +445,55 @@ def test_the_seat_view_reads_stored_dicts_like_live_models():
 
 def test_hidden_roles_that_do_not_change_the_seats_view_do_not_change_its_lines():
     """Swap two seats the receiver knows nothing about: same records, same roster, same lines."""
+    # Arrange and act: the night as dealt
     roles, player_of = _game("serial_killer", "speculator")
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", player_of["serial_killer"])]
     _, before, _ = _after_night(choices, roles, 1, player_of["illusionist"])
+
+    # Arrange and act: the Sentinel and the Trailseer swapped
     swapped = dict(roles)
     swapped[player_of["sentinel"]], swapped[player_of["trailseer"]] = "trailseer", "sentinel"
     _, after, _ = _after_night(choices, swapped, 1, player_of["illusionist"])
+
+    # Assert
     assert before == after
 
 
 def test_a_watchers_lines_do_not_depend_on_which_role_made_the_visit():
     """Two hidden states the sentinel cannot tell apart: player_6 visited as the Healer, or as the
     Investigator (roles and actions swapped with player_1). Same record, same roster, same lines."""
+    # Arrange and act: player_6 visits as the Healer
     roles, player_of = _game("necromancer", "speculator")
     sentinel, sigilist = player_of["sentinel"], player_of["sigilist"]
     choices = [NightChoice("player_6", "healer", "protect", sigilist),
                NightChoice("player_1", "investigator", "investigate", player_of["trailseer"]),
                NightChoice(sentinel, "sentinel", "watch", sigilist)]
     records, before, _ = _after_night(choices, roles, 2, sentinel)
+
+    # Arrange and act: player_6 visits as the Investigator, roles swapped with player_1
     swapped = {**roles, "player_1": "healer", "player_6": "investigator"}
     swapped_choices = [NightChoice("player_6", "investigator", "investigate", sigilist),
                        NightChoice("player_1", "healer", "protect", player_of["trailseer"]),
                        NightChoice(sentinel, "sentinel", "watch", sigilist)]
     swapped_records, after, _ = _after_night(swapped_choices, swapped, 2, sentinel)
+
+    # Assert
     assert records == swapped_records
     assert before == after and before[0] is not None
 
 
 def test_an_investigators_lines_do_not_depend_on_which_wolf_it_checked():
+    # Arrange and act: the check as dealt
     roles, player_of = _game("serial_killer", "speculator")
     investigator = player_of["investigator"]
     choices = [NightChoice(investigator, "investigator", "investigate", "player_7")]
     _, before, _ = _after_night(choices, roles, 1, investigator)
+
+    # Arrange and act: the two wolves' roles swapped
     swapped = {**roles, "player_7": "illusionist", "player_8": "chanteuse"}
     _, after, _ = _after_night(choices, swapped, 1, investigator)
+
+    # Assert
     assert before == after and before[0] is not None
 
 
@@ -416,10 +529,13 @@ def test_the_games_mode_reaches_the_turn_payload_from_the_run_config():
 
 def test_a_sides_own_level_overrides_the_games_mode():
     """Difficulty (owner, 2026-10-18): e.g. the town at level 3, the wolves at level 1."""
+    # Round 1: levels for two sides, under the standard limits
     config = build_runnable_config(RunConfig(deduction_by_side={"wolves": "record", "neutral": "public"}))
     assert pipeline._with_deduction_mode({"player_role": "chanteuse"}, config)["deduction_mode"] == "record"
     assert pipeline._with_deduction_mode({"player_role": "speculator"}, config)["deduction_mode"] == "public"
     assert pipeline._with_deduction_mode({"player_role": "healer"}, config)["deduction_mode"] == "full"
+
+    # Round 2
     # Use limits the engine was not verified for still turn it off, whatever the side's level.
     other = build_runnable_config(RunConfig(game={"sigils": 3}, deduction_by_side={"wolves": "full"}))
     assert pipeline._with_deduction_mode({"player_role": "chanteuse"}, other)["deduction_mode"] == "off"
@@ -450,9 +566,12 @@ test_morning_results.py."""
 
 @pytest.mark.slow
 def test_every_fact_a_line_states_holds_in_the_real_game():
+    # Arrange
     rng = random.Random(20261016)
     times_each_row_fired: dict[str, int] = {}
     sentences_reached: set[str] = set()
+
+    # Act and assert, once for each random night
     for _ in range(20000):
         game = random_night(rng)
         for receiver in game.receivers():
@@ -465,15 +584,20 @@ def test_every_fact_a_line_states_holds_in_the_real_game():
                 sentences_reached |= {name for name, phrase in SENTENCES_REACHED.items() if phrase in line.text}
                 for fact in line.facts:
                     assert fact_holds(fact, game), (line, fact, game)
+
+    # Assert: every row and every sentence was reached
     assert set(times_each_row_fired) >= ROWS_BUILT, times_each_row_fired
     assert sentences_reached == set(SENTENCES_REACHED)
 
 
 @pytest.mark.parametrize("killer,neutral", CASTS)
 def test_a_line_never_names_a_role_outside_its_cast(killer, neutral):
+    # Arrange
     titles = {"serial_killer": "Serial Killer", "necromancer": "Necromancer", "fortune_teller": "Fortune Teller"}
     not_dealt = [role for role in titles if role not in (killer, neutral)]
     rng = random.Random(f"{killer}-{neutral}")
+
+    # Act and assert, once for each random night
     for _ in range(4000):
         game = random_night(rng)
         if killer not in game.roles.values() or neutral not in game.roles.values():

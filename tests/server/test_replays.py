@@ -45,6 +45,7 @@ def test_replays_answer_503_when_unconfigured(api_client):
 def test_replay_router_translates_service_errors(api_client):
     """Application errors become HTTP responses only at the route boundary."""
 
+    # Round 1: a service that cannot find the replay
     class MissingReplayService:
         async def get_replay(self, game_id: str):
             raise ReplayNotFound(game_id)
@@ -54,6 +55,7 @@ def test_replay_router_translates_service_errors(api_client):
     assert response.status_code == 404
     assert response.json()["detail"] == "unknown replay"
 
+    # Round 2: a service whose replay event log is incomplete
     class IncompleteReplayService:
         async def get_replay(self, game_id: str):
             raise IncompleteReplay(game_id)
@@ -69,6 +71,7 @@ def test_replay_list_carries_the_ending_phase_and_the_total(api_client):
     X-Total-Count header, which the CORS setup lets a browser on the frontend read."""
     from server.config import server_settings
 
+    # Arrange: an archive of two replays that serves one page of one
     page = [ReplayBase(game_id="g2", winner="wolves", days=5, ended_phase="night",
                        n_events=9, n_humans=1, cast_role_counts={"wolf": 1})]
 
@@ -82,7 +85,11 @@ def test_replay_list_carries_the_ending_phase_and_the_total(api_client):
 
     api_client.app.state.resources.replays = TwoPageArchive()
     origin = server_settings.cors_allowed_origins[0]
+
+    # Act: ask for the second page from the frontend's origin
     response = api_client.get("/replays?limit=1&offset=1", headers={"Origin": origin})
+
+    # Assert
     assert response.status_code == 200
     assert [row["ended_phase"] for row in response.json()] == ["night"]
     assert response.headers["x-total-count"] == "2"
@@ -95,12 +102,14 @@ def test_replay_list_carries_the_ending_phase_and_the_total(api_client):
 def test_replay_game_parses_stored_dicts_into_typed_events():
     # EventRow keeps one payload dict; the wire model re-validates the collected
     # payloads through the discriminated union before they cross the API boundary.
+    # Round 1: stored dicts of known events
     raw = [e.model_dump(mode="json") for e in _log()]
     game = ReplayGame(game_id="g", winner="wolves", days=3, n_events=3,
                       n_humans=0, cast_role_counts={"wolf": 1}, events=raw)
     assert isinstance(game.events[0], ev.GameStarted)
     assert isinstance(game.events[-1], ev.GameOver)
 
+    # Round 2: a stored dict of an unknown event type
     with pytest.raises(Exception):  # unknown discriminator = drifted row, never served
         ReplayGame(game_id="g", winner="wolves", days=1, n_events=1,
                    n_humans=0, cast_role_counts={},
@@ -141,6 +150,7 @@ def test_replay_dto_drops_private_game_row_fields():
 def test_database_metadata_has_one_game_table_and_normalized_events():
     from sqlmodel import SQLModel
 
+    # Assert
     assert set(SQLModel.metadata.tables) == {
         "games", "events", "settings", "characters", "game_cast", "models", "model_prices",
         "prompt_captures", "game_lessons"}
@@ -167,8 +177,11 @@ def test_event_union_reaches_openapi():
 
     from server.app import create_app
 
+    # Act
     items = (create_app().openapi()["components"]["schemas"]
              ["ReplayGame"]["properties"]["events"]["items"])
+
+    # Assert
     n_members = len(get_args(get_args(ev.DurableGameEvent)[0]))
     assert len(items["oneOf"]) == n_members
 
@@ -177,13 +190,17 @@ def test_event_union_reaches_openapi():
 
 
 async def test_disabled_storage_acknowledges_noop_writes():
+    # Arrange
     repository = GameRepository(Database(""))
+
+    # Act and assert
     assert await repository.create_game("g", status=RUNNING)
     assert await repository.update_game("g", human_players=["player_3"])
     assert await repository.record_events("g", _log())
 
 
 async def test_storage_failure_does_not_acknowledge_writes(monkeypatch):
+    # Arrange: a database that cannot open a session
     database = Database("postgresql+psycopg://unused")
 
     def unavailable():
@@ -191,6 +208,8 @@ async def test_storage_failure_does_not_acknowledge_writes(monkeypatch):
 
     monkeypatch.setattr(database, "session", unavailable)
     repository = GameRepository(database)
+
+    # Act and assert
     assert not await repository.create_game("g", status=RUNNING)
     assert not await repository.update_game("g", human_players=["player_3"])
     assert not await repository.record_events("g", _log())
@@ -206,6 +225,7 @@ async def test_postgres_round_trip():
 
     from sqlmodel import SQLModel
 
+    # Arrange: a real Postgres database with the tables created
     settings = ServerSettings(WW_POSTGRES_DSN=os.environ["WW_REPLAY_TEST_DSN"])
     database = Database(settings.replay_database_url)
     await database.startup()
@@ -215,6 +235,7 @@ async def test_postgres_round_trip():
     async with database.engine.begin() as conn:  # test-only; prod uses alembic
         await conn.run_sync(SQLModel.metadata.create_all)
 
+    # Round 1: write and update a game row, and record its events twice
     assert await repository.create_game(
         "itest-game", status=RUNNING, model="test-model", seats=[{"token": "test-seat"}])
     # A partial write must update the existing row without needing its required status.
@@ -226,6 +247,8 @@ async def test_postgres_round_trip():
     assert await repository.load_game("missing-game") is None
     assert await repository.record_events("itest-game", _log())
     assert await repository.record_events("itest-game", _log())  # retry cannot duplicate rows
+
+    # Round 2: record the game's cast
     # The cast goes with the game: written once, listed in seat order, and the
     # constraints refuse a puppet standing twice or one the catalogue never issued.
     from sqlalchemy.exc import IntegrityError
@@ -240,6 +263,8 @@ async def test_postgres_round_trip():
         "itest-game", [CastSeat("player_3", "owl", False)])  # owl stands at player_2
     assert not await repository.record_cast(
         "itest-game", [CastSeat("player_3", "nobody", False)])  # not in the catalogue
+
+    # Round 3: complete the game twice, then read it back as a replay
     await repository.complete_game("itest-game", _log(), n_humans=2)
     await repository.complete_game("itest-game", _log(), n_humans=2)  # idempotent
 
@@ -258,6 +283,7 @@ async def test_postgres_round_trip():
     assert row is not None and row.status == COMPLETED and row.winner == "wolves"
     assert len(event_rows) == 3
 
+    # Round 4: a draw
     # A draw has no winner and is a replay all the same (2026-10-17, game f2e944a3).
     draw = [*_log(with_over=False), ev.GameOver(seq=3, day=3, winner=None)]
     await repository.create_game("itest-draw", status=RUNNING)
@@ -267,6 +293,7 @@ async def test_postgres_round_trip():
     assert any(item.game_id == "itest-draw"
                for item in await replay_service.list_replays(limit=500, offset=0))
 
+    # Round 5: a game that lost a batch of events
     # A batch was lost during play: completion marks the game dropped, not completed.
     await repository.create_game("itest-short", status=RUNNING)
     await repository.record_events("itest-short", _log()[:2])
@@ -278,6 +305,7 @@ async def test_postgres_round_trip():
     with pytest.raises(ReplayNotFound):
         await replay_service.get_replay("itest-short")
 
+    # Round 6: a completed row with a hole in its event log
     # A row completed before the write-side check, with a hole: the read side refuses.
     full = _log()
     await repository.create_game(

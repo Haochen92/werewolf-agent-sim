@@ -49,6 +49,7 @@ def test_day_payloads_list_survivors_in_seat_order():
 
 
 def test_night_payloads_list_targets_in_seat_order(monkeypatch):
+    # Arrange
     seen = {}
 
     def capture(payload, *args, **kwargs):
@@ -56,5 +57,9 @@ def test_night_payloads_list_targets_in_seat_order(monkeypatch):
         return None
 
     monkeypatch.setattr(solo, "run_memory_informed_night_action", capture)
+
+    # Act
     solo.solo_night_phase("healer")(_state(), {}, None)
+
+    # Assert
     assert seen["surviving_players"] == [p for p in SEATED if p != "player_8"]

@@ -67,10 +67,13 @@ def _chanteuse_voted_out() -> Table:
 
 def test_f8_a_shot_no_shot_announced_lists_every_branch():
     """The catalogue's example (§0 grade 3), worded with the night and the role that cannot be killed."""
+    # Round 1: a shot with no outcome said
     shot = _said(2, "player_4", (1, "shoot", "player_9", "not_said", []))
     assert _f8(_shot_at_the_serial_killer(), "player_2", 2, shot) == [
         "player_4 says it shot at player_9 on night 1, but no shot at player_9 was announced that night: either "
         "player_4 was roleblocked, or player_9 is the Serial Killer, or player_4's claim is false."]
+
+    # Round 2
     # Said to have gone ahead: not roleblocked (L13).
     went = _said(2, "player_4", (1, "shoot", "player_9", "survived", []))
     assert _f8(_shot_at_the_serial_killer(), "player_2", 2, went) == [
@@ -79,17 +82,24 @@ def test_f8_a_shot_no_shot_announced_lists_every_branch():
 
 
 def test_f8_a_shot_at_a_player_who_cannot_be_immune_or_on_a_night_no_one_could_block():
+    # Arrange
     table = _chanteuse_voted_out()
+
+    # Round 1
     # player_3 died to the Serial Killer on night 2: not immune, and no one could roleblock.
     at_the_dead = _said(3, "player_4", (2, "shoot", "player_3", "not_said", []))
     assert _f8(table, "player_6", 3, at_the_dead) == [
         "player_4 says it shot at player_3 on night 2, but no shot at player_3 was announced that night. No one could "
         "roleblock that night, and player_3 cannot be the Serial Killer, the only role a shot fails on without an "
         "announcement, so that claim is false."]
+
+    # Round 2
     # player_5 could be the Serial Killer, for the Healer: one branch left.
     assert _f8(table, "player_6", 3, _said(3, "player_4", (2, "shoot", "player_5", "not_said", []))) == [
         "player_4 says it shot at player_5 on night 2, but no shot at player_5 was announced that night: either "
         "player_5 is the Serial Killer, or player_4's claim is false."]
+
+    # Round 3
     # The Serial Killer's own seat knows player_5 is not it.
     assert _f8(table, "player_9", 3, _said(3, "player_4", (2, "shoot", "player_5", "not_said", []))) == [
         "player_4 says it shot at player_5 on night 2, but no shot at player_5 was announced that night. No one could "
@@ -98,17 +108,22 @@ def test_f8_a_shot_at_a_player_who_cannot_be_immune_or_on_a_night_no_one_could_b
 
 
 def test_f8_the_necromancer_is_immune_on_nights_1_and_2_and_its_block_through_the_body_is_a_branch():
+    # Round 1: night 1
     ne = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
                                ("player_4", "kill", "player_9"))
     assert _f8(ne, "player_2", 2, _said(2, "player_4", (1, "shoot", "player_9", "not_said", []))) == [
         "player_4 says it shot at player_9 on night 1, but no shot at player_9 was announced that night: either "
         "player_4 was roleblocked, or player_9 is the Necromancer, or player_4's claim is false."]
+
+    # Round 2: night 2, after the Chanteuse is voted out
     ne.lynch("player_7", 2)
     ne.night(2, ("player_8", "kill", "player_2"))
     # Night 2: the Necromancer is still immune in silence, and it can block through the Chanteuse's body.
     assert _f8(ne, "player_3", 3, _said(3, "player_4", (2, "shoot", "player_5", "not_said", []))) == [
         "player_4 says it shot at player_5 on night 2, but no shot at player_5 was announced that night: either "
         "player_4 was roleblocked, or player_5 is the Necromancer, or player_4's claim is false."]
+
+    # Round 3: night 3
     ne.night(3, ("player_8", "kill", "player_6"))
     # Night 3: no one is immune in silence; the block through the body is the one branch left.
     assert _f8(ne, "player_3", 4, _said(4, "player_4", (3, "shoot", "player_5", "not_said", []))) == [
@@ -117,14 +132,21 @@ def test_f8_the_necromancer_is_immune_on_nights_1_and_2_and_its_block_through_th
 
 
 def test_f8_no_line_when_the_morning_shows_the_shot_or_the_claim_is_table_es():
+    # Arrange
     table = _shot_at_the_serial_killer()
+
+    # Round 1: a shot that killed player_5
     hit = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_9", "kill", "player_10"),
                                 ("player_4", "kill", "player_5"))
     assert _f8(hit, "player_2", 2, _said(2, "player_4", (1, "shoot", "player_5", "not_said", []))) == []
+
+    # Round 2
     # A kill claimed (E8b says it is false), a roleblock said, the seat itself the immune target.
     assert _f8(table, "player_2", 2, _said(2, "player_4", (1, "shoot", "player_5", "died", []))) == []
     assert _f8(table, "player_2", 2, _said(2, "player_4", (1, "shoot", "player_5", "roleblocked", []))) == []
     assert _f8(table, "player_9", 2, _said(2, "player_4", (1, "shoot", "player_9", "not_said", []))) == []
+
+    # Round 3
     # A shot on the Fortune Teller's self-bet is announced with the shot's type: the claim fits.
     ft = Table({**_sk_sp(), "player_10": "fortune_teller"}).night(
         1, ("player_7", "kill", "player_1"), ("player_9", "kill", "player_2"), ("player_4", "kill", "player_10"),
@@ -142,14 +164,21 @@ def test_f8_a_claimant_who_cannot_hold_the_role_made_a_false_claim():
 # --- F8: a protection --------------------------------------------------------------------------------
 
 def test_f8_a_protection_of_a_player_who_died():
+    # Arrange
     night = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_7", "block", "player_3"),
                                   ("player_9", "kill", "player_10"), ("player_6", "protect", "player_5"))
+
+    # Round 1: a protection, with no outcome said, of a player who died
     assert _f8(night, "player_1", 2, _said(2, "player_6", (1, "protect", "player_4", "not_said", []))) == [
         "player_6 says it protected player_4 on night 1, but player_4 died that night, and a protection that goes "
         "ahead stops every attack: either player_6 was roleblocked, or player_6's claim is false."]
+
+    # Round 2
     # A player who lived, and a protection said to have gone ahead (E4b's), give no F8 line.
     assert _f8(night, "player_1", 2, _said(2, "player_6", (1, "protect", "player_5", "not_said", []))) == []
     assert _f8(night, "player_1", 2, _said(2, "player_6", (1, "protect", "player_4", "no_attack", []))) == []
+
+    # Round 3: a night no one could roleblock
     assert _f8(_chanteuse_voted_out(), "player_6", 3, _said(3, "player_5", (2, "protect", "player_2", "not_said", []))) == [
         "player_5 says it protected player_2 on night 2, but player_2 died that night, and a protection that goes "
         "ahead stops every attack. No one could roleblock that night, so that claim is false."]
@@ -158,18 +187,27 @@ def test_f8_a_protection_of_a_player_who_died():
 # --- F8: a watch that saw no one ---------------------------------------------------------------------
 
 def test_f8_a_watch_that_saw_no_one_against_a_visit_the_morning_shows():
+    # Arrange
     night = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_10"),
                                   ("player_6", "protect", "player_5"))
+
+    # Round 1: the Serial Killer's victim
     assert _f8(night, "player_1", 2, _said(2, "player_2", (1, "watch", "player_10", "no_visitors", []))) == [
         "player_2 says no one came to player_10 on night 1, but the Serial Killer attacked player_10 that night, and a "
         "watch shows that visit: that report is false."]
+
+    # Round 2
     # The pack's kill with no conceal: its killer's visit shows (L4), so no branch is left.
     assert _f8(night, "player_1", 2, _said(2, "player_2", (1, "watch", "player_4", "no_visitors", []))) == [
         "player_2 says no one came to player_4 on night 1, but a wolf attacked player_4 that night, and a watch shows "
         "that visit: that report is false."]
+
+    # Round 3
     # A named list is partial (L12); a player no one was announced on: E17's, not F8's.
     assert _f8(night, "player_1", 2, _said(2, "player_2", (1, "watch", "player_10", "not_said", ["player_3"]))) == []
     assert _f8(night, "player_1", 2, _said(2, "player_2", (1, "watch", "player_5", "no_visitors", []))) == []
+
+    # Round 4: a player the Healer saved from the Serial Killer
     saved = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_9", "kill", "player_5"),
                                   ("player_6", "protect", "player_5"))
     assert _f8(saved, "player_3", 2, _said(2, "player_2", (1, "watch", "player_5", "no_visitors", []))) == [
@@ -187,9 +225,12 @@ def test_f8_the_living_conceal_hides_the_killer_and_the_illusionists_visit_only_
 
 
 def test_f8_the_necromancers_visit_shows_the_bodys_name():
+    # Arrange
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
     table.lynch("player_4", 2)
     table.night(2, ("player_7", "kill", "player_2"), ("player_9", "kill", "player_5", "player_4"))
+
+    # Act and assert
     assert _f8(table, "player_6", 3, _said(3, "player_3", (2, "watch", "player_5", "no_visitors", []))) == [
         "player_3 says no one came to player_5 on night 2, but the Necromancer went to player_5 that night under "
         "player_4's name, and a watch shows that visit: that report is false."]
@@ -209,25 +250,33 @@ def _self_bets(roles: dict[str, str], healer_out: bool = False) -> Table:
 
 
 def test_f9_two_announced_self_bet_saves_use_the_budget_up():
+    # Round 1: a cast with the Serial Killer
     sk_ft = {**_sk_sp(), "player_10": "fortune_teller"}
     assert _budgets(_self_bets(sk_ft)) == [
         "player_10's self-bet has saved it twice, so it has none left: an attack on player_10 from now on kills it "
         "unless the Healer saves it."]
     assert _budgets(_self_bets(sk_ft, healer_out=True)) == [
         "player_10's self-bet has saved it twice, so it has none left: an attack on player_10 from now on kills it."]
+
+    # Round 2: a cast with the Necromancer
     ne_ft = {**_ne_sp(), "player_10": "fortune_teller"}
     assert _budgets(_self_bets(ne_ft)) == [
         "player_10's self-bet has saved it twice, so it has none left: an attack on player_10 from now on kills it "
         "unless the Healer, or the Necromancer through the Healer's body, saves it."]
+
+    # Round 3: one save only
     once = Table(sk_ft).night(1, ("player_7", "kill", "player_10"), ("player_9", "kill", "player_1"),
                               ("player_10", "bet", "player_10"))
     assert _budgets(once) == []
 
 
 def test_f9_two_hidden_deaths_use_the_conceals_up_unless_b6_says_it():
+    # Round 1: one hidden death
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_8", "conceal", None),
                                   ("player_9", "kill", "player_10"))
     assert _budgets(table) == []
+
+    # Round 2: a second hidden death
     table.night(2, ("player_8", "kill", "player_2"), ("player_8", "conceal", None), ("player_9", "kill", "player_3"))
     assert _budgets(table) == [
         "Two deaths have been hidden (player_1's on night 1 and player_2's on night 2), so the Illusionist's conceals "
@@ -235,11 +284,16 @@ def test_f9_two_hidden_deaths_use_the_conceals_up_unless_b6_says_it():
 
 
 def test_f9_is_in_the_public_block_and_f8_in_the_claimants_entry():
+    # Arrange
     sk_ft = {**_sk_sp(), "player_10": "fortune_teller"}
     table = _self_bets(sk_ft)
     lines = [_role(3, "player_4", "vigilante"), _said(3, "player_4", (2, "shoot", "player_3", "not_said", []), seq=1)]
     view = _view(table, "player_5", 3, *lines)
+
+    # Act
     blocks = deduction_blocks(view, own_result_lines(view), lines, 3)
+
+    # Assert
     assert [item.row for item in blocks.public.shown if item.row == "F9"] == ["F9"]
     (f8,) = [item for item in blocks.seat.shown if item.row == "F8"]
     assert f8.subject == "player_4" and f8.grade == "possible"
@@ -250,15 +304,20 @@ def test_f9_is_in_the_public_block_and_f8_in_the_claimants_entry():
 
 def test_hidden_roles_and_planted_state_change_nothing():
     """The Sigilist and the Speculator swapped (both silent that night): the same morning, the same lines."""
+    # Arrange
     lines = (_said(2, "player_4", (1, "shoot", "player_9", "not_said", [])),
              _said(2, "player_2", (1, "watch", "player_6", "no_visitors", [])),
              _said(2, "player_5", (1, "protect", "player_1", "not_said", [])))
     choices = (("player_7", "kill", "player_1"), ("player_9", "kill", "player_6"), ("player_4", "kill", "player_9"))
     a = Table(_sk_sp()).night(1, *choices)
     b = Table({**_sk_sp(), "player_5": "speculator", "player_10": "sigilist"}).night(1, *choices)
+
+    # Round 1: the two deals
     texts = [[item.text for item in comparison_items(_view(t, "player_3", 2, *lines), 2) if item.row == "F8"]
              for t in (a, b)]
     assert len(texts[0]) == 3 and texts[0] == texts[1]
+
+    # Round 2: the true roles planted in the payload
     payload = {**a.payload("player_3"), "day_channel": list(lines), "current_day": 2}
     planted = {**payload, "roles": a.roles, "all_night_actions": a.records, "night_choices": ["anything"]}
     assert comparison_items(seat_view_from_payload(planted), 2) == comparison_items(seat_view_from_payload(payload), 2)
@@ -327,7 +386,10 @@ def truth_oracle(nights: int, seed: int, seats: int = 3) -> dict[str, int]:
 
 @pytest.mark.slow
 def test_the_truth_oracle_on_random_games():
+    # Act
     counts = truth_oracle(nights=4000, seed=20261041)
+
+    # Assert
     assert {"F9 conceals", "F8 shoot certain", "F8 protect certain", "F8 watch certain"} <= set(counts), counts
     assert any(name.startswith("F8 shoot 3 branches") for name in counts), counts
     assert any(name.startswith("F8 protect 2 branches, explained") for name in counts), counts
@@ -336,8 +398,11 @@ def test_the_truth_oracle_on_random_games():
 def test_the_brute_force_oracle_no_immune_role_is_left_out_of_a_shot_list():
     """Every role a deal agreeing with the seat's view gives the target, and that fails a shot in
     silence that night, is a branch of the list (or the line says the target cannot hold it)."""
+    # Arrange
     rng = random.Random(20261042)
     checked = 0
+
+    # Act and assert, once for each random game
     for game, snapshot in _continuing(rng, 150):
         lines, summaries, today = random_comparison_claims(rng, game, snapshot)
         for player in snapshot.living:
@@ -361,14 +426,19 @@ def test_the_brute_force_oracle_no_immune_role_is_left_out_of_a_shot_list():
                 elif "fails on without an announcement" in item.text or "every shot that went ahead" in item.text:
                     assert not silent, (item.text, silent)  # the line says the target cannot be immune
                 checked += 1
+
+    # Assert: enough shot lines were checked
     assert checked >= 50, checked
 
 
 def test_no_uses_left_is_checked_against_the_game():
     """The fact the F9 lines state is checked, not assumed: a game whose Fortune Teller still had a
     self-bet would fail it."""
+    # Arrange
     rng = random.Random(7)
     game = random_game(rng)
     night = max(game.nights)
+
+    # Act and assert, once for each role with a use count
     for role, left in (game.nights[night].uses_after or {}).items():
         assert public_fact_holds(NoUsesLeft(role), night, game) == (left == 0)

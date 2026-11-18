@@ -46,6 +46,7 @@ class _TraceRoot:
 
 async def test_server_session_opens_one_named_trace_in_the_games_session(
         quiet_session, monkeypatch):
+    # Arrange: Langfuse replaced by fakes that record the trace and the handler
     captured = {}
     root = _TraceRoot()
 
@@ -66,9 +67,12 @@ async def test_server_session_opens_one_named_trace_in_the_games_session(
     monkeypatch.setattr(rt, "flush", lambda: captured.setdefault("flushed", True))
 
     session = quiet_session(FakeGraph([]))
+
+    # Act: run the session to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
+    # Assert
     assert session.config["callbacks"] == ["game-handler", session.usage_meter]
     # No explicit ids anywhere: a seeded trace id made the SDK hang the root under a remote
     # parent that never exists, and ids handed to the handler made the graph's chain span a
@@ -97,7 +101,10 @@ def test_public_reaches_everyone_including_spectators():
 
 
 def test_faction_reaches_wolves_only():
+    # Arrange
     e = _ev(ev.WolfMessage, round=1, wolf="w0", message="target?")
+
+    # Act and assert
     assert entitled(e, "w0", ROLES, False)
     assert not entitled(e, "v1", ROLES, False)
     assert not entitled(e, "", ROLES, False)
@@ -121,13 +128,16 @@ def test_observer_reaches_nobody_live_and_everybody_after_game_over():
 def test_token_maps_to_the_dealt_seat_in_join_order(quiet_session):
     """Join order IS deal order: token i owns human_players[i] (the orchestrator
     builds the list deterministically — pre-shuffle candidate, then extras)."""
+    # Arrange
     session = quiet_session(FakeGraph([]), seat_tokens=["tok-a", "tok-b"])
 
+    # Round 1: before the deal
     # Before INITIALIZE_GAME lands: valid tokens resolve to "" (seatless), not None.
     assert session.seat_for_token("tok-a") == ""
     assert session.seat_for_token("forged") is None
     assert session.seat_for_token("") is None  # no cookie is never a valid token
 
+    # Round 2: after the deal
     session.human_players = ["player_4", "player_7"]  # what INITIALIZE_GAME sets
     assert session.seat_for_token("tok-a") == "player_4"
     assert session.seat_for_token("tok-b") == "player_7"
@@ -143,10 +153,14 @@ def test_owns_mirrors_the_lobby_contract(quiet_session):
 # ---- the session over the real captured game --------------------------------------------
 
 async def test_session_replays_the_fixture_end_to_end(quiet_session, fixture_chunks):
+    # Arrange
     session = quiet_session(FakeGraph(fixture_chunks))
+
+    # Act: run the fixture game to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
 
+    # Assert
     assert session.error is None
     assert session.game_over is True
 
@@ -157,10 +171,12 @@ async def test_session_replays_the_fixture_end_to_end(quiet_session, fixture_chu
 
 
 async def test_sse_replays_the_whole_log_after_game_over(quiet_session, fixture_chunks):
+    # Arrange: a game run to its end
     session = quiet_session(FakeGraph(fixture_chunks))
     session.start()
     await session.wait_finished()
 
+    # Act: read the whole stream as a spectator
     frames = []
     gen = _sse(session, "", last_seq=0)
     async for frame in gen:
@@ -171,6 +187,7 @@ async def test_sse_replays_the_whole_log_after_game_over(quiet_session, fixture_
             break
     await gen.aclose()
 
+    # Assert
     # Post-game connection: observer unlock means every event replays, in seq order.
     ids = [int(f.split("\n", 1)[0].removeprefix("id: ")) for f in frames]
     assert ids == [e.seq for e in session.log]
@@ -182,6 +199,7 @@ async def test_pre_start_subscriber_still_gets_faction_events(quiet_session, fix
     """Regression: a viewer connecting BEFORE the first chunk is processed must not freeze
     an empty roles map — the translator REBINDS roles at INITIALIZE_GAME, so _sse must
     read them fresh per entitlement check, not capture the reference at connect time."""
+    # Arrange: a stream opened as the wolf's seat before the game starts
     expected = Translator()
     for p in fixture_chunks:
         expected.translate(p)
@@ -196,6 +214,7 @@ async def test_pre_start_subscriber_still_gets_faction_events(quiet_session, fix
             if '"wolf_message"' in frame:
                 return True
 
+    # Act and assert: start the game and wait for a wolf message on the stream
     collector = asyncio.ensure_future(collect())
     await asyncio.sleep(0)  # let the generator subscribe while the log is still empty
     session.start()
@@ -211,6 +230,7 @@ async def test_postgame_reconnect_cursor_does_not_skip_the_withheld_backlog(
     reconnects AFTER game over, sends a high last_seq — but that cursor only ever covered
     public events. The replay must still deliver the withheld tiers below the cursor,
     and must NOT resend the public events the cursor genuinely covers."""
+    # Arrange: a game run to its end, and a cursor past every public event
     session = quiet_session(FakeGraph(fixture_chunks))
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
@@ -221,6 +241,7 @@ async def test_postgame_reconnect_cursor_does_not_skip_the_withheld_backlog(
     withheld = {e.seq for e in session.log if not entitled(e, "", roles, False)}
     assert withheld, "fixture must contain withheld events for this test to mean anything"
 
+    # Act: reconnect with that cursor
     frames = []
     gen = _sse(session, "", last_seq=cursor)
     async for frame in gen:
@@ -231,6 +252,7 @@ async def test_postgame_reconnect_cursor_does_not_skip_the_withheld_backlog(
             break
     await gen.aclose()
 
+    # Assert
     ids = {int(f.split("\n", 1)[0].removeprefix("id: ")) for f in frames}
     assert ids == withheld  # every withheld event arrives; no covered public event resent
     assert all(i <= cursor or i in withheld for i in ids)
@@ -241,6 +263,7 @@ async def test_reconnect_header_overrides_the_frozen_query_cursor(
     """Ruled 2026-08-18 (①): the browser's auto-reconnect reuses the ORIGINAL url verbatim
     (query cursor = a fossil from construction time) and carries its real position in the
     Last-Event-ID header — the header must win when present."""
+    # Arrange: a game run to its end, and a cursor past every public event
     session = quiet_session(FakeGraph(fixture_chunks))
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
@@ -249,6 +272,7 @@ async def test_reconnect_header_overrides_the_frozen_query_cursor(
     cursor = max(e.seq for e in session.log if entitled(e, "", roles, False))
     withheld = {e.seq for e in session.log if not entitled(e, "", roles, False)}
 
+    # Act
     # Stale query cursor (0) + living header cursor: header must be used. (The Game
     # dependency is resolved by FastAPI in production; here the session is passed direct.)
     response = await event_stream(session, token="", last_seq=0, last_event_id=str(cursor))
@@ -262,6 +286,7 @@ async def test_reconnect_header_overrides_the_frozen_query_cursor(
             break
     await gen.aclose()
 
+    # Assert
     ids = {int(f.split("\n", 1)[0].removeprefix("id: ")) for f in frames}
     assert ids == withheld  # header honored: only the withheld backlog replays, not all 0+
 
@@ -271,6 +296,7 @@ async def test_live_unlock_flushes_withheld_backlog_below_a_reconnect_cursor(
     """Ruled 2026-08-18 (variant 2): a viewer reconnects MID-game with a cursor, then the
     game ends while they are connected. The R7 flush must not treat the cursor as covering
     the withheld events below it."""
+    # Arrange
     # Split the fixture at the first point where wolf chat sits BELOW the public
     # high-water mark (a later public event outranks it) — so the reconnect cursor,
     # built from public seqs, is above withheld traffic. Park phase 1 behind a
@@ -297,6 +323,7 @@ async def test_live_unlock_flushes_withheld_backlog_below_a_reconnect_cursor(
                          if e.type == "wolf_message" and e.seq <= cursor}
     assert wolf_below_cursor, "phase 1 must hold withheld wolf chat below the cursor"
 
+    # Act and assert: reconnect with that cursor, then let the game end
     gen = _sse(session, "", last_seq=cursor)  # mid-game reconnector
 
     async def collect():
@@ -326,16 +353,19 @@ def _interrupt_chunk() -> dict:
 
 
 async def test_interrupt_parks_validates_and_resumes(quiet_session):
+    # Arrange: a game parked on a human question
     session = quiet_session(FakeGraph([_interrupt_chunk()], []))
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
 
+    # Round 1: an answer that breaks the contract
     # A contract-violating action bounces AND the request stays pending for a retry.
     with pytest.raises(HumanTurnContractError):
         session.submit_turn({"message": "   "}, seat="player_3")
     assert session.pending_requests
 
+    # Round 2: a valid answer
     session.submit_turn({"message": "hello table"}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
 
@@ -354,15 +384,20 @@ async def test_child_namespace_interrupt_mirrors_park_and_send_once(quiet_sessio
     """subgraphs=True streams each interrupt twice — child ns first, root mirror after
     (parallel-interrupt probe, 2026-08-19). Only the root copy parks the seat and sends
     an input_request; the child copy is dropped, or every request doubles on the wire."""
+    # Arrange: an interrupt streamed twice, from the child namespace and then the root
     root = _interrupt_chunk()
     child = {**root, "ns": ["DAY_PHASE:abc123"]}
     session = quiet_session(FakeGraph([child, root], []))
+
+    # Round 1: run until the seat is parked
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
 
     assert len([e for e in session.log if e.type == "input_request"]) == 1
     assert sorted(session.pending_requests) == ["player_3"]
+
+    # Round 2: the seat answers
     session.submit_turn({"message": "hello table"}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None
@@ -393,11 +428,14 @@ def _announce_chunk(player="player_3", phase="day_votes", day=1) -> dict:
 async def test_an_announced_vote_opens_at_once_and_its_answer_waits_for_the_interrupt(quiet_session):
     """The announcement parks the seat and sends the one input_request; an answer given
     before the interrupt exists is held and filed under the interrupt's id when it comes."""
+    # Arrange: a vote step whose interrupt is held back until the test releases it
     value = human_turn_request(player_id="player_3", phase="day_votes", day=1,
                                valid_targets=["p9", "abstain"]).model_dump()
     interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
     gate = asyncio.Event()
     session = quiet_session(_GatedGraph(_announce_chunk(), interrupt, gate))
+
+    # Round 1: start the game; the announcement parks the seat
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
@@ -405,6 +443,7 @@ async def test_an_announced_vote_opens_at_once_and_its_answer_waits_for_the_inte
     (opened,) = [e for e in session.log if e.type == "input_request"]
     assert (opened.player, opened.action_kind, opened.candidates) == ("player_3", "vote", ["p9", "abstain"])
 
+    # Round 2: answer before the interrupt, then release it
     session.submit_turn({"target": "p9"}, seat="player_3")  # before the interrupt
     assert not session.pending_requests
     gate.set()
@@ -419,6 +458,7 @@ async def test_an_announced_discussion_turn_may_be_passed(quiet_session):
     """Live testing 2026-10-11: a human in the opening round could not pass. The announced
     question is the one on record, and it was parked with can_pass=False whatever its phase,
     so the pass failed the rules check. A discussion turn may always be passed."""
+    # Arrange: an announced opening-round turn whose interrupt is held back
     value = human_turn_request(player_id="player_3", phase="day_channel", day=1,
                                valid_targets=[], can_pass=True, day_round="opening").model_dump()
     interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
@@ -427,11 +467,15 @@ async def test_an_announced_discussion_turn_may_be_passed(quiet_session):
     chunk["data"]["valid_targets"] = []
     chunk["data"]["day_round"] = "opening"
     session = quiet_session(_GatedGraph(chunk, interrupt, gate))
+
+    # Round 1: start the game and pass before the interrupt
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
     session.submit_turn({"pass_turn": True}, seat="player_3")  # before the interrupt
     assert not session.pending_requests
+
+    # Round 2: release the interrupt
     gate.set()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None
@@ -439,15 +483,20 @@ async def test_an_announced_discussion_turn_may_be_passed(quiet_session):
 
 
 async def test_an_announced_vote_answered_after_the_interrupt_resumes_as_before(quiet_session):
+    # Arrange: a vote step whose interrupt follows its announcement at once
     value = human_turn_request(player_id="player_3", phase="day_votes", day=1,
                                valid_targets=["p9", "abstain"]).model_dump()
     interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
     gate = asyncio.Event(); gate.set()
     session = quiet_session(_GatedGraph(_announce_chunk(), interrupt, gate))
+
+    # Round 1: run until the interrupt has parked the seat
     session.start()
     while len(session._graph.calls) < 1 or not session._pending_ids.get("player_3") == "int-a":
         await asyncio.sleep(0.01)
     assert len([e for e in session.log if e.type == "input_request"]) == 1
+
+    # Round 2: the seat answers
     session.submit_turn({"target": "abstain"}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None
@@ -465,21 +514,25 @@ def _two_seat_interrupt_chunk() -> dict:
 
 
 async def test_parallel_interrupts_park_per_seat_and_resume_as_one_batch(quiet_session):
+    # Arrange: a game parked on two seats at once
     session = quiet_session(FakeGraph([_two_seat_interrupt_chunk()], []))
     session.start()
     while len(session.pending_requests) < 2:
         await asyncio.sleep(0.01)
 
+    # Round 1: an answer from a seat that owes nothing
     # An unknown-seat submission bounces, state intact.
     with pytest.raises(LookupError, match="player_8"):
         session.submit_turn({"target": "p9"}, seat="player_8")
 
+    # Round 2: the first seat answers
     # First answer: accepted, but the game stays parked on the second seat.
     session.submit_turn({"target": "p9"}, seat="player_3")
     await asyncio.sleep(0.05)
     assert sorted(session.pending_requests) == ["player_5"]
     assert not session.ended
 
+    # Round 3: the second seat answers
     # Last answer completes the batch: one id-addressed mapping resumes the graph.
     session.submit_turn({"target": "p9"}, seat="player_5")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
@@ -494,11 +547,14 @@ async def test_parallel_interrupts_park_per_seat_and_resume_as_one_batch(quiet_s
 async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch):
     """The seat is absent but ANOTHER human is watching: at expiry the table delegates
     this one turn to the seat's agent (seat_continuity.md §5, "someone connected")."""
+    # Arrange: a short absence grace, and another human watching
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([_interrupt_chunk()], []), seat_tokens=["t1", "t2"],
                             human_players=["player_3", "player_5"])
     session.subscribe("t2")  # the other human's open stream
+
+    # Round 1: run until the seat is parked
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
@@ -508,6 +564,7 @@ async def test_afk_timeout_delegates_the_parked_turn(quiet_session, monkeypatch)
     (request_event,) = [e for e in session.log if e.type == "input_request"]
     assert request_event.deadline == session.turn_deadlines["player_3"]
 
+    # Round 2: nobody answers
     # Nobody answers: the stopwatch rings, the delegate sentinel resumes the game.
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None
@@ -544,6 +601,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     from Agents.turn import agent_player
     from tests.fixtures.day_discuss_prompt_golden import board, capturing_llm, runtime
 
+    # Arrange: a real day graph paused on a human seat's round turn
     graph = _day_graph_with_a_checkpoint()
     session = quiet_session(graph)
     state = board("sentinel")  # the seat drafted below is the lowest id, player_1, the sentinel
@@ -558,12 +616,14 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     session.park(request, interrupt.id)
     before = await graph.aget_state(session.config, subgraphs=True)
 
+    # Round 1: build the paused turn's payload
     sent: list = []
     monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
     payload = await session._turn_payload(seat)
     assert payload["player_id"] == seat and payload["human_player"] is True
     assert payload["day_round"] == "opening"
 
+    # Round 2: a draft with no notes, against the AI turn's prompt
     line, left = await session.draft_line(seat, "")
     assert (line, left) == ("player_2, answer the question.", 2)
     # The AI turn in a game set to no deductions, since a human seat never gets them
@@ -572,6 +632,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     discuss({**payload, "human_player": False}, off, runtime())
     assert sent[0] == sent[1]
 
+    # Round 3: a draft with notes
     await session.draft_line(seat, "push on player_2", current="player_2?",
                              seat_notes={"player_5": "quiet"}, suspect="player_2")
     assert sent[2][:-1] == sent[1]
@@ -579,6 +640,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     assert kind == "human" and "push on player_2" in block and "player_2?" in block
     assert "player_5: quiet" in block and "They suspect player_2." in block
 
+    # Round 4: the game is unchanged
     after = await graph.aget_state(session.config, subgraphs=True)
     assert after.tasks[0].state.values == before.tasks[0].state.values
     assert after.tasks[0].state.config == before.tasks[0].state.config  # no new checkpoint
@@ -586,11 +648,14 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
 
 
 async def test_a_draft_refuses_a_notebook_naming_a_stranger(quiet_session, monkeypatch):
+    # Arrange: a seat with a question in a game of two seats
     session = quiet_session(FakeGraph([]))
     session.log.append(ev.GameStarted(seq=0, day=1, seats=["player_3", "player_5"],
                                       cast_role_counts={"villager": 2}))
     session.pending_requests["player_3"] = human_turn_request(
         player_id="player_3", phase="day_channel", valid_targets=[])
+
+    # Act and assert
     with pytest.raises(ValueError, match="player_9"):
         await session.draft_line("player_3", "", seat_notes={"player_9": "who?"})
     with pytest.raises(ValueError, match="player_7"):
@@ -604,6 +669,7 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
     import time
     from datetime import datetime, timedelta
 
+    # Arrange: a slow draft model, and a seat parked in a two-human game
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
 
     def slow_preview(payload, config, runtime, direction):
@@ -623,6 +689,7 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
         await asyncio.sleep(0.01)
     before = datetime.fromisoformat(session.turn_deadlines["player_3"])
 
+    # Round 1: one draft
     line, left = await session.draft_line("player_3", "4 dodging")
     assert left == 2 and line.endswith("4 dodging\nBuild your message around their direction;"
                                        " everything above still applies. Speak this turn"
@@ -631,6 +698,7 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
     assert after - before >= timedelta(seconds=0.05)  # the wait, credited back
     assert sorted(session.pending_requests) == ["player_3"]  # nothing was sent
 
+    # Round 2: two drafts at once, then the turn's last drafts
     # two at once (two tabs, a script): the second is refused while the first is on its way,
     # and only the one that ran is counted
     both = await asyncio.gather(session.draft_line("player_3", "again"),
@@ -643,6 +711,7 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
     with pytest.raises(LookupError, match="no drafts left"):
         await session.draft_line("player_3", "one more")
 
+    # Round 3: the seat answers
     session.submit_turn({"message": line}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None
@@ -650,8 +719,11 @@ async def test_drafting_credits_the_wait_and_caps_the_turn(quiet_session, monkey
 
 async def test_afk_timer_never_arms_in_solo(quiet_session, monkeypatch):
     """One human seat = nobody is held hostage; the lone human may think forever."""
+    # Arrange
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 0.02)
     session = quiet_session(FakeGraph([_interrupt_chunk()], []), seat_tokens=["t1"])
+
+    # Round 1: run until the seat is parked, then let time pass
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
@@ -661,6 +733,7 @@ async def test_afk_timer_never_arms_in_solo(quiet_session, monkeypatch):
     await asyncio.sleep(0.1)  # several windows pass; the seat still owes input
     assert sorted(session.pending_requests) == ["player_3"]
 
+    # Round 2: the seat answers
     session.submit_turn({"message": "took my time"}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None
@@ -670,12 +743,17 @@ async def test_afk_stopwatch_dies_with_its_own_question(quiet_session, monkeypat
     """Identity, not membership: the stopwatch for an ANSWERED question must not fire
     into the seat's NEXT question (answered at 119s, next turn parks at 119.5s, the
     old stopwatch rings at 120s — the new question keeps its full window)."""
+    # Arrange: a seat that answered one question and now owes the next
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
     answered = human_turn_request(player_id="p1")
     next_question = human_turn_request(player_id="p1", day=2)
     session.pending_requests["p1"] = next_question  # the seat owes input — but not THIS
+
+    # Act
     await session.clocks._expire("p1", answered, _now())  # the stale stopwatch rings
+
+    # Assert
     assert session.pending_requests == {"p1": next_question}  # untouched
 
 
@@ -709,13 +787,18 @@ async def test_afk_expiry_parks_when_nobody_is_connected(quiet_session, monkeypa
 
     Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
     before investigating."""
+    # Arrange
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([_interrupt_chunk()], []), seat_tokens=["t1", "t2"])
+
+    # Act: run until the seat is parked, then let several grace windows pass
     session.start()
     while not session.pending_requests:
         await asyncio.sleep(0.01)
     await asyncio.sleep(0.2)  # several grace windows pass
+
+    # Assert
     assert sorted(session.pending_requests) == ["player_3"]  # still parked
     assert session.turn_deadlines == {} and session.clocks._tasks == {}
     assert len(session._graph.calls) == 1  # never resumed
@@ -723,25 +806,36 @@ async def test_afk_expiry_parks_when_nobody_is_connected(quiet_session, monkeypa
 
 
 async def test_connected_seat_keeps_the_full_thinking_window(quiet_session, monkeypatch):
+    # Arrange
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
     session.subscribe("t1")
+
+    # Act
     _park(session)
+
+    # Assert
     assert _seconds_left(session, "p1") > 9
 
 
 async def test_absent_seat_gets_the_grace_not_the_thinking_window(quiet_session, monkeypatch):
+    # Arrange
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
+
+    # Act
     _park(session)
+
+    # Assert
     assert 0 < _seconds_left(session, "p1") <= 0.5
 
 
 async def test_stream_drop_starts_the_grace_and_a_return_lifts_it(quiet_session, monkeypatch):
     """Mid-turn disconnect: the effective deadline drops to the grace. Reconnect: it
     goes back to the ORIGINAL thinking deadline — absence never extends the clock."""
+    # Arrange: a connected seat parked on a question
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
@@ -749,10 +843,12 @@ async def test_stream_drop_starts_the_grace_and_a_return_lifts_it(quiet_session,
     _park(session)
     thinking = session.turn_deadlines["p1"]
 
+    # Round 1: the seat's stream drops
     session.unsubscribe(q)
     assert _seconds_left(session, "p1") <= 0.5
     assert sorted(session.pending_requests) == ["p1"]  # not delegated on the drop itself
 
+    # Round 2: the seat returns
     session.subscribe("t1")
     assert session.turn_deadlines["p1"] == thinking
 
@@ -766,10 +862,13 @@ async def test_a_seat_that_left_hands_its_turns_over_at_once_until_it_returns(
 
     Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
     before investigating."""
+    # Arrange: a seat with no connection, while another human is at the table
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.5)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
     session.subscribe("t2")  # the friend still at the table
+
+    # Round 1: two turns pass to the agent, then a third question is parked
     for _ in range(2):
         _park(session)
         assert 0.4 < _seconds_left(session, "p1") <= 0.5  # the grace
@@ -780,6 +879,7 @@ async def test_a_seat_that_left_hands_its_turns_over_at_once_until_it_returns(
     await asyncio.sleep(0.05)
     assert "p1" not in session.pending_requests
 
+    # Round 2: the seat comes back, then a question is parked
     q = session.subscribe("t1")  # p1 is back
     session.unsubscribe(q)
     _park(session)
@@ -794,6 +894,7 @@ async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session
 
     Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
     before investigating."""
+    # Arrange: a table parked on two absent seats
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"],
@@ -803,7 +904,10 @@ async def test_returning_seat_unparks_and_the_others_get_the_grace(quiet_session
     await asyncio.sleep(0.2)
     assert session.turn_deadlines == {} and session.clocks._tasks == {}  # parked
 
+    # Act: one seat comes back
     session.subscribe("t1")
+
+    # Assert
     assert _seconds_left(session, "p1") > 9        # fresh window for the returner
     assert 0 < _seconds_left(session, "p2") <= 0.05  # grace for the still-absent seat
     await asyncio.sleep(0.2)
@@ -820,6 +924,8 @@ async def test_a_long_park_gives_every_waiting_seat_a_fresh_window(quiet_session
     Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
     before investigating."""
     from datetime import timedelta
+
+    # Arrange: a table parked on two absent seats for longer than the thinking window
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.05)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2", "t3"],
@@ -830,7 +936,10 @@ async def test_a_long_park_gives_every_waiting_seat_a_fresh_window(quiet_session
     assert session.clocks._tasks == {}  # parked
     session.clocks._thinking["p2"] = _now() - timedelta(hours=3)  # the park ran long
 
+    # Act: one seat comes back
     session.subscribe("t1")
+
+    # Assert
     assert _seconds_left(session, "p1") > 9
     assert 0 < _seconds_left(session, "p2") <= 0.05  # the grace, not the past
     assert sorted(session.pending_requests) == ["p1", "p2"]  # nothing delegated yet
@@ -840,33 +949,48 @@ async def test_a_long_park_gives_every_waiting_seat_a_fresh_window(quiet_session
 
 
 async def test_solo_games_ignore_presence(quiet_session, monkeypatch):
+    # Arrange: a solo seat with a question
     monkeypatch.setattr("server.game.seat_clocks.ABSENCE_GRACE_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["p1"])
     request = human_turn_request(player_id="p1")
     session.pending_requests["p1"] = request
+
+    # Act: the seat's stream drops and comes back
     q = session.subscribe("t1")
     session.unsubscribe(q)
     session.subscribe("t1")
     await asyncio.sleep(0.05)
+
+    # Assert
     assert session.turn_deadlines == {} and session.clocks._tasks == {}
     assert session.pending_requests == {"p1": request}
 
 
 async def test_answer_cancels_the_stopwatch(quiet_session, monkeypatch):
+    # Arrange
     monkeypatch.setattr("server.game.seat_clocks.AFK_TIMEOUT_SECONDS", 10.0)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
     session.subscribe("t1")
     _park(session, valid_targets=["p2"])
+
+    # Act
     session.submit_turn({"target": "p2"}, seat="p1")
     await asyncio.sleep(0)
+
+    # Assert
     assert session.clocks._tasks == {} and session.clocks._thinking == {}
 
 
 def test_spectators_never_count_as_presence(quiet_session):
+    # Arrange
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
+
+    # Round 1: two spectators connect
     session.subscribe()      # a spectator: no token at all
     session.subscribe("")    # the same, spelled out
     assert session.connected_seats == set() and not session.humans_present
+
+    # Round 2: a seat connects
     session.subscribe("t2")
     assert session.connected_seats == {"p2"} and session.seat_present("p2")
 
@@ -874,13 +998,18 @@ def test_spectators_never_count_as_presence(quiet_session):
 async def test_sse_registers_the_seat_for_its_lifetime(quiet_session, monkeypatch):
     """The stream's token is the presence signal: subscribed for as long as the
     generator lives, gone the moment it closes."""
+    # Arrange
     monkeypatch.setattr("server.routes.games._HEARTBEAT_SECONDS", 0.01)
     session = quiet_session(FakeGraph([]), seat_tokens=["t1", "t2"], human_players=["p1", "p2"])
+
+    # Round 1: open the seat's stream
     stream = _sse(session, "t1", 0)
     # a ping as the stream opens, then one each quiet interval: named, so the page hears it
     assert (await stream.__anext__()).startswith("event: ping")
     assert (await stream.__anext__()).startswith("event: ping")
     assert session.connected_seats == {"p1"}
+
+    # Round 2: close it
     await stream.aclose()
     assert session.connected_seats == set()
 
@@ -888,10 +1017,15 @@ async def test_sse_registers_the_seat_for_its_lifetime(quiet_session, monkeypatc
 async def test_shutdown_cancels_a_parked_game(quiet_session):
     """Lifespan teardown path: a game parked mid-stream is cancelled cleanly —
     _finished still fires (the finally), no pending-task noise on server exit."""
+    # Arrange
     session = quiet_session(HangingGraph())
+
+    # Act: start the game, then shut it down
     session.start()
     await asyncio.sleep(0)  # let the task enter astream
     await asyncio.wait_for(session.suspend(), timeout=5)
+
+    # Assert
     assert session.ended
 
 
@@ -906,9 +1040,14 @@ class _FailsAfterGameOverGraph(FakeGraph):
 
 
 async def test_a_failure_after_game_over_keeps_the_game(quiet_session, fixture_chunks):
+    # Arrange
     session = quiet_session(_FailsAfterGameOverGraph(fixture_chunks))
+
+    # Act: run the game to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
+
+    # Assert
     assert session.game_over is True
     assert session.error is None  # archived as finished, not dropped
 
@@ -924,27 +1063,42 @@ class _KeyEchoAfterGameOverGraph(FakeGraph):
 
 async def test_a_failure_after_game_over_never_logs_the_key(quiet_session, fixture_chunks,
                                                              caplog):
+    # Arrange
     session = quiet_session(_KeyEchoAfterGameOverGraph(fixture_chunks), api_key="sk-player-123")
+
+    # Act: run the game to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
+
+    # Assert
     assert session.game_over is True
     assert "failed after game over" in caplog.text
     assert "sk-player-123" not in caplog.text
 
 
 async def test_an_ended_game_lets_the_players_key_go(quiet_session, fixture_chunks):
+    # Arrange
     session = quiet_session(FakeGraph(fixture_chunks), api_key="sk-player-123", model="gemini-3.6-flash")
+
+    # Act: run the game to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
+
+    # Assert
     assert session._api_key == ""
     assert session._llm_selection.api_key == "" and not session._llm_selection.clients
     assert session.model == "gemini-3.6-flash"  # what the game ran on is still known
 
 
 async def test_a_failure_before_game_over_still_ends_the_game_with_its_error(quiet_session):
+    # Arrange
     session = quiet_session(_FailsAfterGameOverGraph([]))
+
+    # Act: run the game until it fails
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    # Assert
     assert session.game_over is False
     assert "post-game step failed" in session.error
 
@@ -983,17 +1137,22 @@ async def test_a_solo_game_stops_while_its_player_is_away_and_resumes_on_their_r
     """Live testing 2026-10-11: the phone slept for two minutes and the night was played
     and resolved without its player. Now the game reads no further than the chunk it is
     on until the player's stream opens again, and the returning viewer gets the bar first."""
+    # Arrange: a solo game with three chunks to play
     graph = _CountingGraph(3)
     session = quiet_session(graph, seat_tokens=["t1"], human_players=["player_3"])
+
+    # Round 1: start with the player away
     session.start()
     await _until(lambda: session.suspended_since is not None)
     await asyncio.sleep(0.05)
     assert graph.pulled == 1 and not session.ended  # nothing read past the first chunk
 
+    # Round 2: a spectator connects
     spectator = session.subscribe()  # a spectator is not the player
     await asyncio.sleep(0.05)
     assert graph.pulled == 1 and session.suspended_since is not None
 
+    # Round 3: a bar is showing, and the player returns
     session._tracker.on_event(_ev(ev.GameStarted, seats=["player_3", "p9"], cast_role_counts={}))
     session._tracker.on_event(_ev(ev.PhaseChange, phase="voting"))  # a bar is showing
     q = session.subscribe("t1")
@@ -1008,29 +1167,44 @@ async def test_a_solo_game_stops_while_its_player_is_away_and_resumes_on_their_r
 async def test_a_solo_game_whose_player_has_died_plays_on_to_its_end(quiet_session):
     """A dead player is not waited for: the game finishes so its replay is saved. The
     death is read from the log, a hidden body included."""
+    # Arrange: a solo game whose player died in the night, the body hidden
     graph = _CountingGraph(3)
     session = quiet_session(graph, seat_tokens=["t1"], human_players=["player_3"])
     session.log.append(_ev(ev.NightResult, deaths=[ev.NightDeath(
         player="player_3", role="", attacker_types=["wolves"], concealed=True)]))
+
+    # Act: run the game
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=5)
+
+    # Assert
     assert graph.pulled == 3 and session.error is None
 
 
 async def test_a_room_with_several_humans_never_suspends(quiet_session):
+    # Arrange
     graph = _CountingGraph(3)
     session = quiet_session(graph, seat_tokens=["t1", "t2"],
                             human_players=["player_3", "player_5"])
+
+    # Act: run the game
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=5)
+
+    # Assert
     assert graph.pulled == 3 and session.suspended_since is None
 
 
 async def test_a_solo_game_stopped_while_suspended_clears_the_mark(quiet_session):
+    # Arrange
     session = quiet_session(_CountingGraph(2), seat_tokens=["t1"], human_players=["player_3"])
+
+    # Act: start the game, wait until it suspends, then stop it
     session.start()
     await _until(lambda: session.suspended_since is not None)
     await asyncio.wait_for(session.suspend(), timeout=5)  # the server going down
+
+    # Assert
     assert session.ended and session.suspended_since is None
 
 
@@ -1041,18 +1215,23 @@ _TEN_SEATS = [f"p{i}" for i in range(1, 11)]
 
 async def test_pacing_totals_are_the_publicly_alive_seats_and_shrink_with_every_death():
     """One unit per living seat, acting tonight or not; a concealed body still counts off."""
+    # Arrange
     snapshots = []
     tracker = PacingTracker(snapshots.append)
+
+    # Round 1: the first night
     tracker.on_event(_ev(ev.GameStarted, seats=_TEN_SEATS, cast_role_counts={"wolf": 2}))
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
     assert (snapshots[-1].stage, snapshots[-1].done, snapshots[-1].total) == ("night", 0, 10)
 
+    # Round 2: a concealed death, then the vote
     tracker.on_event(_ev(ev.NightResult, deaths=[ev.NightDeath(
         player="p3", role="", attacker_types=["wolves"], concealed=True)]))
     tracker.on_event(_ev(ev.RosterUpdate, surviving_players=[s for s in _TEN_SEATS if s != "p3"]))
     tracker.on_event(_ev(ev.PhaseChange, phase="voting"))
     assert (snapshots[-1].stage, snapshots[-1].total) == ("day_vote", 9)
 
+    # Round 3: a lynch, then the next night
     tracker.on_event(_ev(ev.LynchResult, outcome="lynched", player="p4", role="healer",
                          vote_counts={}, no_lynch_streak=0))
     tracker.on_event(_ev(ev.RosterUpdate,
@@ -1060,6 +1239,7 @@ async def test_pacing_totals_are_the_publicly_alive_seats_and_shrink_with_every_
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
     assert (snapshots[-1].stage, snapshots[-1].done, snapshots[-1].total) == ("night", 0, 8)
 
+    # Round 4: one branch finishes, then dawn
     tracker.on_branch_done()
     assert snapshots[-1].done == 1
     tracker.on_event(_ev(ev.NightResult, deaths=[], save=None))  # dawn: stage closes
@@ -1070,15 +1250,20 @@ async def test_pacing_totals_are_the_publicly_alive_seats_and_shrink_with_every_
 async def test_pacing_real_ticks_plus_padding_never_exceed_the_total(monkeypatch):
     """Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
     before investigating."""
+    # Arrange
     monkeypatch.setattr("server.game.pacing._PAD_SECONDS", (0.0, 0.01))
     snapshots = []
     tracker = PacingTracker(snapshots.append)
     tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2", "p3"], cast_role_counts={}))
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
+
+    # Act: two real ticks, the timers, then a late tick
     tracker.on_branch_done()
     tracker.on_branch_done()
     await asyncio.sleep(0.05)  # all three timers fire on top of the two real ticks
     tracker.on_branch_done()  # a late real tick on a full bar adds nothing
+
+    # Assert
     assert [f.done for f in snapshots] == [0, 1, 2, 3]
     assert all(f.total == 3 for f in snapshots)
 
@@ -1090,40 +1275,54 @@ async def test_pacing_a_night_with_no_real_tick_still_fills_by_the_timers(monkey
 
     Waits real time, so it can fail on a slow machine; if it fails alone, rerun it once
     before investigating."""
+    # Arrange
     monkeypatch.setattr("server.game.pacing._PAD_SECONDS", (0.0, 0.01))
     snapshots = []
     tracker = PacingTracker(snapshots.append)
     tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2", "p3", "p4"], cast_role_counts={}))
+
+    # Act: a night starts and no turn finishes
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
     await asyncio.sleep(0.05)
+
+    # Assert
     assert [f.done for f in snapshots] == [0, 1, 2, 3, 4]
     assert tracker.current_frame == ev.PhaseProgress(day=1, stage="night", done=4, total=4)
 
 
 async def test_a_viewer_joining_mid_stage_is_handed_the_bar_first(quiet_session):
+    # Arrange: a night with one of two branches done
     session = quiet_session(FakeGraph([]), seat_tokens=["t1"], human_players=["p1"])
     tracker = session._tracker
     tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2"],
                          cast_role_counts={"wolf": 1, "healer": 1}))
     tracker.on_event(_ev(ev.PhaseChange, phase="night"))
     tracker.on_branch_done()
+
+    # Round 1: a viewer joins mid-stage
     q = session.subscribe()
     kind, frame = q.get_nowait()
     assert kind == "pacing" and (frame.stage, frame.done, frame.total) == ("night", 1, 2)
 
+    # Round 2: dawn, then another viewer joins
     tracker.on_event(_ev(ev.NightResult, deaths=[], save=None))  # dawn: no bar showing
     assert session.subscribe().empty()
 
 
 async def test_pacing_vote_stage_counts_ballots_against_survivors():
+    # Arrange
     snapshots = []
     tracker = PacingTracker(snapshots.append)
     tracker.on_event(_ev(ev.GameStarted, seats=["p1", "p2", "p3"], cast_role_counts={
         "wolf": 1, "villager": 2,
     }))
+
+    # Round 1: the vote opens
     tracker.on_event(_ev(ev.PhaseChange, phase="voting"))
     assert snapshots[-1] == ev.PhaseProgress(
         day=1, stage="day_vote", done=0, total=3)
+
+    # Round 2: two ballots
     tracker.on_ballot()
     tracker.on_ballot()
     assert snapshots[-1].done == 2
@@ -1133,11 +1332,15 @@ async def test_pacing_a_round_counts_lines_against_its_players_and_closes_full_w
     """The opening: every player writes at once; the bar counts lines written (an AI's or a
     human's), extra finishes never push it past the total, and the round's collection closes
     it full."""
+    # Arrange
     snapshots = []
     tracker = PacingTracker(snapshots.append)
+
+    # Round 1: the opening round opens
     tracker.on_event(_ev(ev.RoundOpened, round="opening", players=["p1", "p2", "p3", "p4"]))
     assert snapshots[-1] == ev.PhaseProgress(day=1, stage="opening", done=0, total=4)
 
+    # Round 2: lines are written
     tracker.on_chunk("DAY_PHASE", ["round_turn"])
     tracker.on_chunk("DAY_PHASE", ["round_turn_human"])
     tracker.on_chunk("root", ["round_turn"])  # not the day phase's: ignored
@@ -1146,6 +1349,7 @@ async def test_pacing_a_round_counts_lines_against_its_players_and_closes_full_w
         tracker.on_chunk("DAY_PHASE", ["round_turn"])
     assert snapshots[-1].done == 4
 
+    # Round 3: the round is collected
     tracker.on_chunk("DAY_PHASE", ["COLLECT_ROUND"])
     assert snapshots[-1] == ev.PhaseProgress(day=1, stage="opening", done=4, total=4)
     assert tracker.current_frame is None
@@ -1157,13 +1361,18 @@ async def test_pacing_a_round_counts_lines_against_its_players_and_closes_full_w
 async def test_pacing_the_closing_is_its_own_bar_with_the_accused_as_its_total():
     """The closing is keyed apart from the opening (the client keeps the max per day and
     stage), so the accused's count starts from nothing."""
+    # Arrange: an opening round played and collected
     snapshots = []
     tracker = PacingTracker(snapshots.append)
     tracker.on_event(_ev(ev.RoundOpened, round="opening", players=["p1", "p2", "p3"]))
     tracker.on_chunk("DAY_PHASE", ["round_turn", "round_turn", "round_turn"])
     tracker.on_chunk("DAY_PHASE", ["COLLECT_ROUND"])
+
+    # Round 1: the closing opens
     tracker.on_event(_ev(ev.RoundOpened, round="closing", players=["p2"]))
     assert snapshots[-1] == ev.PhaseProgress(day=1, stage="closing", done=0, total=1)
+
+    # Round 2: the accused speaks
     tracker.on_chunk("DAY_PHASE", ["round_turn"])
     assert snapshots[-1].done == 1
 
@@ -1171,6 +1380,7 @@ async def test_pacing_the_closing_is_its_own_bar_with_the_accused_as_its_total()
 async def test_an_announced_necromancer_turn_takes_a_body_after_the_interrupt(quiet_session):
     """The announcement parks the bodies with the targets; the interrupt adopts that question,
     so the body check runs against the announced bodies (review 2026-10-09, point 2)."""
+    # Arrange: a necromancer turn announced with its bodies, then its interrupt
     announce = {"type": "custom", "ns": [], "data": {
         "event": "human_turn_opened", "player": "player_3", "role": "necromancer",
         "phase": "necromancer_target", "day": 3, "valid_targets": ["p9", "stay_put"],
@@ -1180,13 +1390,19 @@ async def test_an_announced_necromancer_turn_takes_a_body_after_the_interrupt(qu
     interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [{"value": value, "id": "int-a"}]}}
     gate = asyncio.Event(); gate.set()
     session = quiet_session(_GatedGraph(announce, interrupt, gate))
+
+    # Round 1: run until the interrupt has parked the seat
     session.start()
     while len(session._graph.calls) < 1 or not session._pending_ids.get("player_3") == "int-a":
         await asyncio.sleep(0.01)
     (opened,) = [e for e in session.log if e.type == "input_request"]
     assert opened.bodies == ["p1"]
+
+    # Round 2: an answer with a body that was not announced
     with pytest.raises(HumanTurnContractError):
         session.submit_turn({"target": "p9", "body": "p7"}, seat="player_3")
+
+    # Round 3: a valid answer
     session.submit_turn({"target": "p9", "body": "p1"}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert session.error is None

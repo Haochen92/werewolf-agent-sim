@@ -79,7 +79,10 @@ def test_a_watch_pins_its_visitor_and_the_role_claims_narrow_the_serial_killer()
     have been announced (player_5, the seat, is not immune), the Speculator never visits, the seat is
     the Investigator, player_2 the Sentinel; the Trailseer, the Chanteuse and the Illusionist are
     revealed. Only the Healer is left."""
+    # Act
     items = conditional_items(_view(_ac2(), "player_5", 3, *_ac2_claims()))
+
+    # Assert
     assert [(item.row, item.subject, item.vote_form, item.text) for item in items] == [
         ("F4", None, False, AC2_LINE_6),
         ("F5", "player_8", False, AC2_LINE_4),
@@ -113,11 +116,14 @@ def _checked() -> Table:
 
 
 def test_a_claimed_check_makes_its_target_a_wolf_if_true():
+    # Round 1: a Suspicious check
     check = _said(2, "player_1", (1, "investigate", "player_7", "suspicious", []), claim="investigator")
     assert _lines(_checked(), "player_2", 2, check) == [
         "If player_1's check is true, player_7 is a wolf.",
         "For player_7 not to be a wolf, player_1's check must be false.",
     ]
+
+    # Round 2: a Not suspicious check
     clear = _said(2, "player_1", (1, "investigate", "player_7", "not_suspicious", []), claim="investigator")
     assert _lines(_checked(), "player_2", 2, clear) == []  # "not a wolf" leaves six roles: too long a list
 
@@ -126,19 +132,27 @@ def test_a_suspicious_check_in_a_necromancer_cast_from_night_2_leaves_the_necrom
     """NE+SP. The Illusionist is voted out on day 2; on night 2 the Necromancer (player_9) kills through
     its body and the Investigator checks it: Suspicious. A wolf, or the Necromancer that killed through
     a body; the Illusionist is revealed, so the Chanteuse or the Necromancer (never "a wolf")."""
+    # Arrange
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_3"), ("player_7", "block", "player_5"),
                                   ("player_6", "protect", "player_1"))
     table.lynch("player_8", 2)
     table.night(2, ("player_7", "kill", "player_5"), ("player_9", "kill", "player_6", "player_8"),
                 ("player_1", "investigate", "player_9"))
     check = _said(3, "player_1", (2, "investigate", "player_9", "suspicious", []), claim="investigator")
+
+    # Act and assert
     assert _lines(table, "player_2", 3, check) == [
         "If player_1's check is true, player_9 can only be the Chanteuse or the Necromancer."]
 
 
 def test_on_a_vote_turn_a_wolf_line_reads_as_its_plain_contrapositive():
+    # Arrange
     check = _said(2, "player_1", (1, "investigate", "player_7", "suspicious", []), claim="investigator")
+
+    # Act
     items = conditional_items(_view(_checked(), "player_2", 2, check))
+
+    # Assert
     assert [item.text for item in for_turn(items, vote=True)] == [
         "For player_7 not to be a wolf, player_1's check must be false."]
     assert [item.text for item in for_turn(items, vote=False)] == ["If player_1's check is true, player_7 is a wolf."]
@@ -211,12 +225,17 @@ def test_two_claims_for_one_role_cannot_all_be_true_so_no_role_claims_line():
 def test_a_withdrawn_role_claim_is_not_among_the_current_role_claims():
     """player_6 claimed the Healer yesterday and withdrew it: the role claims are player_2's, player_4's and
     player_8's, as in AC2."""
+    # Arrange
     withdrawn = DaySummary(day=2, summary="(day 2)", structured={"role_claims": [
         {"player": "player_6", "claimed_role": "healer", "kind": "claimed"},
         {"player": "player_6", "claimed_role": "healer", "kind": "retracted"}]})
     claims = [_said(3, "player_2", claim="sentinel"), _said(3, "player_4", claim="sigilist", seq=1),
               _said(3, "player_8", claim="healer", seq=2)]
+
+    # Act
     items = conditional_items(_view(_ac2(), "player_5", 3, *claims, summaries=[withdrawn]))
+
+    # Assert
     assert [item.text for item in items] == [AC2_LINE_6]
     assert {fact.player for fact in items[0].premises} == {"player_2", "player_4", "player_8"}
 
@@ -231,8 +250,11 @@ def test_a_role_claim_the_seat_can_check_is_left_out_and_named_as_such():
 
 
 def test_a_visit_to_a_player_already_dead_or_by_the_seat_unrecorded_gives_no_line():
+    # Round 1: a watch on a player already dead
     dead = _said(3, "player_2", (2, "watch", "player_1", "not_said", ["player_8"]), claim="sentinel")
     assert _lines(_ac2(), "player_5", 3, dead) == []
+
+    # Round 2
     # player_6 says it watched player_4 on night 2 and saw the seat, who was roleblocked that night.
     seat = _said(3, "player_6", (2, "watch", "player_4", "not_said", ["player_5", "player_8"]), claim="sentinel")
     assert _lines(_ac2(), "player_5", 3, seat) == []
@@ -241,9 +263,12 @@ def test_a_visit_to_a_player_already_dead_or_by_the_seat_unrecorded_gives_no_lin
 def test_a_visit_by_a_wolf_seat_its_role_could_not_have_made_gives_no_line():
     """A wolf's carrier visit is not in its records, but the Illusionist goes only to the pack's victim:
     on night 1 the pack's silent attack went to the immune Necromancer, not to player_1."""
+    # Arrange
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_9"), ("player_7", "block", "player_3"))
     table.night(2, ("player_7", "kill", "player_1"))
     seen = _said(3, "player_2", (1, "watch", "player_1", "not_said", ["player_8", "player_5"]), claim="sentinel")
+
+    # Act and assert
     assert _lines(table, "player_8", 3, seen) == []
 
 
@@ -273,23 +298,35 @@ def _seat_lines(payload: dict) -> list[str]:
 
 def test_acceptance_case_2_lines_4_5_and_6_exactly_from_the_summary():
     """AC2 (2f19d908, the day-3 vote, player_5 the Investigator): the claims are in the day-3 summary."""
+    # Arrange
     payload = _frozen("9b827b695a61ece9")
     assert payload["vote_turn"] is True
+
+    # Act
     items = conditional_items(seat_view_from_payload(payload))
+
+    # Assert
     assert [item.text for item in items] == [AC2_LINE_6, AC2_LINE_4, AC2_LINE_5, AC2_VOTE]
 
 
 def test_acceptance_case_2_folded_on_its_vote_turn_and_line_4_on_any_other():
     """The vote turn shows "AC2 folded"'s form in player_8's entry; any other turn, line 4. Line 6 is the
     shared line after the census, both ways. Never "player_8 is the Healer" without the premise."""
+    # Arrange
     payload = _frozen("9b827b695a61ece9")
+
+    # Round 1: the vote turn
     lines = _seat_lines(payload)
     # Slice 11: player_8's entry goes on with the comparison of player_2's sighting and player_8's word (E1).
     assert lines[1] == AC2_LINE_6 and any(line.startswith(AC2_VOTE) for line in lines)
     assert not any(AC2_LINE_4 in line or AC2_LINE_5 in line for line in lines)
+
+    # Round 2: the same payload as a discussion turn
     other = _seat_lines({**payload, "vote_turn": False})
     assert other[1] == AC2_LINE_6 and any(line.startswith(AC2_LINE_4) for line in other)
     assert not any(AC2_VOTE in line or AC2_LINE_5 in line for line in other)
+
+    # Both turns: no line names player_8 the Healer without the premise
     for line in lines + other:
         assert "player_8 is the Healer" not in line or line.startswith(AC2_LINE_4)
 
@@ -304,9 +341,14 @@ def test_acceptance_case_4_line_4_exactly_from_the_summary_and_singles_out_none_
 # --- placement ------------------------------------------------------------------------------------------
 
 def test_a_role_claims_line_is_shared_and_a_players_line_is_in_its_entry():
+    # Arrange
     view = _view(_ac2(), "player_5", 3, *_ac2_claims())
+
+    # Act
     blocks = deduction_blocks(view, own_result_lines(view), _ac2_claims(), 3)
     lines = [line.removeprefix("- ") for line in blocks.seat.text.splitlines()[2:]]
+
+    # Assert
     assert lines[:2] == [
         "Both wolves are dead: player_9 and player_7. The Serial Killer is alive and is one of player_2, player_4, "
         "player_6, player_8 and player_10.",
@@ -322,9 +364,12 @@ def test_a_role_claims_line_is_shared_and_a_players_line_is_in_its_entry():
 # --- the leak boundary ----------------------------------------------------------------------------------
 
 def test_hidden_roles_and_planted_state_change_nothing():
+    # Round 1: the hidden roles swapped
     swapped = _ac2(serial_killer="player_10", speculator="player_6")
     assert (conditional_items(_view(swapped, "player_5", 3, *_ac2_claims()))
             == conditional_items(_view(_ac2(), "player_5", 3, *_ac2_claims())))
+
+    # Round 2: the true roles planted in the payload
     table = _ac2()
     payload = {**table.payload("player_5"), "day_channel": _ac2_claims(), "current_day": 3}
     planted = {**payload, "roles": table.roles, "all_night_actions": table.records, "night_choices": ["anything"]}
@@ -482,8 +527,11 @@ def test_a_seats_conditionals_on_random_games_do_not_change_with_planted_state()
 def test_the_brute_force_oracle_on_random_games():
     """Every line of a random game's view, in every deal the view and its premise allow; the true deal
     is among them whenever the premise's roles are true."""
+    # Arrange
     rng = random.Random(20261024)
     checked = 0
+
+    # Act and assert, once for each random game
     for game, snapshot in _continuing_snapshots(rng, 120):
         if not snapshot.announcements:
             continue
@@ -494,4 +542,6 @@ def test_the_brute_force_oracle_on_random_games():
                                        "day_summaries": summaries, "current_day": today})
         items = conditional_items(view)
         checked += _brute_force(items, snapshot, view)
+
+    # Assert: enough lines were checked
     assert checked >= 100, checked

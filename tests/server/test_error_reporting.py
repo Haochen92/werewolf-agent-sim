@@ -26,9 +26,12 @@ def test_reporting_is_off_without_a_dsn(monkeypatch):
 
 
 def test_a_game_failure_is_tagged_and_never_carries_the_keys():
+    # Arrange: a Sentry client that sends to a test transport
     transport = _Captured()
     sentry_sdk.init(dsn="https://public@o0.ingest.sentry.io/0", transport=transport,
                     include_local_variables=False)
+
+    # Act: report a game failure whose message holds both keys
     try:
         api_key, backup_key = "sk-ant-secret-123", "sk-proj-backup-456"
         try:
@@ -41,6 +44,7 @@ def test_a_game_failure_is_tagged_and_never_carries_the_keys():
         sentry_sdk.get_client().close()
         sentry_sdk.init()  # back to a client that sends nothing
 
+    # Assert
     (event,) = transport.events
     assert event["tags"]["game_id"] == "g1" and event["tags"]["byok"] == "yes"
     assert "sk-ant-secret-123" not in str(event) and "sk-proj-backup-456" not in str(event)

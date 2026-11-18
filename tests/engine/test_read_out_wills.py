@@ -34,8 +34,11 @@ from tests.factories.random_nights import random_game
 # --- the prose and the data agree ---------------------------------------------------------------
 
 def test_every_will_read_out_in_random_games_is_the_data_its_node_committed():
+    # Arrange
     rng = random.Random(20261017)
     kinds_seen = set()
+
+    # Act and assert, once for each of 1500 random games
     for _ in range(1500):
         game = random_game(rng)
         for message, wills in game.messages:
@@ -45,6 +48,8 @@ def test_every_will_read_out_in_random_games_is_the_data_its_node_committed():
                 kinds_seen |= {f"{clause.action} {clause.result}" for clause in will.clauses}
                 if not will.clauses:
                     kinds_seen.add("nothing on record")
+
+    # Assert: every kind of will and clause turned up at least once
     assert kinds_seen >= {
         "read at night", "read at day", "nothing on record", "None roleblocked", "hold_fire held",
         "protect saved", "protect no_attack", "protect self_bet_saved", "shoot killed", "shoot saved",
@@ -64,6 +69,7 @@ def test_in_a_whole_game_every_ai_turn_has_exactly_the_wills_read_out_before_it(
     from Agents.prompts import prompt_inputs
     from tests.factories.whole_game import play_game
 
+    # Arrange
     carried = []
     engine_entry = prompt_inputs._own_result_lines
 
@@ -73,7 +79,11 @@ def test_in_a_whole_game_every_ai_turn_has_exactly_the_wills_read_out_before_it(
 
     monkeypatch.setattr(prompt_inputs, "_own_result_lines", spy)
     scripted_model(seed=7)
+
+    # Act: play a whole game with scripted seats
     result, _, _ = play_game(game_graph, game, seed=7)
+
+    # Assert
     mornings, wills = public_data_from_summaries(result["day_summaries"])
     assert result["read_out_wills"] and wills == result["read_out_wills"]
     assert mornings == result["night_announcements"]
@@ -100,10 +110,15 @@ def test_every_night_payload_carries_the_wills():
 
 
 def test_every_day_payload_carries_the_wills():
+    # Arrange
     state = day_state(read_out_wills=[WILL])
     sweep = FiringReason(tier="proactive", sweep=1)
+
+    # Act and assert, once for each speaker turn
     for player, role in state["roles"].items():
         assert flow.build_speaker_send(state, player, role, sweep).arg["read_out_wills"] == [WILL]
+
+    # Act and assert, once for each vote turn
     for send in flow.fan_out_day(state, "vote"):
         assert send.arg["read_out_wills"] == [WILL]
 
@@ -120,8 +135,11 @@ def test_a_will_is_in_the_public_record_from_its_reveal_and_never_before():
 
 
 def test_the_wills_survive_a_checkpoint_round_trip_and_stored_dicts_read_like_live_models():
+    # Round 1: a checkpoint round trip
     serde = durable_serde()
     assert serde.loads_typed(serde.dumps_typed([WILL])) == [WILL]
+
+    # Round 2: a stored will reads like a live one
     live = seat_view_from_payload({"read_out_wills": [WILL], "night_announcements": []})
     stored = seat_view_from_payload({"read_out_wills": [WILL.model_dump()], "night_announcements": []})
     assert live == stored and live.wills == [WILL]
@@ -136,9 +154,14 @@ MORNING_TWO = ("Night of day 2: player_4 was killed by the wolves last night. Th
 
 
 def test_a_payload_without_the_keys_rebuilds_them_from_its_game_master_prose():
+    # Arrange
     summaries = [DaySummary(day=2, summary=MORNING_TWO, source="game_master"),
                  DaySummary(day=2, summary="player_3 said things.", source="discussion")]
+
+    # Act
     view = seat_view_from_payload({"day_summaries": summaries})
+
+    # Assert
     assert view.announcements == [announcement_from_prose(MORNING_TWO)]
     assert view.wills == [ReadOutWill(holder="player_4", role="investigator", day=2, phase="night", clauses=[
         WillClause(night=1, action="investigate", target="player_6", result="suspicious")])]
@@ -166,8 +189,11 @@ def test_the_frozen_cases_rebuild_to_the_data_the_engine_would_have_kept(name):
     deaths equal the dead roster's night deaths, and the pick the state's."""
     from evaluation.src.replay.hallucination_bench import hydrate_state
 
+    # Arrange
     cases = [json.loads(line) for line in (FROZEN / name).read_text().splitlines() if line.strip()]
     assert cases
+
+    # Act and assert, once for each case
     for case in cases:
         assert "night_announcements" not in case["state"] and "read_out_wills" not in case["state"]
         state = hydrate_state(case["state"])

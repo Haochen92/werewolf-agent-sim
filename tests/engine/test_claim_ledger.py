@@ -67,10 +67,14 @@ def test_filling_in_a_result_later_is_not_a_change():
 
 def test_two_targets_named_for_one_night_on_the_same_day_break_the_rules():
     # game 140610ad day 3: "I checked player_2 and got nothing useful ... the one I actually confirmed is player_9"
+
+    # Round 1: both checks named on the same day
     claims = [(2, "investigate", "p2", "not_said"), (2, "investigate", "p9", "healer")]
     text = _ledger(_day(3, [_claim("p6", "investigator", *claims)]))
     assert text.splitlines()[1] == ("  Night 2: checked p9, result: healer (on day 3 also named: Night 2: "
                                     "checked p2). Rules: one check a night.")
+
+    # Round 2: the two checks named on different days
     # named on different days, it is a change, not a second action
     text = _ledger(_day(3, [_claim("p6", "investigator", claims[0])]),
                    _day(4, [_claim("p6", "investigator", claims[1])]))
@@ -84,13 +88,18 @@ def _planning(player, role, *plans, actions=()):
 
 
 def test_a_plan_is_set_beside_what_the_player_later_says_they_did():
+    # Round 1: the player checks the player they planned to check
     kept = _ledger(_day(2, [_planning("p6", "investigator", ("investigate", "p2"))]),
                    _day(3, [_claim("p6", "investigator", (2, "investigate", "p2", "not_suspicious"))]))
     assert kept.splitlines()[1] == "  Night 2: checked p2, says they read Not suspicious (planned on day 2)."
+
+    # Round 2: the player checks someone else
     switched = _ledger(_day(2, [_planning("p6", "investigator", ("investigate", "p2"))]),
                        _day(3, [_claim("p6", "investigator", (2, "investigate", "p9", "healer"))]))
     assert switched.splitlines()[1] == ("  Night 2: checked p9, result: healer. "
                                         "On day 2 said they planned to check p2.")
+
+    # Round 3: the player gives a reason for checking someone else
     # the player's own reason travels with it; the line states facts, never a broken promise
     reasoned = _claim("p6", "investigator", (2, "investigate", "p9", "healer"))
     reasoned["night_actions"][0]["reason"] = "they named p2 as a decoy."
@@ -112,12 +121,17 @@ def test_agents_are_told_a_day_plan_binds_no_one():
 
 
 def test_older_summaries_still_read_into_the_ledger():
+    # Arrange: a claim in the v3 summary shape and one in the v1 shape
     v3 = DaySummary(day=2, summary="(text)", structured={"role_claims": [
         {"player": "p3", "claimed_role": "investigator", "status": "new", "evidence": "unverified",
          "claimed_results": [{"night": 1, "target": "p7", "result": "is a wolf"}]}]})
     v1 = DaySummary(day=3, summary="(text)", structured={"role_claims": [
         {"player": "p5", "claimed_role": "healer", "evidence": "unverified"}]})
+
+    # Act
     text = _ledger(v3, v1, dead=[DeathRecord(player="p7", role="sentinel", day=2, phase="night")])
+
+    # Assert
     assert "p3: claimed investigator (day 2).\n  Night 1: p7 is a wolf." in text  # free text, never checked
     assert "p5: claimed healer (day 3)." in text
 
@@ -125,13 +139,18 @@ def test_older_summaries_still_read_into_the_ledger():
 # --- the checks ----------------------------------------------------------------------
 
 def test_an_investigation_result_is_checked_against_a_revealed_role():
+    # Arrange
     # The investigator's reads (Suspicious / Not suspicious) and a claimed role are both checked.
     claims = _day(2, [_claim("p3", "investigator", (1, "investigate", "p7", "suspicious"),
                              (2, "investigate", "p8", "not_suspicious"), (3, "investigate", "p9", "healer"))])
     dead = [DeathRecord(player="p7", role="chanteuse", day=3, phase="day"),
             DeathRecord(player="p8", role="illusionist", day=3, phase="night"),
             DeathRecord(player="p9", role="healer", day=3, phase="night")]
+
+    # Act
     text = _ledger(claims, dead=dead)
+
+    # Assert
     assert "checked p7, says they read Suspicious. Record: p7 was revealed as chanteuse, as claimed." in text
     assert "checked p8, says they read Not suspicious. Record: p8 was revealed as illusionist." in text
     assert "checked p9, result: healer. Record: p9 was revealed as healer, as claimed." in text
@@ -149,10 +168,15 @@ def test_a_healer_protecting_themselves_breaks_the_rules():
 
 
 def test_a_claimed_save_is_checked_against_the_announcements():
+    # Arrange
     night1 = _gm("Night of day 1: p1 was attacked by the wolves but was saved by the healer!", 1)
     night2 = _gm("Night of day 2: No one died last night.", 2)
+
+    # Act
     text = _ledger(night1, night2, _day(3, [_claim("p5", "healer", (1, "protect", "p1", "saved_from_attack"),
                                                    (2, "protect", "p4", "saved_from_attack"))]))
+
+    # Assert
     assert "Night 1: protected p1, says they saved them from an attack. Record: p1 was attacked and saved by the healer that night." in text
     assert "Night 2: protected p4, says they saved them from an attack. Record: no save of p4 was announced that night." in text
 
@@ -163,22 +187,32 @@ def test_a_night_not_yet_announced_is_not_checked():
 
 
 def test_a_shot_is_checked_against_deaths_but_a_survivor_is_left_alone():
+    # Arrange
     gm = [_gm("Night of day 1: p4 was shot by the vigilante last night. They were a sentinel.", 1),
           _gm("Night of day 2: No one died last night.", 2)]
     dead = [DeathRecord(player="p4", role="sentinel", day=1, phase="night")]
+
+    # Round 1: two shots claimed as kills
     text = _ledger(*gm, _day(3, [_claim("p9", "vigilante", (1, "shoot", "p4", "died"), (2, "shoot", "p2", "died"))]),
                    dead=dead)
     assert "Night 1: shot p4, says they died. Record: p4 died that night." in text
     assert "Night 2: shot p2, says they died. Record: p2 did not die that night." in text
+
+    # Round 2: a shot claimed as a miss
     # a shot that "missed" may have hit the immune serial killer, whose survival is silent: no note
     quiet = _ledger(*gm, _day(3, [_claim("p9", "vigilante", (2, "shoot", "p2", "survived"))]), dead=dead)
     assert "Record" not in quiet
 
 
 def test_counterclaims_and_revealed_holders_of_a_one_off_role():
+    # Arrange
     dead = [DeathRecord(player="p3", role="investigator", day=2, phase="night")]
+
+    # Act
     text = _ledger(_day(2, [_claim("p3", "investigator"), _claim("p6", "investigator")]),
                    _day(3, [_claim("p7", "investigator")]), dead=dead)
+
+    # Assert
     assert "p3: claimed investigator (day 2). Record: revealed as investigator when they died on night 2, as claimed." in text
     assert ("p6: claimed investigator (day 2). Record: the game has 1 investigator, and p7 also claims it and "
             "p3 was revealed as investigator.") in text
@@ -191,8 +225,13 @@ def test_a_dead_claimant_is_checked_against_their_revealed_role():
 
 
 def test_the_ledger_is_recomputed_from_the_current_record():
+    # Arrange
     claims = _day(2, [_claim("p3", "investigator", (1, "investigate", "p7", "suspicious"))])
+
+    # Round 1: before anyone investigated has died
     assert "Record" not in _ledger(claims)
+
+    # Round 2: after the investigated player is revealed by a death
     later = _ledger(claims, dead=[DeathRecord(player="p7", role="chanteuse", day=3, phase="day")])
     assert "Record: p7 was revealed as chanteuse, as claimed." in later
 
@@ -206,14 +245,19 @@ def test_the_next_summariser_sees_the_checks():
 # --- the view agents read ---------------------------------------------------------------
 
 def test_accusations_tag_revealed_players_and_drop_the_retold_sections():
+    # Arrange
     old = DaySummary(day=3, summary="Key accusations and defenses: ...\nVillage dynamics: a story.", structured={
         "accusations": [{"accusers": ["p8", "p1"], "target": "p2", "reasoning": "p8 argued p2 survived an attack.",
                          "evidence_type": "concrete_claim", "defense": "p2 denied it.",
                          "disputed_by": "p6 disagreed.", "record_check": "No attack on p2 was announced."}],
         "role_claims": [], "alliances": [{"players": ["p8", "p1"], "basis": "pushing p2"}],
         "village_dynamics": {"information_landscape": "a story", "consensus": "b", "drivers": "c"}})
+
+    # Act
     text = format_day_summaries([old], before_day=4,
                                 dead_roster=[DeathRecord(player="p8", role="chanteuse", day=3, phase="day")])
+
+    # Assert
     assert ("[Day 3] p8 (revealed chanteuse, voted out day 3), p1 → p2: p8 argued p2 survived an attack. "
             "Defense: p2 denied it. Disputed: p6 disagreed.") in text
     # an older summary's record_check is not shown: the summariser's checks were wrong (2026-10-16)
@@ -235,12 +279,17 @@ def test_the_role_claims_line_is_not_repeated_beside_the_ledger():
 
 
 def test_memory_instructions_appear_only_with_memories():
+    # Arrange
     base = {"player_id": "p1", "player_role": "healer", "current_day": 2, "day_channel": [], "day_summaries": [],
             "surviving_players": ["p1", "p2"], "lineup": lineup("serial_killer", "speculator")}
     template = day_discuss_template("healer")
+
+    # Round 1: a prompt with no memories
     off = "\n".join(m.content for m in template.format_messages(**build_agent_prompt_input(base)))
     assert "Relevant observations" not in off and "Dynamic strategy points" not in off
     assert "Adaptive Strategic thinking" in off  # the private note is not memory: it stays
+
+    # Round 2: a prompt with memories
     on = "\n".join(m.content for m in template.format_messages(**build_agent_prompt_input(
         {**base, "retrieved_observations": "1. Situation: x", "strategy_points": "[1] y → Action: z"})))
     assert "Relevant observations" in on and "1. Situation: x" in on
@@ -248,9 +297,12 @@ def test_memory_instructions_appear_only_with_memories():
 
 
 def test_a_claim_repeated_without_its_night_merges_into_the_dated_one():
+    # Round 1: a dated claim repeated later without its night
     text = _ledger(_day(2, [_claim("p5", "investigator", (1, "investigate", "p1", "suspicious"))]),
                    _day(4, [_claim("p5", "investigator", (0, "investigate", "p1", "suspicious"))]))
     assert text.count("checked p1") == 1 and "Night not stated" not in text
+
+    # Round 2: an undated claim dated later
     # and the other way round: an undated claim that is later dated becomes the dated entry
     text = _ledger(_day(2, [_claim("p5", "investigator", (0, "investigate", "p1", "suspicious"))]),
                    _day(3, [_claim("p5", "investigator", (1, "investigate", "p1", "not_said"))]))
@@ -310,30 +362,40 @@ def test_agents_read_only_the_claims_of_earlier_days():
 
 
 def test_a_claimed_sighting_is_the_claimants_word_and_says_what_it_does_not_establish():
+    # Arrange: a sentinel's sighting, a trailseer's sighting, and a watch that saw no one
     watch = {"player": "p3", "claimed_role": "sentinel", "kind": "claimed",
              "night_actions": [{"night": 1, "action": "watch", "target": "p5", "result": "not_said", "seen": ["p4", "p7"]}]}
     follow = {"player": "p6", "claimed_role": "trailseer", "kind": "claimed",
               "night_actions": [{"night": 1, "action": "follow", "target": "p4", "result": "not_said", "seen": ["p5"]}]}
     quiet = {"player": "p8", "claimed_role": "sentinel", "kind": "claimed",
              "night_actions": [{"night": 1, "action": "watch", "target": "p9", "result": "not_said", "seen": []}]}
+
+    # Round 1: all three claimed on one day
     text = _ledger(_day(2, [watch, follow, quiet]))
     assert ("  Night 1: watched p5; says p4 and p7 visited them (a visit alone does not establish a "
             "visitor's role or what they did).") in text.splitlines()
     assert "  Night 1: followed p4; says they visited p5 (a visit alone does not establish what they did there)." in text
     assert "  Night 1: watched p9." in text  # saw no one: no names, no line
+
+    # Round 2: the sighting repeated on a later day without its names
     # a repeat on a later day keeps the names
     later = _ledger(_day(2, [watch]), _day(3, [{**watch, "night_actions": [{**watch["night_actions"][0], "seen": []}]}]))
     assert "says p4 and p7 visited them" in later
 
 
 def test_an_action_done_to_the_speaker_is_not_their_claim():
+    # Round 1: a roleblock done to the speaker, transcribed as their own claim
     # e06, 2026-10-10: "I was roleblocked last night" was transcribed as a chanteuse claim.
     invented = {"player": "p2", "claimed_role": "chanteuse", "kind": "claimed",
                 "night_actions": [{"night": 1, "action": "block", "target": "p2", "result": "not_said"}]}
     assert _ledger(_day(2, [invented])) == ""
+
+    # Round 2: the same day, with a real claim in the speaker's own field
     # a real claim on the same day keeps its role; only the self-targeted action goes
     text = format_claim_ledger([_day(2, [invented])], [], CAST, [_said(2, 1, "p2", "investigator")])
     assert text.splitlines() == ["p2: claimed investigator (day 2)."]
+
+    # Round 3: a fortune teller's self-bet
     # the fortune teller's self-bet is the one action a role takes on itself
     bet = {"player": "p4", "claimed_role": "fortune_teller", "kind": "claimed",
            "night_actions": [{"night": 1, "action": "bet", "target": "p4", "result": "not_said"}]}
@@ -351,13 +413,18 @@ def test_a_true_role_keeps_its_claim_when_a_held_fire_is_written_as_a_self_shot(
 # --- denials (review 2026-10-10: "I didn't visit anyone last night" was dropped from the record) ---
 
 def test_a_denial_is_kept_as_the_claimants_word_with_or_without_a_role():
+    # Arrange
     unclaimed = {"player": "p5", "claimed_role": "none", "kind": "claimed",
                  "night_actions": [{"night": 2, "action": "no_action", "target": "", "result": "not_said"}]}
     vig = {"player": "p8", "claimed_role": "vigilante", "kind": "claimed",
            "night_actions": [{"night": 2, "action": "no_action", "target": "", "result": "not_said"}]}
     named = {"player": "p6", "claimed_role": "none", "kind": "claimed",
              "night_actions": [{"night": 1, "action": "no_action", "target": "p7", "result": "not_said"}]}
+
+    # Act
     lines = _ledger(_day(3, [unclaimed, vig, named])).splitlines()
+
+    # Assert
     assert lines == ["p5: claimed no role.", "  Night 2: says they did not act.",
                      "p8: claimed vigilante (day 3).", "  Night 2: says they did not act.",
                      "p6: claimed no role.", "  Night 1: says they did not visit p7."]
@@ -373,11 +440,16 @@ def test_what_a_denial_held_back_is_kept():
 
 
 def test_a_later_action_claim_for_the_same_night_keeps_the_denial_as_history():
+    # Arrange
     denial = {"player": "p5", "claimed_role": "none", "kind": "claimed",
               "night_actions": [{"night": 2, "action": "no_action", "target": "", "result": "not_said"}]}
     sigil = {"player": "p5", "claimed_role": "sigilist", "kind": "claimed",
              "night_actions": [{"night": 2, "action": "sigil", "target": "p1", "result": "not_said"}]}
+
+    # Act
     text = _ledger(_day(3, [denial]), _day(4, [sigil]))
+
+    # Assert
     assert "Night 2: set a sigil on p1 (changed on day 4; earlier: Night 2: says they did not act)." in text
 
 
@@ -387,6 +459,7 @@ def test_a_no_role_entry_with_nothing_in_it_is_not_shown():
 
 
 def test_a_roleblock_is_an_attempt_and_empty_results_are_kept():
+    # Arrange
     blocked = {"player": "p10", "claimed_role": "trailseer", "kind": "claimed",
                "night_actions": [{"night": 1, "action": "follow", "target": "", "result": "roleblocked"}]}
     quiet = {"player": "p5", "claimed_role": "trailseer", "kind": "claimed",
@@ -395,7 +468,11 @@ def test_a_roleblock_is_an_attempt_and_empty_results_are_kept():
              "night_actions": [{"night": 1, "action": "watch", "target": "p7", "result": "no_visitors"}]}
     sigil = {"player": "p8", "claimed_role": "sigilist", "kind": "claimed",
              "night_actions": [{"night": 3, "action": "sigil", "target": "p4", "result": "no_effect"}]}
+
+    # Act
     lines = _ledger(_day(2, [blocked, quiet, watch]), _day(4, [sigil])).splitlines()
+
+    # Assert
     assert "  Night 1: says they tried to follow and were roleblocked." in lines
     assert "  Night 1: followed p7; says they visited no one." in lines
     assert "  Night 1: watched p7; says no one visited them." in lines
@@ -428,8 +505,11 @@ def test_a_reanimated_healers_save_claimed_by_a_necromancer_fits():
 
 
 def test_a_reanimated_healers_save_claimed_without_a_role_is_stated_without_a_verdict():
+    # Round 1: the check on the claim
     (check,) = _reanimated_save_claimed_by("none")
     assert check.fits is None and "saved by a reanimated healer" in check.text
+
+    # Round 2: the previous days as the agents read them
     text = format_day_summaries([_gm(_REANIMATED, 1), _day(2, [_claim("p4", "healer", (1, "protect", "p1", "saved_from_attack"))])],
                                 before_day=3)
     assert "no save of p1 was announced" not in text
@@ -472,22 +552,31 @@ def _line(text, night_target):
 
 
 def test_a_corrected_sighting_replaces_the_old_one_and_keeps_it_as_history():
+    # Act
     text = _ledger(_watch("p2", "sentinel", 1, "p5", ["p7"], 2), _watch("p2", "sentinel", 1, "p5", ["p8"], 3))
     line = _line(text, "watched p5")
+
+    # Assert
     assert "says p8 visited them" in line
     assert "changed on day 3" in line and "says p7 visited them" in line
 
 
 def test_no_visitors_corrected_to_a_sighting_is_a_change():
+    # Act
     text = _ledger(_watch("p2", "sentinel", 1, "p5", [], 2), _watch("p2", "sentinel", 1, "p5", ["p8"], 3))
     line = _line(text, "watched p5")
+
+    # Assert
     assert line.index("says p8 visited them") < line.index("changed on day 3")
     assert "says no one visited them" in line.split("changed on day 3")[1]
 
 
 def test_a_sighting_corrected_to_no_visitors_is_a_change():
+    # Act
     text = _ledger(_watch("p2", "sentinel", 1, "p5", ["p7"], 2), _watch("p2", "sentinel", 1, "p5", [], 3))
     line = _line(text, "watched p5")
+
+    # Assert
     assert line.index("says no one visited them") < line.index("changed on day 3")
     assert "says p7 visited them" in line.split("changed on day 3")[1]
 
@@ -509,12 +598,17 @@ def test_a_roleless_watch_keeps_its_sighting():
 
 
 def test_dating_an_undated_watch_keeps_its_sighting():
+    # Arrange
     # Review v3 §4: an undated "watched p5, saw p7", dated to night 1 the next day without repeating the
     # visitor, rendered only "Night 1: watched p5".
     undated = _claim("p2", "sentinel", (0, "watch", "p5", "not_said"))
     undated["night_actions"][0]["seen"] = ["p7"]
     dated = _claim("p2", "sentinel", (1, "watch", "p5", "not_said"))
+
+    # Act
     text = _ledger(_day(2, [undated]), _day(3, [dated]))
+
+    # Assert
     assert "Night 1: watched p5; says p7 visited them" in text
     assert "Night not stated" not in text
 
@@ -548,9 +642,12 @@ def test_the_speakers_actions_outrank_the_summary_for_that_day_and_it_fills_in_f
 
 
 def test_a_later_message_correcting_the_same_night_is_a_change_and_one_message_naming_two_is_not():
+    # Round 1: a later message names another target for the same night
     corrected = format_claim_ledger([], [], CAST, [_acted(2, 1, "p3", (1, "protect", "p1", "not_said")),
                                                    _acted(2, 4, "p3", (1, "protect", "p6", "not_said"))])
     assert corrected.splitlines()[1] == "  Night 1: protected p6 (changed on day 2; earlier: Night 1: protected p1)."
+
+    # Round 2: one message names two targets for the same night
     both = format_claim_ledger([], [], CAST, [_acted(2, 1, "p3", (1, "protect", "p1", "not_said"),
                                                      (1, "protect", "p6", "not_said"))])
     assert both.splitlines()[1].startswith("  Night 1: protected p6 (on day 2 also named: Night 1: protected p1).")
@@ -558,12 +655,18 @@ def test_a_later_message_correcting_the_same_night_is_a_change_and_one_message_n
 
 def test_a_night_that_had_not_happened_when_it_was_said_is_read_as_not_said():
     # Night n is the night after day n: on day 2 the latest past night is night 1. Both sources.
+
+    # Round 1: a night claimed before it happened, in the speaker's own field
     spoken = format_claim_ledger([], [], CAST, [_acted(2, 1, "p3", (2, "protect", "p1", "not_said"))])
     assert spoken.splitlines()[1] == "  Night not stated: protected p1."
+
+    # Round 2: nights claimed before they happened, in the summary
     summary = _ledger(_day(2, [_claim("p3", "healer", (2, "protect", "p1", "not_said")),
                                _claim("p4", "none", (5, "no_action", "", "not_said"))]))
     assert "  Night not stated: protected p1." in summary.splitlines()
     assert "  Night not stated: says they did not act." in summary.splitlines()
+
+    # Round 3: the same night claimed a day later, after it happened
     kept = format_claim_ledger([], [], CAST, [_acted(3, 1, "p3", (2, "protect", "p1", "not_said"))])
     assert kept.splitlines()[1] == "  Night 2: protected p1."
 
@@ -575,9 +678,12 @@ def test_a_passed_line_and_an_action_done_to_oneself_claim_nothing():
 
 
 def test_the_ledger_keeps_each_replaced_version_as_a_claim():
+    # Act
     p = build_claim_ledger([], [_acted(2, 1, "p3", (1, "protect", "p1", "not_said")),
                                 _acted(3, 1, "p3", (1, "protect", "p6", "saved_from_attack"))])["p3"]
     (current,) = p.actions.values()
+
+    # Assert
     assert (current.target, current.day, current.said_in) == ("p6", 3, 1)
     assert [(a.target, a.day) for a in current.earlier_claims] == [("p1", 2)]
 
@@ -585,19 +691,27 @@ def test_the_ledger_keeps_each_replaced_version_as_a_claim():
 # --- a claimed visit, action unsaid (owner 2026-10-17; AC1: "yes, I went to player_8 on night 1") ---
 
 def test_a_visit_without_its_action_is_on_record_from_either_source():
+    # Round 1: a visit claimed in the speaker's own field
     spoken = format_claim_ledger([], [], CAST, [_acted(2, 1, "p7", (1, "visit", "p8", "not_said"))])
     assert spoken.splitlines() == ["p7: claimed no role.", "  Night 1: went to p8."]
+
+    # Round 2: the same visit transcribed by the summariser
     summary = _ledger(_day(2, [_claim("p7", "none", (1, "visit", "p8", "not_said"))]))
     assert summary == spoken
 
 
 def test_an_action_named_later_fills_in_a_visit_and_a_visit_after_one_repeats_it():
+    # Round 1: a visit, then the action on the same player the next day
     filled = format_claim_ledger([], [], CAST, [_acted(2, 1, "p7", (1, "visit", "p8", "not_said")),
                                                 _acted(3, 1, "p7", (1, "protect", "p8", "not_said"))])
     assert filled.splitlines()[1:] == ["  Night 1: protected p8."]  # detail added, not a change
+
+    # Round 2: the action, then the visit the next day
     repeated = format_claim_ledger([], [], CAST, [_acted(2, 1, "p7", (1, "protect", "p8", "not_said")),
                                                   _acted(3, 1, "p7", (1, "visit", "p8", "not_said"))])
     assert repeated == filled
+
+    # Round 3: a visit, then an action on another player
     elsewhere = format_claim_ledger([], [], CAST, [_acted(2, 1, "p7", (1, "visit", "p8", "not_said")),
                                                    _acted(3, 1, "p7", (1, "protect", "p2", "not_said"))])
     assert elsewhere.splitlines()[1:] == ["  Night 1: went to p8.", "  Night 1: protected p2."]

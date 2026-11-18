@@ -132,7 +132,10 @@ def _ac2(serial_killer: str = "player_6", speculator: str = "player_10") -> Tabl
 def test_acceptance_case_2_the_census_line():
     """AC2 line 1: the Serial Killer cannot die at night, no one revealed was it, and player_1's body
     was hidden by the living Illusionist, which never hides it (L8)."""
+    # Arrange
     table = _ac2()
+
+    # Act and assert
     assert [d.player for d in table.dead] == ["player_1", "player_9", "player_3", "player_7"]
     assert table.texts("F3", "player_5") == [
         "Both wolves are dead: player_9 and player_7. The Serial Killer is alive and is one of player_2, "
@@ -200,9 +203,12 @@ def test_acceptance_case_4_singles_out_none_of_the_three():
 
 def test_the_serial_killer_is_one_of_the_players_seen_at_its_victims_door():
     """C6: the Sentinel saw two players at the door of the Serial Killer's victim."""
+    # Arrange
     table = Table(_sk_sp())
     table.night(2, ("player_9", "kill", "player_6"), ("player_1", "investigate", "player_6"),
                 ("player_2", "watch", "player_6"), ("player_7", "kill", "player_3"))
+
+    # Act and assert
     assert table.texts("F3", "player_2")[0] == (
         "Both wolves are alive and are two of player_1, player_4, player_5, player_7, player_8, player_9 and "
         "player_10. The Serial Killer is alive and is one of player_1 and player_9.")
@@ -215,19 +221,25 @@ def test_a_wolf_at_the_door_with_the_other_wolf_known_is_the_chanteuse():
     """C6 with one wolf ruled out for the players seen: player_2's will shows player_1 and player_7 at
     the wolves' victim's door. The Illusionist knows its own role (here without its pack list), so the
     wolf among them is the Chanteuse, and no one else is."""
+    # Arrange
     table = Table(_sk_sp())
     table.night(1, ("player_7", "kill", "player_6"), ("player_2", "watch", "player_6"), ("player_9", "kill", "player_3"),
                 ("player_1", "investigate", "player_6"))
     table.lynch("player_2", 2)
     payload = table.payload("player_8")
     payload["pack_roles"] = {}  # the Illusionist seat without its pack list: it still knows its own role
+
+    # Act
     candidates = seat_candidates(seat_view_from_payload(payload))
+
+    # Assert
     assert [p for p, roles in candidates.roles.items() if "chanteuse" in roles] == ["player_1", "player_7"]
 
 
 def test_k_players_who_can_only_hold_k_roles_exclude_everyone_else():
     """C18: two players who can only be the Healer or the Trailseer: no one else is either. Three
     such players cannot be (no deal agrees), and two with a third role between them say nothing."""
+    # Arrange
     roles = _sk_sp()
     players = list(roles)
 
@@ -235,10 +247,16 @@ def test_k_players_who_can_only_hold_k_roles_exclude_everyone_else():
         return solve(players, [], cast_role_counts(roles), {}, list(constraints))
 
     healer_or_trailseer = frozenset({"healer", "trailseer"})
+
+    # Round 1: two players who can only be the Healer or the Trailseer
     two = solved(OnlyRoles("player_1", healer_or_trailseer, "test"), OnlyRoles("player_2", healer_or_trailseer, "test"))
     assert all(not roles & healer_or_trailseer for p, roles in two.roles.items() if p not in ("player_1", "player_2"))
+
+    # Round 2: three such players
     three = solved(*(OnlyRoles(p, healer_or_trailseer, "test") for p in ("player_1", "player_2", "player_3")))
     assert three is None
+
+    # Round 3: two players with a third role between them
     wider = healer_or_trailseer | {"vigilante"}
     loose = solved(OnlyRoles("player_1", wider, "test"), OnlyRoles("player_2", wider, "test"))
     assert all(loose.roles[p] == frozenset(roles.values()) for p in players[2:])
@@ -246,11 +264,16 @@ def test_k_players_who_can_only_hold_k_roles_exclude_everyone_else():
 
 def test_a_role_only_one_player_can_hold_is_that_players():
     """C18: when everyone else is ruled out of the Speculator, the one left holds it."""
+    # Arrange
     roles = _sk_sp()
     players = list(roles)
     no_speculator = frozenset(cast_role_counts(roles)) - {"speculator"}
     constraints = [OnlyRoles(p, no_speculator, "test") for p in players if p != "player_4"]
+
+    # Act
     candidates = solve(players, [], cast_role_counts(roles), {}, constraints)
+
+    # Assert
     assert candidates.roles["player_4"] == {"speculator"}
 
 
@@ -268,7 +291,10 @@ def test_the_game_went_on_so_a_hidden_body_is_not_the_last_wolf():
     """C18, continuation: the Necromancer was voted out and the game went on, so the body hidden
     through the Illusionist's was not the Chanteuse: with both wolves and the lone killer dead the
     town would have won."""
+    # Arrange
     table = _necromancer_voted_out(lynch=True)
+
+    # Act and assert
     assert [d.concealed for d in table.dead] == [False, False, False, True, False]
     assert table.texts("F3")[0] == (
         "One wolf is dead: player_8, the Illusionist. The Chanteuse is alive and is one of player_3, player_4, "
@@ -297,11 +323,14 @@ def test_a_wolf_attack_after_a_hidden_death_with_the_other_wolf_revealed_keeps_t
 
 def test_a_pick_after_a_hidden_death_keeps_the_speculator_off_that_body():
     """C18, a holder alive at a night: the Speculator picked on night 2, after player_2 was hidden."""
+    # Round 1: a pick on the night after the hidden death
     table = Table(_sk_sp())
     table.night(1, ("player_7", "kill", "player_2"), ("player_8", "conceal", None))
     table.night(2, ("player_10", "pick", "town"), ("player_7", "kill", "player_3"))
     assert table.texts("F3")[1] == ("The Speculator is alive: it picked a side on night 2. It is player_1, "
                                     "player_4, player_5, player_6, player_7, player_8, player_9 or player_10.")
+
+    # Round 2
     # Picked on the night the body died: it may be that body.
     same_night = Table(_sk_sp())
     same_night.night(1, ("player_7", "kill", "player_2"), ("player_8", "conceal", None),
@@ -311,8 +340,11 @@ def test_a_pick_after_a_hidden_death_keeps_the_speculator_off_that_body():
 
 def test_a_wolf_knows_the_body_its_pack_hid_and_leaves_its_pack_out():
     """The pack's kill record names the hidden role: for the wolf, the Speculator is that body."""
+    # Arrange
     table = Table(_sk_sp())
     table.night(1, ("player_7", "kill", "player_10"), ("player_8", "conceal", None))
+
+    # Act and assert
     assert table.texts("F3", "player_7") == [
         "The Serial Killer is alive and is one of player_1, player_2, player_3, player_4, player_5, player_6 and "
         "player_9.",
@@ -448,9 +480,12 @@ def test_every_fact_a_candidate_item_states_holds_in_the_real_game():
     and one living seat's at one such point per game, hold against the true roles; no legal game
     leaves a player no role. (The brute-force test above checks every seat of 400 games, and more
     strictly: every deal that agrees with the view, the true one among them.)"""
+    # Arrange
     rng = random.Random(20261017)
     nights_played = 0
     reached: set[str] = set()
+
+    # Act and assert, once for each random game
     while nights_played < 20000:
         game = random_game(rng)
         nights_played += len(game.nights)
@@ -467,4 +502,6 @@ def test_every_fact_a_candidate_item_states_holds_in_the_real_game():
                 reached |= {name for name, pattern in SENTENCES_REACHED.items() if re.search(pattern, item.text)}
                 for fact in item.conclusion:
                     assert public_fact_holds(fact, item.night, game), (item.text, fact, game.roles)
+
+    # Assert: every sentence pattern was reached
     assert reached == set(SENTENCES_REACHED)

@@ -24,7 +24,10 @@ LINEUP = lineup("serial_killer", "speculator")
 
 
 def test_discriminated_union_roundtrips_and_rejects_wrong_entry_shape():
+    # Arrange
     adapter = TypeAdapter(ResolvedTurn)
+
+    # Round 1: a day vote of the right shape
     turn = adapter.validate_python({
         "kind": "day_vote",
         "entry": {"voter": "p1", "votee": "p2"},
@@ -32,6 +35,7 @@ def test_discriminated_union_roundtrips_and_rejects_wrong_entry_shape():
     })
     assert isinstance(turn, ResolvedDayVote)
 
+    # Round 2: a day vote that holds a discussion entry
     with pytest.raises(ValidationError):
         adapter.validate_python({
             "kind": "day_vote",
@@ -41,6 +45,7 @@ def test_discriminated_union_roundtrips_and_rejects_wrong_entry_shape():
 
 
 def test_discuss_node_commits_one_entry_and_strategy(monkeypatch):
+    # Arrange
     entry = DayChannel(day=2, seq=0, player="p1", message="hello")
     monkeypatch.setattr(
         day_actors,
@@ -51,12 +56,14 @@ def test_discuss_node_commits_one_entry_and_strategy(monkeypatch):
         ),
     )
 
+    # Act
     update = day_actors.discuss(
         {"player_id": "p1", "player_role": "healer", "lineup": LINEUP},
         None,
         None,
     )
 
+    # Assert
     assert update == {
         "day_channel": [entry],
         "agent_strategies": {"p1": "press p2"},
@@ -64,6 +71,7 @@ def test_discuss_node_commits_one_entry_and_strategy(monkeypatch):
 
 
 def test_vote_node_commits_singleton_vote_list(monkeypatch):
+    # Arrange
     vote = DayVote(voter="p1", votee="p2")
     monkeypatch.setattr(
         day_actors,
@@ -71,16 +79,19 @@ def test_vote_node_commits_singleton_vote_list(monkeypatch):
         lambda *args, **kwargs: ResolvedDayVote(entry=vote),
     )
 
+    # Act
     update = day_actors.vote(
         {"player_id": "p1", "player_role": "healer", "lineup": LINEUP},
         None,
         None,
     )
 
+    # Assert
     assert update == {"day_votes": [vote]}
 
 
 def test_solo_night_node_commits_its_choice_and_strategy(monkeypatch):
+    # Arrange
     choice = NightChoice("p1", "healer", "protect", "p2")
     monkeypatch.setattr(
         solo_nodes,
@@ -93,8 +104,10 @@ def test_solo_night_node_commits_its_choice_and_strategy(monkeypatch):
     state = {"roles": {"p1": "healer", "p2": "sentinel", "w1": "chanteuse"}, "lineup": LINEUP,
              "surviving_wolves": ["w1"], "surviving_villagers": ["p1", "p2"], "current_day": 1}
 
+    # Act
     update = solo_nodes.solo_night_phase("healer")(state, None, None)
 
+    # Assert
     assert update == {
         "night_choices": [choice],
         "agent_strategies": {"p1": "protect likely town"},
@@ -114,6 +127,7 @@ def test_a_declined_night_action_commits_no_choice(monkeypatch):
 
 
 def test_carrier_node_commits_the_kill_as_a_choice_and_a_channel_entry(monkeypatch):
+    # Arrange
     kill = NightChoice("w1", "chanteuse", "kill", "p2")
     monkeypatch.setattr(
         pack_nodes,
@@ -121,9 +135,11 @@ def test_carrier_node_commits_the_kill_as_a_choice_and_a_channel_entry(monkeypat
         lambda *args, **kwargs: ResolvedNightChoice(entry=kill),
     )
 
+    # Act
     update = pack_nodes.carrier_kill(
         {"player_id": "w1", "player_role": "chanteuse", "lineup": LINEUP, "current_day": 2}, None, None)
 
+    # Assert
     assert update == {
         "night_choices": [kill],
         "wolves_target": "p2",
@@ -132,6 +148,7 @@ def test_carrier_node_commits_the_kill_as_a_choice_and_a_channel_entry(monkeypat
 
 
 def test_pack_chat_node_owns_wolf_channel_append(monkeypatch):
+    # Arrange
     entry = WolfChannel(day=2, round=1, wolf="w1", message="take p2", vote="")
     monkeypatch.setattr(
         pack_nodes,
@@ -139,18 +156,24 @@ def test_pack_chat_node_owns_wolf_channel_append(monkeypatch):
         lambda *args, **kwargs: ResolvedWolfDiscussion(entry=entry),
     )
 
+    # Act
     update = pack_nodes.pack_chat({"player_id": "w1", "player_role": "chanteuse", "lineup": LINEUP}, None, None)
 
+    # Assert
     assert update == {"wolf_channel": [entry]}
 
 
 def test_pack_skill_node_commits_the_skill_or_nothing(monkeypatch):
+    # Arrange
     block = NightChoice("w1", "chanteuse", "block", "p3")
     payload = {"player_id": "w1", "player_role": "chanteuse", "lineup": LINEUP}
+
+    # Round 1: the chanteuse's block is committed
     monkeypatch.setattr(pack_nodes, "run_memory_informed_night_action",
                         lambda *args, **kwargs: ResolvedNightChoice(entry=block))
     assert pack_nodes.pack_skill(payload, None, None) == {"night_choices": [block]}
 
+    # Round 2: the illusionist declines to conceal
     monkeypatch.setattr(pack_nodes, "run_memory_informed_night_action",
                         lambda *args, **kwargs: ResolvedNightChoice(entry=None))  # no_conceal
     assert pack_nodes.pack_skill({**payload, "player_role": "illusionist"}, None, None) is None

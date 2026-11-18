@@ -40,8 +40,11 @@ parse_morning = announcement_from_prose
 # --- the prose and the data agree ---------------------------------------------------------------
 
 def test_the_data_says_exactly_what_the_prose_says_on_random_nights():
+    # Arrange
     rng = random.Random(20261017)
     kinds_seen = set()
+
+    # Act and assert, once for each of 4000 random nights
     for _ in range(4000):
         game = random_night(rng)
         assert parse_morning(game.morning) == game.announcement, game.morning
@@ -50,20 +53,27 @@ def test_the_data_says_exactly_what_the_prose_says_on_random_nights():
         kinds_seen |= {save.saver for save in announcement.saves}
         kinds_seen |= {"pick"} if announcement.pick else set()
         kinds_seen |= {"no_one_died"} if announcement.no_one_died else set()
+
+    # Assert: every kind of death and save turned up at least once
     assert kinds_seen == {"revealed", "illusionist", "reanimated_illusionist", "healer", "reanimated_healer",
                           "self_bet", "pick", "no_one_died"}
 
 
 def test_a_will_read_out_in_the_morning_is_not_part_of_the_data():
     """A night-2 death of the healer reads out its night-1 record; the data holds the death alone."""
+    # Arrange: the healer protected the sentinel on night 1
     roles, player_of = _game("serial_killer", "speculator")
     healer, sentinel = player_of["healer"], player_of["sentinel"]
     alive = list(roles)
     night_one = [NightChoice(healer, "healer", "protect", sentinel)]
     earlier = night_action_records(night_one, resolve_night(night_one, roles, 1), roles)
+
+    # Act: the chanteuse's kill on the healer resolves on night 2
     update = resolve_through_the_node([NightChoice(player_of["chanteuse"], "chanteuse", "kill", healer)],
                                       roles, 2, alive, earlier_records=earlier)
     morning = update["day_summaries"][0].summary
+
+    # Assert
     assert f"The record of {healer}, the healer: night 1, protected {sentinel}" in morning
     assert parse_morning(morning) == update["night_announcements"][0] == NightAnnouncement(
         night=2, deaths=[AnnouncedDeath(player=healer, attacker_types=["wolves"], role="healer")])
@@ -78,6 +88,7 @@ def test_in_a_whole_game_every_morning_has_its_data_and_every_ai_turn_gets_it(mo
     from Agents.prompts import prompt_inputs
     from tests.factories.whole_game import play_game
 
+    # Arrange
     # Every AI turn's prompt input goes through the engine's entry; record what each payload carried.
     carried = []
     engine_entry = prompt_inputs._own_result_lines
@@ -89,7 +100,11 @@ def test_in_a_whole_game_every_morning_has_its_data_and_every_ai_turn_gets_it(mo
 
     monkeypatch.setattr(prompt_inputs, "_own_result_lines", spy)
     scripted_model(seed=5)
+
+    # Act: play a whole game with scripted seats
     result, _, _ = play_game(game_graph, game, seed=5)
+
+    # Assert
     mornings = [message.message for message in result["day_channel"]
                 if message.player == "game_master" and message.message.startswith("Night of day")]
     assert mornings and len(mornings) == len(result["night_announcements"])
@@ -116,10 +131,15 @@ def test_every_night_payload_carries_the_morning():
 
 
 def test_every_day_payload_carries_the_morning():
+    # Arrange
     state = day_state(night_announcements=[MORNING])
     sweep = FiringReason(tier="proactive", sweep=1)
+
+    # Act and assert, once for each speaker turn
     for player, role in state["roles"].items():
         assert flow.build_speaker_send(state, player, role, sweep).arg["night_announcements"] == [MORNING]
+
+    # Act and assert, once for each vote turn
     for send in flow.fan_out_day(state, "vote"):
         assert send.arg["night_announcements"] == [MORNING]
 
@@ -138,6 +158,7 @@ def test_the_morning_survives_a_checkpoint_round_trip():
 # --- the record's structured fields -------------------------------------------------------------
 
 def test_a_saved_targets_records_name_its_attackers_and_the_prose_is_unchanged():
+    # Arrange: the wolves attack the sentinel and the healer protects them
     roles, player_of = _game("necromancer", "speculator")
     target = player_of["sentinel"]
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", target),
@@ -145,7 +166,11 @@ def test_a_saved_targets_records_name_its_attackers_and_the_prose_is_unchanged()
                NightChoice(player_of["sigilist"], "sigilist", "sigil", target),
                NightChoice(player_of["vigilante"], "vigilante", "kill", player_of["trailseer"]),
                NightChoice(player_of["healer"], "healer", "protect", target)]
+
+    # Act
     records = {record.actor: record for record in night_action_records(choices, resolve_night(choices, roles, 2), roles)}
+
+    # Assert
     assert records[player_of["healer"]].attacker_types == ["wolves"]
     assert records[player_of["healer"]].outcome == f"{target} was attacked by the wolves, and your protection saved them."
     assert records["wolves"].attacker_types == ["wolves"]
@@ -154,23 +179,33 @@ def test_a_saved_targets_records_name_its_attackers_and_the_prose_is_unchanged()
 
 
 def test_a_self_bet_saves_records_name_the_attackers_on_every_side():
+    # Arrange: two killers attack the fortune teller, who bets on itself; the healer protects it
     roles, player_of = _game("serial_killer", "fortune_teller")
     fortune_teller = player_of["fortune_teller"]
     choices = [NightChoice(player_of["serial_killer"], "serial_killer", "kill", fortune_teller),
                NightChoice(player_of["vigilante"], "vigilante", "kill", fortune_teller),
                NightChoice(fortune_teller, "fortune_teller", "bet", fortune_teller),
                NightChoice(player_of["healer"], "healer", "protect", fortune_teller)]
+
+    # Act
     records = night_action_records(choices, resolve_night(choices, roles, 2), roles)
+
+    # Assert
     assert [record.attacker_types for record in records] == [["serial_killer", "vigilante"]] * 4
     assert [record.result for record in records] == ["self_bet_saved", "self_bet_saved", "self_bet", "self_bet_saved"]
 
 
 def test_a_bets_record_names_the_role_it_bet_on_and_old_records_still_load():
+    # Arrange
     roles, player_of = _game("serial_killer", "fortune_teller")
     healer = player_of["healer"]
     choices = [NightChoice(player_of["chanteuse"], "chanteuse", "kill", healer),
                NightChoice(player_of["fortune_teller"], "fortune_teller", "bet", healer, role_named="healer")]
+
+    # Act
     record = night_action_records(choices, resolve_night(choices, roles, 1), roles)[1]
+
+    # Assert
     assert (record.result, record.bet_role, record.outcome) == (
         "scored_2", "healer", f"{healer} died and was a healer: two points.")
     old = record.model_dump(exclude={"attacker_types", "bet_role"})

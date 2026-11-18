@@ -100,8 +100,11 @@ def test_a_wolf_kill_shows_the_wolf_at_the_door_and_no_protection():
 
 
 def test_a_kill_hidden_by_the_living_illusionist_hides_the_killer_and_narrows_the_body():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("chanteuse", "kill", "sentinel"), story.act("illusionist", "conceal", None))
+
+    # Act and assert
     assert story.texts("B1") == []
     assert story.texts("B2") == [
         "The wolf who killed player_2 on night 1 went to player_2 unseen: the living Illusionist's conceal hides "
@@ -118,10 +121,13 @@ def test_a_kill_hidden_by_the_living_illusionist_hides_the_killer_and_narrows_th
 
 
 def test_a_hidden_body_on_night_one_in_the_necromancer_casts_is_not_the_necromancer_and_later_may_be():
+    # Round 1: a body hidden on night 1
     story = _ne_sp()
     story.night(1, story.act("chanteuse", "kill", "sentinel"), story.act("illusionist", "conceal", None))
     assert ("player_2 was killed at night, so player_2 is not the Necromancer (it cannot be killed on nights 1 "
             "and 2). The wolves attacked player_2, so player_2 is not a wolf.") in story.texts("B2")
+
+    # Round 2: a body hidden on night 3
     later = _ne_sp()
     later.night(3, later.act("illusionist", "kill", "sentinel"), later.act("illusionist", "conceal", None))
     assert "The wolves attacked player_2, so player_2 is not a wolf." in later.texts("B2")
@@ -130,9 +136,12 @@ def test_a_hidden_body_on_night_one_in_the_necromancer_casts_is_not_the_necroman
 # --- B3, B4: the Serial Killer's and the Vigilante's attacks --------------------------------------
 
 def test_the_serial_killer_and_the_vigilante_are_seen_at_their_victims():
+    # Arrange
     story = _sk_sp()
     story.night(2, story.act("serial_killer", "kill", "investigator"), story.act("vigilante", "kill", "trailseer"),
                 story.act("chanteuse", "kill", "healer"))
+
+    # Act and assert
     assert story.texts("B3")[0] == ("The Serial Killer went to player_1 on night 2 to attack them, and a watch on "
                                     "player_1 that night would have shown that visit.")
     assert story.texts("B4")[0] == ("The Vigilante went to player_3 on night 2 to shoot them, and a watch on "
@@ -142,10 +151,15 @@ def test_the_serial_killer_and_the_vigilante_are_seen_at_their_victims():
 # --- B5, B10: what a sigil's strike shows about the attacker --------------------------------------
 
 def test_a_vigilante_struck_down_by_a_sigil_shot_someone_and_its_shot_was_announced():
+    # Arrange
     story = _sk_sp()
     story.night(2, story.act("vigilante", "kill", "trailseer"), story.act("sigilist", "sigil", "vigilante"),
                 story.act("chanteuse", "kill", "healer"))
+
+    # Act
     texts = story.texts("B5")
+
+    # Assert
     assert texts == [
         "The Sigilist went to player_4 on night 2 to set a sigil on them, and a watch on player_4 that night would "
         "have shown that visit.",
@@ -163,8 +177,11 @@ def test_a_vigilante_struck_down_whose_shot_was_not_announced_shot_the_serial_ki
 
 
 def test_a_carrier_struck_down_whose_kill_was_not_announced_attacked_the_serial_killer_said_once():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("chanteuse", "kill", "serial_killer"), story.act("sigilist", "sigil", "chanteuse"))
+
+    # Act and assert
     assert story.texts("B5")[1:3] == [
         "A wolf is struck by a sigil only when it carries the pack's kill, so player_7 carried the pack's kill on "
         "night 1.",
@@ -214,12 +231,15 @@ def test_a_sigil_on_a_player_whose_attack_was_blocked_strikes_nothing():
 # --- B6–B9, B12: the Necromancer's one action through a body --------------------------------------
 
 def test_a_reanimated_wolf_kill_left_unhidden_means_the_conceals_are_used_up():
+    # Arrange
     story = _ne_sp()
     story.night(1, story.act("chanteuse", "kill", "sentinel"), story.act("illusionist", "conceal", None))
     story.night(2, story.act("illusionist", "kill", "trailseer"), story.act("illusionist", "conceal", None))
     story.lynch("illusionist", 3)
     story.night(3, story.act("necromancer", "kill", "investigator", via="illusionist"),
                 story.act("chanteuse", "kill", "healer"))
+
+    # Act and assert
     assert story.texts("B6") == [
         "The Necromancer attacked player_1 on night 3 through player_8's body (the Illusionist): it was alive "
         "that night, and a kill through a body makes it read Suspicious that night. It acts once a night, so it "
@@ -230,9 +250,12 @@ def test_a_reanimated_wolf_kill_left_unhidden_means_the_conceals_are_used_up():
 
 
 def test_a_reanimated_illusionist_conceal_hides_no_visit_and_the_body_may_be_a_wolf():
+    # Arrange
     story = _ne_sp()
     story.lynch("illusionist", 3)
     story.night(3, story.act("necromancer", "kill", "chanteuse", via="illusionist"))
+
+    # Act and assert
     assert story.texts("B7") == [
         "player_7's role was hidden through the dead Illusionist's body, which hides no visit: every visit to "
         "player_7 on night 3 would have shown on a watch or a follow.",
@@ -249,10 +272,13 @@ def test_a_reanimated_illusionist_conceal_hides_no_visit_and_the_body_may_be_a_w
 
 
 def test_a_reanimated_vigilante_shot_names_the_body():
+    # Arrange
     story = _ne_sp()
     story.lynch("vigilante", 2)
     story.night(2, story.act("necromancer", "kill", "investigator", via="vigilante"),
                 story.act("illusionist", "kill", "healer"))
+
+    # Act and assert
     assert story.texts("B8")[0] == (
         "The Necromancer attacked player_1 on night 2 through player_4's body (the Vigilante): it was alive that "
         "night, and a kill through a body makes it read Suspicious that night. It acts once a night, so it did "
@@ -260,10 +286,13 @@ def test_a_reanimated_vigilante_shot_names_the_body():
 
 
 def test_a_reanimated_sigil_strikes_the_carrier_and_the_necromancer_made_no_kill():
+    # Arrange
     story = _ne_sp()
     story.lynch("sigilist", 2)
     story.night(2, story.act("illusionist", "kill", "investigator"),
                 story.act("necromancer", "sigil", "illusionist", via="sigilist"))
+
+    # Act and assert
     assert story.texts("B9") == [
         "The Necromancer set a sigil on player_8 on night 2 through player_5's body (the Sigilist): it acts once a "
         "night, so it made no kill and read Not suspicious that night.",
@@ -274,6 +303,7 @@ def test_a_reanimated_sigil_strikes_the_carrier_and_the_necromancer_made_no_kill
 
 
 def test_a_save_by_the_living_healer_and_one_through_its_body():
+    # Round 1: a save by the living Healer
     living = _sk_sp()
     living.night(1, living.act("chanteuse", "kill", "investigator"), living.act("healer", "protect", "investigator"))
     assert living.texts("B11") == [
@@ -285,6 +315,8 @@ def test_a_save_by_the_living_healer_and_one_through_its_body():
         "The Healer cannot protect itself, so player_1 is not the Healer. The wolves attacked player_1, so "
         "player_1 is not a wolf.",
     ]
+
+    # Round 2: a save through the Healer's body
     body = _ne_sp()
     body.lynch("healer", 2)
     body.night(2, body.act("illusionist", "kill", "investigator"),
@@ -300,11 +332,14 @@ def test_a_save_by_the_living_healer_and_one_through_its_body():
 
 
 def test_a_self_bet_save_names_the_fortune_teller_and_a_plain_save_does_not():
+    # Round 1: a self-bet save
     story = Story("serial_killer", "fortune_teller")
     story.night(1, story.act("serial_killer", "kill", "fortune_teller"),
                 story.act("fortune_teller", "bet", "fortune_teller"))
     assert ("player_10 survived on their own self-bet, so player_10 is the Fortune Teller and bet on themselves "
             "on night 1.") in story.texts("B33")
+
+    # Round 2: a save by the Healer
     plain = Story("serial_killer", "fortune_teller")
     plain.night(1, plain.act("serial_killer", "kill", "fortune_teller"),
                 plain.act("healer", "protect", "fortune_teller"))
@@ -315,8 +350,11 @@ def test_a_self_bet_save_names_the_fortune_teller_and_a_plain_save_does_not():
 # --- B13, B14: what an absence shows --------------------------------------------------------------
 
 def test_no_wolf_attack_announced_in_sk_casts_means_the_pack_attacked_the_serial_killer():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("chanteuse", "kill", "serial_killer"), story.act("serial_killer", "kill", "investigator"))
+
+    # Act and assert
     assert story.texts("B13") == [
         "A wolf was alive at the start of night 1, and the wolves must attack every night, but no attack by the "
         "wolves was announced: their target could not be killed, so it was the Serial Killer."]
@@ -324,10 +362,13 @@ def test_no_wolf_attack_announced_in_sk_casts_means_the_pack_attacked_the_serial
 
 
 def test_no_wolf_attack_from_night_three_in_ne_casts_means_the_carrier_was_blocked_through_the_chanteuse():
+    # Arrange
     story = _ne_sp()
     story.lynch("chanteuse", 3)
     story.night(3, story.act("illusionist", "kill", "investigator"),
                 story.act("necromancer", "block", "illusionist", via="chanteuse"))
+
+    # Act and assert
     assert story.texts("B13") == [
         "A wolf was alive at the start of night 3, and the wolves must attack every night, but no attack by the "
         "wolves was announced: the Chanteuse was already dead, so the Necromancer blocked the wolf carrying the "
@@ -338,10 +379,13 @@ def test_no_wolf_attack_from_night_three_in_ne_casts_means_the_carrier_was_block
 
 
 def test_no_wolf_attack_on_night_two_in_ne_casts_is_the_immune_necromancer_or_a_block_through_the_chanteuse():
+    # Arrange
     story = _ne_sp()
     story.lynch("chanteuse", 2)
     story.night(2, story.act("illusionist", "kill", "investigator"),
                 story.act("necromancer", "block", "illusionist", via="chanteuse"))
+
+    # Act and assert
     assert story.texts("B13") == [
         "A wolf was alive at the start of night 2, and the wolves must attack every night, but no attack by the "
         "wolves was announced: either their target could not be killed, so it was the Necromancer (it cannot be "
@@ -355,17 +399,23 @@ def test_no_wolf_attack_on_night_two_in_ne_casts_is_the_immune_necromancer_or_a_
 def test_no_absence_line_when_a_hidden_body_may_have_been_the_last_wolf():
     """The Chanteuse hidden through the Illusionist's body may be a wolf, so on night 3 no wolf is
     certainly alive, and the silent night says nothing about the pack."""
+    # Arrange
     story = _ne_sp()
     story.lynch("illusionist", 2)
     story.night(2, story.act("necromancer", "kill", "chanteuse", via="illusionist"),
                 story.act("chanteuse", "kill", "sentinel"))
     story.night(3, story.act("vigilante", "kill", "investigator"))
+
+    # Act and assert
     assert story.texts("B13") == []
 
 
 def test_no_one_died_on_night_one_in_ne_casts():
+    # Arrange
     story = _ne_sp()
     story.night(1, story.act("chanteuse", "kill", "necromancer"))
+
+    # Act and assert
     assert story.texts("B14") == [
         "No one died and no one was saved on night 1, so every attack that night, if any, was on a player who could "
         "not be killed: the Necromancer (it cannot be killed on nights 1 and 2)."]
@@ -376,9 +426,12 @@ def test_no_one_died_on_night_one_in_ne_casts():
 # --- B15–B24, B32: the read-out wills --------------------------------------------------------------
 
 def test_a_check_in_a_will_is_public_from_its_reveal_and_not_before():
+    # Round 1: before the Investigator dies
     story = _sk_sp()
     story.night(1, story.act("investigator", "investigate", "chanteuse"), story.act("chanteuse", "kill", "healer"))
     assert story.texts("B18") == []  # the Investigator is alive: its check is private
+
+    # Round 2: after its death, when its will is read
     story.night(2, story.act("illusionist", "kill", "investigator"))
     assert story.texts("B18") == [
         "player_1's will shows that on night 1 player_1 checked player_7: Suspicious. Only a wolf reads Suspicious "
@@ -386,10 +439,13 @@ def test_a_check_in_a_will_is_public_from_its_reveal_and_not_before():
 
 
 def test_a_watch_in_a_will_names_the_dead_watcher_not_you():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("serial_killer", "kill", "investigator"), story.act("sentinel", "watch", "investigator"),
                 story.act("chanteuse", "kill", "healer"))
     story.night(2, story.act("illusionist", "kill", "sentinel"))
+
+    # Act and assert
     assert story.texts("B19") == [
         "player_2's will shows that on night 1 player_2 watched player_1; saw player_9 visit them. A visit does not "
         "show which action was taken. player_9 is not the Speculator: the Speculator never visits. Everyone who "
@@ -398,10 +454,13 @@ def test_a_watch_in_a_will_names_the_dead_watcher_not_you():
 
 
 def test_a_follow_in_a_will():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("trailseer", "follow", "chanteuse"), story.act("chanteuse", "kill", "healer"),
                 story.act("chanteuse", "block", "investigator"))
     story.night(2, story.act("illusionist", "kill", "trailseer"))
+
+    # Act and assert
     assert story.texts("B20") == [
         "player_3's will shows that on night 1 player_3 followed player_7; they visited player_6 and player_1. Only "
         "a wolf who carries the pack's kill and also blocks someone visits two players, so player_7 is the "
@@ -410,10 +469,13 @@ def test_a_follow_in_a_will():
 
 
 def test_a_saved_sigil_in_a_will_names_the_dead_sigilist():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("chanteuse", "kill", "investigator"), story.act("sigilist", "sigil", "chanteuse"),
                 story.act("healer", "protect", "chanteuse"))
     story.night(2, story.act("illusionist", "kill", "sigilist"))
+
+    # Act and assert
     assert [item.text for item in will_items(story.public())] == [
         "player_5's will shows that on night 1 player_5 set a sigil on player_7, who attacked and was saved. "
         "player_7 attacked someone and needed saving from player_5's sigil, so player_7 is a wolf or the "
@@ -425,6 +487,7 @@ def test_a_saved_sigil_in_a_will_names_the_dead_sigilist():
 
 
 def test_a_roleblock_in_a_will_by_the_living_chanteuse_and_through_her_body():
+    # Round 1: a block by the living Chanteuse
     living = _sk_sp()
     living.night(1, living.act("chanteuse", "block", "investigator"), living.act("investigator", "investigate", "healer"),
                  living.act("chanteuse", "kill", "healer"))
@@ -432,6 +495,8 @@ def test_a_roleblock_in_a_will_by_the_living_chanteuse_and_through_her_body():
     assert living.texts("B22") == [
         "player_1's will shows that on night 1 player_1 was roleblocked. Only the Chanteuse could roleblock that "
         "night, and a block is a visit, so the Chanteuse, a wolf, came to player_1 that night."]
+
+    # Round 2: a block through her body
     body = _ne_sp()
     body.lynch("chanteuse", 2)
     body.night(2, body.act("necromancer", "block", "investigator", via="chanteuse"),
@@ -444,10 +509,13 @@ def test_a_roleblock_in_a_will_by_the_living_chanteuse_and_through_her_body():
 
 
 def test_shots_and_protections_in_wills():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("vigilante", "kill", "serial_killer"), story.act("healer", "protect", "investigator"),
                 story.act("chanteuse", "kill", "trailseer"))
     story.night(2, story.act("illusionist", "kill", "vigilante"), story.act("serial_killer", "kill", "healer"))
+
+    # Act and assert
     assert story.texts("B16") == [
         "player_4's will shows that on night 1 player_4 shot player_9, who was unharmed. Only the Serial Killer "
         "could survive that attack, so player_9 is the Serial Killer."]
@@ -460,12 +528,15 @@ def test_shots_and_protections_in_wills():
 def test_a_shot_saved_through_the_healers_body_reads_the_saver_from_the_morning():
     """Follow-up (slice 5): A12 reads who saved the target from the morning, not from the prose of
     a record; a will's record has no prose at all."""
+    # Arrange
     story = _ne_sp()
     story.lynch("healer", 2)
     story.night(2, story.act("vigilante", "kill", "investigator"),
                 story.act("necromancer", "protect", "investigator", via="healer"),
                 story.act("illusionist", "kill", "trailseer"))
     story.night(3, story.act("chanteuse", "kill", "vigilante"))
+
+    # Act and assert
     assert story.texts("B17") == [
         "player_4's will shows that on night 2 player_4 shot player_1, who was saved. A reanimated healer is the "
         "Necromancer acting through the dead Healer's body: the Necromancer protected player_1 that night. "
@@ -473,71 +544,94 @@ def test_a_shot_saved_through_the_healers_body_reads_the_saver_from_the_morning(
 
 
 def test_a_payload_with_no_morning_no_longer_names_the_protector_of_a_saved_shot():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("vigilante", "kill", "investigator"), story.act("healer", "protect", "investigator"),
                 story.act("chanteuse", "kill", "trailseer"))
     payload = {"player_id": "player_4", "player_role": "vigilante", "cast_role_counts": story.counts,
                "dead_roster": story.dead, "night_actions": [r for r in story.records if r.actor == "player_4"],
                "night_announcements": [], "read_out_wills": []}
+
+    # Act
     line = own_result_lines(seat_view_from_payload(payload))[0]
+
+    # Assert
     assert line.text == "player_1 can be killed at night, so player_1 is not the Serial Killer."
     assert [type(fact).__name__ for fact in line.facts] == ["RoleIn"]
 
 
 def test_held_fire_in_a_will():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("vigilante", "hold_fire", None), story.act("chanteuse", "kill", "trailseer"))
     story.night(2, story.act("illusionist", "kill", "vigilante"))
+
+    # Act and assert
     assert story.texts("B23") == [
         "player_4's will shows that on night 1 player_4 held fire. So player_4 shot no one that night."]
 
 
 def test_a_night_missing_from_a_will_is_a_night_with_no_choice():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("investigator", "investigate", "chanteuse"), story.act("chanteuse", "kill", "trailseer"))
     story.night(2, story.act("illusionist", "kill", "healer"))  # the Investigator declines
     story.night(3, story.act("chanteuse", "kill", "investigator"))
+
+    # Act and assert
     assert story.texts("B32") == [
         "player_1's will has nothing for night 2, so player_1 made no choice that night: it used no ability and "
         "went to no one."]  # never the fatal night 3
 
 
 def test_a_town_role_revealed_with_nothing_on_record_made_no_choice_on_the_nights_it_lived():
+    # Round 1: the Investigator revealed after night 2
     story = _sk_sp()
     story.night(1, story.act("chanteuse", "kill", "trailseer"))  # the Investigator declines
     story.night(2, story.act("illusionist", "kill", "investigator"))
     assert story.texts("B24") == [
         "player_1 was revealed as the Investigator with nothing on record, so player_1 made no choice on night 1: "
         "it used no ability and went to no one."]
+
+    # Round 2: the Investigator killed on night 1
     first_night = _sk_sp()
     first_night.night(1, first_night.act("chanteuse", "kill", "investigator"))
     assert first_night.texts("B24") == []
 
 
 def test_a_must_act_role_missing_a_night_gives_no_line():
+    # Arrange
     story = _sk_sp()
     story.night(1, story.act("chanteuse", "kill", "trailseer"))  # the Healer makes no choice: an input error
     story.night(2, story.act("illusionist", "kill", "healer"))
+
+    # Act and assert
     assert story.texts("B24") == [] and story.texts("B32") == []
 
 
 # --- B25–B27: the roster and the pick --------------------------------------------------------------
 
 def test_a_lynched_body_with_an_ability_is_usable_from_that_night_in_ne_casts_only():
+    # Round 1: the Illusionist voted out, in a Necromancer cast
     story = _ne_sp()
     story.lynch("illusionist", 2)
     assert story.texts("B25") == [
         "player_8 was voted out on day 2 as the Illusionist, so from night 2 on the Necromancer can use player_8's "
         "body to attack someone."]
+
+    # Round 2: the same, in a Serial Killer cast
     sk = _sk_sp()
     sk.lynch("illusionist", 2)
     assert sk.texts("B25") == []
+
+    # Round 3: the Speculator voted out, in a Necromancer cast
     neutral = _ne_sp()
     neutral.lynch("speculator", 2)
     assert neutral.texts("B25") == []
 
 
 def test_the_speculators_pick_and_a_speculator_that_never_picked():
+    # Round 1: the Speculator picked
     story = _sk_sp()
     story.night(1, story.act("speculator", "pick", "town"), story.act("chanteuse", "kill", "trailseer"))
     assert story.texts("B26") == [
@@ -546,6 +640,7 @@ def test_the_speculators_pick_and_a_speculator_that_never_picked():
     story.lynch("speculator", 2)
     assert story.texts("B27") == []
 
+    # Round 2: a Speculator that never picked
     never = _sk_sp()
     never.night(1, never.act("chanteuse", "kill", "trailseer"))
     never.lynch("speculator", 2)
@@ -606,9 +701,12 @@ ROWS_BUILT = {"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11"
 def test_every_fact_a_public_item_states_holds_in_the_real_game():
     """Random legal games (the pack always attacks, abilities stop when spent), at every point a
     seat reasons from: every fact holds on its night, until 20,000 nights have been played."""
+    # Arrange
     rng = random.Random(20261016)
     nights_played = 0
     times_each_row_fired: dict[str, int] = {}
+
+    # Act and assert, once for each random game
     while nights_played < 20000:
         game = random_game(rng)
         nights_played += len(game.nights)
@@ -618,4 +716,6 @@ def test_every_fact_a_public_item_states_holds_in_the_real_game():
                     times_each_row_fired[row] = times_each_row_fired.get(row, 0) + 1
                 for fact in item.conclusion:
                     assert public_fact_holds(fact, item.night, game), (item, fact, game.roles)
+
+    # Assert: every row was reached
     assert set(times_each_row_fired) >= ROWS_BUILT, times_each_row_fired

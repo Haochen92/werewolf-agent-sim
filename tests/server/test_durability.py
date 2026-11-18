@@ -32,12 +32,15 @@ def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_chunks):
     """Round-trip: state rebuilt from EVENTS must match state built from PARTS —
     same roles, same continued seq, and (the load-bearing one) the same ship-once
     guards, or a post-restart resume would re-ship every delivered message."""
+    # Arrange: translate the fixture game live, keeping its event log
     lived = Translator()
     log = [e for p in fixture_chunks for e in lived.translate(p)]
 
+    # Act: rebuild a translator from the log alone
     revived = Translator()
     revived.hydrate(log)
 
+    # Assert
     assert revived.roles == lived.roles
     assert revived.wolves == lived.wolves
     assert revived.seq == lived.seq  # next event continues, never collides
@@ -53,9 +56,12 @@ def test_hydrate_rebuilds_the_shadow_from_the_log(fixture_chunks):
 @pytest.mark.parametrize("resolution", ["DAY_RESOLUTION", "NIGHT_RESOLUTION"])
 def test_restart_before_every_resolution_matches_uninterrupted_play(fixture_chunks, resolution):
     """The producing phase is committed; only its consumer runs after this restart."""
+    # Arrange
     lived = Translator()
     log = []
     checked = 0
+
+    # Act and assert: replay the game, restoring a translator before each resolution
     for chunk in fixture_chunks:
         restored = None
         if resolution in chunk.get("data", {}):
@@ -75,6 +81,7 @@ async def test_recovered_cached_votes_wait_for_collection_and_include_every_vote
         quiet_session, fixture_chunks):
     # The day vote only: the ten-seat pack has no vote (the carrier names the kill, sent as
     # it is made), so the wolf-vote case of this test is gone with the buffer it covered.
+    # Arrange: a session that reaches the day vote with one AI ballot cast
     scope, node, human_node, collector = "DAY_PHASE", "vote", "vote_human", "COLLECT_VOTES"
 
     def ballot(player, target):
@@ -86,6 +93,7 @@ async def test_recovered_cached_votes_wait_for_collection_and_include_every_vote
     ai_vote = ballot("player_4", "player_6")
     before._on_chunk(_updates(node, ai_vote, scope))
 
+    # Round 1: rebuild a session from that log, then send it the cached AI ballot twice
     restored = quiet_session(FakeGraph([]))
     restored.reload_history(before.log, [])
     original = list(restored.log)
@@ -93,8 +101,12 @@ async def test_recovered_cached_votes_wait_for_collection_and_include_every_vote
     restored._on_chunk(_updates(node, ai_vote, scope, cached=True))
     restored._on_chunk(_updates(node, ai_vote, scope, cached=True))  # duplicate is harmless
     assert restored.log == original
+
+    # Round 2: the human's ballot arrives
     restored._on_chunk(_updates(human_node, ballot("player_9", "player_6"), scope))
     assert not any(e.type == "vote_cast" for e in restored.log)
+
+    # Round 3: the votes are collected
     restored._on_chunk(_updates(collector, {}, scope))
     votes = [e for e in restored.log if e.type == "vote_cast"]
     assert len(votes) == 2
@@ -108,12 +120,16 @@ async def test_recovered_cached_votes_wait_for_collection_and_include_every_vote
 
 
 async def test_run_persists_events_and_finalizes_one_game_row(quiet_session, fixture_chunks):
+    # Arrange
     repository = RecordingGameRepository()
 
     session = quiet_session(FakeGraph(fixture_chunks), repository=repository)
+
+    # Act: run the fixture game to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=30)
 
+    # Assert
     assert [e.seq for e in repository.events] == [e.seq for e in session.log]
     assert repository.completions == [(session.game_id, len(session.log), 0)]
     # The fixture game is all-LLM: human_players never changes, so no seat upsert.
@@ -121,6 +137,7 @@ async def test_run_persists_events_and_finalizes_one_game_row(quiet_session, fix
 
 
 async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session):
+    # Round 1: a game whose graph raises an error
     repository = RecordingGameRepository()
 
     class ExplodingGraph:
@@ -135,6 +152,7 @@ async def test_death_marks_the_row_dead_and_cancellation_does_not(quiet_session)
     assert "provider died" in repository.updates[-1]["error"]
     assert repository.completions == []
 
+    # Round 2: a game cancelled at shutdown
     # Shutdown cancellation must leave the durable status untouched ('running'), so
     # the next boot recovers the game instead of burying it.
     from tests.fixtures.server import HangingGraph
@@ -210,6 +228,7 @@ class RecordingGameRepository:
 
 
 async def test_failed_saves_retry_the_whole_unsaved_tail_and_human_assignment(quiet_session):
+    # Arrange: a repository whose saves fail until told otherwise
     class FlakyRepository(RecordingGameRepository):
         fail = True
 
@@ -221,9 +240,13 @@ async def test_failed_saves_retry_the_whole_unsaved_tail_and_human_assignment(qu
 
     repository = FlakyRepository()
     session = quiet_session(FakeGraph([]), repository=repository, human_players=["player_3"])
+
+    # Round 1: a save while the repository fails
     session.log = [ev.PhaseChange(seq=1, day=1, phase="day")]
     await session._persist_tail()
     assert session._saved_event_count == 0 and session._saved_humans == []
+
+    # Round 2: the repository recovers, and two more saves run
     repository.fail = False
     session.log.append(ev.PhaseChange(seq=2, day=1, phase="voting"))
     await session._persist_tail()
@@ -236,6 +259,7 @@ async def test_failed_saves_retry_the_whole_unsaved_tail_and_human_assignment(qu
 @pytest.mark.parametrize("persistent_failure", [False, True])
 async def test_final_chunk_gets_one_bounded_retry_before_completion(
         quiet_session, fixture_chunks, persistent_failure):
+    # Arrange: a repository whose save of the final chunk fails once, or every time
     class FinalSaveFails(RecordingGameRepository):
         attempts = 0
 
@@ -255,8 +279,12 @@ async def test_final_chunk_gets_one_bounded_retry_before_completion(
     # Stop at game over so there is truly no subsequent chunk to retry the failed save.
     end = next(i for i, chunk in enumerate(fixture_chunks) if "END_GAME" in chunk["data"])
     session = quiet_session(FakeGraph(fixture_chunks[:end + 1]), repository=repository)
+
+    # Act: run the game up to game over
     session.start()
     await asyncio.wait_for(session.wait_finished(), timeout=10)
+
+    # Assert
     assert session.error is None and session.game_over
     assert len(repository.completions) == 1
 
@@ -279,8 +307,13 @@ async def _recover(monkeypatch, rows, graph, check_key=None):
 async def test_a_waiting_row_is_never_rebuilt(monkeypatch):
     # Rooms live in memory only (ruled 2026-09-12): a restart closes them. A waiting row
     # can only predate that ruling; it is left alone, neither revived nor rewritten.
+    # Arrange
     row = _row(status=WAITING, host_key="hk-9", room_name="wolves den")
+
+    # Act: recover the games at boot
     games, repository = await _recover(monkeypatch, [row], FakeDurableGraph(None))
+
+    # Assert
     assert games.get("g-1") is None and len(games) == 0
     assert repository.update_calls == []
 
@@ -290,6 +323,7 @@ async def test_failed_recovery_removes_the_session_and_cancels_partial_clocks(
         monkeypatch, partial_park):
     from server.game.seat_clocks import SeatClocks
 
+    # Arrange: a checkpoint that cannot be read, or that holds one good and one bad prompt
     armed = []
     original_arm = SeatClocks.arm
 
@@ -311,8 +345,12 @@ async def test_failed_recovery_removes_the_session_and_cancels_partial_clocks(
             return self._state
 
     row = _row(seats=[{"token": "t1"}, {"token": "t2"}])
+
+    # Act: recover the game at boot
     games, repository = await _recover(monkeypatch, [row], BrokenGraph(state))
     await asyncio.sleep(0)  # settle cancellation of any clock armed before the failure
+
+    # Assert
     assert games.get(row.game_id) is None
     assert repository.updates[-1] == {"status": DROPPED, "error": "recovery failed on restart"}
     assert bool(armed) is partial_park
@@ -320,6 +358,7 @@ async def test_failed_recovery_removes_the_session_and_cancels_partial_clocks(
 
 
 async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatch):
+    # Round 1: a game parked on a question comes back at boot
     request = human_turn_request(player_id="player_3", phase="day_channel",
                                  can_pass=True, valid_targets=[])
     state = SimpleNamespace(next=("DAY_PHASE",), tasks=[SimpleNamespace(
@@ -334,6 +373,7 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
     assert session.parked_since == stamp  # the retention clock survives the restart
     assert session.seat_for_token("tok-1") == "player_3"
 
+    # Round 2: the player answers the question
     session.submit_turn({"message": "back from the dead"}, seat="player_3")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     resume = graph.calls[0]
@@ -343,6 +383,7 @@ async def test_parked_game_revives_reparked_and_resumes_on_the_answer(monkeypatc
 async def test_a_recovered_solo_game_with_no_viewer_suspends_at_its_first_chunk(monkeypatch):
     """A restart brings a solo game back with nobody watching: it reads one chunk, then
     waits for its player like any solo game whose player is away."""
+    # Arrange: a graph that yields two silent chunks
     silent = {"type": "updates", "ns": [], "data": {"DAY_PHASE": {}}}
 
     class SteppingGraph(FakeDurableGraph):
@@ -355,12 +396,15 @@ async def test_a_recovered_solo_game_with_no_viewer_suspends_at_its_first_chunk(
                 yield silent
 
     graph = SteppingGraph(SimpleNamespace(next=("NIGHT_RESOLUTION",), tasks=[]))
+
+    # Round 1: recover the game with nobody watching
     games, _ = await _recover(monkeypatch, [_row()], graph)
     session = games.get("g-1")
     while session.suspended_since is None:
         await asyncio.sleep(0.01)
     assert graph.calls == [None] and graph.pulled == 1  # resumed from the checkpoint
 
+    # Round 2: a viewer subscribes
     q = session.subscribe("tok-1")
     await asyncio.wait_for(session.wait_finished(), timeout=10)
     assert graph.pulled == 2 and session.error is None
@@ -372,6 +416,7 @@ async def test_a_rebuilt_game_gets_its_cast_and_its_picks_back(monkeypatch):
     the row's seats carry each joiner's pick, so a restart cannot redraw either."""
     from server.game.cast import CastSeat
 
+    # Arrange: a stored cast, and a row whose seat carries a pick
     state = SimpleNamespace(next=("DAY_PHASE",), tasks=[SimpleNamespace(interrupts=[])])
     row = _row(seats=[{"name": "hao", "token": "tok-1", "character": "whale"}])
     stored = [CastSeat(f"player_{i}", c, c == "whale") for i, c in enumerate(
@@ -379,14 +424,18 @@ async def test_a_rebuilt_game_gets_its_cast_and_its_picks_back(monkeypatch):
     repository = RecordingGameRepository(rows=[row])
     repository.stored_cast = stored
     games = LiveGameRegistry(repository, SimpleNamespace(graph=FakeDurableGraph(state)))
+
+    # Act: recover the games at boot
     await recovery.recover_registry(games, repository)
 
+    # Assert
     session = games.get("g-1")
     assert session.cast == stored and session._saved_cast
     assert session._picks == ["whale"]
 
 
 async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_it(monkeypatch):
+    # Arrange: a BYOK game parked on a question, and a key check that refuses "sk-bad"
     request = human_turn_request(player_id="player_3", phase="day_channel",
                                  can_pass=True, valid_targets=[])
     state = SimpleNamespace(next=("DAY_PHASE",), tasks=[SimpleNamespace(
@@ -400,6 +449,8 @@ async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_
             raise ValueError("the provider rejected this key: 401")
 
     stamp = datetime(2026, 9, 11, 9, 0, tzinfo=timezone.utc)
+
+    # Round 1: recover the game at boot
     games, repository = await _recover(
         monkeypatch, [_row(byok=True, model="gemini-2.5-pro", updated_at=stamp)], graph,
         check_key=check_key)
@@ -410,11 +461,13 @@ async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_
     assert session.parked_since == stamp  # the sweeper's clock runs from the last write
     assert repository.update_calls == []
 
+    # Round 2: a bad key
     # A bad key is refused by the provider probe and the game keeps waiting.
     with pytest.raises(ValueError, match="rejected"):
         await games.resume_with_key("g-1", "sk-bad")
     assert session.awaiting_key and session._task is None
 
+    # Round 3: a good key
     # A good key: the model is the row's, the question is re-parked, the task runs.
     await games.resume_with_key("g-1", "sk-good")
     assert probed == [("gemini-2.5-pro", "sk-bad"), ("gemini-2.5-pro", "sk-good")]
@@ -428,28 +481,41 @@ async def test_byok_game_waits_for_its_key_and_resumes_when_a_seat_holder_funds_
 
 
 async def test_house_selected_model_survives_restart(monkeypatch):
+    # Arrange
     model = "gemini-3.6-flash"
     state = SimpleNamespace(next=("resume",), tasks=[])
+
+    # Act: recover the games at boot
     games, _ = await _recover(
         monkeypatch, [_row(model=model, byok=False)], FakeDurableGraph(state))
 
+    # Assert
     assert games.get("g-1")._llm_selection.model == model
 
 
 async def test_memory_switch_survives_restart(monkeypatch):
     # A game is rebuilt with the switch it was started with — a memory-on game must not
     # quietly continue memory-off, and a memory-off game must not pick memory up.
+    # Arrange
     state = SimpleNamespace(next=("resume",), tasks=[])
+
+    # Act: recover the games at boot
     games, _ = await _recover(
         monkeypatch, [_row(memory=True), _row(game_id="g-2")], FakeDurableGraph(state))
 
+    # Assert
     assert all(games.get("g-1").config["configurable"]["memory_config"].values())
     assert not any(games.get("g-2").config["configurable"]["memory_config"].values())
 
 
 async def test_stale_running_row_of_a_finished_game_is_closed_and_not_kept(monkeypatch):
+    # Arrange
     state = SimpleNamespace(next=(), tasks=[])
+
+    # Act: recover the games at boot
     games, repository = await _recover(monkeypatch, [_row()], FakeDurableGraph(state))
+
+    # Assert
     assert games.get("g-1") is None  # completed games live in the archive, not the table
     assert repository.completions == [("g-1", 0, 1)]
 
@@ -457,6 +523,7 @@ async def test_stale_running_row_of_a_finished_game_is_closed_and_not_kept(monke
 def test_completion_metadata_is_lifted_from_the_event_log():
     from server.schemas import events as ev
 
+    # Arrange
     log = [
         ev.GameStarted(seq=1, day=1, seats=["p1", "p2"],
                        cast_role_counts={"wolf": 1, "villager": 1}),
@@ -465,6 +532,8 @@ def test_completion_metadata_is_lifted_from_the_event_log():
         ev.PhaseChange(seq=4, day=3, phase="night"),
         ev.GameOver(seq=5, day=3, winner="wolves", neutral_result="won"),
     ]
+
+    # Act and assert
     assert derive_completion_metadata(log) == {
         "winner": "wolves",
         "neutral_result": "won",  # the neutral's own result, beside the winner

@@ -39,7 +39,10 @@ def _game(*, ended_on_day_2=False):
 
 
 def test_each_morning_reads_the_earlier_days_checked_against_the_deaths_by_then():
+    # Act
     day2, day3 = ledger_days(_game())
+
+    # Assert
     assert (day2.day, day3.day) == (2, 3)
     [p6] = day2.players
     assert p6.history == "claimed healer (day 1)"
@@ -63,19 +66,29 @@ def test_the_structured_summary_is_public():
 
 
 def test_a_running_game_serves_its_ledger(api_client, quiet_session):
+    # Arrange: a running game whose log holds the fixture events
     session = quiet_session(FakeGraph([]))
     session.log.extend(_game())
     api_client.app.state.resources.games._register(session)
+
+    # Act
     body = api_client.get(f"/games/{session.game_id}/ledger").json()
+
+    # Assert
     assert [d["day"] for d in body] == [2, 3]
     assert body[0]["players"][0]["entries"][0]["checks"] == [{"text": "Record: p1 died that night.", "fits": None}]
 
 
 def test_the_role_line_comes_from_the_spoken_claim_and_the_summariser_fills_the_rest():
+    # Arrange: a speech on day 1 in which p6 claims the sentinel role
     events = _game()
     events.insert(2, ev.Speech(seq=20, day=1, channel_seq=1, player="p6", message="I am the sentinel.",
                                claim="sentinel"))
+
+    # Act
     day2, _ = ledger_days(events)
+
+    # Assert
     [p6] = day2.players
     assert p6.history == "claimed sentinel (day 1)"  # the speaker's field outranks the transcription
     assert [e.planned for e in p6.entries] == ["p1"]  # the transcribed plan still counts
@@ -83,10 +96,15 @@ def test_the_role_line_comes_from_the_spoken_claim_and_the_summariser_fills_the_
 
 def test_a_speakers_claimed_night_action_reaches_the_ledger_from_its_speech_event():
     # Slice 9a: the speaker's own field rides the speech event, so the browser's ledger is the agents'.
+    # Arrange
     claimed = ev.WireClaimedNightAction(night=1, action="protect", target="p3", result="no_attack")
     events = [*_game()[:6], ev.Speech(seq=20, day=2, channel_seq=3, player="p1", message="I protected p3 last night.",
                                       claimed_night_actions=[claimed]),
               *_game()[6:]]
+
+    # Act
     [_, day3] = ledger_days(events)
+
+    # Assert
     [p1] = [p for p in day3.players if p.player == "p1"]
     assert [e.text for e in p1.entries] == ["Night 1: protected p3, says there was no attack."]

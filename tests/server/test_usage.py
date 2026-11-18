@@ -25,11 +25,16 @@ def _call(meter, model, input=1000, cached=0, output=200, reasoning=0, fail=Fals
 
 
 def test_calls_are_counted_per_model_and_a_failed_call_adds_no_tokens():
+    # Arrange
     meter = UsageMeter()
+
+    # Act: three calls on two models, and one failed call
     _call(meter, "deepseek-v4-pro", cached=600, reasoning=50)
     _call(meter, "deepseek-v4-pro")
     _call(meter, "gemini-3.1-flash-lite")
     _call(meter, "deepseek-v4-pro", fail=True)
+
+    # Assert
     buckets = {b["model"]: b for b in meter.snapshot()["buckets"]}
     pro = buckets["deepseek-v4-pro"]
     assert (pro["calls"], pro["failed"], pro["input"], pro["cached"], pro["output"], pro["reasoning"]) == (
@@ -40,45 +45,65 @@ def test_calls_are_counted_per_model_and_a_failed_call_adds_no_tokens():
 
 def test_cache_writes_are_counted_and_priced_at_the_write_premium():
     # GPT-6 Luna: 1M input, of which 250k read from cache and 700k written; a write bills 1.25x input.
+    # Round 1: count a call with cache reads and cache writes
     meter = UsageMeter()
     _call(meter, "gpt-6-luna", input=1_000_000, cached=250_000, written=700_000, output=0)
     (bucket,) = meter.snapshot()["buckets"]
     assert (bucket["cached"], bucket["written"]) == (250_000, 700_000)
+
+    # Round 2: price it
     bucket["hour"] = "2026-10-12T12:00:00+00:00"
     assert game_cost({"buckets": [bucket]}) == round(0.05 * 0.10 + 0.25 * 0.01 + 0.70 * 0.125, 4)
+
+    # Round 3: price it with the write count removed
     del bucket["written"]  # a game saved before writes were counted still prices, writes as plain input
     assert game_cost({"buckets": [bucket]}) == round(0.75 * 0.10 + 0.25 * 0.01, 4)
 
 
 def test_a_restarted_game_carries_on_from_its_saved_counts():
+    # Arrange: a game's meter after one call
     first = UsageMeter()
     _call(first, "deepseek-v4-pro")
+
+    # Act: rebuild the meter from the saved counts and make one more call
     resumed = UsageMeter(first.snapshot())
     _call(resumed, "deepseek-v4-pro")
+
+    # Assert
     assert sum(b["calls"] for b in resumed.snapshot()["buckets"]) == 2
 
 
 def test_cost_and_call_time_come_from_the_counts_and_unknown_shows_nothing():
+    # Arrange: usage on two models in one hour
     usage = {"buckets": [
         {"model": "deepseek-v4-pro", "hour": "2026-10-04T12:00:00+00:00", "calls": 4, "failed": 0,
          "input": 1_000_000, "cached": 400_000, "output": 100_000, "reasoning": 0, "seconds": 20.0},
         {"model": "gemini-3.1-flash-lite", "hour": "2026-10-04T12:00:00+00:00", "calls": 1, "failed": 0,
          "input": 0, "cached": 0, "output": 0, "reasoning": 0, "seconds": 9.0},
     ]}
+
+    # Round 1: the priced models
     assert game_cost(usage) == round(0.396 + 0.0088 + 0.198, 4)
     assert average_call_seconds(usage, "deepseek/deepseek-v4-pro") == 5.0
     assert average_call_seconds(usage) == 5.0  # the model with the most calls
     assert game_cost(None) is None and average_call_seconds(None) is None
+
+    # Round 2: a model with no price
     usage["buckets"][1]["model"] = "unpriced-model"
     assert game_cost(usage) is None
 
 
 def test_the_replay_summary_carries_cost_and_call_time_but_not_the_raw_counts():
+    # Arrange
     row = GameRow(game_id="g", status="completed", winner="villagers", days=3, n_events=10, n_humans=0,
                   cast_role_counts={}, model="deepseek/deepseek-v4-pro", usage={"buckets": [
                       {"model": "deepseek-v4-pro", "hour": "2026-10-04T12:00:00+00:00", "calls": 2,
                        "failed": 0, "input": 1000, "cached": 0, "output": 100, "reasoning": 0, "seconds": 8.0}]})
+
+    # Act
     summary = _summary(row)
+
+    # Assert
     assert summary.cost_usd is not None and summary.avg_call_seconds == 4.0
     assert "usage" not in summary.model_dump()
 
@@ -99,13 +124,18 @@ class _Repo:
 
 
 async def test_usage_is_saved_at_most_every_30_seconds_and_always_at_the_end(quiet_session):
+    # Arrange
     repo = _Repo()
     session = quiet_session(FakeGraph([]), repository=repo)
+
+    # Round 1: two saves in quick succession
     _call(session.usage_meter, "gemini-3.5-flash-lite")
     await session._persist_tail()
     _call(session.usage_meter, "gemini-3.5-flash-lite")
     await session._persist_tail()  # too soon: held back
     assert [list(u) for u in repo.updates] == [["usage"]]
+
+    # Round 2: the game ends
     session.game_over = True
     await session._persist_tail()  # the end always saves
     assert repo.updates[-1]["usage"]["buckets"][0]["calls"] == 2
@@ -114,6 +144,7 @@ async def test_usage_is_saved_at_most_every_30_seconds_and_always_at_the_end(qui
 def test_the_model_menu_averages_only_games_that_can_be_priced_memory_off_and_on_apart():
     from server.storage.replay_service import average_costs
 
+    # Arrange: games with and without a price, memory off and on
     usage = lambda calls: {"buckets": [
         {"model": "deepseek-v4-pro", "hour": "2026-10-04T12:00:00+00:00", "calls": calls, "failed": 0,
          "input": 1_000_000 * calls, "cached": 0, "output": 0, "reasoning": 0, "seconds": 1.0}]}
@@ -121,5 +152,7 @@ def test_the_model_menu_averages_only_games_that_can_be_priced_memory_off_and_on
     rows = [("deepseek/deepseek-v4-pro", False, usage(1)), ("deepseek/deepseek-v4-pro", False, usage(3)),
             ("deepseek/deepseek-v4-pro", False, None), ("deepseek/deepseek-v4-pro", False, unpriced),
             ("deepseek/deepseek-v4-pro", True, usage(5))]  # memory on: its own mean
+
+    # Act and assert
     assert average_costs(rows) == {("deepseek/deepseek-v4-pro", False): (round((0.66 + 1.98) / 2, 4), 2),
                                    ("deepseek/deepseek-v4-pro", True): (3.3, 1)}

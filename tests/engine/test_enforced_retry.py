@@ -27,6 +27,7 @@ class _JsonModeLLM:
 
 
 def test_the_lookups_situation_summary_retries_enforced(monkeypatch):
+    # Arrange: a JSON-mode model, with the rest of the lookup stubbed out
     llm = _JsonModeLLM(SimpleNamespace(situations=[]))
     monkeypatch.setattr(situation_agent, "get_llm", lambda: llm)
     monkeypatch.setattr(situation_agent, "V6_SITUATION_SUMMARY", RunnableLambda(lambda x: x))
@@ -35,14 +36,21 @@ def test_the_lookups_situation_summary_retries_enforced(monkeypatch):
     monkeypatch.setattr(situation_agent, "_known_board_facts", lambda *a: "")
     monkeypatch.setattr(situation_agent, "_private_state", lambda *a: "")
     payload = {"player_id": "player_1", "player_role": "healer", "current_day": 2}
+
+    # Act and assert
     # The enforced reply is used: no generic "Day 2 as healer" fallback query.
     assert situation_agent._generate_situations_for_agent(payload, "night_action") == ([], [])
     assert llm.enforced_calls == 1
 
 
 def test_the_day_summary_retries_enforced(monkeypatch):
+    # Arrange
     llm = _JsonModeLLM(summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[]))
     monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: llm)
+
+    # Act
     _, _, structured = summary_agent.run_day_summary_agent(2, [])
+
+    # Assert
     assert structured == {"accusations": [], "role_claims": []}  # not the raw-channel fallback's {}
     assert llm.enforced_calls == 1

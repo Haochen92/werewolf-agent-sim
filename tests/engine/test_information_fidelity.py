@@ -66,17 +66,25 @@ def _by(records, actor):
 # --- the private night record ---------------------------------------------------
 
 def test_healer_learns_a_save_and_otherwise_only_what_the_public_does():
+    # Round 1: the wolves attack the player the healer protects
     saved = _by(_records(wolves="t0", healer="t0"), "h")[0]
     assert saved.outcome == "t0 was attacked by the wolves, and your protection saved them."
+
+    # Round 2: the wolves attack someone else
     quiet = _by(_records(wolves="inv", healer="t0"), "h")[0]
     assert quiet.outcome == "No attack on t0 was announced."
+
+    # Round 3: the healer protects the serial killer, and the wolves attack it
     # protecting the serial killer while the wolves hit it: the attack is silent, so no leak
     on_sk = _by(_records(wolves="sk", healer="sk"), "h")[0]
     assert on_sk.outcome == "No attack on sk was announced."
 
 
 def test_killers_learn_their_result_and_only_the_attackers_learn_the_silent_immunity():
+    # Act
     recs = _records(wolves="sk", vig="t0", sk="inv", healer="inv")
+
+    # Assert
     assert _by(recs, "wolves")[0].outcome == (
         "sk was unharmed: immune to night kills tonight. The public was told nothing about this attack.")
     assert _by(recs, "v")[0].outcome == "t0 died. They were a sentinel."
@@ -91,7 +99,10 @@ def test_vigilante_holding_fire_is_recorded():
 
 
 def test_each_player_sees_only_its_own_record_and_every_wolf_sees_the_packs():
+    # Arrange
     recs = _records(wolves="t0", healer="inv", sk="v", vig="w1")
+
+    # Act and assert
     assert {r.actor for r in own_night_actions(recs, "h", "healer")} == {"h"}
     assert {r.actor for r in own_night_actions(recs, "w0", "chanteuse")} == {"wolves"}
     assert {r.actor for r in own_night_actions(recs, "w1", "illusionist")} == {"wolves"}
@@ -99,10 +110,15 @@ def test_each_player_sees_only_its_own_record_and_every_wolf_sees_the_packs():
 
 
 def test_night_resolution_writes_the_record():
+    # Arrange
     state = {"current_day": 1, "roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
              "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "uses_left": {"vigilante": 2},
              "day_channel": [], "night_choices": _choices(wolves="t0", healer="t0", held=True)}
+
+    # Act
     update = night_resolution(state, _runtime())
+
+    # Assert
     assert {(r.actor, r.action) for r in update["night_actions"]} == {
         ("h", "protect"), ("wolves", "kill"), ("v", "hold_fire")}
     assert update["day_summaries"][0].source == "game_master"
@@ -117,13 +133,18 @@ def _day_state(records):
 
 
 def test_day_payloads_carry_only_the_speakers_own_record():
+    # Arrange
     recs = _records(wolves="t0", healer="inv", sk="v", vig="w1")
     fr = FiringReason(tier="proactive", owes=[])
+
+    # Round 1: the discussion turn, once for each player
     for player in ROLES:
         role = ROLES[player]
         send = build_speaker_send(_day_state(recs), player, role, fr)
         want = own_night_actions(recs, player, role)
         assert send.arg.get("night_actions", []) == want, player
+
+    # Round 2: the vote turn, once for each player
     for send in fan_out_day(_day_state(recs), "vote"):
         p = send.arg["player_id"]
         assert send.arg.get("night_actions", []) == own_night_actions(recs, p, ROLES[p]), p
@@ -132,9 +153,14 @@ def test_day_payloads_carry_only_the_speakers_own_record():
 # --- what the prompts render ------------------------------------------------------
 
 def test_the_vigilante_day_prompt_shows_bullets_and_its_record():
+    # Arrange
     rec = NightActionRecord(day=1, actor="v", action="shoot", target="t0", outcome="t0 died. They were a sentinel.")
     payload = build_speaker_send(_day_state([rec]), "v", "vigilante", FiringReason(tier="proactive", owes=[])).arg
+
+    # Act
     text = "\n".join(m.content for m in day_discuss_template("vigilante").format_messages(**build_agent_prompt_input(payload)))
+
+    # Assert
     assert "Bullets left: 1" in text
     assert "Night 1 (last night): you shot t0. t0 died. They were a sentinel." in text
 
@@ -147,6 +173,7 @@ def test_the_vote_prompt_shows_the_note_it_replaces():
 
 
 def test_the_carriers_kill_turn_gets_the_census_and_the_packs_record():
+    # Arrange
     rec = NightActionRecord(day=1, actor="wolves", action="kill", target="sk",
                             outcome="sk was unharmed: immune to night kills.")
     payload = {"current_day": 2, "current_round": 4, "player_id": "w0", "player_role": "chanteuse",
@@ -155,7 +182,11 @@ def test_the_carriers_kill_turn_gets_the_census_and_the_packs_record():
                "surviving_villagers": ["sk", "t0"], "dead_roster": [],
                "cast_role_counts": {"chanteuse": 1, "illusionist": 1},
                "night_actions": [rec], "previous_strategy": "", "strategy_points": ""}
+
+    # Act
     text = "\n".join(m.content for m in carrier_template("chanteuse").format_messages(**build_agent_prompt_input(payload)))
+
+    # Assert
     assert "== Dead so far (public) ==" in text and "your pack attacked sk" in text
     assert "Surviving non-wolf players" in text
 
@@ -172,6 +203,7 @@ def test_a_held_back_draft_reaches_no_transcript_not_even_its_authors():
 
 
 def test_previous_days_put_the_game_masters_record_above_claims_and_accusations():
+    # Arrange
     summaries = [
         DaySummary(day=2, summary="(text)", structured={
             "accusations": [{"accusers": ["player_8"], "target": "player_2",
@@ -180,7 +212,11 @@ def test_previous_days_put_the_game_masters_record_above_claims_and_accusations(
                              "night_actions": [{"night": 1, "action": "investigate", "target": "w0", "result": "suspicious"}]}]}),
         DaySummary(day=2, summary="Night of day 2: t0 was stabbed by the serial killer last night.", source="game_master"),
     ]
+
+    # Act
     text = format_day_summaries(summaries, before_day=3)
+
+    # Assert
     record, claims, accusations = (text.index("game master's record"), text.index("Claims made in the day discussion"),
                                    text.index("Accusations in the day discussion"))
     assert record < claims < accusations
@@ -190,11 +226,16 @@ def test_previous_days_put_the_game_masters_record_above_claims_and_accusations(
 
 
 def test_votes_are_written_as_eliminate_or_abstain():
+    # Arrange
     state = {"current_day": 2, "roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
              "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": [], "no_lynch_streak": 0,
              "day_votes": [DayVote(voter="h", votee="w0"), DayVote(voter="t0", votee="w0"),
                            DayVote(voter="inv", votee="abstain")]}
+
+    # Act
     message = day_resolution(state, _runtime())["day_channel"][0].message
+
+    # Assert
     assert "h voted to eliminate w0" in message and "inv voted to abstain" in message
     assert "voted for" not in message
 
@@ -210,13 +251,21 @@ def test_day_one_is_not_announced_as_a_vote_result():
 
 def test_a_day_with_no_vote_does_not_count_toward_the_forced_vote():
     # Owner, 2026-10-17: two days without a lynch force the vote, and day 1 (no vote held) is not one.
+
+    # Arrange
     base = {"roles": ROLES, "lineup": LINEUP, "surviving_wolves": ["w0", "w1"],
             "surviving_villagers": ["sk", "h", "v", "inv", "t0"], "day_channel": []}
+
+    # Round 1: day 1, when no vote is held
     day_one = day_resolution({**base, "current_day": 1, "no_lynch_streak": 0, "day_votes": []}, _runtime())
     assert day_one["no_lynch_streak"] == 0
+
+    # Round 2: day 2, when the vote abstains
     abstained = day_resolution({**base, "current_day": 2, "no_lynch_streak": 0,
                                 "day_votes": [DayVote(voter="h", votee="abstain")]}, _runtime())
     assert abstained["no_lynch_streak"] == 1
+
+    # Round 3: the streak counted from the day results before day 3
     assert no_lynch_streak_before(3, [{"day": 1, "voted_player": None, "no_vote": True},
                                       {"day": 2, "voted_player": None, "no_vote": False}]) == 1
 
@@ -233,6 +282,7 @@ def test_the_summariser_gets_the_record_and_the_claim_ledger():
 
 
 def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_words():
+    # Arrange
     out = DaySummaryOutputV4.model_validate({
         "accusations": [{"accusers": ["player_8"], "target": "player_2",
                          "reasoning": "player_8 argued that player_2 survived an attack.",
@@ -244,7 +294,11 @@ def test_the_v4_summary_writes_two_headings_and_transcribes_claims_in_fixed_word
                          "planned_actions": [{"action": "investigate", "target": "player_5"}]},
                         {"player": "player_4", "claimed_role": "healer", "kind": "retracted", "night_actions": []}],
     })
+
+    # Act
     text = _serialize_day_summary(out)
+
+    # Assert
     assert [line.split(":")[0] for line in text.splitlines()] == ["Key accusations and defenses", "Role claims"]
     assert "Disputed: player_6" in text and "Against the record" not in text
     assert "record_check" not in out.model_json_schema()["$defs"]["AccusationV4"]["properties"]

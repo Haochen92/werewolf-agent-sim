@@ -10,9 +10,14 @@ from Agents.schemas.model_catalog import Price
 
 
 def test_one_definition_per_dated_price_with_every_usage_name_priced():
+    # Arrange
     prices = {"gemini-3.5-flash-lite": (Price(date(2026, 7, 21), 0.30, 0.03, 2.50),
                                         Price(date(2026, 11, 1), 0.40, 0.04, 3.00))}
+
+    # Act
     first, second = definitions(prices)
+
+    # Assert
     assert (first.model_name, second.model_name) == (
         "gemini-3.5-flash-lite@2026-07-21", "gemini-3.5-flash-lite@2026-11-01")
     rates = dict(first.prices)

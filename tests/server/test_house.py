@@ -55,11 +55,16 @@ async def test_an_empty_choice_resolves_to_the_default_and_the_house_pays():
 
 
 async def test_the_default_is_a_live_setting_with_a_process_fallback():
+    # Round 1: the process fallback
     assert (await _house(HOUSE_DEFAULT_MODEL="gemini-3.1-flash-lite").status()
             ).default_model == "gemini-3.1-flash-lite"
+
+    # Round 2: a stored default
     stored = {KEY_DEFAULT_MODEL: "gemini-3.6-flash"}
     assert (await _house(stored, HOUSE_DEFAULT_MODEL="gemini-3.1-flash-lite").status()
             ).default_model == "gemini-3.6-flash"  # the stored knob wins
+
+    # Round 3: a stored default that is no longer a house row
     # A stored default that is not a house row any more is ignored, not honoured.
     assert (await _house({KEY_DEFAULT_MODEL: "gemini-2.5-pro"}).status()
             ).default_model == "gemini-3.5-flash-lite"
@@ -89,6 +94,7 @@ async def test_the_kill_switch_closes_the_house_for_good():
 
 
 async def test_the_daily_cap_closes_the_house_until_midnight_utc():
+    # Round 1: the day's cap is reached
     house = _house({KEY_GAMES_PER_DAY: 3}, used_today=3)
     with pytest.raises(HouseClosed, match="3 games for today") as caught:
         await house.authorize("", "")
@@ -99,18 +105,22 @@ async def test_the_daily_cap_closes_the_house_until_midnight_utc():
     since = house._games.asked_since[-1]
     assert (since.hour, since.minute, since.tzinfo) == (0, 0, timezone.utc)
 
+    # Round 2: one game left under the cap
     under = _house({KEY_GAMES_PER_DAY: 3}, used_today=2)
     assert await under.authorize("", "") == "gemini-3.5-flash-lite"
     assert (await under.status()).remaining == 1
 
 
 async def test_update_validates_and_takes_effect_at_once():
+    # Round 1: a valid update
     house = _house()
     status = await house.update(default_model="gemini-3.6-flash", games_per_day=1,
                                 enabled=True)
     assert (status.default_model, status.games_per_day) == ("gemini-3.6-flash", 1)
     assert house._settings.saved == [
         (KEY_ENABLED, True), (KEY_DEFAULT_MODEL, "gemini-3.6-flash"), (KEY_GAMES_PER_DAY, 1)]
+
+    # Round 2: invalid updates are refused
     with pytest.raises(ValueError, match="house-funded row"):
         await house.update(default_model="gemini-2.5-pro")
     with pytest.raises(ValueError, match="0 or more"):
@@ -120,13 +130,18 @@ async def test_update_validates_and_takes_effect_at_once():
 # ---- over HTTP: the doors and the admin endpoint ------------------------------------------
 
 def test_the_house_closed_answers_402_at_both_doors(api_client, monkeypatch):
+    # Arrange: the house switched off
     house = api_client.app.state.resources.house
     monkeypatch.setattr(house, "_defaults", ServerSettings(WW_POSTGRES_DSN="",
                                                             HOUSE_FUNDED_ENABLED=False))
+
+    # Round 1: each door refuses a game the house would pay for
     for door in ("/games", "/rooms"):
         r = api_client.post(door, json={})
         assert r.status_code == 402, r.text
         assert "switched off" in r.json()["detail"]
+
+    # Round 2: a request that brings a player's key
     # A key still opens either door (the game is never launched here: 422 on the fake key
     # would come from the engine, so stop at the gate by asking for an unknown model).
     r = api_client.post("/games", json={"api_key": "sk-1", "model": "gpt-9"})
@@ -136,15 +151,18 @@ def test_the_house_closed_answers_402_at_both_doors(api_client, monkeypatch):
 def test_admin_house_is_hidden_without_a_token_and_guarded_with_one(api_client, monkeypatch):
     from server.config import server_settings
 
+    # Round 1: no admin token set, then a token set and a wrong one sent
     assert api_client.get("/admin/house").status_code == 404
     monkeypatch.setattr(server_settings, "ADMIN_TOKEN", "s3cret")
     assert api_client.get("/admin/house").status_code == 403
     assert api_client.get("/admin/house", headers={"X-Admin-Token": "nope"}).status_code == 403
 
+    # Round 2: read the settings with the right token
     ok = {"X-Admin-Token": "s3cret"}
     before = api_client.get("/admin/house", headers=ok).json()
     assert before["default_model"] == "gemini-3.5-flash-lite" and before["enabled"] is True
 
+    # Round 3: change the settings
     r = api_client.put("/admin/house", headers=ok,
                        json={"default_model": "gemini-3.1-flash-lite", "games_per_day": 2})
     assert r.status_code == 200, r.text
@@ -156,6 +174,7 @@ def test_admin_house_is_hidden_without_a_token_and_guarded_with_one(api_client, 
     assert [m["model"] for m in menu["models"] if m["is_default"]] == ["gemini-3.1-flash-lite"]
     assert menu["house"]["games_per_day"] == 2
 
+    # Round 4: invalid changes are refused
     r = api_client.put("/admin/house", headers=ok, json={"default_model": "gemini-2.5-pro"})
     assert r.status_code == 422
     r = api_client.put("/admin/house", headers=ok, json={"unknown": 1})

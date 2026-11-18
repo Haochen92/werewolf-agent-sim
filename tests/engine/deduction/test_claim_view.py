@@ -46,7 +46,10 @@ def _payload(player: str) -> dict:
 
 
 def test_todays_claims_are_typed_with_their_history_and_flags():
+    # Act
     claims = {c.player: c for c in seat_view_from_payload(_payload("player_8")).claims}
+
+    # Assert
     assert list(claims) == ["player_5", "player_3", "player_6"]  # the held line claimed nothing
 
     (follow,) = claims["player_3"].actions
@@ -64,9 +67,14 @@ def test_todays_claims_are_typed_with_their_history_and_flags():
 
 
 def test_a_withdrawn_role_stays_in_the_history():
+    # Arrange
     summaries = [*SUMMARIES, _summary(2, {"player": "player_5", "claimed_role": "healer", "kind": "retracted"})]
     payload = {**_payload("player_8"), "day_summaries": summaries}
+
+    # Act
     (p5,) = [c for c in seat_view_from_payload(payload).claims if c.player == "player_5"]
+
+    # Assert
     assert p5.current_role is None and p5.withdrawn_roles == ("healer",)
     assert p5.roles == (RoleClaim(1, "healer", False), RoleClaim(2, "healer", True))
 
@@ -81,9 +89,14 @@ def test_a_payload_with_no_transcript_has_no_claims():
 
 
 def test_a_claimed_visit_went_ahead_with_its_action_unknown():
+    # Arrange
     channel = [_line(2, 0, "player_7", "Yes, I went to player_8 on night 1.", actions=[(1, "visit", "player_8", "not_said", [])])]
+
+    # Act
     (p7,) = seat_view_from_payload({"player_id": "player_8", "day_channel": channel, "day_summaries": []}).claims
     (visit,) = p7.actions
+
+    # Assert
     assert (visit.action, visit.target, visit.night, visit.completed, visit.blocked) == ("visit", "player_8", 1, True, False)
 
 
@@ -94,9 +107,14 @@ def _claims_of(*lines: dict, summaries=()) -> dict:
 
 def test_actions_of_one_role_imply_its_claim():
     """owner, 2026-10-18: a vigilante that said it held fire was read as unclaimed."""
+    # Arrange: a line where player_7 says it held fire on both nights
     held = _line(3, 0, "player_7", "I held fire both nights.",
                  actions=[(1, "no_action", "", "held_fire", []), (2, "no_action", "", "held_fire", [])])
+
+    # Act
     p7 = _claims_of(held)["player_7"]
+
+    # Assert
     assert p7.current_role == "vigilante"
     (implied,) = p7.roles
     assert (implied.day, implied.role, implied.withdrawn) == (3, "vigilante", False)
@@ -104,15 +122,22 @@ def test_actions_of_one_role_imply_its_claim():
 
 
 def test_no_implied_claim_from_a_plain_denial_two_roles_a_named_role_or_a_withdrawn_one():
+    # Round 1: a plain denial
     plain = _line(3, 0, "player_7", "I did nothing.", actions=[(1, "no_action", "", "not_said", [])])
     assert _claims_of(plain)["player_7"].current_role is None
+
+    # Round 2: a held fire and a protect, which belong to two roles
     mixed = _line(3, 0, "player_7", "I held fire, then protected player_2.",
                   actions=[(1, "no_action", "", "held_fire", []), (2, "protect", "player_2", "not_said", [])])
     assert _claims_of(mixed)["player_7"].current_role is None
+
+    # Round 3: a line that names a role
     named = _line(3, 0, "player_7", "Sentinel: I held fire... I mean I kept my watch.", claim="sentinel",
                   actions=[(1, "no_action", "", "held_fire", [])])
     p7 = _claims_of(named)["player_7"]
     assert p7.current_role == "sentinel" and not any(r.implied_by for r in p7.roles)
+
+    # Round 4: a vigilante claim withdrawn the day before
     withdrew = _summary(2, {"player": "player_7", "claimed_role": "vigilante", "kind": "claimed"},
                         {"player": "player_7", "claimed_role": "vigilante", "kind": "retracted"})
     held = _line(3, 0, "player_7", "I held fire.", actions=[(1, "no_action", "", "held_fire", [])])

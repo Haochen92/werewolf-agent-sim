@@ -36,8 +36,11 @@ class RoleDrawSeedabilityTests(unittest.TestCase):
         self.assertNotEqual(_draw("seed-abc"), _draw("seed-different"))
 
     def test_full_valid_assignment(self) -> None:
+        # Act
         deal = _deal("seed-abc")
         roles = deal["roles"]
+
+        # Assert
         self.assertEqual(SEATS, 10)
         self.assertEqual(len(roles), 10)
         self.assertEqual(sorted(roles, key=lambda p: int(p.split("_")[1])), [f"player_{i}" for i in range(1, 11)])
@@ -59,9 +62,13 @@ class RoleDrawSeedabilityTests(unittest.TestCase):
     def test_a_chosen_drawn_seat_forces_the_draw_without_moving_the_other_seats(self) -> None:
         # The draw is made even when the config fixes it, so the shuffle after it is the same:
         # forcing the other lone killer swaps that one role and leaves every other seat alone.
+
+        # Act: deal one seed as drawn and with the other lone killer forced
         natural = _deal("seed-abc")
         other = next(r for r in LONE_KILLER_ROLES if r not in natural["lineup"])
         forced = _deal("seed-abc", lone_killer=other)
+
+        # Assert
         self.assertIn(other, forced["lineup"])
         differing = [p for p in natural["roles"] if natural["roles"][p] != forced["roles"][p]]
         self.assertEqual(len(differing), 1)

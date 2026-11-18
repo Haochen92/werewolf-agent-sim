@@ -47,6 +47,7 @@ def failing_judge():
 
 
 def test_padding_and_a_repeat_are_held_with_their_text_kept(monkeypatch):
+    # Arrange
     entries = [
         opening("player_1", "I investigated player_4 last night: wolf.",
                 [AddressedTarget(target="player_4", addressed_form="mention", stance="accusation")]),
@@ -57,8 +58,10 @@ def test_padding_and_a_repeat_are_held_with_their_text_kept(monkeypatch):
                         judge_saying({"player_1": "night_action", "player_2": "other",
                                       "player_3": "repeat"}))
 
+    # Act
     out = round_filter.filter_openings(entries)
 
+    # Assert
     kept, padding, repeat = out
     assert kept.passed is False
     assert kept.message == "I investigated player_4 last night: wolf."
@@ -78,6 +81,7 @@ def test_padding_and_a_repeat_are_held_with_their_text_kept(monkeypatch):
 
 
 def test_a_counterclaim_is_kept(monkeypatch):
+    # Arrange: two players both claim to be the investigator
     entries = [
         opening("player_2", "I am the investigator."),
         opening("player_6", "No, I am the investigator, and player_2 is lying."),
@@ -85,8 +89,10 @@ def test_a_counterclaim_is_kept(monkeypatch):
     monkeypatch.setattr(round_filter, "get_llm_judge",
                         judge_saying({"player_2": "claim", "player_6": "claim"}))
 
+    # Act
     out = round_filter.filter_openings(entries)
 
+    # Assert
     assert out[0].passed is False
     assert out[0].opening_kind == "claim"
     assert out[1].passed is False
@@ -95,49 +101,61 @@ def test_a_counterclaim_is_kept(monkeypatch):
 
 
 def test_a_held_line_keeps_its_accusation_tags(monkeypatch):
+    # Arrange
     tag = AddressedTarget(target="player_4", addressed_form="mention", stance="accusation")
     entries = [opening("player_2", "player_4 seems shifty to me.", [tag])]
     monkeypatch.setattr(round_filter, "get_llm_judge", judge_saying({"player_2": "other"}))
 
+    # Act
     (held,) = round_filter.filter_openings(entries)
 
+    # Assert
     assert held.passed is True
     assert held.addressed_targets == [tag]
 
 
 def test_every_line_is_kept_when_the_judge_fails(monkeypatch):
+    # Arrange: a judge that fails
     entries = [
         opening("player_1", "I am the healer."),
         opening("player_2", "Let's all be careful today."),
     ]
     monkeypatch.setattr(round_filter, "get_llm_judge", failing_judge())
 
+    # Act
     out = round_filter.filter_openings(entries)
 
+    # Assert
     assert out == entries
 
 
 def test_a_line_with_no_verdict_is_kept(monkeypatch):
+    # Arrange: a judge that gives a verdict for player_1 only
     entries = [
         opening("player_1", "I am the healer."),
         opening("player_2", "Let's all be careful today."),
     ]
     monkeypatch.setattr(round_filter, "get_llm_judge", judge_saying({"player_1": "claim"}))
 
+    # Act
     out = round_filter.filter_openings(entries)
 
+    # Assert
     assert out[1].passed is False
     assert out[1].message == "Let's all be careful today."
 
 
 def test_passes_are_not_sent_to_the_judge_and_a_silent_round_makes_no_call(monkeypatch):
+    # Arrange
     seen: list[str] = []
     monkeypatch.setattr(round_filter, "get_llm_judge", judge_saying({"player_2": "claim"}, seen))
 
+    # Round 1: a round in which every player passes
     silent = [opening_pass("player_1"), opening_pass("player_2")]
     assert round_filter.filter_openings(silent) == silent
     assert seen == []
 
+    # Round 2: a round with one pass and one line
     mixed = [opening_pass("player_1"), opening("player_2", "I am the healer.")]
     round_filter.filter_openings(mixed)
     assert len(seen) == 1
@@ -146,6 +164,7 @@ def test_passes_are_not_sent_to_the_judge_and_a_silent_round_makes_no_call(monke
 
 
 def test_a_human_opening_is_never_held(monkeypatch):
+    # Arrange: a judge that would hold both lines; player_2 is human
     entries = [
         opening("player_1", "Watch player_3 today."),
         opening("player_2", "Watch player_3 today, I mean it."),
@@ -154,8 +173,10 @@ def test_a_human_opening_is_never_held(monkeypatch):
                         judge_saying({"player_1": "other", "player_2": "other"}))
     state = {"human_players": ["player_2"]}
 
+    # Act
     out = flow._filter_keeping_humans(entries, state, round_filter.filter_openings)
 
+    # Assert
     assert out[0].passed is True
     assert out[0].pass_reason == DiscussionPassReason.OPENING_FILTERED
     assert out[1] == entries[1]
@@ -165,6 +186,7 @@ def test_a_line_whose_own_fields_say_night_action_or_claim_is_kept_whatever_the_
     # The judge labelled a trailseer's follow "other" in the persona voice games (2026-10-18).
     from Agents.schemas.game_events import SpokenNightAction
 
+    # Arrange: three lines the judge calls "other"; two say a night action or claim in their fields
     follow = opening("player_1", "Night 3 I followed player_10, and they went to player_2. player_10, why?")
     follow = follow.model_copy(update={"claimed_night_actions": [
         SpokenNightAction(night=3, action="follow", target="player_10", result="not_said", seen=["player_2"])]})
@@ -174,6 +196,8 @@ def test_a_line_whose_own_fields_say_night_action_or_claim_is_kept_whatever_the_
     monkeypatch.setattr(round_filter, "get_llm_judge",
                         judge_saying({"player_1": "other", "player_2": "other", "player_3": "other"}))
 
+    # Act
     out = round_filter.filter_openings([follow, claim, unnamed])
 
+    # Assert
     assert [(e.passed, e.opening_kind) for e in out] == [(False, "night_action"), (False, "claim"), (True, "other")]

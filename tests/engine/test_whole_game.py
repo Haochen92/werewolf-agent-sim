@@ -27,8 +27,13 @@ from tests.factories.whole_game import play_game
 ])
 def test_a_whole_game_runs_on_the_real_graph_and_the_wire_accepts_every_chunk(scripted_model, game_graph,
                                                                               game):
+    # Arrange
     scripted_model(seed=3)
+
+    # Act
     result, events, units = play_game(game_graph, game, seed=3)
+
+    # Assert
     assert result["lineup"] == lineup(game["lone_killer"], game["neutral"])
     assert result["winner"] in ("villagers", "wolves", "serial_killer", "necromancer", None)
     assert result["neutral_result"] is not None
@@ -49,10 +54,15 @@ def test_a_whole_game_runs_on_the_real_graph_and_the_wire_accepts_every_chunk(sc
 
 def test_every_day_turn_reaches_the_replay_and_every_wolf_turn_says_what_it_decided(scripted_model,
                                                                                     game_graph):
+    # Arrange
     sink = EvalCaseSink()
     scripted_model(seed=11)
+
+    # Act
     result, events, _ = play_game(game_graph, {"lone_killer": "serial_killer", "neutral": "speculator"},
                                   seed=11, sink=sink)
+
+    # Assert
     # The translator sends one reads event per (player, day, round, phase): a player's later
     # discussion turns of a day must not share its first turn's round, or they are dropped.
     rounds: dict[tuple[str, int], list[int]] = {}
@@ -82,6 +92,8 @@ def _shots_fired(state: dict, vigilante: str) -> int:
 def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(scripted_model, game_graph):
     # The night's turns pause for the human and are re-run on resume; the bullet is spent only
     # in NIGHT_RESOLUTION, the barrier after every night turn, so the pause always comes first.
+
+    # Arrange
     game = {"lone_killer": "serial_killer", "neutral": "speculator"}
     run = normalize_run_config(RunConfig(game_id="offline-human-vigilante-5", game=game, human_player=1,
                                          human_role="vigilante", memory_persistence={"dump_enabled": False}))
@@ -91,6 +103,8 @@ def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(scrip
     # generator across threads, so without this the game played (and the count) varied by thread order.
     scripted_model(seed=5, spare=frozenset(initialize_game({}, config)["human_players"]))
     context = {"metrics": Metrics()}
+
+    # Act: play the game, answering each pause for the human
     result = game_graph.invoke(fresh_game_state(), config=config, context=context)
     shot_turns = 0
     while "__interrupt__" in result:
@@ -105,6 +119,8 @@ def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(scrip
         else:
             answer = {"target": "hold_fire"}
         result = game_graph.invoke(Command(resume=answer), config=config, context=context)
+
+    # Assert
     final = game_graph.get_state(config).values
     vigilante = final["human_players"][0]
     assert final["roles"][vigilante] == "vigilante"
@@ -114,10 +130,16 @@ def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(scrip
 
 def test_a_finished_game_saves_its_extraction_input_and_extracts_nothing(scripted_model, game_graph):
     # Extraction is an offline batch (decisions §11): the game keeps only what it can teach.
+
+    # Arrange
     sink = EvalCaseSink()
     scripted_model(seed=5)
+
+    # Act
     result, events, _ = play_game(game_graph, {"lone_killer": "necromancer", "neutral": "fortune_teller"},
                                   seed=5, sink=sink)
+
+    # Assert
     [record] = [r for r in sink.records if r["kind"] == "extraction_input"]
     case = record["output"]["extraction_case"]
     assert case["roles"] == result["roles"] and case["lineup"] == result["lineup"]

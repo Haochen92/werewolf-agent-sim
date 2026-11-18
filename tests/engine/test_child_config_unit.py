@@ -42,8 +42,13 @@ def _parent():
 
 
 def test_preserves_all_top_level_fields():
+    # Arrange
     parent = _parent()
+
+    # Act
     child = child_runnable_config(parent)
+
+    # Assert
     for key in ("tags", "callbacks", "run_name"):
         assert child[key] == parent[key], f"top-level {key} not preserved"
     # metadata is PRESERVED but not byte-equal: patch_config folds non-dunder configurable keys
@@ -54,9 +59,14 @@ def test_preserves_all_top_level_fields():
 
 
 def test_preserves_configurable_including_opaque_and_unknown():
+    # Arrange
     parent = _parent()
+
+    # Act
     child = child_runnable_config(parent)
     pconf, cconf = parent["configurable"], child["configurable"]
+
+    # Assert
     # every configurable key survives, including opaque + unknown framework keys
     assert set(cconf.keys()) == set(pconf.keys())
     assert cconf["__pregel_checkpointer"] is pconf["__pregel_checkpointer"]
@@ -78,10 +88,15 @@ def test_recursion_limit_preserved_when_present():
 
 
 def test_call_does_not_mutate_parent():
+    # Arrange
     parent = _parent()
     before_top = set(parent.keys())
     before_conf = dict(parent["configurable"])
+
+    # Act
     child_runnable_config(parent)
+
+    # Assert
     assert set(parent.keys()) == before_top
     assert parent["configurable"] == before_conf
 
@@ -104,8 +119,13 @@ def test_output_derives_only_from_explicit_arg_not_ambient():
 def test_explicit_recursion_override_wins():
     """The `recursion_limit=` kwarg (the day phase's cap-derived limit) must win over the
     inherited/default limit, without disturbing configurable."""
+    # Arrange
     parent = _parent()  # parent carries recursion_limit=100
+
+    # Act
     child = child_runnable_config(parent, recursion_limit=999)
+
+    # Assert
     assert child["recursion_limit"] == 999
     assert child["configurable"]["thread_id"] == "game-1"
 
@@ -114,8 +134,13 @@ def test_child_carries_seat_sized_max_concurrency():
     """The child config carries a pool size that fits every seat in one wave (Python's default
     pool is 8 on a 4-CPU host, so two of ten seats waited), never below that default. The parent
     stays without one: on the root of an async run it would cap the whole main graph."""
+    # Arrange
     parent = _parent()
+
+    # Act
     child = child_runnable_config(parent)
+
+    # Assert
     seats = GameConfig().seats
     assert child["max_concurrency"] >= seats
     assert child["max_concurrency"] >= min(32, (os.cpu_count() or 1) + 4)

@@ -63,12 +63,19 @@ def _concealed_night() -> Table:
 # --- the hidden-role claim ------------------------------------------------------------------------------
 
 def test_a_wolf_is_told_the_hidden_role_it_can_claim_with_no_true_counter_claim():
+    # Arrange
     table = _concealed_night()
+
+    # Round 1: each wolf
     for wolf in ("player_7", "player_8"):
         assert _lines(table, wolf, 2, rows={"F7+L8"}) == [HIDDEN_P1]
+
+    # Round 2
     # Not a seat that does not know it: the Serial Killer, a town seat, the neutral.
     for seat in ("player_9", "player_2", "player_10"):
         assert _lines(table, seat, 2, rows={"F7+L8"}) == []
+
+    # Round 3
     # A counter-claim already made changes no fact of the line.
     assert _lines(table, "player_7", 2, _role(2, "player_2", "investigator"), rows={"F7+L8"}) == [HIDDEN_P1]
 
@@ -80,11 +87,14 @@ def test_a_revealed_body_gives_no_hidden_role_line():
 
 
 def test_the_reanimated_conceal_tells_the_necromancer_only():
+    # Arrange
     # NE+SP: player_9 the Necromancer. The Illusionist voted out on day 2; on night 2 the Necromancer kills
     # the Sentinel through its body, which hides the role while a conceal is left.
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
     table.lynch("player_8", 2)
     table.night(2, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_2", "player_8"))
+
+    # Act and assert
     assert _lines(table, "player_9", 3, rows={"F7+L8"}) == [
         "player_2's hidden role was the Sentinel: your record of night 2 shows it, and the public record does not. "
         "No living player holds the Sentinel, so if you claim it, no one can counter-claim you truthfully."]
@@ -99,16 +109,20 @@ def test_the_living_conceal_does_not_tell_the_necromancer():
 
 
 def test_a_role_no_claim_is_about_gives_no_line():
+    # Arrange
     # NE+SP: from night 3 the living conceal can hide the Necromancer, a lone killer: no claim is about it.
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
     table.night(2, ("player_8", "kill", "player_2"))
     table.night(3, ("player_8", "kill", "player_9"), ("player_8", "conceal", None))
     assert [d.concealed for d in table.dead if d.player == "player_9"] == [True]
+
+    # Act and assert
     assert _lines(table, "player_7", 4, rows={"F7+L8"}) == []
 
 
 def test_a_role_dealt_twice_gives_no_line():
     """No standard cast deals a role twice; the guard holds if one ever does."""
+    # Arrange
     roles = _deal("investigator", "investigator", "trailseer", "vigilante", "sigilist", "healer", "chanteuse",
                   "illusionist", "serial_killer", "speculator")
     table = Table(roles).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
@@ -116,20 +130,29 @@ def test_a_role_dealt_twice_gives_no_line():
     assert [d.concealed for d in table.dead if d.player == "player_1"] == [True]
     view = seat_view_from_payload(table.payload("player_7"))
     assert view.cast_role_counts["investigator"] == 2
+
+    # Act and assert
     assert _lines(table, "player_7", 2, rows={"F7+L8"}) == []
 
 
 # --- the seat's own visits ------------------------------------------------------------------------------
 
 def test_a_protection_claim_on_a_player_the_seat_visited_who_died():
+    # Arrange
     table = _concealed_night()
+
+    # Round 1: the Serial Killer's seat
     assert _lines(table, "player_9", 2, rows={"E4b+own"}) == [
         "On night 1 you went to player_5, and player_5 died that night: a claim that you protected player_5 then "
         "would be false, since a protection that goes ahead stops every attack."]
+
+    # Round 2
     # The carrier's visit to the victim the living conceal hid is still a visit: the claim is still false.
     assert _lines(table, "player_7", 2, rows={"E4b+own"}) == [
         "On night 1 you went to player_1, and player_1 died that night: a claim that you protected player_1 then "
         "would be false, since a protection that goes ahead stops every attack."]
+
+    # Round 3
     # The Illusionist's conceal is a visit to the pack's victim.
     assert len(_lines(table, "player_8", 2, rows={"E4b+own"})) == 1
 
@@ -144,6 +167,7 @@ def test_a_protection_claim_on_a_survivor_gives_no_line():
 
 
 def test_a_claim_on_a_player_already_dead_when_the_night_began():
+    # Round 1: deaths on night 1 and on day 2
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
                                   ("player_9", "kill", "player_6"))
     table.lynch("player_4", 2)
@@ -152,27 +176,38 @@ def test_a_claim_on_a_player_already_dead_when_the_night_began():
         "player_1, player_4 and player_6 were already dead when night 2 began (player_1 killed on night 1, player_4 "
         "voted out on day 2, player_6 killed on night 1): a claim that you checked, watched, followed or protected "
         "any of them on night 2 would be false."]
+
+    # Round 2: player_7's seat, with only player_6 dead before night 2
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
                                   ("player_9", "kill", "player_6"), ("player_6", "protect", "player_1"))
     table.night(2, ("player_8", "kill", "player_2"), ("player_7", "block", "player_5"), ("player_9", "kill", "player_10"))
     assert _lines(table, "player_7", 3, rows={"E14+own"}) == [
         "player_6 was already dead when night 2 began (killed on night 1): a claim that you checked, watched, followed "
         "or protected player_6 on night 2 would be false."]
+
+    # Round 3
     # Night 1 has no one dead before it.
     assert _lines(_concealed_night(), "player_9", 2, rows={"E14+own"}) == []
 
 
 def test_the_chanteuse_who_carried_the_kill_and_blocked_elsewhere_made_two_visits():
+    # Round 1: the Chanteuse carries the kill and blocks another player
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
                                   ("player_9", "kill", "player_5"))
     assert _lines(table, "player_7", 2, rows={"E2a+own"}) == [
         "On night 1 you went to player_1 and player_3, and neither visit was hidden: a follow of you that night, or a "
         "watch on each of them, shows two visits, and only the Chanteuse visits two players in a night."]
+
+    # Round 2
     # The living conceal hid the carrier's visit to the victim: only one visit shows.
     assert _lines(_concealed_night(), "player_7", 2, rows={"E2a+own"}) == []
+
+    # Round 3
     # Her block on the pack's own victim: one place.
     same = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_1"))
     assert _lines(same, "player_7", 2, rows={"E2a+own"}) == []
+
+    # Round 4
     # Night 2: the Illusionist carried, and the Chanteuse visited one player.
     table.night(2, ("player_8", "kill", "player_2"), ("player_7", "block", "player_6"))
     assert _lines(table, "player_7", 3, rows={"E2a+own"}) == [
@@ -181,9 +216,12 @@ def test_the_chanteuse_who_carried_the_kill_and_blocked_elsewhere_made_two_visit
 
 
 def test_the_carrier_is_known_only_when_the_seat_knows_every_wolf():
+    # Round 1: the other wolf still alive
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
     payload = {**table.payload("player_7"), "pack_roles": {}}  # a payload with no pack on it
     assert _items(table, "player_7", 2, payload=payload) == []
+
+    # Round 2
     # Once the other wolf is revealed dead, the seat knows every wolf: alone, it carries.
     table.lynch("player_8", 2)
     table.night(2, ("player_7", "kill", "player_2"), ("player_7", "block", "player_6"))
@@ -193,20 +231,28 @@ def test_the_carrier_is_known_only_when_the_seat_knows_every_wolf():
 
 
 def test_only_the_two_most_recent_nights():
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"),
                                   ("player_9", "kill", "player_5"))
     table.night(2, ("player_8", "kill", "player_2"), ("player_7", "block", "player_6"), ("player_9", "kill", "player_10"))
     table.night(3, ("player_7", "kill", "player_4"), ("player_7", "block", "player_6"), ("player_9", "kill", "player_3"))
+
+    # Act
     nights = {item.night for item in _items(table, "player_9", 4) if item.row != "F7+L8"}
+
+    # Assert
     assert nights == {2, 3}
     assert [item.night for item in _items(table, "player_9", 4) if item.row == "E4b+own"] == [2, 3]
     assert [item.night for item in _items(table, "player_9", 4) if item.row == "E14+own"] == [3]  # last night only
 
 
 def test_never_for_a_town_or_neutral_seat_nor_the_necromancers_own_visits():
+    # Arrange
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_3"))
     table.lynch("player_5", 2)
     table.night(2, ("player_7", "kill", "player_4"), ("player_9", "sigil", "player_2", "player_5"))
+
+    # Act and assert
     for seat in ("player_3", "player_6", "player_10"):
         assert _items(table, seat, 3) == []
     assert [item.row for item in _items(table, "player_9", 3)] == []  # player_5 the Sigilist: no conceal, no own visit
@@ -226,12 +272,15 @@ def test_never_for_a_human_seat():
 # --- the leak boundary ---------------------------------------------------------------------------------
 
 def test_hidden_roles_and_planted_state_change_nothing():
+    # Arrange: one night in two deals that differ only in hidden roles
     swapped = {**_sk_sp(), "player_2": "trailseer", "player_3": "sentinel", "player_9": "speculator",
                "player_10": "serial_killer"}
     a = Table(_sk_sp()).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_5"),
                               ("player_8", "conceal", None), ("player_9", "kill", "player_6"))
     b = Table(swapped).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_5"),
                              ("player_8", "conceal", None), ("player_10", "kill", "player_6"))
+
+    # Act and assert, once for each wolf
     for wolf in ("player_7", "player_8"):
         assert [i.text for i in _items(a, wolf, 2)] == [i.text for i in _items(b, wolf, 2)] != []
         payload = a.payload(wolf)
@@ -247,8 +296,11 @@ def _payload(game, player, snapshot, lines, summaries, today) -> dict:
 
 
 def test_random_games_town_seats_never_and_planted_state_changes_nothing():
+    # Arrange
     rng = random.Random(20261040)
     seen = 0
+
+    # Act and assert, once for each random game
     for game, snapshot in _continuing(rng, 60):
         lines, summaries, today = random_comparison_claims(rng, game, snapshot)
         for player in snapshot.living:
@@ -260,6 +312,8 @@ def test_random_games_town_seats_never_and_planted_state_changes_nothing():
             seen += bool(items)
             planted = {**payload, "roles": game.roles, "all_night_actions": game.records}
             assert [i for i in comparison_items(seat_view_from_payload(planted), today) if i.row in ROWS] == items
+
+    # Assert: enough evil seats were given a line
     assert seen >= 20, seen
 
 
@@ -304,8 +358,11 @@ def test_the_truth_oracle_on_random_games():
 def test_the_brute_force_oracle_for_the_hidden_role_line():
     """In every deal the seat's view allows, the body holds the role and no living player does; some deal
     the public record allows gives the seat the role (so the body another one)."""
+    # Arrange
     rng = random.Random(20261042)
     checked = 0
+
+    # Act and assert, once for each random game
     for game, snapshot in _continuing(rng, 400):
         for player in snapshot.living:
             if not (ROLE_SPECS[game.roles[player]].pack or game.roles[player] == "necromancer"):
@@ -327,4 +384,6 @@ def test_the_brute_force_oracle_for_the_hidden_role_line():
                 assert not any(held.role in support[p] for p in snapshot.living), item.text
                 assert held.role in public[player] and public[body] - {held.role}, (item.text, public[body])
                 checked += 1
+
+    # Assert: enough lines were checked
     assert checked >= 30, checked

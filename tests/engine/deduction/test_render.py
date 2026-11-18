@@ -104,6 +104,7 @@ def test_a_fact_about_a_night_is_not_the_same_fact_on_another_night():
 
 
 def test_the_seat_block_leaves_out_what_the_public_block_or_its_own_record_lines_already_state():
+    # Arrange
     census = HeldBy("serial_killer", ("player_2", "player_4"))
     public = render_public([_item("F3", None, "The public census.", census)], LIVING, DEAD)
     seat_census = _item("F3", None, "The seat's census.", census, receiver="player_6")
@@ -112,18 +113,27 @@ def test_the_seat_block_leaves_out_what_the_public_block_or_its_own_record_lines
     own = [(1, OwnResultLine(text="Only the Serial Killer could survive that attack, so player_4 is the Serial Killer.",
                              row="A13", facts=(AttackOutcome("player_4", frozenset({"serial_killer"})),
                                                RoleIn("player_4", frozenset({"serial_killer"})))))]
+
+    # Act
     seat = render_seat([seat_census, pinned], [], frozenset(), LIVING, DEAD, public, own)
+
+    # Assert
     assert seat.shown == () and seat.text == ""
 
 
 def test_the_illusionist_reads_the_pack_targets_immunity_once():
     """The pack attacked the Serial Killer and the conceal found no body: A13 on the pack's record
     and A45 on the conceal state the same facts. The first stays; the conceal keeps its own prose."""
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_9"), ("player_8", "conceal", None),
                                   ("player_9", "kill", "player_1"), ("player_6", "protect", "player_2"))
     view = table.seat("player_8")
+
+    # Round 1: the lines before folding
     lines = own_result_lines(view)
     assert [line.row for line in lines] == ["A13", "A45"]
+
+    # Round 2: the lines folded
     folded = fold_own_lines(view.night_records, lines)
     assert [line and line.row for line in folded] == ["A13", None]
     assert format_night_actions(view.night_records, 2, folded).splitlines()[1] == (
@@ -133,22 +143,30 @@ def test_the_illusionist_reads_the_pack_targets_immunity_once():
 def test_the_illusionist_reads_the_save_of_the_pack_target_once():
     """The Healer saved the pack's target: A45's protection is one of the facts of the pack record's
     A11, so A45 goes and A11 stays whole."""
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_2"), ("player_8", "conceal", None),
                                   ("player_9", "kill", "player_1"), ("player_6", "protect", "player_2"))
     view = table.seat("player_8")
+
+    # Act
     lines = own_result_lines(view)
+
+    # Assert
     assert [line.row for line in lines] == ["A11", "A45"]
     assert ProtectedBy("player_2", through_body=False) in lines[0].facts
     assert [line and line.row for line in fold_own_lines(view.night_records, lines)] == ["A11", None]
 
 
 def test_a_roleblock_line_which_stands_in_for_its_record_is_never_folded():
+    # Arrange
     blocked = OwnResultLine(text="You were roleblocked.", row="A6", replaces_outcome=True,
                             facts=(NotProtected("player_2"),))
     wider = OwnResultLine(text="Wider.", row="A1", facts=(NotProtected("player_2"), NoConcealsLeft()))
     records = Table(_sk_sp()).night(1, ("player_7", "kill", "player_2"), ("player_6", "protect", "player_2"),
                                     ("player_9", "kill", "player_1")).seat("player_6").night_records
     record = records[0]
+
+    # Act and assert
     assert fold_own_lines([record, record], [blocked, wider]) == [blocked, wider]
 
 
@@ -157,7 +175,10 @@ def test_a_roleblock_line_which_stands_in_for_its_record_is_never_folded():
 def test_a_census_clause_naming_every_unknown_player_is_left_out():
     """Day 1, no one dead: "Both wolves are alive and are two of" everyone says nothing (rule 1),
     in the public's view and in a seat's; the full items are still computed."""
+    # Arrange
     table = Table(_sk_sp())
+
+    # Act and assert
     assert public_candidate_items(table.public(), informative=True) == []
     assert seat_candidate_items(table.seat("player_1"), informative=True) == []
     assert [item.row for item in public_candidate_items(table.public())] == ["F3", "F3"]
@@ -167,10 +188,15 @@ def test_a_list_that_leaves_out_one_unknown_player_or_a_hidden_body_stays():
     """The pack killed player_2 under the living conceal: its body is neither a wolf nor the Serial
     Killer (L8), so those clauses narrow and stay; the Speculator's, which names every living player
     and the body, goes."""
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_2"), ("player_8", "conceal", None),
                                   ("player_9", "kill", "player_1"))
     living = "player_3, player_4, player_5, player_6, player_7, player_8, player_9 and player_10"
+
+    # Act
     texts = [item.text for item in public_candidate_items(table.public(), informative=True) if item.row == "F3"]
+
+    # Assert
     assert texts == [f"Both wolves are alive and are two of {living}. The Serial Killer is alive and is one of {living}."]
 
 
@@ -180,10 +206,15 @@ def test_the_census_is_the_seats_alone_and_an_f7_line_that_is_the_publics_less_t
     narrows (player_3 attacked, player_2 checked), and so does the Serial Killer's (player_3 was
     saved); the Speculator's names every unknown player and goes. The Healer's F7 line on player_3 is the public's less the
     Healer, so only the public block has it."""
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_3"), ("player_6", "protect", "player_3"),
                                   ("player_9", "kill", "player_5"), ("player_1", "investigate", "player_2"))
     view = table.seat("player_1")
+
+    # Act
     blocks = deduction_blocks(view, own_result_lines(view), [], 2)
+
+    # Assert
     assert [item.row for item in blocks.public.shown] == ["F7"]
     assert [item.text for item in blocks.seat.shown if item.row == "F3"] == [
         "Both wolves are alive and are two of player_4, player_6, player_7, player_8, player_9 and player_10. "
@@ -207,11 +238,16 @@ def test_shared_lines_first_then_the_living_in_seat_order_then_the_dead_in_death
 
 
 def test_an_entry_is_a_conclusion_and_two_supporting_sentences_then_a_second_entry():
+    # Arrange
     raised = frozenset({("player_4", 1)})
     steps = [_item("B1", "player_4", f"Step {n}.", NotProtected(f"player_{n}")) for n in range(1, 5)]
     pinned = _item("F7", "player_4", "player_4 can only be the Healer or the Sentinel.",
                    RoleIn("player_4", frozenset({"healer", "sentinel"})), receiver="player_6")
+
+    # Act
     seat = render_seat([pinned], steps, raised, LIVING, DEAD, RenderedBlock(""), [])
+
+    # Assert
     assert _lines(seat) == ["player_4 can only be the Healer or the Sentinel. Step 1. Step 2.", "Step 3. Step 4."]
 
 
@@ -240,14 +276,21 @@ def test_raised_today_is_a_player_and_a_night_named_in_one_message_spoken_today(
 
 
 def test_a_working_step_is_never_in_the_public_block_and_in_the_seat_block_only_when_raised():
+    # Arrange
     step = _item("B1", "player_4", "A wolf went to player_4 on night 1.", NotProtected("player_4"),
                  sources=[Source("announcement", 1, "player_4")])
     will = _item("B19+A26", "player_6", "player_9's will shows that on night 1 player_9 watched player_6.",
                  NotProtected("player_6"), sources=[Source("will", 1, "player_9")])
+
+    # Round 1: no night raised
     assert render_public([step, will], LIVING, DEAD).shown == ()
     assert render_seat([], [step, will], frozenset(), LIVING, DEAD, RenderedBlock(""), []).shown == ()
+
+    # Round 2: both steps' nights raised
     raised = frozenset({("player_4", 1), ("player_9", 1)})  # the will's holder raises its night too
     assert render_seat([], [step, will], raised, LIVING, DEAD, RenderedBlock(""), []).shown == (step, will)
+
+    # Round 3: another night raised
     assert render_seat([], [step], frozenset({("player_4", 2)}), LIVING, DEAD, RenderedBlock(""), []).shown == ()
 
 
@@ -292,13 +335,18 @@ def test_level_two_keeps_the_record_and_leaves_out_every_claim_line():
     from Agents.schemas.game_events import DayChannel
     from tests.fixtures.day_discuss_prompt_golden import speaker_payload
 
+    # Arrange: a payload with two Investigator claims
     payload = speaker_payload("healer")
     day = payload["current_day"]
     claims = [DayChannel(day=day, seq=k, player=p, message="(a role)", claim="investigator")
               for k, p in enumerate(("player_1", "player_2"))]
     payload = {**payload, "day_channel": [*payload.get("day_channel", []), *claims]}
+
+    # Act
     full = build_agent_prompt_input({**payload, "deduction_mode": "full"})
     public = build_agent_prompt_input({**payload, "deduction_mode": "public"})
+
+    # Assert
     assert "both claim the Investigator" in full["deduction_seat_before_note"]
     assert public["deduction_public_block"] == full["deduction_public_block"]
     assert {entry["row"] for entry in public["deduction_log"] if entry["block"] == "seat"} <= {"F3", "F7"}
@@ -311,7 +359,10 @@ def test_no_block_outside_full_mode_or_for_a_human_seat(change):
     from Agents.prompts.day_discuss import day_discuss_template
     from tests.fixtures.day_discuss_prompt_golden import speaker_payload
 
+    # Act
     inputs = build_agent_prompt_input({**speaker_payload("healer"), **change})
+
+    # Assert
     assert inputs["deduction_public_block"] == inputs["deduction_seat_before_note"] == ""
     assert inputs["deduction_log"] == []
     text = _rendered(day_discuss_template("healer"), inputs)
@@ -329,6 +380,7 @@ def test_in_a_whole_game_every_seat_and_turn_kind_gets_the_same_public_block(scr
     from Agents.turn.eval import TURN_CAPTURE, TurnCapture
     from tests.factories.whole_game import play_game
 
+    # Act: play a whole game, capturing every prompt
     capture = TurnCapture()
     token = TURN_CAPTURE.set(capture)
     try:
@@ -336,6 +388,8 @@ def test_in_a_whole_game_every_seat_and_turn_kind_gets_the_same_public_block(scr
         play_game(game_graph, game, seed=13)
     finally:
         TURN_CAPTURE.reset(token)
+
+    # Assert
     blocks: dict[tuple, set[str]] = {}
     kinds = set()
     for entry in capture.prompts:
@@ -351,11 +405,16 @@ def test_in_a_whole_game_every_seat_and_turn_kind_gets_the_same_public_block(scr
 # --- the log ---------------------------------------------------------------------------------------
 
 def test_every_shown_line_is_logged_with_its_derivation_and_no_derivation_reaches_the_text():
+    # Arrange
     view = Table(_sk_sp()).night(1, ("player_7", "kill", "player_2"), ("player_8", "conceal", None),
                                  ("player_9", "kill", "player_1"), ("player_6", "protect", "player_3")).seat("player_6")
     channel = [_said("player_3", "player_1 died on night 1.", day=2)]
+
+    # Act
     blocks = deduction_blocks(view, own_result_lines(view), channel, 2)
     log = deduction_log(blocks)
+
+    # Assert
     assert [entry["text"] for entry in log] == [item.text for item in blocks.public.shown + blocks.seat.shown]
     assert any(entry["derivation"] for entry in log) and json.loads(json.dumps(log)) == log
     assert {entry["block"] for entry in log} == {"public", "seat"}
@@ -366,13 +425,18 @@ def test_every_shown_line_is_logged_with_its_derivation_and_no_derivation_reache
 def test_the_prompt_capture_carries_the_log():
     from Agents.turn.eval import TurnCapture, TURN_CAPTURE, log_prompt
 
+    # Arrange
     payload = _frozen("9b827b695a61ece9")
     capture = TurnCapture()
     token = TURN_CAPTURE.set(capture)
+
+    # Act
     try:
         log_prompt(payload, "day_channel", build_agent_prompt_input(payload))
     finally:
         TURN_CAPTURE.reset(token)
+
+    # Assert
     logged = capture.prompts[0]["prompt_input"]["deduction_log"]
     assert logged and {entry["block"] for entry in logged} == {"public", "seat"}
 
@@ -380,13 +444,18 @@ def test_the_prompt_capture_carries_the_log():
 # --- the leak boundary: the public block reads only the public record --------------------------------
 
 def test_the_public_block_does_not_change_with_anything_private():
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_2"), ("player_8", "conceal", None),
                                   ("player_9", "kill", "player_1"), ("player_6", "protect", "player_2"),
                                   ("player_1", "investigate", "player_7"))
+
+    # Act: render the public block for each living seat
     texts = set()
     for player in table.living():
         view = table.seat(player)
         texts.add(deduction_blocks(view, own_result_lines(view), [], 2).public.text)
+
+    # Assert
     assert len(texts) == 1 and next(iter(texts))
 
 
@@ -437,8 +506,13 @@ def test_acceptance_case_2_the_blocks_exactly():
     adds line 3 there, ending at the block (no claim of player_8's that it was roleblocked on night 1
     is in the payload: the catalogue's line corrected). Today player_2 named player_7 on night 2,
     which raises the sigil's events."""
+    # Arrange
     payload = _frozen("9b827b695a61ece9")
+
+    # Act
     inputs = build_agent_prompt_input(payload)
+
+    # Assert
     assert inputs["deduction_public_block"] == AC2_PUBLIC + "\n\n"
     assert inputs["deduction_seat_before_note"] == "\n" + AC2_SEAT + "\n"
     assert _lines(RenderedBlock(AC2_SEAT))[:4] == [
@@ -459,8 +533,11 @@ def test_acceptance_case_2_must_not_say():
     line reads as its contrapositive); nothing of player_7's night-1 visit to player_8 but line 3, that
     it was her block (no line about player_8 but the census and its entry, which opens with the
     conditional on player_2's watch)."""
+    # Arrange
     blocks = AC2_PUBLIC + "\n" + AC2_SEAT
     status = "No one else claims the Investigator, the Sentinel, the Sigilist or the Healer."
+
+    # Assert
     assert "player_8 is" not in blocks
     assert "Healer" not in blocks.replace("the Healer or the Speculator", "").replace(status, "")
     for line in blocks.splitlines():
@@ -508,8 +585,13 @@ def test_acceptance_case_4_the_blocks_exactly():
     the day-3 summary carries player_9's watch, player_4's will was read out the morning after night 3.
     Line 4 (F5, slice 10) is a shared line after the census. Line 3 (the role claims' status, slice 11)
     is the shared line after it, and line 5 (E17, slice 11) is player_3's entry, exactly."""
+    # Arrange
     payload = _frozen("5b11c9fd2f6b9b0e")
+
+    # Act
     inputs = build_agent_prompt_input(payload)
+
+    # Assert
     assert inputs["deduction_public_block"] == AC4_PUBLIC + "\n\n"
     assert inputs["deduction_seat_before_note"] == "\n" + AC4_SEAT + "\n"
     assert _lines(RenderedBlock(AC4_SEAT))[0] == AC4_LINE_1
@@ -523,9 +605,14 @@ def test_acceptance_case_4_singles_out_none_of_the_three():
     census, and fewer only in the case's own lines: line 2, which confirms a visit in player_9's report
     and says that it does not show player_9's role; line 3, the claims' status; line 5, which says
     that player_9's watch says nothing of whether player_3 acted."""
+    # Arrange
     payload = _frozen("5b11c9fd2f6b9b0e")
+
+    # Act
     view = seat_view_from_payload(payload)
     blocks = deduction_blocks(view, own_result_lines(view), payload["day_channel"], payload["current_day"])
+
+    # Assert
     for item in blocks.public.shown + blocks.seat.shown:
         assert item.subject != "player_10"
         assert item.subject != "player_3" or (item.row == "E17" and item.text == AC4_LINE_5)

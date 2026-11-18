@@ -29,7 +29,10 @@ def test_no_vote_reason_on_a_day_without_a_vote():
 
 
 def test_a_reactive_turn_is_told_to_answer_only_what_is_new():
+    # Round 1: a reactive turn
     brief = _firing_brief(FiringReason(tier="reactive", owes=["player_4"]))
     assert brief.startswith("You were directly addressed by player_4.")
     assert "instead of restating it" in brief
+
+    # Round 2: a proactive turn
     assert _firing_brief(FiringReason(tier="proactive", owes=[])) == ""

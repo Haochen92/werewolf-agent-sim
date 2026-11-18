@@ -29,8 +29,11 @@ def test_the_standard_limits_are_the_verified_ones():
 
 
 def test_a_game_with_other_limits_gets_no_deduction():
+    # Round 1: a game with other limits
     other = {"configurable": {"deduction_mode": "full", "game_config": GameConfig(sigils=3).model_dump()}}
     payload = _with_deduction_mode({}, other)
     assert payload["deduction_mode"] == "off"
+
+    # Round 2: the standard game
     standard = {"configurable": {"deduction_mode": "full", "game_config": GameConfig().model_dump()}}
     assert _with_deduction_mode({}, standard)["deduction_mode"] == "full"

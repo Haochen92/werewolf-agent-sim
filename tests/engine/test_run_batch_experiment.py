@@ -33,9 +33,12 @@ def test_paired_game_ids_refuse_more_than_one_config_per_process(tmp_path, monke
 
     from scripts.run_batch import parse_args, run_batch
 
+    # Arrange: two paired game ids and a command line that names two configs
     ids = tmp_path / "ids.json"
     ids.write_text(json.dumps(["game-a", "game-b"]))
     monkeypatch.setattr(sys, "argv", ["run_batch", "--configs", "all_disabled", "town_only",
                                       "--game-ids-file", str(ids), "--dry-run"])
+
+    # Act and assert
     assert run_batch(parse_args()) == 2
     assert "one process per config" in capsys.readouterr().err

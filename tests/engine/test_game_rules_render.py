@@ -32,8 +32,13 @@ def test_every_dealt_role_has_a_card():
 
 
 def test_an_undealt_role_leaves_no_trace():
+    # Arrange
     cast = ["investigator", "vigilante", "healer", "chanteuse", "serial_killer"]
+
+    # Act
     text = rules_block(cast)
+
+    # Assert
     assert "Illusionist" not in text and "Sentinel" not in text and "Speculator" not in text
     assert "Chanteuse:" in text and "three sides" in text
 

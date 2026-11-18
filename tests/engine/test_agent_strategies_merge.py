@@ -35,6 +35,7 @@ def test_single_key_fold_preserves_other_seats():
 
 def test_sequential_single_actor_folds_accumulate():
     """Healer -> SK -> vigilante folding one key each keeps all three plus the untouched seats."""
+    # Arrange: three nodes that each fold one key, chained healer, SK, vigilante
     def healer(state):
         return {"agent_strategies": {"healer": "protect p1"}}
 
@@ -51,8 +52,11 @@ def test_sequential_single_actor_folds_accumulate():
     g.add_edge("HEALER", "SK")
     g.add_edge("SK", "VIG")
     g.add_edge("VIG", END)
+
+    # Act
     out = g.compile().invoke({"agent_strategies": {"p1": "day-note", "wolf1": "night-note"}})
 
+    # Assert
     assert out["agent_strategies"] == {
         "p1": "day-note",
         "wolf1": "night-note",

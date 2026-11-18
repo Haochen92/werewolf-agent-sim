@@ -117,11 +117,14 @@ def test_no_confirmation_of_a_visit_the_block_cancelled():
 
 
 def test_no_confirmation_on_another_night_an_unsaid_night_or_the_seats_own_claim():
+    # Arrange
     table = _night_one().night(2, ("player_8", "kill", "player_2"), ("player_9", "kill", "player_6"),
                                ("player_7", "block", "player_5"))  # the Investigator makes no choice on night 2
     other_night = _said(3, "player_2", (2, "watch", "player_5", "not_said", ["player_1"]))
     unsaid = _said(3, "player_2", (0, "watch", "player_5", "not_said", ["player_1"]))
     own = _said(3, "player_1", (1, "watch", "player_5", "not_said", ["player_1"]))
+
+    # Act and assert, once for each line
     for line in (other_night, unsaid, own):
         assert _joins(table, "player_1", 3, line) == []
 
@@ -129,10 +132,13 @@ def test_no_confirmation_on_another_night_an_unsaid_night_or_the_seats_own_claim
 def test_a_wolfs_visit_the_living_conceal_hid_is_never_confirmed_as_seen():
     """The Chanteuse carried the kill on player_4 and also blocked it, and the Illusionist concealed the
     body: both her visits there were hidden, so no watch saw her. Her block on another player was seen."""
+    # Round 1: both her visits to player_4 hidden
     hidden = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_7", "block", "player_4"),
                                    ("player_8", "conceal", None), ("player_9", "kill", "player_10"))
     lie = _said(2, "player_2", (1, "watch", "player_4", "not_said", ["player_7"]))
     assert _joins(hidden, "player_7", 2, lie) == []
+
+    # Round 2: her block on another player
     shown = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_7", "block", "player_3"),
                                   ("player_8", "conceal", None), ("player_9", "kill", "player_10"))
     seen = _said(2, "player_2", (1, "watch", "player_3", "not_said", ["player_7"]))
@@ -167,8 +173,11 @@ def test_a_false_claim_of_an_action_confirms_the_visit_never_the_action():
 
 
 def test_a_follow_confirms_a_bare_visit_and_says_it_does_not_show_the_action():
+    # Round 1
     visit = _said(2, "player_6", (1, "visit", "player_5", "not_said", []))
     assert _joins(_night_one(), "player_3", 2, visit) == []  # the Trailseer was roleblocked: no follow to read
+
+    # Round 2: a night on which player_3 followed player_6
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_10"),
                                   ("player_6", "protect", "player_5"), ("player_3", "follow", "player_6"))
     assert _joins(table, "player_3", 2, visit) == [
@@ -205,10 +214,13 @@ def test_f2_a_claimed_visitor_is_the_chanteuse_or_came_beside_her():
 
 
 def test_f2_on_the_visitors_word_alone_and_on_two_sightings():
+    # Round 1: the visitor's word alone
     visit = _said(2, "player_7", (1, "visit", "player_3", "not_said", []))
     assert _joins(_second_visitor(), "player_3", 2, visit) == [
         "player_7 says it came to you on night 1. If that is true, either player_7 is the Chanteuse, or player_7 and "
         "the Chanteuse both came to you."]
+
+    # Round 2: two sightings
     watch = _said(2, "player_2", (1, "watch", "player_3", "not_said", ["player_7"]))
     follow = _said(2, "player_5", (1, "follow", "player_7", "not_said", ["player_3"]))
     assert _joins(_second_visitor(), "player_3", 2, watch, follow) == [
@@ -230,10 +242,13 @@ def test_no_f2_from_a_whole_list_of_no_one_a_blocked_sighting_a_tried_action_or_
 def test_f1_with_the_chanteuse_known_a_sighting_of_her_is_true_and_of_anyone_else_says_nothing():
     """AC2 constructed: the Investigator was roleblocked on night 2 by player_7, struck down that night
     and revealed the Chanteuse."""
+    # Round 1: a sighting of the Chanteuse
     watch = _said(3, "player_2", (2, "watch", "player_5", "not_said", ["player_7", "player_8"]))
     assert _joins(_ac2(), "player_5", 3, watch) == [
         "You were roleblocked on night 2, so the Chanteuse came to you, and player_7 was the Chanteuse. player_2's "
         "report that player_7 came to you that night is true. This does not show that player_2 is the Sentinel."]
+
+    # Round 2: a claimed visit by another player
     protect = _said(3, "player_8", (2, "protect", "player_5", "no_attack", []))
     assert _joins(_ac2(), "player_5", 3, protect) == []
 
@@ -241,14 +256,19 @@ def test_f1_with_the_chanteuse_known_a_sighting_of_her_is_true_and_of_anyone_els
 def test_ac1_constructed_and_the_same_night_once_the_chanteuse_is_known():
     """AC1 constructed: the Healer on day 2 (the Chanteuse unknown) gets F2. By day 3 the sigil has
     revealed her and player_3's will has been read out: the same claims are now certain (F1), never F2."""
+    # Arrange
     follow = _said(2, "player_3", (1, "follow", "player_7", "not_said", ["player_8"]))
     visit = _said(2, "player_7", (1, "visit", "player_8", "not_said", []))
+
+    # Round 1: day 2, the Chanteuse unknown
     day_two = Table(_ac2().roles)
     day_two.night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_8"), ("player_9", "conceal", None),
                   ("player_6", "kill", "player_1"), ("player_3", "follow", "player_7"),
                   ("player_5", "investigate", "player_9"), ("player_8", "protect", "player_5"),
                   ("player_2", "watch", "player_4"))
     assert _joins(day_two, "player_8", 2, follow, visit) == [AC1_LINE_2]
+
+    # Round 2: day 3, the Chanteuse revealed
     later = [DayChannel(**{**line.model_dump(), "day": 3}) for line in (follow, visit)]
     assert _joins(_ac2(), "player_8", 3, *later) == [
         "player_7 says it went to player_8 on night 1. player_3's will shows player_3's follow saw player_7 go to "
@@ -259,15 +279,20 @@ def test_ac1_constructed_and_the_same_night_once_the_chanteuse_is_known():
 
 def test_f1_through_the_dead_chanteuses_body_is_true_in_name():
     """NE+SP: the Chanteuse lynched on day 2, the Necromancer blocks the Investigator through her body."""
+    # Arrange
     table = Table(_ne_sp()).night(1, ("player_7", "kill", "player_4"), ("player_3", "follow", "player_1"))
     table.lynch("player_7", 2)
     table.night(2, ("player_8", "kill", "player_5"), ("player_9", "block", "player_1", "player_7"),
                 ("player_1", "investigate", "player_6"), ("player_2", "watch", "player_1"))
+
+    # Round 1: a watch that saw player_7
     watch = _said(3, "player_2", (2, "watch", "player_1", "not_said", ["player_7"]))
     assert _joins(table, "player_1", 3, watch) == [
         "You were roleblocked on night 2 through the dead Chanteuse's body, so a watch on you would have shown "
         "player_7. player_2's report that player_7 came to you that night is true in name: the Necromancer, not "
         "player_7, made that visit. This does not show that player_2 is the Sentinel."]
+
+    # Round 2: a watch that saw a living player
     living = _said(3, "player_2", (2, "watch", "player_1", "not_said", ["player_9"]))
     assert _joins(table, "player_1", 3, living) == []  # the blocker was not a living player: no F2 either
 
@@ -275,18 +300,24 @@ def test_f1_through_the_dead_chanteuses_body_is_true_in_name():
 # --- F1 and F2 through a will ------------------------------------------------------------------------------
 
 def test_a_will_confirms_a_sighting_of_its_holders_visit_ac4_constructed():
+    # Arrange
     watch = _said(5, "player_9", (2, "watch", "player_6", "not_said", ["player_4", "player_8"]))
+
+    # Act and assert
     assert _joins(_ac4(), "player_2", 5, watch) == [AC4_LINE_2]
     assert _joins(_ac4(), "player_3", 5, watch) == [AC4_LINE_2]  # public facts and a public claim
     assert _joins(_ac4(), "player_9", 5, watch) == []  # the claimant's own report
 
 
 def test_a_wills_watch_confirms_a_claimed_protection_and_a_sighting():
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_10"),
                                   ("player_2", "watch", "player_5"), ("player_6", "protect", "player_5"))
     table.lynch("player_2", 2)
     protect = _said(2, "player_6", (1, "protect", "player_5", "not_said", []))
     sighting = _said(2, "player_8", (1, "watch", "player_5", "not_said", ["player_6"]))
+
+    # Act and assert
     assert _joins(table, "player_3", 2, protect, sighting) == [
         "player_6 says it protected player_5 on night 1. player_2's will shows player_2's watch saw player_6 come to "
         "player_5 that night. This confirms that player_6 went to player_5, not that player_6 is the Healer or that "
@@ -297,10 +328,13 @@ def test_a_wills_watch_confirms_a_claimed_protection_and_a_sighting():
 
 
 def test_a_wills_roleblock_and_a_claimed_visitor():
+    # Arrange
     table = Table(_sk_sp()).night(1, ("player_7", "kill", "player_4"), ("player_9", "kill", "player_10"),
                                   ("player_7", "block", "player_1"), ("player_1", "investigate", "player_5"))
     table.lynch("player_1", 2)
     follow = _said(2, "player_3", (1, "follow", "player_7", "not_said", ["player_1"]))
+
+    # Act and assert
     assert _joins(table, "player_6", 2, follow) == [
         "player_3 says player_7 came to player_1 on night 1. If that is true, either player_7 is the Chanteuse, or "
         "player_7 and the Chanteuse both came to player_1."]
@@ -403,8 +437,13 @@ AC3_SEAT = [
 
 
 def test_acceptance_case_1_line_2_exactly_and_never_player_7_is_the_chanteuse():
+    # Arrange
     payload = _payload(_ac1_case())
+
+    # Round 1: the seat's lines
     assert _seat_lines(payload) == AC1_SEAT
+
+    # Round 2: every sentence of the prompt input
     inputs = build_agent_prompt_input(payload)
     everything = inputs["deduction_public_block"] + inputs["deduction_seat_before_note"] + inputs["night_actions"]
     for sentence in re.split(r"(?<=\.) ", everything):
@@ -460,10 +499,13 @@ def test_a_claim_spoken_today_raises_its_target_and_its_sighting_on_its_night():
 
 
 def test_a_join_goes_in_its_claimants_entry_and_f2_in_its_visitors():
+    # Round 1: acceptance case 1
     payload = _payload(_ac1_case())
     view = seat_view_from_payload(payload)
     (f2,) = [item for item in join_items(view)]
     assert (f2.row, f2.subject, f2.grade) == ("F2", "player_7", "follows_if_claims")
+
+    # Round 2: acceptance case 3
     (f1,) = join_items(seat_view_from_payload(_payload(_ac3_case())))
     assert (f1.row, f1.subject, f1.grade, f1.premises) == ("F1", "player_9", "certain", ())
 
@@ -471,9 +513,14 @@ def test_a_join_goes_in_its_claimants_entry_and_f2_in_its_visitors():
 # --- the leak boundary --------------------------------------------------------------------------------------
 
 def test_hidden_roles_and_planted_state_change_nothing():
+    # Arrange
     watch = _said(3, "player_2", (2, "watch", "player_5", "not_said", ["player_7", "player_8"]))
+
+    # Round 1: the hidden roles swapped
     swapped = _ac2(serial_killer="player_10", speculator="player_6")
     assert join_items(_view(swapped, "player_5", 3, watch)) == join_items(_view(_ac2(), "player_5", 3, watch))
+
+    # Round 2: the true roles planted in the payload
     table = _ac2()
     payload = {**table.payload("player_5"), "day_channel": [watch], "current_day": 3}
     planted = {**payload, "roles": table.roles, "all_night_actions": table.records, "night_choices": ["anything"]}
@@ -487,14 +534,19 @@ def test_a_claimed_action_the_line_does_not_name_never_reaches_the_record_so_joi
     from Agents.schemas.roles import lineup
     from Agents.turn.resolve import resolve_decision
 
+    # Arrange: a reply whose claimed block is not named in its message
     model = day_discuss_output(lineup("serial_killer", "speculator"))
     claim = model.model_fields["claimed_night_actions"].annotation.__args__[0]
     unsaid = claim(night=1, action="block", target="player_8", result="not_said", seen=[])
     reply = model(reads=[], updated_strategy="", pass_turn=False, claim="none", message="I went somewhere last night.",
                   claimed_night_actions=[unsaid], addressed_targets=[])
     payload = {"player_id": "player_7", "current_day": 2, "day_channel": [], "day_round": "discussion"}
+
+    # Act
     turn = resolve_decision(reply, {"strategy": None, "strategy_verdicts": [], "memory_verdicts": [], "reads": []},
                             "day_channel", payload, [])
+
+    # Assert
     assert turn.entry.claimed_night_actions == []
     table = Table(_ac2().roles).night(1, ("player_7", "kill", "player_1"), ("player_7", "block", "player_8"),
                                       ("player_6", "kill", "player_1"), ("player_8", "protect", "player_5"))
@@ -623,8 +675,11 @@ def test_a_seats_joins_on_random_games_do_not_change_with_planted_state():
 def test_the_brute_force_oracle_on_random_games_for_the_lines_that_state_a_role():
     """The F1 lines with the Chanteuse known and the F2 lines name roles: in every random game's view
     that has one, the roles hold in every deal the view allows."""
+    # Arrange
     rng = random.Random(20261021)
     checked = 0
+
+    # Act and assert, once for each random game
     for game, snapshot in _continuing_snapshots(rng, 300):
         if not snapshot.announcements:
             continue
@@ -642,4 +697,6 @@ def test_the_brute_force_oracle_on_random_games_for_the_lines_that_state_a_role(
                 for fact in item.conclusion:
                     assert _roles_hold_in_every_deal(fact, support), (item.text, fact, game.roles)
             checked += 1
+
+    # Assert: enough views were checked
     assert checked >= 100, checked

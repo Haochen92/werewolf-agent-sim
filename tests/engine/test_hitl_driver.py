@@ -28,6 +28,7 @@ def test_valid_first_attempt_returns_validated_response(monkeypatch):
 
 
 def test_invalid_attempt_reprompts_with_the_validator_error(monkeypatch):
+    # Arrange: a human who first names an invalid target, then a valid one
     seen_errs = []
 
     def scripted(req, err):
@@ -35,14 +36,19 @@ def test_invalid_attempt_reprompts_with_the_validator_error(monkeypatch):
         return {"target": "ghost"} if len(seen_errs) == 1 else {"target": "p3"}
 
     monkeypatch.setattr(hitl_loop, "_send_request", scripted)
+
+    # Act and assert
     assert collect_human_response(_request()).target == "p3"
     assert seen_errs[0] is None
     assert "ghost" in seen_errs[1]  # the validator's message, surfaced to the human
 
 
 def test_exhaustion_aborts_loudly(monkeypatch):
+    # Arrange: a human who always names an invalid target
     calls = []
     monkeypatch.setattr(hitl_loop, "_send_request", lambda req, err: calls.append(1) or {"target": "ghost"})
+
+    # Act and assert
     with pytest.raises(RuntimeError, match="failed to receive"):
         collect_human_response(_request())
     assert len(calls) == MAX_ATTEMPTS
@@ -56,9 +62,14 @@ def test_cli_vote_by_menu_number(monkeypatch):
 
 
 def test_cli_discussion_message_and_pass(monkeypatch):
+    # Arrange
     req = _request(phase="day_channel", can_pass=True, valid_targets=[])
+
+    # Round 1: the human types a message
     _feed_inputs(monkeypatch, ["p2 is too quiet"])
     assert _send_request(req, None) == {"message": "p2 is too quiet"}
+
+    # Round 2: the human types pass
     _feed_inputs(monkeypatch, ["pass"])
     assert _send_request(req, None) == {"pass_turn": True}
 

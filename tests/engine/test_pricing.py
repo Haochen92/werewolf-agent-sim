@@ -19,7 +19,10 @@ def test_deepseek_peak_hours_are_weekday_mornings_utc():
 
 
 def test_a_game_is_priced_at_its_own_date():
+    # Act: the price of one model in July and in October
     july, now = price_at("deepseek-v4-pro", _at(2026, 7, 26, 12)), price_at("deepseek-v4-pro", _at(2026, 10, 4, 12))
+
+    # Assert
     assert (july[0].input, july[1]) == (0.435, 1.0)
     assert (now[0].input, now[1]) == (0.66, 1.0)
     assert price_at("deepseek-v4-pro", _at(2026, 10, 5, 7))[1] == 2.0  # Monday peak
@@ -46,9 +49,14 @@ def test_every_menu_model_has_a_price():
 
 
 def test_a_batched_call_bills_at_half_the_rates():
+    # Arrange
     at = datetime(2026, 10, 12, tzinfo=timezone.utc)
+
+    # Act
     direct = cost_usd("claude-haiku-5-5", at, input=1_000_000, cached=200_000, output=100_000)
     batched = cost_usd("claude-haiku-5-5", at, input=1_000_000, cached=200_000, output=100_000, batch=True)
+
+    # Assert
     assert direct == pytest.approx(0.8 * 0.10 + 0.2 * 0.01 + 0.1 * 0.50)
     assert batched == pytest.approx(direct / 2)
 
@@ -58,20 +66,31 @@ def test_claude_usage_is_priced_per_model_with_batches_at_the_batch_rate(monkeyp
 
     import Agents.llm_factory.providers.anthropic as cs
 
+    # Arrange: an empty usage record and one batched call's usage
     monkeypatch.setattr(cs, "usage_by_model", {})
     usage = SimpleNamespace(input_tokens=600_000, output_tokens=100_000, cache_read_input_tokens=400_000,
                             cache_creation_input_tokens=0)
+
+    # Act
     cs._count(usage, batched=True, model="claude-haiku-5-5")
+
+    # Assert
     # Anthropic's input_tokens excludes the cache read: 600k uncached + 400k cached, all at half rate.
     assert cs.usage_cost_usd() == pytest.approx((0.6 * 0.10 + 0.4 * 0.01 + 0.1 * 0.50) / 2)
 
 
 def test_a_cache_write_bills_at_the_model_write_premium():
     # Claude and GPT-6 bill a write at 1.25x input; elsewhere a written token is plain input.
+
+    # Round 1: the write premium of each model
     assert (write_factor("claude-haiku-5-5"), write_factor("gpt-6-luna"), write_factor("deepseek-v4-pro")) == (
         1.25, 1.25, 1.0)
+
+    # Round 2: the cost of a call that writes to the cache
     at = _at(2026, 10, 12, 12)
     assert cost_usd("gpt-6-luna", at, input=1_000_000, cached=200_000, written=500_000, output=0) == pytest.approx(
         0.3 * 0.10 + 0.2 * 0.01 + 0.5 * 0.125)
+
+    # Round 3
     # written can never exceed the input left after the cached part
     assert cost_usd("gpt-6-luna", at, input=100, cached=100, written=50, output=0) == pytest.approx(100 * 0.01 / 1e6)

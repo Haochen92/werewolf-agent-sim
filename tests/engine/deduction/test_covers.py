@@ -127,6 +127,7 @@ def test_a_claimed_role_that_cannot_tell_a_night():
 # --- the leak boundary ---------------------------------------------------------------------------------
 
 def test_hidden_roles_and_planted_state_change_nothing():
+    # Arrange
     # Player_2 and player_3 swapped (both unrevealed): the Serial Killer's lines must not change.
     swapped = {**_night_one().roles, "player_2": "trailseer", "player_3": "sentinel"}
     a = _night_one()
@@ -134,6 +135,8 @@ def test_hidden_roles_and_planted_state_change_nothing():
                              ("player_9", "kill", "player_10"), ("player_1", "investigate", "player_5"),
                              ("player_3", "watch", "player_5"), ("player_6", "protect", "player_5"),
                              ("player_2", "follow", "player_6"))
+
+    # Act and assert, once for each seat
     for seat in ("player_8", "player_9"):
         assert _covers(a, seat, 2, FOLLOWED) == _covers(b, seat, 2, FOLLOWED) != []
         payload = a.payload(seat)
@@ -145,8 +148,11 @@ def test_hidden_roles_and_planted_state_change_nothing():
 # --- random games ----------------------------------------------------------------------------------------
 
 def test_random_games_stories_name_real_visits_and_a_deal_allows_them():
+    # Arrange
     rng = random.Random(20261050)
     checked = {"stories": 0, "visits": 0, "held": 0, "deals": 0}
+
+    # Act and assert, once for each random game
     for game, snapshot in _continuing(rng, 160):
         lines, summaries, today = random_comparison_claims(rng, game, snapshot)
         for player in snapshot.living:
@@ -177,6 +183,8 @@ def test_random_games_stories_name_real_visits_and_a_deal_allows_them():
                 assert deals > 0, (item.text, role, claims)
                 checked["deals"] += 1
             checked["stories"] += 1
+
+    # Assert: enough stories, visits and held nights were checked
     assert checked["stories"] >= 30 and checked["visits"] >= 20 and checked["held"] >= 20, checked
 
 

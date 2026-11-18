@@ -62,6 +62,7 @@ def _stub_run_dependencies(monkeypatch):
 
 
 def test_run_game_accepts_one_canonical_run_config(monkeypatch):
+    # Arrange
     captured = _stub_run_dependencies(monkeypatch)
     run = RunConfig(
         game_id="game-canonical",
@@ -71,8 +72,10 @@ def test_run_game_accepts_one_canonical_run_config(monkeypatch):
         sp_exploration_slot=False,
     )
 
+    # Act
     outcome = main.run_game(run)
 
+    # Assert
     configurable = captured["runnable_config"]["configurable"]
     assert outcome.game_id == "game-canonical"
     assert captured["seed_config"] is run.memory_persistence
@@ -82,8 +85,10 @@ def test_run_game_accepts_one_canonical_run_config(monkeypatch):
 
 
 def test_run_game_accepts_canonical_dict(monkeypatch):
+    # Arrange
     captured = _stub_run_dependencies(monkeypatch)
 
+    # Act
     outcome = main.run_game(
         {
             "game_id": "game-dict",
@@ -91,13 +96,16 @@ def test_run_game_accepts_canonical_dict(monkeypatch):
         }
     )
 
+    # Assert
     assert outcome.game_id == "game-dict"
     assert captured["runnable_config"]["configurable"]["thread_id"] == "game-dict"
 
 
 def test_legacy_keywords_still_work_with_deprecation_warning(monkeypatch):
+    # Arrange
     captured = _stub_run_dependencies(monkeypatch)
 
+    # Act: run the game with legacy keywords, which must warn
     with pytest.warns(DeprecationWarning, match="pass RunConfig"):
         outcome = main.run_game(
             game_id="game-legacy",
@@ -108,20 +116,24 @@ def test_legacy_keywords_still_work_with_deprecation_warning(monkeypatch):
             },
         )
 
+    # Assert
     configurable = captured["runnable_config"]["configurable"]
     assert outcome.game_id == "game-legacy"
     assert configurable["game_config"]["max_days"] == 4
 
 
 def test_legacy_positional_memory_config_still_works(monkeypatch):
+    # Arrange
     captured = _stub_run_dependencies(monkeypatch)
 
+    # Act: run the game with a positional memory config, which must warn
     with pytest.warns(DeprecationWarning, match="pass RunConfig"):
         main.run_game(
             {"chanteuse": True, "healer": False},
             session_id="legacy-positional",
         )
 
+    # Assert
     configurable = captured["runnable_config"]["configurable"]
     assert configurable["memory_config"] == {"chanteuse": True, "healer": False}
     assert configurable["session_id"] == "legacy-positional"

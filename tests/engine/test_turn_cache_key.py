@@ -32,9 +32,14 @@ def _payload(**over):
 
 
 def test_key_survives_a_checkpoint_round_trip():
+    # Arrange
     serde = JsonPlusSerializer(allowed_msgpack_modules=_STATE_MODEL_ALLOWLIST)
     original = _payload()
+
+    # Act
     roundtripped = serde.loads_typed(serde.dumps_typed(original))
+
+    # Assert
     assert turn_cache_key(original) == turn_cache_key(roundtripped)
 
 
@@ -80,7 +85,10 @@ def _wrapper_inputs(monkeypatch, game_id: str) -> dict:
 
 
 def test_the_subgraph_wrappers_and_payload_builders_carry_the_game_id(monkeypatch):
+    # Act: build the payloads of one game
     captured = _wrapper_inputs(monkeypatch, "game-a")
+
+    # Assert
     assert captured["day"]["game_id"] == "game-a"
     assert captured["pack"]["game_id"] == "game-a"
 
@@ -91,6 +99,7 @@ def test_the_subgraph_wrappers_and_payload_builders_carry_the_game_id(monkeypatc
 def test_two_games_never_share_a_day_one_opening_key(monkeypatch):
     """Found 2026-10-26: without the game id, 8 seat pairs among 12 games keyed alike, so a later
     game's opening at the same seat, role and lineup was served an earlier game's line."""
+    # Act: collect the cache keys of the day-1 opening turns in 12 games
     keys_by_game = {}
     for number in range(12):
         day = _wrapper_inputs(monkeypatch, f"game-{number}")["day"]
@@ -98,6 +107,7 @@ def test_two_games_never_share_a_day_one_opening_key(monkeypatch):
         sends = fan_out_round(day, build_runnable_config(RunConfig(game_id=f"game-{number}")))
         keys_by_game[number] = {turn_cache_key(send.arg) for send in sends}
 
+    # Assert
     games = sorted(keys_by_game)
     for first in games:
         for second in games[first + 1:]:

@@ -65,8 +65,10 @@ def _public_message(update: dict) -> str:
 # --- (a) wolves hit the SK -> private record, silent public line ---------------
 
 def test_wolf_kill_on_sk_writes_private_note():
+    # Act
     update = night_resolution(_state(kill="sk"), _runtime())
 
+    # Assert
     record = _pack_record(update)
     assert (record.action, record.target, record.result) == ("kill", "sk", "immune")
     assert record.outcome == WHIFF
@@ -74,8 +76,10 @@ def test_wolf_kill_on_sk_writes_private_note():
 
 
 def test_wolf_kill_on_sk_public_transcript_stays_silent():
+    # Act
     update = night_resolution(_state(kill="sk"), _runtime())
 
+    # Assert
     message = _public_message(update)
     # The immune whiff is never announced (announcing it would out the SK): the public
     # line reads as a quiet night, and the SK's name / the confirmation never surface.
@@ -86,10 +90,15 @@ def test_wolf_kill_on_sk_public_transcript_stays_silent():
 
 
 def test_the_necromancer_is_immune_on_nights_one_and_two_only():
+    # Arrange
     roles = {**ROLES, "sk": "necromancer"}
+
+    # Round 1: the wolves' kill whiffs on nights 1 and 2
     for night in (1, 2):
         record = _pack_record(night_resolution(_state(kill="sk", roles=roles, day=night), _runtime()))
         assert record.result == "immune"
+
+    # Round 2: the kill lands on night 3
     night_three = _pack_record(night_resolution(_state(kill="sk", roles=roles, day=3), _runtime()))
     assert night_three.result == "killed"
 
@@ -97,8 +106,11 @@ def test_the_necromancer_is_immune_on_nights_one_and_two_only():
 # --- (b) wolves' target is healed -> NO whiff, public save announced -----------
 
 def test_healed_wolf_target_writes_no_note():
+    # Act
     # Wolves hit t0, healer protects t0: result "saved", not "immune".
     update = night_resolution(_state(kill="t0", protect="t0"), _runtime())
+
+    # Assert
     record = _pack_record(update)
     assert record.result == "saved"
     assert "immune" not in record.outcome
@@ -117,7 +129,10 @@ def test_healed_sk_would_still_be_immune_only_note_gates_on_immune():
 # --- (c) an ordinary landed kill -> no whiff ------------------------------------
 
 def test_normal_kill_writes_no_note():
+    # Act
     update = night_resolution(_state(kill="t0"), _runtime())
+
+    # Assert
     record = _pack_record(update)
     assert record.result == "killed"
     assert "immune" not in record.outcome
@@ -148,13 +163,16 @@ def test_whiff_note_is_isolated_to_wolf_prompts():
     """The whiff rides the pack's night record: it must reach every wolf's prompt and NO town
     prompt / public transcript. Build the real prompt_input each role would receive from the
     payload builders' own filter and run the standing night-record leak check over them."""
+    # Arrange: the wolves' kill on the serial killer whiffs
     update = night_resolution(_state(kill="sk"), _runtime())
     records = update["night_actions"]
 
+    # Act: build the prompt input a wolf and a town player would receive
     wolf_entries = [_entry("w0", "chanteuse", "kill_target", records),
                     _entry("w1", "illusionist", "conceal", records)]
     town_entry = _entry("t0", "sentinel", "day_votes", records)
 
+    # Assert
     # Each wolf really does see the whiff...
     for entry in wolf_entries:
         assert WHIFF in entry["prompt_input"]["night_actions"]

@@ -159,10 +159,13 @@ def todays_entries(final: dict, day: int) -> list[DayChannel]:
 # --- day 1 ----------------------------------------------------------------------------------
 
 def test_day_one_is_the_opening_and_the_summary_only(play_day):
+    # Arrange
     table = ScriptedTable(rounds={("opening", "player_2"): ("I am the investigator.", [])})
 
+    # Act
     final, summaries = play_day(1, table)
 
+    # Assert
     opening_calls = table.calls_where(day_round="opening")
     asked = []
     for call in opening_calls:
@@ -190,12 +193,15 @@ def test_day_one_is_the_opening_and_the_summary_only(play_day):
 # --- day 2: the opening feeds the discussion --------------------------------------------------
 
 def test_a_player_accused_in_an_opening_answers_first(play_day):
+    # Arrange
     table = ScriptedTable(rounds={
         ("opening", "player_2"): ("I checked player_4 last night: Suspicious.", [accusation("player_4")]),
     })
 
+    # Act
     final, _ = play_day(2, table)
 
+    # Assert
     discussion_calls = []
     for call in table.calls:
         if call["output_key"] == "day_channel" and call["day_round"] not in ("opening", "closing"):
@@ -221,6 +227,7 @@ def test_a_player_accused_in_an_opening_answers_first(play_day):
 # --- day 2: the closing --------------------------------------------------------------------
 
 def test_the_closing_follows_a_discussion_that_ran_out_and_gets_no_replies(play_day):
+    # Arrange
     table = ScriptedTable(
         sweep={
             "player_1": [("player_5 voted against the healer.", [accusation("player_5")])],
@@ -231,8 +238,10 @@ def test_the_closing_follows_a_discussion_that_ran_out_and_gets_no_replies(play_
         },
     )
 
+    # Act
     final, summaries = play_day(2, table)
 
+    # Assert
     entries = todays_entries(final, 2)
     moderator_lines = []
     for entry in entries:
@@ -263,6 +272,7 @@ def test_the_closing_follows_a_discussion_that_ran_out_and_gets_no_replies(play_
 
 
 def test_the_closing_follows_a_discussion_that_hit_the_cap(play_day):
+    # Arrange
     # A cap of three real lines: player_1 accuses, player_5 answers, player_2 accuses (the cap),
     # player_5 answers the debt opened at the cap, and the day stops before the sweep reaches
     # player_3 and player_4.
@@ -272,8 +282,10 @@ def test_the_closing_follows_a_discussion_that_hit_the_cap(play_day):
         "player_2": [("player_5 changed their story.", [accusation("player_5")])],
     })
 
+    # Act
     final, _ = play_day(2, table, small_cap)
 
+    # Assert
     discussion_players = []
     for call in table.calls:
         if call["output_key"] == "day_channel" and call["day_round"] not in ("opening", "closing"):
@@ -321,10 +333,13 @@ def test_start_opening_lists_every_survivor_in_seat_order():
 
 
 def test_fan_out_round_sends_one_turn_per_round_player_and_the_human_to_the_twin():
+    # Arrange
     state = round_state(day_round="opening", round_players=SEATS, human_players=["player_3"])
 
+    # Act
     sends = flow.fan_out_round(state, {})
 
+    # Assert
     players = []
     for send in sends:
         players.append(send.arg["player_id"])
@@ -337,10 +352,13 @@ def test_fan_out_round_sends_one_turn_per_round_player_and_the_human_to_the_twin
 
 
 def test_fan_out_round_for_the_closing_sends_only_the_accused():
+    # Arrange
     state = round_state(day_round="closing", round_players=["player_5"])
 
+    # Act
     sends = flow.fan_out_round(state, {})
 
+    # Assert
     assert len(sends) == 1
     assert sends[0].arg["player_id"] == "player_5"
     assert sends[0].arg["day_round"] == "closing"
@@ -352,6 +370,7 @@ def candidate(player: str, day_round: str, message: str, day: int = 2) -> RoundC
 
 
 def test_collect_round_plays_the_lines_in_round_order_and_numbers_them_after_today():
+    # Arrange
     earlier_today = [DayChannel(day=2, seq=0, player="player_1", message="earlier"),
                      DayChannel(day=2, seq=1, player="player_2", message="earlier")]
     yesterday = [DayChannel(day=1, seq=0, player="player_3", message="yesterday")]
@@ -367,8 +386,10 @@ def test_collect_round_plays_the_lines_in_round_order_and_numbers_them_after_tod
         ],
     )
 
+    # Act
     update = flow.collect_round(state, {})
 
+    # Assert
     written = update["day_channel"]
     summary = []
     for entry in written:
@@ -382,8 +403,10 @@ def opening_order(game_id: str, day: int, players=SEATS) -> list[str]:
 
 
 def test_the_opening_order_is_drawn_by_the_game_and_the_day():
+    # Arrange
     ten = [f"player_{i}" for i in range(1, 11)]
 
+    # Act and assert
     assert opening_order("game-a", 2, ten) == opening_order("game-a", 2, ten)
     # The draw starts from seat order, whatever order the round was listed in.
     assert opening_order("game-a", 2, ten) == opening_order("game-a", 2, list(reversed(ten)))
@@ -407,6 +430,7 @@ def test_the_closing_keeps_the_order_the_accused_were_called():
 
 
 def test_collect_round_plays_the_opening_in_the_drawn_order_with_a_human_line_kept(monkeypatch):
+    # Arrange: an opening filter that holds every line it is given
     held = []
 
     def hold_every_agent_line(entries):
@@ -424,8 +448,10 @@ def test_collect_round_plays_the_opening_in_the_drawn_order_with_a_human_line_ke
     )
     config = {"configurable": {"game_id": "game-a"}}
 
+    # Act
     update = flow.collect_round(state, config)
 
+    # Assert
     drawn = opening_order("game-a", 2)
     written = update["day_channel"]
     assert [entry.player for entry in written] == drawn
@@ -442,24 +468,28 @@ def test_collect_round_with_no_candidates_writes_nothing():
 
 
 def test_route_after_round():
+    # Arrange
     config = {"configurable": {"game_config": GameConfig().model_dump()}}
 
     day_one_opening = round_state(current_day=1, day_round="opening")
     day_two_opening = round_state(current_day=2, day_round="opening")
     day_two_closing = round_state(current_day=2, day_round="closing")
 
+    # Act and assert
     assert flow.route_after_round(day_one_opening, config) == "SUMMARIZE_DAY_DISCUSSION"
     assert flow.route_after_round(day_two_opening, config) == "SCHEDULE"
     assert flow.route_after_round(day_two_closing, config) == "SUMMARIZE_DAY_DISCUSSION"
 
 
 def test_route_after_discussion_goes_to_the_closing_only_with_two_accusers():
+    # Arrange
     config = {"configurable": {"game_config": GameConfig().model_dump()}}
     one_accuser = [DayChannel(day=2, seq=0, player="player_1", message="x",
                               addressed_targets=[accusation("player_5")])]
     two_accusers = one_accuser + [DayChannel(day=2, seq=1, player="player_2", message="y",
                                              addressed_targets=[accusation("player_5")])]
 
+    # Act and assert
     assert flow.route_after_discussion(round_state(day_channel=one_accuser), config, False) == \
         "SUMMARIZE_DAY_DISCUSSION"
     assert flow.route_after_discussion(round_state(day_channel=two_accusers), config, False) == \
@@ -469,6 +499,7 @@ def test_route_after_discussion_goes_to_the_closing_only_with_two_accusers():
 
 
 def test_start_closing_writes_the_announcement_and_lists_the_accused_as_called():
+    # Arrange
     channel = [
         DayChannel(day=2, seq=0, player="player_1", message="a", addressed_targets=[accusation("player_4")]),
         DayChannel(day=2, seq=1, player="player_2", message="b", addressed_targets=[accusation("player_4")]),
@@ -476,8 +507,10 @@ def test_start_closing_writes_the_announcement_and_lists_the_accused_as_called()
         DayChannel(day=2, seq=3, player="player_3", message="d", addressed_targets=[accusation("player_5")]),
     ]
 
+    # Act
     update = flow.start_closing(round_state(day_channel=channel), {})
 
+    # Assert
     # Two accusers each; player_5 was accused more recently, so is called first.
     assert update["round_players"] == ["player_5", "player_4"]
     assert update["day_round"] == "closing"

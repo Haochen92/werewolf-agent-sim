@@ -53,9 +53,13 @@ _FULL_CAST = {
 def test_field_order_reads_first_then_verdicts_then_strategy():
     # Reads before the strategy note is the tested lever; reads also precede the verdicts since
     # 2026-10-13, as the prompt's opening line asks (an unenforced reply followed the prompt).
+
+    # Act
     fields = list(DayDiscussOutput.model_fields)
     core = [f for f in fields if f in {
         "strategy_verdicts", "memory_applicability", "reads", "updated_strategy"}]
+
+    # Assert
     assert core == ["reads", "strategy_verdicts", "memory_applicability", "updated_strategy"]
     # Action fields come AFTER the strategy note.
     assert fields.index("updated_strategy") < fields.index("pass_turn")
@@ -63,7 +67,10 @@ def test_field_order_reads_first_then_verdicts_then_strategy():
 
 
 def test_field_order_on_healer_output():
+    # Act
     fields = list(HealerOutput.model_fields)
+
+    # Assert
     assert fields.index("reads") < fields.index("memory_applicability")
     assert fields.index("memory_applicability") < fields.index("updated_strategy")
     assert fields.index("updated_strategy") < fields.index("healer_target")
@@ -94,9 +101,12 @@ def test_dynamic_target_enum_preserves_required_reads():
 
 @pytest.mark.parametrize("dealt", ALL_LINEUPS)
 def test_the_read_role_enum_is_unclear_plus_the_dealt_roles(dealt):
+    # Act: the role annotation of a read in the vote output
     read = day_vote_output(dealt).model_fields["reads"].annotation
     player_read = typing.get_args(read)[0]
     enum = player_read.model_fields["suspected_role"].annotation
+
+    # Assert
     assert typing.get_args(enum) == ("unclear", *dealt)
 
 
@@ -162,20 +172,28 @@ def test_read_targets_wolf_payload_shape():
 # --- (6) completeness tripwire: monitor-only, never retried ------------------
 
 def test_reads_coverage_helper():
+    # Arrange
     payload = {"player_id": "player_1", "surviving_players": [f"player_{i}" for i in range(1, 9)]}
     reads = [PlayerRead(player=f"player_{i}", why="unchanged", suspected_role="unclear",
                         confidence="low") for i in range(2, 7)]  # covers 5 of 7 non-self
+
+    # Act
     coverage, missing = _reads_coverage(reads, payload)
+
+    # Assert
     assert missing == ["player_7", "player_8"]
     assert coverage == 5 / 7
 
 
 def test_reads_coverage_full_and_wolf_shape():
+    # Round 1
     # Full coverage -> 1.0, no missing.
     payload = {"player_id": "player_1", "surviving_players": ["player_1", "player_2", "player_3"]}
     reads = [PlayerRead(player="player_2", why="unchanged", suspected_role="unclear", confidence="low"),
              PlayerRead(player="player_3", why="unchanged", suspected_role="unclear", confidence="low")]
     assert _reads_coverage(reads, payload) == (1.0, [])
+
+    # Round 2
     # Wolf-shaped payload (wolves + villagers, no surviving_players) enumerates the same way.
     wolf_payload = {"player_id": "player_1", "surviving_wolves": ["player_1", "player_2"],
                     "surviving_villagers": ["player_3"]}
@@ -212,22 +230,32 @@ def _healer_result(read_players):
 
 
 def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
+    # Arrange: a healer's reply that reads 6 of the 8 players
     payload = _healer_payload()
     result = _healer_result([f"player_{i}" for i in range(2, 8)])  # 6 of 8 -> 0.75
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
+
+    # Act
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
         out = agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+
+    # Assert
     assert out.entry.target == "player_3"
     assert "reads under-covered" in caplog.text
     assert "player_8" in caplog.text and "player_9" in caplog.text
 
 
 def test_tripwire_silent_on_full_coverage(monkeypatch, caplog):
+    # Arrange: a healer's reply that reads every player
     payload = _healer_payload()
     result = _healer_result(payload["surviving_players"])  # all 8
     monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
+
+    # Act
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
         agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+
+    # Assert
     assert "reads under-covered" not in caplog.text
 
 
@@ -247,10 +275,16 @@ _LONG_WHY = "pushed the only counted lynch with no evidence and flipped after th
 
 def test_check_reads_isolation_structural_pass_flags_rendered_objects():
     # A rendered read OBJECT in any prompt_input is the realistic regression — token-detected.
+
+    # Round 1: a read object in a memory block
     leaked = _log({"memory_block": "[{'player': 'player_9', 'suspected_role': 'wolf'}]"})
     assert check_reads_isolation(leaked, [])
+
+    # Round 2: a reads list in a context field
     leaked = _log({"context": '{"reads": [{"player": "player_9"}]}'})
     assert check_reads_isolation(leaked, [])
+
+    # Round 3: plain talk is no leak
     assert check_reads_isolation(_log({"day_channel": "plain talk"}), []) == []
 
 
@@ -268,8 +302,12 @@ def test_check_reads_isolation_author_own_prompt_exempt():
 def test_check_reads_isolation_shared_vocabulary_not_attributable():
     # Short generic whys ("confirmed healer") and whys echoed in the public channel were the
     # 2026-07-09 smoke's false positives — both are excluded from the prose pass.
+
+    # Round 1: a short generic why
     generic = _log({"day_channel": "player_4 is a confirmed healer"})
     assert check_reads_isolation(generic, _reads_of("player_1", "confirmed healer")) == []
+
+    # Round 2: a why that was also said in public
     public = _log({"day_channel": f"player_2: {_LONG_WHY}"})
     assert check_reads_isolation(
         public, _reads_of("player_1", _LONG_WHY), public_text=f"someone said || {_LONG_WHY}"
@@ -279,8 +317,12 @@ def test_check_reads_isolation_shared_vocabulary_not_attributable():
 def test_check_reads_isolation_pack_chat_is_shared_on_purpose():
     # A wolf's why that it also wrote in the pack's chat reaches its packmate legitimately (the
     # 2026-10-11 pilot's false positive); the same why anywhere else is still a leak.
+
+    # Round 1: the why in the pack's chat is no leak
     chat = _log({"wolf_channel": f"player_1: {_LONG_WHY}"}, player="player_2")
     assert check_reads_isolation(chat, _reads_of("player_1", _LONG_WHY)) == []
+
+    # Round 2: the same why in the night actions is a leak
     elsewhere = _log({"night_actions": _LONG_WHY}, player="player_2")
     assert check_reads_isolation(elsewhere, _reads_of("player_1", _LONG_WHY))
 
@@ -308,8 +350,13 @@ def test_changed_templates_render():
 # --- (9) the shared census helper: counts only, no identities ----------------
 
 def test_cast_role_counts_is_name_free():
+    # Arrange
     role_map = {"player_1": "chanteuse", "player_2": "illusionist", "player_3": "healer"}
+
+    # Act
     counts = cast_role_counts(role_map)
+
+    # Assert
     assert counts == {"chanteuse": 1, "illusionist": 1, "healer": 1}
     # The payload-safe invariant: no player identity survives the census.
     assert not set(counts) & set(role_map)
@@ -318,12 +365,15 @@ def test_cast_role_counts_is_name_free():
 # --- (10) the EvalCase captures the board inputs the turn saw ----------------
 
 def test_eval_private_context_captures_board_inputs():
+    # Round 1: a payload with a dead roster
     roster = [DeathRecord(player="player_2", role="sentinel", day=1, phase="night")]
     ctx = build_eval_private_context(
         {**_healer_payload(), "dead_roster": roster}, day=2,
     )
     assert ctx.dead_roster == roster
     assert ctx.cast_role_counts == _TEN_SEAT_CAST
+
+    # Round 2
     # Legacy payloads (pre-board) still snapshot cleanly with empty defaults.
     legacy = build_eval_private_context({"player_id": "player_1"}, day=1)
     assert legacy.dead_roster == [] and legacy.cast_role_counts == {}
@@ -335,12 +385,19 @@ def test_check_reads_isolation_recipient_own_strategy_convergence_exempt():
     killer lynch", exactly the 40-char floor). Recipient-authored prose (previous_strategy) is
     convergence, not receipt — excluded from the prose pass. The same needle in any OTHER field
     still leaks, and a rendered read object in previous_strategy still trips the structural pass."""
+    # Arrange
     needle = "abstained during the serial killer lynch"
+
+    # Round 1: the phrase in the recipient's own strategy note is no leak
     convergent = _log({"previous_strategy": f"Focus scrutiny on the players who {needle}, as they"},
                       player="player_4")
     assert check_reads_isolation(convergent, _reads_of("player_9", needle)) == []
+
+    # Round 2: the phrase in another field is a leak
     foreign = _log({"day_summaries": f"note: {needle}"}, player="player_4")
     assert check_reads_isolation(foreign, _reads_of("player_9", needle))
+
+    # Round 3: a rendered read object in the strategy note is a leak
     rendered = _log({"previous_strategy": "[{'player': 'p9', 'suspected_role': 'wolf'}]"},
                     player="player_4")
     assert check_reads_isolation(rendered, _reads_of("player_9", needle))

@@ -108,10 +108,15 @@ def test_night_immune(role, night):
 @pytest.mark.parametrize("role", POOL)
 def test_only_a_self_bet_role_may_target_itself(role):
     """The action space offers a seat itself as a target only for the role the self-bet trait names."""
+    # Arrange
     spec = ROLE_SPECS[role]
     payload = {"player_id": HOLDER[role], "surviving_players": list(HOLDER.values()),
                "surviving_villagers": list(HOLDER.values()), "uses_left": 1}
+
+    # Act
     may_target_itself = HOLDER[role] in valid_targets_for_action(payload, spec.target_field)
+
+    # Assert
     assert may_target_itself == (ROLE_TRAITS[role].night_immune == "self_bet")
 
 
@@ -126,8 +131,13 @@ def test_silently_immune_is_who_the_engine_spares_in_silence(night):
 @pytest.mark.parametrize("role", POOL)
 def test_blockable(role):
     """A block on the role's holder, while it makes its own action: cancelled, or without effect."""
+    # Arrange
     choices = [NightChoice(BLOCKER, "chanteuse", "block", HOLDER[role]), own_action(role)]
+
+    # Act
     outcome = resolve_night(choices, ROLES, 2)
+
+    # Assert
     assert (HOLDER[role] in outcome.blocked) == ROLE_TRAITS[role].blockable
     assert (HOLDER[role] in outcome.blocks_without_effect) == (not ROLE_TRAITS[role].blockable)
     assert (role in UNBLOCKABLE) == (not ROLE_TRAITS[role].blockable)
@@ -136,22 +146,32 @@ def test_blockable(role):
 @pytest.mark.parametrize("role", POOL)
 def test_blocks(role):
     """The role's own action on a Town player cancels that player's action exactly when it blocks."""
+    # Arrange
     town = SECOND_TARGET
     choices = [own_action(role, target=town), NightChoice(town, "investigator", "investigate", TARGET)]
+
+    # Act
     outcome = resolve_night(choices, ROLES, 2)
+
+    # Assert
     assert (town in outcome.blocked) == ROLE_TRAITS[role].blocks
 
 
 @pytest.mark.parametrize("role", POOL)
 def test_a_body_that_blocks(role):
     """Through the role's dead body, the Necromancer blocks exactly when the body is the blocker's."""
+    # Arrange
     if borrowed_kind(role) is None:
         return
     body = "player_50"
     roles_with_body = {**ROLES, body: role}
     choice = NightChoice(HOLDER["necromancer"], "necromancer", borrowed_kind(role), SECOND_TARGET, via=body)
+
+    # Act
     outcome = resolve_night([choice, NightChoice(SECOND_TARGET, "investigator", "investigate", TARGET)],
                             roles_with_body, 2)
+
+    # Assert
     assert (SECOND_TARGET in outcome.blocked) == ROLE_TRAITS[role].blocks
 
 
@@ -167,10 +187,13 @@ def _night_of_one_visit(role: str) -> list[NightChoice]:
 @pytest.mark.parametrize("role", POOL)
 def test_visits(role):
     """A watch on its target and a follow of its holder: whose name each shows."""
+    # Act
     outcome = resolve_night(_night_of_one_visit(role), ROLES, 2)
     watched = visitors_of(outcome, TARGET)
     followed = visited_by(outcome, HOLDER[role])
     visits = ROLE_TRAITS[role].visits
+
+    # Assert
     assert (HOLDER[role] in watched) == (visits == "own_name")
     assert (TARGET in followed) == (visits == "own_name")
     if visits == "under_body":
@@ -197,9 +220,14 @@ def test_visits_two(role):
 def test_attacks_in_own_name(role):
     """The role's attack (or own action) with a sigil on its holder: the sigil strikes back exactly
     when it attacked in its own name, and harms it unless it is always immune."""
+    # Arrange
     choices = [*own_attack(role), NightChoice(STRIKER, "sigilist", "sigil", HOLDER[role])]
+
+    # Act
     outcome = resolve_night(choices, ROLES, 2)
     struck = any(attack.attacker == STRIKER for attack in outcome.attacks_on.get(HOLDER[role], []))
+
+    # Assert
     assert (HOLDER[role] in outcome.attackers) == ROLE_TRAITS[role].attacks_in_own_name
     assert struck == ROLE_TRAITS[role].attacks_in_own_name
     harmed = outcome.verdicts.get(HOLDER[role]) == "killed"
@@ -210,11 +238,16 @@ def test_attacks_in_own_name(role):
 def test_attack_announced_as(role):
     """The attacker type the engine gives the attack the role makes itself (not through a body). The
     Sigilist's is its sigil's strike, on a player who attacked."""
+    # Arrange
     choices = own_attack(role)
     if ROLE_SPECS[role].night_action == "sigil":
         choices = [NightChoice(HOLDER[role], role, "sigil", HOLDER["serial_killer"]),
                    NightChoice(HOLDER["serial_killer"], "serial_killer", "kill", TARGET)]
+
+    # Act
     outcome = resolve_night(choices, ROLES, 2)
+
+    # Assert
     own = {choice.actor for choice in choices if choice.via is None and choice.role == role}
     types = {attack.attacker_type for attacks in outcome.attacks_on.values() for attack in attacks
              if attack.attacker in own}
@@ -226,7 +259,10 @@ def test_attacks_through_a_body_are_announced_by_the_body():
     """BODY_OF_ATTACK_TYPE: the type the engine names an attack through each body by."""
     from Agents.schemas.role_traits import BODY_OF_ATTACK_TYPE
 
+    # Arrange
     seen = {}
+
+    # Act: an attack through each body that gives a kill or a sigil
     for role in POOL:
         kind = borrowed_kind(role)
         if kind not in ("kill", "sigil"):
@@ -239,6 +275,8 @@ def test_attacks_through_a_body_are_announced_by_the_body():
         for attack in outcome.attacks_on.get(target, []):
             if attack.attacker == HOLDER["necromancer"]:
                 seen[attack.attacker_type] = role
+
+    # Assert
     assert seen == BODY_OF_ATTACK_TYPE
 
 
@@ -253,12 +291,17 @@ def _suspicious_on(necromancer_choice: NightChoice) -> set[str]:
 
 
 def test_reads_suspicious():
+    # Arrange
     necromancer = HOLDER["necromancer"]
+
+    # Act
     quiet = _suspicious_on(NightChoice(necromancer, "necromancer", "protect", TARGET, via=BODY["healer"]))
     through_illusionist = _suspicious_on(NightChoice(necromancer, "necromancer", "kill", TARGET,
                                                      via=BODY["illusionist"]))
     through_vigilante = _suspicious_on(NightChoice(necromancer, "necromancer", "kill", TARGET,
                                                    via=BODY["vigilante"]))
+
+    # Assert
     assert quiet == set(roles_with(reads_suspicious="always"))
     killing = set(roles_with(reads_suspicious="always")) | set(roles_with(reads_suspicious="when_killing_through_body"))
     assert through_illusionist == killing
@@ -270,10 +313,15 @@ def test_reads_suspicious():
 @pytest.mark.parametrize("role", POOL)
 def test_must_act(role):
     """The action space offers the role a word to decline its night action exactly when it need not act."""
+    # Arrange
     spec = ROLE_SPECS[role]
     payload = {"player_id": HOLDER[role], "surviving_players": list(HOLDER.values()),
                "surviving_villagers": list(HOLDER.values()), "uses_left": 1}
+
+    # Act
     can_decline = bool(spec.no_action) and spec.no_action in valid_targets_for_action(payload, spec.target_field)
+
+    # Assert
     assert ROLE_TRAITS[role].must_act == (not can_decline)
 
 
@@ -281,8 +329,11 @@ def test_must_act(role):
 
 @pytest.mark.parametrize("role", POOL)
 def test_borrowed_verb_for_every_body_that_gives_an_action(role):
+    # Arrange
     dead = [DeathRecord(player="player_50", role=role, phase="day", day=1)]
     gives = borrowed_kind(role) is not None
+
+    # Act and assert
     assert (ROLE_TRAITS[role].borrowed_verb is not None) == gives
     assert (usable_bodies(dead) == ["player_50"]) == gives
 

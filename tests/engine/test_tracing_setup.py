@@ -25,8 +25,10 @@ def built(monkeypatch):
 
 
 def test_the_client_is_built_once_with_the_commit_as_its_release(built):
+    # Act
     first = tracing.init_tracing()
 
+    # Assert
     assert tracing.init_tracing() is first
     assert tracing.get_langfuse() is first
     assert built == [{"release": "abc123"}]
@@ -46,10 +48,13 @@ def test_first_use_builds_the_client_when_no_entry_point_did(built):
 
 
 def test_the_callback_handler_is_never_built_before_the_client(built, monkeypatch):
+    # Arrange
     order = []
     monkeypatch.setattr(tracing, "get_langfuse", lambda: order.append("client"))
     monkeypatch.setattr(tracing, "CallbackHandler", lambda **_: order.append("handler"))
 
+    # Act
     tracing.create_langfuse_handler()
 
+    # Assert
     assert order == ["client", "handler"]

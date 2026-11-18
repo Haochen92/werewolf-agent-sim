@@ -71,7 +71,10 @@ AC1_LINE_2 = ("player_3 says player_7 came to you on night 1, and player_7 agree
 
 
 def test_acceptance_case_1_end_to_end():
+    # Act
     prompt, inputs = _turn(_ac1_case())
+
+    # Assert
     assert _where(AC1_LINE_2, prompt, inputs) == "seat block"
     assert _where(AC1_LINE_1, prompt, inputs) == "night record"
     # Must not say: "player_7 is the Chanteuse", with or without the premise, but inside line 2's list.
@@ -100,8 +103,13 @@ AC2_VOTE_FORM = "player_8 can be the Serial Killer only if player_2's watch is f
 
 
 def test_acceptance_case_2_end_to_end():
+    # Arrange
     case = _case(VOTES, AC2_ID)
+
+    # Act: the vote turn
     prompt, inputs = _turn(case)
+
+    # Assert
     for line in (1, 2, 3, 6):
         assert _where(AC2_LINES[line], prompt, inputs) == "seat block", line
     assert AC2_LINES[3] + AC2_LINE_3_CLAIM not in prompt  # no such claim of player_8's in the payload
@@ -138,7 +146,10 @@ AC3_RECORD = "Night 2 (last night): you checked player_6. player_6 reads Suspici
 
 
 def test_acceptance_case_3_end_to_end():
+    # Act
     prompt, inputs = _turn(_ac3_case())
+
+    # Assert
     first, second = AC3_LINES[1].split(". ", 1)
     assert _where(AC3_RECORD + " " + second, prompt, inputs) == "night record"  # line 1, after the record's own
     assert first + "." not in prompt
@@ -166,7 +177,10 @@ AC4_LINES = {
 
 
 def test_acceptance_case_4_end_to_end():
+    # Act
     prompt, inputs = _turn(_case(VOTES, AC4_ID))
+
+    # Assert
     for line, sentence in AC4_LINES.items():
         assert _where(sentence, prompt, inputs) == "seat block", line
     # Must not say: anything that singles out one of player_3, player_9 and player_10 (an engine line naming
