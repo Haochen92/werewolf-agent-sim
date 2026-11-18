@@ -14,8 +14,7 @@ from logging import getLogger
 from pydantic import BaseModel, Field, create_model
 
 from Agents.rules.board_clocks import criticality_from_census
-from Agents.llm_factory import GameModels
-from Agents.llm_factory.chat import GAME_LLM
+from Agents.llm_factory import GameModels, env_models
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts.prompt_inputs import (
@@ -306,8 +305,8 @@ def _generate_situations_for_agent(
                 _override_deterministic_dims(situation, payload)
         return compose(result)
 
-    models = models or GameModels()
-    health = GAME_LLM.get().health
+    models = models or env_models()
+    health = models.health
     rescue = _rescue_llm(models)
     on_rescue = rescue is not None and health.prefer_rescue()
     if not on_rescue:
@@ -320,7 +319,7 @@ def _generate_situations_for_agent(
                 health.note_ok()
                 return situations
             except Exception as e:
-                logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")
+                logger.warning(f"Situation summary LLM call failed for {player_id}: {models.redact(str(e))}")
                 if is_transient_provider_error(e):
                     # slow or full is not asked again, as on a turn: the rescue takes it
                     health.note_stall()
@@ -337,7 +336,8 @@ def _generate_situations_for_agent(
             logger.warning(f"{player_id} situation summary written by the rescue model")
             return situations
         except Exception as e:
-            logger.warning(f"Situation summary failed on the rescue model for {player_id}: {e}")
+            logger.warning(f"Situation summary failed on the rescue model for {player_id}: "
+                           f"{models.redact(str(e))}")
 
     logger.error(f"{player_id} situation summary failed all retries, using fallback")
     return [f"Day {current_day} as {role}, round {current_round}"], []
@@ -348,5 +348,5 @@ def _rescue_llm(models: GameModels):
     try:
         return models.seat_rescue()
     except Exception as exc:
-        logger.warning(f"Situation summary rescue model unavailable: {exc}")
+        logger.warning(f"Situation summary rescue model unavailable: {models.redact(str(exc))}")
         return None

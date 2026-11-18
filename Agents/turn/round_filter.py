@@ -21,7 +21,7 @@ from logging import getLogger
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import GameModels
+from Agents.llm_factory import GameModels, env_models
 from Agents.prompts.prompt_formatters import one_line
 from Agents.schemas import OpeningVerdicts
 from Agents.schemas.game_events import DayChannel, DiscussionPassReason
@@ -112,14 +112,15 @@ def _declared_kind(entry: DayChannel) -> str | None:
 def _judge_kinds(spoken: list[DayChannel], *, models: GameModels | None = None) -> dict[str, str] | None:
     """player -> the kind label; None = the call failed, so the caller keeps everything."""
     numbered = "\n".join(f"{i + 1}. {entry.player}: {one_line(entry.message)}" for i, entry in enumerate(spoken))
+    models = models or env_models()
     try:
-        judge = (models or GameModels()).judge()
+        judge = models.judge()
         result = (OPENING_PROMPT | judge.with_structured_output(OpeningVerdicts)).invoke(
             {"lines": numbered},
             config={"run_name": "opening_filter"},
         )
     except Exception as exc:  # fail open: a filter error must not silence anyone
-        logger.warning("opening filter failed: %s; keeping every line", exc)
+        logger.warning("opening filter failed: %s; keeping every line", models.redact(str(exc)))
         return None
     kinds: dict[str, str] = {}
     for verdict in result.verdicts:

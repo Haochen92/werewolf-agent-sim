@@ -19,8 +19,7 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
-from Agents.llm_factory import GameModels
-from Agents.llm_factory.chat import GAME_LLM, provider_name
+from Agents.llm_factory import GameModels, env_models
 from Agents.llm_factory.embeddings import (
     KEY_REFUSED,
     ProviderKeyRejected,
@@ -74,7 +73,7 @@ def run_agent(
 ) -> ResolvedTurn | None:
     """Run one agent decision: constrain -> generate -> resolve, retrying on an LLM error or a
     rejected decision, with a legal typed fallback if every attempt fails. ``models`` is the
-    game's (the caller's graph context); None takes the accessors' models.
+    game's (the caller's graph context); None takes the environment's models.
 
     The human seat's counterpart is ``run_human_decision`` (human_turn.py): it swaps ``_generate``
     for ``interrupt()`` but takes the same ``resolve_decision`` path.
@@ -88,8 +87,8 @@ def run_agent(
     schema = output_schema_for_memory_shown(schema, payload)
     # A primary that stalled on the last turns (a timeout, a 429) is skipped for a while and
     # the turn starts on the rescue model; the game's health object keeps that count.
-    models = models or GameModels()
-    health = GAME_LLM.get().health
+    models = models or env_models()
+    health = models.health
     fallback_llm = models.seat_rescue()
     on_rescue = fallback_llm is not None and health.prefer_rescue()
     if on_rescue:
@@ -104,11 +103,11 @@ def run_agent(
 
     enforced = False
     for _ in range(max_retries + 1):
-        result = _generate(chain, prompt_input, output_key, player_id)
+        result = _generate(chain, prompt_input, output_key, player_id, models)
         if isinstance(result, _Rejected):
             if not on_rescue:
                 raise ProviderKeyRejected(
-                    f"{provider_name(GAME_LLM.get().model)} {KEY_REFUSED}: {result.detail}.")
+                    f"{models.provider()} {KEY_REFUSED}: {result.detail}.")
             break  # the rescue's own credential: the turn falls to the typed fallback
         if result is _STALLED:
             # Slow or full is not asked again: the rescue takes the turn, and the count
@@ -137,7 +136,7 @@ def run_agent(
     # tool-calling emits off-schema output that Gemini's constrained decoding cannot).
     if fallback_llm is not None and not on_rescue:
         fallback_chain = prompt_template | fallback_llm.with_structured_output(schema)
-        result = _generate(fallback_chain, prompt_input, output_key, player_id)
+        result = _generate(fallback_chain, prompt_input, output_key, player_id, models)
         # The rescue can stall too (both models bounced under load, 2026-10-09): then the turn
         # falls to the typed fallback below, never to the resolver.
         if result is not None and result is not _STALLED and not isinstance(result, _Rejected):
@@ -224,7 +223,7 @@ class _Rejected:
 
 
 
-def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
+def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str, models: GameModels):
     """One structured LLM call. Returns the parsed decision; None on a parse or request error;
     ``_STALLED`` when the provider timed out or bounced the call (429, 5xx, dropped);
     ``_Rejected`` when it refused the key (401/403, out of credit)."""
@@ -234,7 +233,7 @@ def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
         # A provider's error can quote the key. Only the scrubbed text is logged or kept: the
         # refusal below is raised to end the game, and LangGraph saves a raised error in the
         # game's checkpoint.
-        redact = GAME_LLM.get().redact
+        redact = models.redact
         said = redact(str(e))
         if is_key_rejected_error(e):
             logger.error(f"LLM call for {player_id}: the provider rejected the key: {said}")

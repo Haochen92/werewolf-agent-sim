@@ -4,15 +4,14 @@ The model id picks the provider (``providers/``): a ``nim/``, ``deepseek/``, ``o
 ``openrouter/`` or ``xai/`` prefix the OpenAI protocol, ``anthropic/`` Claude, ``mistral/`` Mistral,
 and a bare id Gemini (Vertex unless ``LLM_BACKEND=google``). Instances are memoised by construction
 args (building one is non-trivial: client and auth setup), so callers in hot loops reuse a shared,
-thread-safe instance. A served game's own model and key ride ``GAME_LLM``.
+thread-safe instance. A served game's own model and key are held by its ``GameModels``
+(game_models.py), which builds the clients on a player's key itself and keeps them with the game.
 """
 
 from __future__ import annotations
 
 import os
 import threading
-from contextvars import ContextVar
-from dataclasses import dataclass, field
 from typing import Any
 
 from . import catalog
@@ -22,52 +21,7 @@ from .providers.common import STRUCTURED_MODES
 from .providers.mistral import MistralChatModel
 
 
-@dataclass(frozen=True)
-class GameLLM:
-    """A served game's model selection and optional player credential.
-
-    An empty key with a non-empty model is a house-funded selection and uses the configured
-    server backend. ``rescue_model=None`` disables rescue; the typed technical-pass path
-    still keeps the game moving. Empty model/key = the environment decides (CLI/batch/eval).
-    """
-
-    # repr=False on both keys: the object's printed form must never show one.
-    api_key: str = field(default="", repr=False)
-    model: str = ""
-    rescue_model: str | None = None
-    # The player's backup key: their key for the rescue model's company, when the rescue runs
-    # on another company than the game's model (a saved second key, opt-in on the ticket).
-    backup_key: str = field(default="", repr=False)
-    # Mutable, shared by reference across the game's threads: the stall count that sends a
-    # turn straight to the rescue model (health.py). Not part of equality or the cache key.
-    health: ModelHealth = field(default_factory=ModelHealth, compare=False, repr=False)
-    # The clients built on the player's key: kept with the game, not in the process-wide
-    # cache, so the key goes when the game's selection is dropped.
-    clients: dict[Any, Any] = field(default_factory=dict, compare=False, repr=False)
-
-    def redact(self, text: str) -> str:
-        """``text`` with this game's keys replaced. A provider's error can quote the key it
-        refused, and such an error is logged and, when it ends a turn, saved in the game's
-        checkpoint, so the text is scrubbed where the error is caught, before either."""
-        for key in (self.api_key, self.backup_key):
-            if key:
-                text = text.replace(key, "***")
-        return text
-
-
-# Per-game model selection, optionally BYOK (pattern 2, ephemeral pass-through). The server's
-# GameSession sets it inside the game's asyncio task; LangGraph copies the task
-# context into its worker threads, so every node's factory call sees its own game's
-# selection — no argument threading through the call chain. The default empty GameLLM
-# (every non-server entry point) = use the environment. A ContextVar, NOT config: keys
-# must never reach RunConfig, which gets fingerprint-stamped into run records. The key is
-# applied ONLY to the provider family of the selected game model, so an off-family call
-# (e.g. a Gemini extraction model during a DeepSeek game) falls back to env credentials
-# instead of sending the player's key to the wrong provider.
-GAME_LLM: ContextVar[GameLLM] = ContextVar("GAME_LLM", default=GameLLM())
-
-
-def _provider_family(model: str) -> str:
+def provider_family(model: str) -> str:
     """The credential pool a model id draws from: its prefix, or google for bare Gemini ids."""
     return model.split("/", 1)[0] if "/" in model else "google"
 
@@ -80,20 +34,9 @@ def provider_name(model: str) -> str:
     """The company a model id's key belongs to, as a player knows it (Anthropic, OpenAI…)."""
     if not model:
         return "The model provider"
-    family = _provider_family(model)
+    family = provider_family(model)
     return _PROVIDER_NAMES.get(family, family)
 
-
-def _game_key_for(family: str) -> str:
-    """The BYOK key, iff the game's selected model belongs to this provider family; the backup
-    key, iff the rescue model does."""
-    override = GAME_LLM.get()
-    if override.api_key and _provider_family(override.model) == family:
-        return override.api_key
-    if (override.backup_key and override.rescue_model
-            and _provider_family(override.rescue_model) == family):
-        return override.backup_key
-    return ""
 
 # Chat-model instances are immutable after construction and safe to reuse across
 # threads (the underlying SDK/httpx clients are thread-safe). Memoize by
@@ -112,9 +55,9 @@ def create_chat_model(
 ) -> Any:
     """Create (or reuse) a chat model using the configured backend.
 
-    Instances are memoized by construction args (see ``_MODEL_CACHE``; a player's key's
-    clients in its game's ``GameLLM.clients``); repeated calls with the same args return the
-    same shared, thread-safe instance.
+    Instances are memoized by construction args (see ``_MODEL_CACHE``); repeated calls with the
+    same args return the same shared, thread-safe instance. Every client here is on the server's
+    own credentials: a client on a player's key is built and kept by that game's ``GameModels``.
 
     Parameters
     ----------
@@ -136,12 +79,24 @@ def create_chat_model(
         Claude model. An OpenAI-protocol or Claude model takes only the request budget
         (``timeout``, ``max_retries``) from them.
     """
-    # A client on a player's key is cached with that game (GameLLM.clients), never here: a
-    # game must not be handed another game's client, and the key must not outlive its game.
-    cache = GAME_LLM.get().clients if _game_key_for(_provider_family(model)) else _MODEL_CACHE
+    return cached_chat_model(
+        _MODEL_CACHE, model, temperature=temperature, thinking_level=thinking_level,
+        thinking_budget=thinking_budget, **kwargs,
+    )
+
+
+def cached_chat_model(cache: dict[Any, Any], model: str, *, game_key: str = "", **args: Any) -> Any:
+    """The chat model for these args from ``cache``, built and kept there on first use.
+    ``game_key`` is a player's key for this model's provider, or empty for the server's own
+    credentials. A cache holds one or the other: the process-wide cache never takes a key
+    (``create_chat_model``), and a game's cache belongs to that game (``GameModels``), so a game
+    is never handed another game's client and a key does not outlive its game."""
     try:
         cache_key: Any = (
-            model, temperature, thinking_level, thinking_budget, tuple(sorted(kwargs.items())),
+            model, args.get("temperature", 0.0), args.get("thinking_level"),
+            args.get("thinking_budget"),
+            tuple(sorted((k, v) for k, v in args.items()
+                         if k not in ("temperature", "thinking_level", "thinking_budget"))),
         )
         hash(cache_key)
     except TypeError:
@@ -149,10 +104,7 @@ def create_chat_model(
     if cache_key is not None and (cached := cache.get(cache_key)) is not None:
         return cached
 
-    instance = _build_chat_model(
-        model, temperature=temperature, thinking_level=thinking_level,
-        thinking_budget=thinking_budget, **kwargs,
-    )
+    instance = _build_chat_model(model, game_key=game_key, **args)
     if cache_key is None:
         return instance
     with _MODEL_CACHE_LOCK:
@@ -178,15 +130,17 @@ def _build_chat_model(
     temperature: float = 0.0,
     thinking_level: str | None = None,
     thinking_budget: int | None = None,
+    game_key: str = "",
     **kwargs: Any,
 ) -> Any:
-    """Construct a fresh chat model (uncached). See ``create_chat_model``."""
+    """Construct a fresh chat model (uncached). See ``create_chat_model``. ``game_key`` is the
+    caller's key for this model's provider; empty means the server's own credentials."""
     # ``structured_mode`` overrides the model's catalogue mode (the admission run tries each);
     # LLM_STRUCTURED_MODE does the same for a whole process (a bench arm), and Gemini ignores it.
     mode = kwargs.pop("structured_mode", None)
-    if mode is not None and _provider_family(model) in ("google", "mistral"):
+    if mode is not None and provider_family(model) in ("google", "mistral"):
         raise ValueError(f"{model} has no structured_mode: it uses its own structured output")
-    if mode is None and _provider_family(model) not in ("google", "mistral"):
+    if mode is None and provider_family(model) not in ("google", "mistral"):
         mode = os.getenv("LLM_STRUCTURED_MODE") or None
     if mode is not None and mode not in STRUCTURED_MODES:
         raise ValueError(f"structured_mode must be one of {STRUCTURED_MODES}, not {mode!r}")
@@ -194,13 +148,13 @@ def _build_chat_model(
 
     if model.startswith(openai_compat.PREFIXES):
         return openai_compat.build_chat_model(model, temperature=temperature, thinking_level=thinking_level,
-                                              mode=mode, game_key=_game_key_for(_provider_family(model)),
+                                              mode=mode, game_key=game_key,
                                               **_request_limits(kwargs))
     if model.startswith("mistral/"):
         return MistralChatModel(model.removeprefix("mistral/"), temperature=temperature)
     if model.startswith("anthropic/"):
         return anthropic.build_chat_model(model.removeprefix("anthropic/"), temperature=temperature,
                                           thinking_level=thinking_level, mode=mode,
-                                          game_key=_game_key_for("anthropic"), **_request_limits(kwargs))
+                                          game_key=game_key, **_request_limits(kwargs))
     return google.build_chat_model(model, temperature=temperature, thinking_level=thinking_level,
-                                   thinking_budget=thinking_budget, game_key=_game_key_for("google"), **kwargs)
+                                   thinking_budget=thinking_budget, game_key=game_key, **kwargs)

@@ -18,6 +18,7 @@ from Agents.turn import prompt_log, reads_log
 from Agents.compute_metrics import compute_game_metrics, push_scores_to_langfuse
 from Agents.schemas.roles import ROLE_SPECS
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
+from Agents.llm_factory import GameModels
 from Agents.memory import store
 from Agents.memory.persistence import seed_memory_from_config
 from Agents.observability import EvalCaseSink
@@ -105,6 +106,8 @@ def run_game(
         "memory_persistence_config"
     ]
     metrics = Metrics()
+    # One per game: the game's stall count is its own, not the process's.
+    models = GameModels()
     eval_sink = EvalCaseSink()
     initial_state = fresh_game_state()
 
@@ -139,7 +142,7 @@ def run_game(
             output = parent_graph_compiled.invoke(
                 initial_state,
                 config=config,
-                context={"metrics": metrics, "eval_sink": eval_sink},
+                context={"metrics": metrics, "eval_sink": eval_sink, "models": models},
                 version="v2",
             )
 
@@ -150,7 +153,7 @@ def run_game(
                 output = parent_graph_compiled.invoke(
                     Command(resume=human_action.model_dump()),
                     config=config,
-                    context={"metrics": metrics, "eval_sink": eval_sink},
+                    context={"metrics": metrics, "eval_sink": eval_sink, "models": models},
                     version="v2",
                 )
             result = output.value

@@ -6,10 +6,9 @@ NOT in per-package ``config.py`` (those hold domain knobs). ``run_fingerprint``
 imports the constants and ``_thinking_level_from_env`` to stamp the generation
 bundle without drift.
 
-Accessors are deliberately uncached: memoization lives in ``create_chat_model``,
-whose cache key includes the per-game BYOK key (``backends.GAME_LLM``) — an
-accessor-level ``lru_cache`` would freeze the first caller's client process-wide
-and hand one game's credentials to every later game.
+Accessors are deliberately uncached: memoization lives in ``create_chat_model`` for the
+server's own credentials and in each game's ``GameModels`` for a player's key. An
+accessor-level ``lru_cache`` would freeze the first caller's client process-wide.
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ from __future__ import annotations
 import os
 
 from . import catalog
-from .chat import GAME_LLM, create_chat_model
+from .chat import create_chat_model
 
 # Claude since 2026-10-15 (owner): the Gemini credits ran out, so every default that a batch run or
 # an offline memory job falls back on is a Claude model; a Gemini model still runs when named.
@@ -64,12 +63,6 @@ def _offline_mode(model: str) -> dict[str, str]:
     return {"structured_mode": "json_mode"} if model.startswith("anthropic/") else {}
 
 
-def _game_model() -> str:
-    """The in-game model: a served game's BYOK selection wins; otherwise the env/default —
-    which is what .env has always really been, the local-dev/CLI configuration."""
-    return GAME_LLM.get().model or os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
-
-
 def _thinking_level_from_env(
     env_var: str,
     default: str | None = None,
@@ -105,47 +98,21 @@ def _request_budget(timeout_env: str, default_timeout: float) -> dict[str, float
     }
 
 
-def get_llm():
-    model = _game_model()
-    return create_chat_model(
-        model,
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=game_thinking_level(model),
-        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
-    )
+def turn_request_budget() -> dict[str, float | int]:
+    """A game turn's request budget."""
+    return _request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S)
 
 
-def _rescue_model() -> str | None:
-    """The game's rescue model id, or None when no rescue applies.
-
-    A served game uses its registry-assigned rescue on the same credential path as the
-    primary: house-funded stays on the server backend and BYOK stays on the player's key.
-    None = no tested compatible rescue. Otherwise the env pair (``GAME_FALLBACK_MODEL``), or
-    None when it would equal the primary — a re-roll on the identical model isn't a rescue."""
-    override = GAME_LLM.get()
-    if override.model or override.api_key:
-        return override.rescue_model or None
-    model = os.getenv("GAME_FALLBACK_MODEL", DEFAULT_GAME_FALLBACK_MODEL)
-    if model == os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL):
-        return None
-    return model
+def summary_request_budget() -> dict[str, float | int]:
+    """The day summary's request budget: a longer wait than a turn's."""
+    return _request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S)
 
 
-def get_llm_game_fallback():
-    """The retry-exhaustion rescue seat model, or None when no rescue applies (``_rescue_model``):
-    then the typed technical-pass path absorbs failures."""
-    model = _rescue_model()
-    if model is None:
-        return None
-    return create_chat_model(
-        model,
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=game_thinking_level(model),
-        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
-    )
+def game_temperature() -> float:
+    return float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0"))
 
 
-def _summary_thinking_level(model: str) -> str | None:
+def summary_thinking_level(model: str) -> str | None:
     return _thinking_level_from_env(
         "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL",
         (row.summary_thinking if (row := catalog.entry(model)) else None)
@@ -153,59 +120,51 @@ def _summary_thinking_level(model: str) -> str | None:
     )
 
 
+def judge_thinking_level(default: str = "minimal") -> str | None:
+    return _thinking_level_from_env("GOOGLE_GENAI_JUDGE_THINKING_LEVEL", default)
+
+
+def extractor_thinking_level() -> str | None:
+    return _thinking_level_from_env("GOOGLE_GENAI_EXTRACTOR_THINKING_LEVEL", "minimal")
+
+
+# The six game models on the environment's settings, for a caller outside a game (an evaluation
+# script, a replay). A game's own turns ask the game's GameModels (game_models.py), which is
+# where each model is described.
+
+def _env_models():
+    from .game_models import env_models
+
+    return env_models()
+
+
+def _game_model() -> str:
+    """The environment's game model id (experiment scripts stamp it into their records)."""
+    return os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
+
+
+def get_llm():
+    return _env_models().seat()
+
+
+def get_llm_game_fallback():
+    return _env_models().seat_rescue()
+
+
 def get_llm_summary():
-    model = _game_model()
-    return create_chat_model(
-        model,
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_summary_thinking_level(model),
-        **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
-    )
+    return _env_models().summary()
 
 
 def get_llm_summary_fallback():
-    """The day summary's rescue: the game's rescue model at its summary level and wait, or None
-    when no rescue applies (then the summary falls back to the raw transcript)."""
-    model = _rescue_model()
-    if model is None:
-        return None
-    return create_chat_model(
-        model,
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_summary_thinking_level(model),
-        **_request_budget("GAME_SUMMARY_TIMEOUT_S", DEFAULT_SUMMARY_TIMEOUT_S),
-    )
+    return _env_models().summary_rescue()
 
 
 def get_llm_judge(default_thinking_level: str = "minimal"):
-    """Cheap model for binary judgments (e.g. the proactive novelty gate) — minimal thinking unless
-    the caller needs more (the echo gate runs at low) or the env sets it for every judge. On the
-    turn's request budget: every caller keeps the line when the judge fails."""
-    return create_chat_model(
-        _game_model(),
-        temperature=float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_JUDGE_THINKING_LEVEL",
-            default_thinking_level,
-        ),
-        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
-    )
+    return _env_models().judge(default_thinking_level)
 
 
 def get_llm_extractor():
-    """Cheap, deterministic flash-lite for post-hoc tagging (e.g. addressed-target extraction on a
-    human turn). Classification, not generation — temp 0 so the same message tags identically every
-    run; a non-deterministic tag would make the reactive scheduler non-reproducible. On the turn's
-    request budget: a failed tag is no addressees."""
-    return create_chat_model(
-        _game_model(),
-        temperature=0.0,
-        thinking_level=_thinking_level_from_env(
-            "GOOGLE_GENAI_EXTRACTOR_THINKING_LEVEL",
-            "minimal",
-        ),
-        **_request_budget("GAME_LLM_TIMEOUT_S", DEFAULT_GAME_TIMEOUT_S),
-    )
+    return _env_models().extractor()
 
 
 def get_llm_pro():

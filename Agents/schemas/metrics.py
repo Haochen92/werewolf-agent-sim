@@ -98,9 +98,10 @@ class GraphContext(TypedDict):
     it deals the cast, which it reads before any spoken turn runs. A seat's speaking voice is its
     puppet's (Agents/prompts/voices.py); a batch game has none and draws them from the game id."""
     models: NotRequired[GameModels]
-    """The models the game's turns run on, so a caller (a test) can hand its own over. Absent, the
-    turn uses the accessors' models (``Agents.llm_factory.game_models``); no production caller
-    sets it. It carries no key: a player's key stays on ``GAME_LLM``."""
+    """The game's models object (``Agents.llm_factory.game_models``): its model, the player's key
+    when the player pays, its stall count. The server's session and the batch runner set it, and
+    a test hands in its own. Absent, the turn uses the environment's models. The graph context is
+    kept in memory for the run and is not saved with the game's state."""
 
 
 # ---------------------------------------------------------------------------

@@ -13,7 +13,7 @@ from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import GameModels
+from Agents.llm_factory import GameModels, env_models
 from Agents.prompts.prompt_formatters import format_day_channel_for_day, one_line
 from Agents.schemas import AddressingExtraction
 from Agents.schemas.game_events import AddressedTarget
@@ -65,10 +65,11 @@ def extract_addressed_targets(
         return []
     self_id = payload.get("player_id", "")
     roster = [p for p in _surviving(payload) if p != self_id]
+    models = models or env_models()
     try:
         result = (
             ADDRESSING_EXTRACTOR_PROMPT
-            | (models or GameModels()).extractor().with_structured_output(AddressingExtraction)
+            | models.extractor().with_structured_output(AddressingExtraction)
         ).invoke(
             {
                 "roster": ", ".join(roster),
@@ -80,7 +81,7 @@ def extract_addressed_targets(
         )
         return _sanitize_against_roster(result.addressed_targets, roster)
     except Exception as exc:
-        logger.warning(f"addressing extraction failed: {exc}; defaulting to no addressees")
+        logger.warning(f"addressing extraction failed: {models.redact(str(exc))}; defaulting to no addressees")
         return []
 
 

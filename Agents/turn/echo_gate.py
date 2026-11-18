@@ -26,8 +26,7 @@ from logging import getLogger
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import GameModels
-from Agents.llm_factory.chat import GAME_LLM
+from Agents.llm_factory import GameModels, env_models
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.prompts.prompt_formatters import one_line
 from Agents.schemas import LineEchoVerdict
@@ -97,7 +96,8 @@ def line_echo_of(message: str, player: str, earlier: list[DayChannel], *,
         spoken.append(entry)
     if not spoken:
         return ""
-    health = GAME_LLM.get().health
+    models = models or env_models()
+    health = models.health
     if health.prefer_rescue():
         logger.warning("echo gate skipped for %s: the primary model is stalling; keeping the line", player)
         return ""
@@ -106,14 +106,14 @@ def line_echo_of(message: str, player: str, earlier: list[DayChannel], *,
     for index, entry in enumerate(spoken):
         numbered_lines.append(f"{index + 1}. {entry.player}: {one_line(entry.message)}")
     try:
-        judge = (models or GameModels()).judge("low")
+        judge = models.judge("low")
         verdict = (LINE_ECHO_PROMPT | judge.with_structured_output(LineEchoVerdict)).invoke(
             {"earlier": "\n".join(numbered_lines), "player": player, "message": one_line(message)},
             config={"run_name": f"echo_gate_{player}"},
         )
         health.note_ok()
     except Exception as exc:  # fail open: a gate error must not silence anyone
-        logger.warning("echo gate failed for %s: %s; keeping the line", player, exc)
+        logger.warning("echo gate failed for %s: %s; keeping the line", player, models.redact(str(exc)))
         if is_transient_provider_error(exc):
             health.note_stall()
         return ""

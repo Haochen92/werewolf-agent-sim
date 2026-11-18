@@ -60,7 +60,7 @@ from langgraph.types import Command, StateSnapshot
 from pydantic_core import to_jsonable_python
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
-from Agents.llm_factory import GAME_LLM, GameLLM
+from Agents.llm_factory import GameModels
 from Agents.llm_factory.embeddings import ProviderKeyRejected
 from Agents.nodes.day.actors import preview_discuss
 from Agents.observability import EvalCaseSink
@@ -142,11 +142,12 @@ class GameSession:
       _backup_key     the player's key for a second company, if they sent one: the rescue
                       runs on that company's backup model with it. Held and scrubbed as
                       the key is; gone after a restart (only the key is asked for again).
-      _llm_selection  this game's model, its rescue model from the catalogue, and the key
-                      if any. A bare key with no model runs the catalogue's first row.
-                      Set on the GAME_LLM ContextVar as the task's first act, so the
-                      model factory uses it instead of the environment. None = nothing
-                      was chosen and the environment decides (CLI, batch).
+      _models         this game's models object: its model, its rescue model from the
+                      catalogue, the key if any, the stall count and the clients built on
+                      the key. A bare key with no model runs the catalogue's first row.
+                      Carried to the engine in the graph context ("models"), so every turn
+                      asks this object for its model. No model and no key = the
+                      environment decides.
 
     Engine bootstrap: what one graph run needs, the same entry path as the CLI.
       config        the LangGraph runnable config: thread id, checkpointer wiring.
@@ -159,7 +160,7 @@ class GameSession:
       _context      runtime context handed to every node: metrics and the eval-case
                     sink.
       capture       every prompt this game's AI players were sent and every private read
-                    they made. Set on the TURN_CAPTURE ContextVar beside GAME_LLM, so two
+                    they made. Set on the TURN_CAPTURE ContextVar, so two
                     games running at once never write into each other's lists. Saved when
                     the game ends, for the offline leak audit (housekeeping/leak_audit.py).
       _capture_partial  True once the game has been resumed after a restart: what was
@@ -259,11 +260,11 @@ class GameSession:
         if api_key and not model:
             model = menu_models()[0].model
         row = game_model(model)
-        self._llm_selection = GameLLM(
+        self._models = GameModels(
             api_key=api_key, model=model,
             rescue_model=(backup_model if backup_key else None) or (row.rescue_model if row else None),
             backup_key=backup_key,
-        ) if api_key or model else None
+        )
 
         # Engine bootstrap.
         run = normalize_run_config(run_config)
@@ -274,7 +275,8 @@ class GameSession:
         self._repository = repository
         # seat_puppets: the cast as the engine reads it (a seat speaks in its puppet's voice when the
         # game has voices on); filled at the deal or from the stored cast.
-        self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink(), "seat_puppets": {}}
+        self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink(), "seat_puppets": {},
+                         "models": self._models}
         self.capture = TurnCapture()
         self._capture_partial = False
         # Tokens and call time per model, saved on the row as the game goes (server/game/usage.py).
@@ -328,8 +330,6 @@ class GameSession:
                     self.game_id, bool(self._api_key), self.model or "server-default")
 
     async def _run(self, graph_input: Any, waiting_on_humans: bool = False) -> None:
-        if self._llm_selection is not None:
-            GAME_LLM.set(self._llm_selection)
         TURN_CAPTURE.set(self.capture)
         recovered = graph_input is None
         self._capture_partial = self._capture_partial or recovered
@@ -352,8 +352,7 @@ class GameSession:
                     input=trace_input, output={"status": "running"},
                     metadata={
                         "game_id": self.game_id,
-                        "model": (self._llm_selection.model if self._llm_selection
-                                  else "server-default"),
+                        "model": self._models.model or "server-default",
                         "byok": bool(self._api_key),
                         "recovered": recovered,
                     },
@@ -639,13 +638,17 @@ class GameSession:
             text = text.replace(key, "***")
         return text
 
+    def _use_models(self, models: GameModels) -> None:
+        """Replace the game's models object, here and in the context the engine reads."""
+        self._models = models
+        self._context["models"] = models
+
     def _end(self) -> None:
         """Mark the game ended, wake anyone waiting on it, and let the registry know if
         nobody is watching. The only place the ended flag is set. The player's key, and the
         clients built on it, are let go here: an ended game makes no more calls."""
-        if self._secrets and self._llm_selection is not None:
-            self._llm_selection = GameLLM(model=self._llm_selection.model,
-                                          rescue_model=self._llm_selection.rescue_model)
+        if self._secrets:
+            self._use_models(self._models.without_keys())
         self._api_key = self._backup_key = ""
         self._finished.set()
         self._maybe_idle()
@@ -802,11 +805,9 @@ class GameSession:
         raise RuntimeError(f"no paused turn for {seat} in the checkpoint")
 
     def _preview_line(self, seat: str, payload: dict[str, Any], direction: str) -> str:
-        # Runs in a worker thread, so the game's model and key are set here, as in _draft.
+        # Runs in a worker thread; the game's models reach it in the context, as in a turn.
         # Traced as its own trace in the game's session, with the model calls under it.
         # The preview's prompt is recorded with the game's own, like any agent turn.
-        if self._llm_selection is not None:
-            GAME_LLM.set(self._llm_selection)
         TURN_CAPTURE.set(self.capture)
         runtime = Runtime(context=self._context, store=getattr(self._graph, "store", None))
         with get_langfuse().start_as_current_observation(
@@ -819,12 +820,9 @@ class GameSession:
         return line
 
     def _draft(self, request: HumanTurnRequest, notes: str) -> str:
-        # Runs in a worker thread. The game's model and key travel on the same context
-        # variable the game task uses; a request handler has none, so it is set here.
-        if self._llm_selection is not None:
-            GAME_LLM.set(self._llm_selection)
+        # Runs in a worker thread, outside the graph, so the game's models are handed in.
         with set_config_context({"callbacks": [self.usage_meter]}) as ctx:
-            return ctx.run(draft_from_notes, request, notes)
+            return ctx.run(draft_from_notes, request, notes, models=self._models)
 
     async def _collect_answers(self) -> Any:
         """Wait until every seat that was asked has answered, then return the answers in
@@ -877,8 +875,8 @@ class GameSession:
         awaiting a key; the registry validates the key with the provider first."""
         row = game_model(self.model)
         self._api_key = api_key
-        self._llm_selection = GameLLM(
-            api_key=api_key, model=self.model, rescue_model=row.rescue_model if row else None)
+        self._use_models(GameModels(
+            api_key=api_key, model=self.model, rescue_model=row.rescue_model if row else None))
         self.awaiting_key = False
 
     def resume_game(self, *, waiting_on_humans: bool) -> None:
@@ -897,7 +895,7 @@ class GameSession:
     @property
     def model(self) -> str:
         """The model this game runs on; empty when the server default is in charge."""
-        return self._llm_selection.model if self._llm_selection else ""
+        return self._models.model
 
     # -- the streams' lifecycle: human player's presence -----------------------------------
 

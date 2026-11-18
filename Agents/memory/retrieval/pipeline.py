@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
-from Agents.llm_factory import GameModels, game_models
+from Agents.llm_factory import GameModels, env_models, game_models
 from Agents.memory.retrieval import (
     RERANK_TOP_K,
     RETRIEVAL_KEEP_PER_SITUATION,
@@ -415,7 +415,7 @@ def _apply_reranking(
 ) -> tuple[list, list]:
     """LLM-rerank observations and/or strategy points, sharing one LLM when either is enabled."""
     if observation_reranking or strategy_point_reranking:
-        llm = (models or GameModels()).seat()
+        llm = (models or env_models()).seat()
     if observation_reranking:
         retrieved_observations = rerank_observations(
             llm, situations, retrieved_observations,

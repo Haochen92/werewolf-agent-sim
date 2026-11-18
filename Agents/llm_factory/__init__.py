@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 # relying on each caller (e.g. the labeling engine) to have done so first.
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
-from .chat import GAME_LLM, GameLLM, create_chat_model  # noqa: E402
+from .chat import create_chat_model  # noqa: E402
 from .providers.common import STRUCTURED_MODES  # noqa: E402
 from .providers.google import (  # noqa: E402
     THINKING_LEVEL_TO_BUDGET,
@@ -57,7 +57,7 @@ from .accessors import (  # noqa: E402
     get_llm_summary,
     get_llm_summary_fallback,
 )
-from .game_models import GameModels, game_models  # noqa: E402
+from .game_models import GameModels, env_models, game_models  # noqa: E402
 from .embeddings import (  # noqa: E402
     DEFAULT_EMBEDDING_DIMS,
     DEFAULT_EMBEDDING_MODEL,
@@ -67,8 +67,6 @@ from .embeddings import (  # noqa: E402
 
 __all__ = [
     # chat and providers
-    "GAME_LLM",
-    "GameLLM",
     "MistralChatModel",
     "STRUCTURED_MODES",
     "THINKING_LEVEL_TO_BUDGET",
@@ -95,6 +93,7 @@ __all__ = [
     "get_llm_summary_fallback",
     # the models a game's turn asks for
     "GameModels",
+    "env_models",
     "game_models",
     # embeddings
     "DEFAULT_EMBEDDING_DIMS",

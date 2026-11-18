@@ -146,9 +146,9 @@ def _llm_backend(game_model: str) -> str:
     factory routes it: the id's prefix (anthropic, deepseek, openrouter…), or for a bare Gemini
     id, vertex or google."""
     from Agents.llm_factory import _use_vertex
-    from Agents.llm_factory.chat import _provider_family
+    from Agents.llm_factory.chat import provider_family
 
-    family = _provider_family(game_model)
+    family = provider_family(game_model)
     if family != "google":
         return family
     return "vertex" if _use_vertex() else "google"

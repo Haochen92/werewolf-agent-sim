@@ -9,8 +9,7 @@ from __future__ import annotations
 from logging import getLogger
 
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
-from Agents.llm_factory import GameModels
-from Agents.llm_factory.chat import GAME_LLM
+from Agents.llm_factory import GameModels, env_models
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts import DAY_SUMMARY_PROMPT
@@ -72,12 +71,12 @@ def run_day_summary_agent(
         public_record=public_record,
         claims_on_record=claims_on_record,
     )
-    models = models or GameModels()
-    health = GAME_LLM.get().health
+    models = models or env_models()
+    health = models.health
     try:
         rescue = models.summary_rescue()
     except Exception as exc:  # a rescue that cannot be built (no key here) is no rescue
-        logger.warning(f"Day summary rescue model unavailable: {exc}")
+        logger.warning(f"Day summary rescue model unavailable: {models.redact(str(exc))}")
         rescue = None
     on_rescue = rescue is not None and health.prefer_rescue()
     for attempt in range(0 if on_rescue else max_retries + 1):
@@ -90,7 +89,7 @@ def run_day_summary_agent(
             health.note_ok()
             return _serialize_day_summary(result), getattr(llm, "model", "") or "", result.model_dump()
         except Exception as exc:
-            logger.warning(f"Day discussion summary failed for day {current_day}: {exc}")
+            logger.warning(f"Day discussion summary failed for day {current_day}: {models.redact(str(exc))}")
             if is_transient_provider_error(exc):
                 # slow or full is not asked again, as on a turn: the rescue takes the summary
                 health.note_stall()
@@ -101,7 +100,8 @@ def run_day_summary_agent(
             logger.warning(f"Day discussion summary for day {current_day} written by the rescue model")
             return _serialize_day_summary(result), getattr(rescue, "model", "") or "", result.model_dump()
         except Exception as exc:
-            logger.warning(f"Day discussion summary failed on the rescue model for day {current_day}: {exc}")
+            logger.warning(f"Day discussion summary failed on the rescue model for day {current_day}: "
+                           f"{models.redact(str(exc))}")
     logger.error(f"Day discussion summary failed all retries for day {current_day}, using fallback")
     return format_day_channel(current_day_messages), "", {}
 
