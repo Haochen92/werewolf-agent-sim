@@ -8,17 +8,16 @@ from types import SimpleNamespace
 
 from Agents.nodes.day.actors import discuss, preview_discuss
 from Agents.prompts.voices import PERSONA_PARAGRAPH, VOICES, house_puppet, persona_paragraph
-from Agents.turn import agent_player
+from tests.factories.scripted_model import FakeModels
 from tests.fixtures.day_discuss_prompt_golden import ROLES, capturing_llm, runtime, speaker_payload
 
 TONE_END = "Make one main point, with\nthe evidence needed to understand it."
 ON = {"game_id": "g", "persona_voices": True}
 
 
-def _discuss_prompt(monkeypatch, role: str, configurable: dict, seat_puppets: dict | None = None) -> str:
+def _discuss_prompt(role: str, configurable: dict, seat_puppets: dict | None = None) -> str:
     sent: list = []
-    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
-    run = runtime()
+    run = runtime(FakeModels(seat=capturing_llm(sent)))
     if seat_puppets is not None:
         run = SimpleNamespace(context={**run.context, "seat_puppets": seat_puppets}, store=run.store)
     discuss(speaker_payload(role), {"configurable": configurable}, run)
@@ -54,13 +53,13 @@ def test_no_voice_when_off_for_a_human_seat_or_for_a_puppet_without_one():
     assert persona_paragraph({**seat, "persona_voices": True}) == _voice_line(house_puppet("g", "player_3"))
 
 
-def test_the_voice_follows_the_tone_block_only_when_the_game_has_voices(monkeypatch):
+def test_the_voice_follows_the_tone_block_only_when_the_game_has_voices():
     # Arrange
     role = ROLES[0]
 
     # Act: the discussion prompt without voices and with them
-    off = _discuss_prompt(monkeypatch, role, {"game_id": "g"})
-    on = _discuss_prompt(monkeypatch, role, ON)
+    off = _discuss_prompt(role, {"game_id": "g"})
+    on = _discuss_prompt(role, ON)
 
     # Assert
     puppet = house_puppet("g", speaker_payload(role)["player_id"])
@@ -69,26 +68,27 @@ def test_the_voice_follows_the_tone_block_only_when_the_game_has_voices(monkeypa
     assert on.replace(_voice_line(puppet), "") == off
 
 
-def test_a_served_seat_speaks_in_the_voice_of_the_puppet_the_server_dealt_it(monkeypatch):
+def test_a_served_seat_speaks_in_the_voice_of_the_puppet_the_server_dealt_it():
     # Arrange: a seat the server dealt a puppet other than the house one
     role = ROLES[0]
     seat = speaker_payload(role)["player_id"]
     dealt = next(p for p in VOICES if p != house_puppet("g", seat))
 
     # Act
-    prompt = _discuss_prompt(monkeypatch, role, ON, seat_puppets={seat: dealt})
+    prompt = _discuss_prompt(role, ON, seat_puppets={seat: dealt})
 
     # Assert
     assert _voice_line(dealt) in prompt
 
 
-def test_a_human_seats_draft_gets_no_voice(monkeypatch):
+def test_a_human_seats_draft_gets_no_voice():
     # Arrange
     sent: list = []
-    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+    models = FakeModels(seat=capturing_llm(sent))
 
     # Act: preview the draft for a human seat
-    preview_discuss({**speaker_payload(ROLES[0]), "human_player": True}, {"configurable": ON}, runtime())
+    preview_discuss({**speaker_payload(ROLES[0]), "human_player": True}, {"configurable": ON}, runtime(),
+                    models=models)
 
     # Assert
     assert "Your voice at the table" not in sent[0][1][1]

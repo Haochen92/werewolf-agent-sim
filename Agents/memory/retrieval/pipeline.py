@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
-from Agents.llm_factory import get_llm
+from Agents.llm_factory import GameModels, game_models
 from Agents.memory.retrieval import (
     RERANK_TOP_K,
     RETRIEVAL_KEEP_PER_SITUATION,
@@ -75,7 +75,9 @@ def enrich_payload_with_memory(
         return _with_lessons(enriched_payload, kept["observations"], kept["strategy_points"]), {
             **kept["metadata"], "lookup_reused": True}
 
-    situations, situation_dimensions = _generate_situations_for_agent(payload, action_phase)
+    # The lookup's model calls run on the turn's models (the graph context's, when it has them).
+    models = game_models(getattr(runtime, "context", None))
+    situations, situation_dimensions = _generate_situations_for_agent(payload, action_phase, models=models)
     # Non-reranked fetch width = 5, but cap_per_situation below still keeps 3 per situation, so the
     # prompt sees the cap-3 condition of evidence/retrieval/capacity_limits, not its chosen cap 5 (the
     # report's addendum). The wide/reranked path fetches RERANK_TOP_K, then reranks down.
@@ -144,6 +146,7 @@ def enrich_payload_with_memory(
             situations,
             plan.observation_reranking,
             plan.strategy_point_reranking,
+            models=models,
         )
 
         if plan.dimension_gating:
@@ -407,10 +410,12 @@ def _apply_reranking(
     situations: list[str],
     observation_reranking: bool,
     strategy_point_reranking: bool,
+    *,
+    models: GameModels | None = None,
 ) -> tuple[list, list]:
     """LLM-rerank observations and/or strategy points, sharing one LLM when either is enabled."""
     if observation_reranking or strategy_point_reranking:
-        llm = get_llm()
+        llm = (models or GameModels()).seat()
     if observation_reranking:
         retrieved_observations = rerank_observations(
             llm, situations, retrieved_observations,

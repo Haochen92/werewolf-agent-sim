@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 
 from Agents.tracing import GraphContext, get_langfuse
+from Agents.llm_factory import GameModels, game_models
 from Agents.config.langgraph import game_config_from_runnable
 from Agents.deduction.verified import limits_verified
 from Agents.schemas.roles import ROLE_SPECS
@@ -174,11 +175,12 @@ def run_memory_informed_action(
     Retrieval, generation, validation, adoption, and EvalCase recording live here. The registered
     day actor node owns the final conversion from this result into a LangGraph state delta.
     """
+    models = game_models(getattr(runtime, "context", None))
     # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
     # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
     # None = the human delegated (AFK): fall through and play the seat as an agent.
     if payload.get("human_player"):
-        outcome = run_human_decision(payload, output_key)
+        outcome = run_human_decision(payload, output_key, models=models)
         if outcome is not None:
             return outcome
         logger.info("%s delegated %s to the agent (AFK)", payload.get("player_id"), output_key)
@@ -239,6 +241,7 @@ def run_memory_informed_action(
             prompt_template,
             output_schema,
             output_key,
+            models=models,
         )
 
         effects = result.effects if result else None
@@ -347,6 +350,8 @@ def preview_agent_action(
     output_schema: type[BaseModel],
     output_key: str,
     direction: str = "",
+    *,
+    models: GameModels | None = None,
 ) -> ResolvedTurn | None:
     """The turn this seat's agent would take on ``payload``, taken for show only.
 
@@ -357,7 +362,8 @@ def preview_agent_action(
     updated strategy note and reads are dropped with the result.
 
     ``direction`` is one extra message after the prompt (a human player's steer for the line);
-    empty, the model is sent exactly what the real turn would send.
+    empty, the model is sent exactly what the real turn would send. ``models`` given wins over
+    the runtime's context: the server calls this outside the graph.
     """
     enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
     enriched_payload = _with_game_id(enriched_payload, config)
@@ -365,7 +371,9 @@ def preview_agent_action(
     enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
-    return run_agent(enriched_payload, prompt_template, output_schema, output_key)
+    if models is None:
+        models = game_models(getattr(runtime, "context", None))
+    return run_agent(enriched_payload, prompt_template, output_schema, output_key, models=models)
 
 
 def run_memory_informed_night_action(
@@ -383,10 +391,11 @@ def run_memory_informed_night_action(
     ``agent_vote``. Retrieval, adoption bookkeeping, and the eval span are
     otherwise identical to the day path (and gated by the same ``memory_config``).
     """
+    models = game_models(getattr(runtime, "context", None))
     # Human seat: same early exit as the day path — skip span / retrieval / adoption / EvalCase.
     # None = the human delegated (AFK): fall through and play the seat as an agent.
     if payload.get("human_player"):
-        outcome = run_human_decision(payload, output_key)
+        outcome = run_human_decision(payload, output_key, models=models)
         if outcome is not None:
             return outcome
         logger.info("%s delegated %s to the agent (AFK)", payload.get("player_id"), output_key)
@@ -440,6 +449,7 @@ def run_memory_informed_night_action(
             prompt_template,
             output_schema,
             output_key,
+            models=models,
         )
 
         effects = result.effects if result else None

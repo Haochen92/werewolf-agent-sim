@@ -592,13 +592,12 @@ def _day_graph_with_a_checkpoint():
     return parent.compile(checkpointer=InMemorySaver())
 
 
-async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_session,
-                                                                       monkeypatch):
+async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_session):
     """The draft reads the paused turn's own input back from the checkpoint and runs the
     seat's agent on it: with no notes, the model gets exactly the prompt the real turn
     would send; notes add one message after it. The game is left as it was."""
     from Agents.nodes.day.actors import discuss
-    from Agents.turn import agent_player
+    from tests.factories.scripted_model import FakeModels
     from tests.fixtures.day_discuss_prompt_golden import board, capturing_llm, runtime
 
     # Arrange: a real day graph paused on a human seat's round turn
@@ -618,7 +617,8 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
 
     # Round 1: build the paused turn's payload
     sent: list = []
-    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+    models = FakeModels(seat=capturing_llm(sent))
+    session._context["models"] = models  # the server's own call reads the models from its context
     payload = await session._turn_payload(seat)
     assert payload["player_id"] == seat and payload["human_player"] is True
     assert payload["day_round"] == "opening"
@@ -629,7 +629,7 @@ async def test_a_draft_previews_the_seats_real_turn_and_changes_nothing(quiet_se
     # The AI turn in a game set to no deductions, since a human seat never gets them
     # (Agents/deduction/seat_view.py).
     off = {**session.config, "configurable": {**session.config["configurable"], "deduction_mode": "off"}}
-    discuss({**payload, "human_player": False}, off, runtime())
+    discuss({**payload, "human_player": False}, off, runtime(models))
     assert sent[0] == sent[1]
 
     # Round 3: a draft with notes

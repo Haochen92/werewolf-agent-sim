@@ -12,6 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from Agents.llm_factory import GameModels
 from Agents.schemas.game_events import (
     AddressedTarget,
     DayChannel,
@@ -46,12 +47,15 @@ def resolve_decision(
     output_key: str,
     payload: dict[str, Any],
     valid_targets: list[str],
+    *,
+    models: GameModels | None = None,
 ):
     """Resolve a player's decision into a legal, typed domain action.
 
     The decision states an intent — speak, vote, or target a player. Resolution applies pass
     handling, the sweep turns' echo gate, and target validation, then returns a ``Resolved*`` turn.
     Returns RETRY when a target is illegal; the agent caller regenerates and the human caller raises.
+    ``models`` reaches the echo gate's judge; None takes the accessors' models.
     """
     player_id = payload.get("player_id", "")
 
@@ -138,7 +142,7 @@ def resolve_decision(
             if _answers_someone_who_named_me(addressed_targets, player_id, earlier_today):
                 echo_of = ""
             else:
-                echo_of = line_echo_of(message, player_id, earlier_today)
+                echo_of = line_echo_of(message, player_id, earlier_today, models=models)
             if echo_of:
                 logger.info("[echo gate] day=%d %s held: repeats %s", current_day, player_id, echo_of)
                 entry = DayChannel(

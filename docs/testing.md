@@ -95,17 +95,27 @@ another test file: a helper that two test files need goes into `tests/factories`
 
 - `tests/factories/scripted_model.py`: the scripted model. It fills any output schema with a
   valid object drawn from a seeded generator. Its module docstring says what it returns for each
-  field type and what a test that uses it cannot show.
+  field type and what a test that uses it cannot show. The same file holds `ScriptedModels` and
+  `FakeModels`, two kinds of `GameModels` (`Agents/llm_factory/game_models.py`): the object
+  through which the game's code receives its models. The game reads it from the graph context
+  (`context["models"]`); a function called on its own takes it as the argument `models=`. A test
+  hands its fake models over this way and does not patch the functions that build the real ones.
+  `FakeModels(seat=..., judge=..., ...)` returns the fake given for each kind of model.
 - `tests/fixtures/model.py`: the fixture `scripted_model`. It returns a function; call it with a
-  seed (and, optionally, the seats no scripted player may choose) to answer every model call of
-  the test with the scripted model and to replace the four helper calls of a game. It is undone
-  when the test ends.
+  seed (and, optionally, the seats no scripted player may choose). It returns a `ScriptedModels`,
+  which the test puts in the graph context: every seat's turn then runs on the scripted model,
+  with no rescue model. The function also replaces three functions of the game with
+  `monkeypatch`, undone when the test ends: the day summary (returns a fixed text), the opening
+  filter (keeps every line) and the echo check (finds no echo). These three stay replacements
+  of whole functions because a scripted model would answer them with random verdicts, which
+  would hold random lines and change every game the tests play.
 - `tests/fixtures/graph.py`: the fixture `game_graph`. It gives each test the game graph compiled
   with its own in-memory checkpoint store. The graph that production compiles at import keeps one
   store for the whole process, keyed by game id, so two tests that played the same game id
   shared one game's state.
-- `tests/factories/whole_game.py`: `play_game(graph, game, seed)` plays one game to its end and
-  returns the final state, the events the translator made and the night branches that reported.
+- `tests/factories/whole_game.py`: `play_game(graph, game, seed, models=...)` plays one game to
+  its end on the models given (the fixture's `ScriptedModels`) and returns the final state, the
+  events the translator made and the night branches that reported.
 
 **Markers.** A marker is a label on a test that a command can select or leave out with `-m`.
 

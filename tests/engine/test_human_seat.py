@@ -17,6 +17,7 @@ from Agents.turn.addressing_agent import _sanitize_against_roster
 from Agents.turn.human_turn import HumanTurnContractError, validate_human_response
 from Agents.schemas.roles import lineup
 from tests.factories.builders import human_turn_request as _request
+from tests.factories.scripted_model import FakeModels
 
 LINEUP = lineup("serial_killer", "speculator")
 
@@ -93,7 +94,7 @@ def test_human_seat_count_caps_at_the_cast():
 
 def test_day_pipeline_routes_human_before_retrieval(monkeypatch):
     # Arrange: the human path returns its output key, and retrieval fails the test
-    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key: {"routed": output_key})
+    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key, models=None: {"routed": output_key})
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: pytest.fail("retrieval ran for a human seat"))
 
@@ -108,7 +109,7 @@ def test_day_pipeline_routes_human_before_retrieval(monkeypatch):
 
 def test_night_pipeline_routes_human_before_retrieval(monkeypatch):
     # Arrange: the human path returns its output key, and retrieval fails the test
-    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key: {"routed": output_key})
+    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key, models=None: {"routed": output_key})
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: pytest.fail("retrieval ran for a human seat"))
 
@@ -278,19 +279,22 @@ def test_sanitize_drops_offroster_and_dedups():
     assert [(t.target, t.addressed_form) for t in out] == [("p2", "question")]
 
 
-def test_extractor_failure_permits_the_human_action(monkeypatch):
+def test_extractor_failure_permits_the_human_action():
     # The extractor fails open: an LLM error yields no addressees, never an exception up the turn.
     from Agents.turn import addressing_agent as aa
 
-    monkeypatch.setattr(aa, "get_llm_extractor", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
-    assert aa.extract_addressed_targets("p2 is lying", _human_payload(), 1) == []
+    class _UnbuildableExtractor(FakeModels):
+        def extractor(self):
+            raise RuntimeError("boom")
+
+    assert aa.extract_addressed_targets("p2 is lying", _human_payload(), 1, models=_UnbuildableExtractor()) == []
 
 
 def test_reactive_debt_discharged_from_owes(monkeypatch):
     # A reactive human who speaks clears their obligation even if the extractor tags nothing.
 
     # Arrange: an extractor that tags no one
-    monkeypatch.setattr(h, "extract_addressed_targets", lambda msg, payload, day: [])
+    monkeypatch.setattr(h, "extract_addressed_targets", lambda msg, payload, day, models=None: [])
     payload = _human_payload(firing_reason=FiringReason(tier="reactive", owes=["p2"]))
 
     # Act
@@ -343,7 +347,7 @@ def test_pack_skill_fanout_routes_human_wolves_to_the_uncached_twin():
 
 
 @pytest.mark.parametrize("notes, free", [("4 dodging", False), ("  ", True), ("", True)])
-def test_drafting_phrases_notes_or_writes_freely_without_them(monkeypatch, notes, free):
+def test_drafting_phrases_notes_or_writes_freely_without_them(notes, free):
     """The pack-talk helper: with notes it only phrases them; blank notes leave the line to
     it. (The day's speech is drafted by the seat's own agent: test_draft_preview.py.)"""
     from langchain_core.messages import AIMessage
@@ -358,10 +362,11 @@ def test_drafting_phrases_notes_or_writes_freely_without_them(monkeypatch, notes
         seen.append(prompt.to_messages())
         return AIMessage(content='"why did 4 abstain?"')
 
-    monkeypatch.setattr(da, "get_llm", lambda: RunnableLambda(fake_model))
+    models = FakeModels(seat=RunnableLambda(fake_model))
 
     # Act
-    line = da.draft_from_notes(_request(player_id="p1", phase="wolf_channel", valid_targets=[]), notes)
+    line = da.draft_from_notes(_request(player_id="p1", phase="wolf_channel", valid_targets=[]), notes,
+                               models=models)
 
     # Assert
     assert line == "why did 4 abstain?"

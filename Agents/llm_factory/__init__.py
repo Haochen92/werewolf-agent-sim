@@ -57,6 +57,7 @@ from .accessors import (  # noqa: E402
     get_llm_summary,
     get_llm_summary_fallback,
 )
+from .game_models import GameModels, game_models  # noqa: E402
 from .embeddings import (  # noqa: E402
     DEFAULT_EMBEDDING_DIMS,
     DEFAULT_EMBEDDING_MODEL,
@@ -92,6 +93,9 @@ __all__ = [
     "get_llm_pro_backup",
     "get_llm_summary",
     "get_llm_summary_fallback",
+    # the models a game's turn asks for
+    "GameModels",
+    "game_models",
     # embeddings
     "DEFAULT_EMBEDDING_DIMS",
     "DEFAULT_EMBEDDING_MODEL",

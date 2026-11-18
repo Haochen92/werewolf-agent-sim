@@ -384,8 +384,8 @@ def test_in_a_whole_game_every_seat_and_turn_kind_gets_the_same_public_block(scr
     capture = TurnCapture()
     token = TURN_CAPTURE.set(capture)
     try:
-        scripted_model(seed=13)
-        play_game(game_graph, game, seed=13)
+        models = scripted_model(seed=13)
+        play_game(game_graph, game, seed=13, models=models)
     finally:
         TURN_CAPTURE.reset(token)
 

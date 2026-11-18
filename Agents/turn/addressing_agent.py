@@ -13,7 +13,7 @@ from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import get_llm_extractor
+from Agents.llm_factory import GameModels
 from Agents.prompts.prompt_formatters import format_day_channel_for_day, one_line
 from Agents.schemas import AddressingExtraction
 from Agents.schemas.game_events import AddressedTarget
@@ -51,14 +51,15 @@ Who does this message address?""",
 
 
 def extract_addressed_targets(
-    message: str, payload: dict[str, Any], current_day: int
+    message: str, payload: dict[str, Any], current_day: int, *, models: GameModels | None = None
 ) -> list[AddressedTarget]:
     """Tag whom a human's message addresses, so it drives the reactive scheduler like an LLM's
     self-tagged addressed_targets.
 
     Returns [] on an empty/absent message or any extractor error — fail open, so a tagging failure
     drops only that turn's OPENINGS (new questions/accusations) and never stalls the turn; the
-    driver's discharge-from-``owes`` handles the human's own obligations regardless.
+    driver's discharge-from-``owes`` handles the human's own obligations regardless. The extractor
+    is ``models``' (the turn's); None takes the accessors' models.
     """
     if not message or not message.strip():
         return []
@@ -67,7 +68,7 @@ def extract_addressed_targets(
     try:
         result = (
             ADDRESSING_EXTRACTOR_PROMPT
-            | get_llm_extractor().with_structured_output(AddressingExtraction)
+            | (models or GameModels()).extractor().with_structured_output(AddressingExtraction)
         ).invoke(
             {
                 "roster": ", ".join(roster),

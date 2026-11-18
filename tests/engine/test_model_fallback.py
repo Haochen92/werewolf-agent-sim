@@ -17,6 +17,7 @@ from Agents.schemas.night import NightChoice
 from Agents.schemas.roles import lineup
 from Agents.schemas.turn import ResolvedDayDiscussion, ResolvedNightChoice, ResolvedWolfDiscussion
 from Agents.turn import agent_player as agent_mod
+from tests.factories.scripted_model import FakeModels
 
 LINEUP = lineup("serial_killer", "speculator")
 HEALER_NIGHT = night_template("healer")
@@ -59,14 +60,13 @@ def _result():
     )
 
 
-def test_fallback_model_rescues_an_exhausted_seat(monkeypatch, caplog):
+def test_fallback_model_rescues_an_exhausted_seat(caplog):
     # Arrange: a primary model that always fails, and a working rescue model
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=_WorkingLLM(_result()))
 
     # Act
     with caplog.at_level("WARNING"):
-        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert out.entry == PROTECT_3
@@ -74,14 +74,13 @@ def test_fallback_model_rescues_an_exhausted_seat(monkeypatch, caplog):
     assert not any("random fallback" in r.message for r in caplog.records)
 
 
-def test_no_fallback_model_still_degrades_to_random(monkeypatch, caplog):
+def test_no_fallback_model_still_degrades_to_random(caplog):
     # Arrange: a primary model that always fails, and no rescue model
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: None)
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=None)
 
     # Act
     with caplog.at_level("ERROR"):
-        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     # The healer has no no-action word: the fallback is a random legal protection.
@@ -91,19 +90,18 @@ def test_no_fallback_model_still_degrades_to_random(monkeypatch, caplog):
     assert any("random fallback" in r.message for r in caplog.records)
 
 
-def test_broken_fallback_still_degrades_to_random(monkeypatch):
+def test_broken_fallback_still_degrades_to_random():
     # Arrange: a primary and a rescue model that both fail
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=_BrokenLLM())
 
     # Act
-    out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert out.entry.kind == "protect" and out.entry.target in ("player_2", "player_3")
 
 
-def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
+def test_exhausted_day_discussion_records_technical_pass(caplog):
     # Arrange: a reactive day turn whose primary and rescue models both fail
     payload = {
         **_payload(),
@@ -111,8 +109,7 @@ def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
         "day_summaries": [],
         "firing_reason": FiringReason(tier="reactive", owes=["player_2"]),
     }
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=_BrokenLLM())
 
     # Act
     with caplog.at_level("ERROR"):
@@ -121,6 +118,7 @@ def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
             HEALER_DAY_DISCUSS,
             DayDiscussOutput,
             "day_channel",
+            models=models,
         )
 
     # Assert
@@ -132,7 +130,7 @@ def test_exhausted_day_discussion_records_technical_pass(monkeypatch, caplog):
     assert any("recording technical pass" in record.message for record in caplog.records)
 
 
-def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
+def test_exhausted_wolf_discussion_records_technical_pass():
     # Arrange: a pack turn whose primary model fails, with no rescue model
     payload = {
         "player_id": "wolf_1",
@@ -148,8 +146,7 @@ def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
         "dead_roster": [],
         "cast_role_counts": {},
     }
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: None)
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=None)
 
     # Act
     out = agent_mod.run_agent(
@@ -157,6 +154,7 @@ def test_exhausted_wolf_discussion_records_technical_pass(monkeypatch):
         wolf_chat_template("chanteuse"),
         wolf_chat_output(LINEUP),
         "wolf_channel",
+        models=models,
     )
 
     # Assert
@@ -245,16 +243,15 @@ def test_transient_errors_are_the_provider_being_slow_or_full():
 
 
 def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(
-        monkeypatch, caplog, game_health):
+        caplog, game_health):
     # Arrange: a primary that stalls, and a working rescue
     primary = _StalledLLM(_bounce_429())
     rescue = _CountingLLM(_result())
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
+    models = FakeModels(seat=primary, seat_rescue=rescue)
 
     # Act
     with caplog.at_level("WARNING"):
-        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert out.entry == PROTECT_3
@@ -266,21 +263,20 @@ def test_a_stalled_primary_is_not_asked_again_and_the_rescue_takes_the_turn(
 
 
 def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
-        monkeypatch, caplog, game_health):
+        caplog, game_health):
     # Arrange: a primary that stalls, and a working rescue
     primary = _StalledLLM(httpx.ReadTimeout("The read operation timed out"))
     rescue = _CountingLLM(_result())
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
+    models = FakeModels(seat=primary, seat_rescue=rescue)
 
     # Round 1: two turns that stall
     for _ in range(2):
-        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
     assert primary.calls == 2 and game_health.prefer_rescue()
 
     # Round 2: the third turn
     with caplog.at_level("WARNING"):
-        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
     assert out.entry == PROTECT_3
     assert primary.calls == 2  # the third turn never touched the primary
     assert rescue.calls == 3
@@ -288,18 +284,17 @@ def test_repeated_stalls_send_the_next_turns_straight_to_the_rescue(
                for r in caplog.records)
 
 
-def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(monkeypatch, caplog, game_health):
+def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(caplog, game_health):
     """Under load the rescue bounces too (six games died this way on 2026-10-09): the stall
     sentinel must never reach the resolver; the turn takes the role's typed fallback."""
     # Arrange: a primary and a rescue that both stall
     primary = _StalledLLM(_bounce_429())
     rescue = _StalledLLM(_bounce_429())
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: rescue)
+    models = FakeModels(seat=primary, seat_rescue=rescue)
 
     # Act
     with caplog.at_level("WARNING"):
-        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert isinstance(out, ResolvedNightChoice) and out.entry is not None
@@ -308,14 +303,13 @@ def test_both_models_stalled_falls_to_the_typed_fallback_not_a_crash(monkeypatch
     assert any("random fallback" in r.message for r in caplog.records)
 
 
-def test_a_good_answer_from_the_primary_clears_the_count(monkeypatch, game_health):
+def test_a_good_answer_from_the_primary_clears_the_count(game_health):
     # Arrange: one stall on record, and a working primary
     game_health.note_stall()
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _WorkingLLM(_result()))
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    models = FakeModels(seat=_WorkingLLM(_result()), seat_rescue=_BrokenLLM())
 
     # Act
-    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert game_health.stalls == 0 and not game_health.prefer_rescue()
@@ -344,15 +338,14 @@ def test_after_the_cooldown_the_primary_is_tried_again(monkeypatch, game_health)
     assert not game_health.prefer_rescue() and game_health.stalls == 0
 
 
-def test_a_turn_on_the_rescue_leaves_the_count_alone(monkeypatch, game_health):
+def test_a_turn_on_the_rescue_leaves_the_count_alone(game_health):
     # Arrange: two stalls on record, and a primary that stalls
     game_health.note_stall(); game_health.note_stall()
     primary = _StalledLLM(_bounce_429())
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
+    models = FakeModels(seat=primary, seat_rescue=_WorkingLLM(_result()))
 
     # Act
-    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert primary.calls == 0 and game_health.stalls == 2 and game_health.prefer_rescue()
@@ -419,19 +412,18 @@ from Agents.nodes.day import summary_agent  # noqa: E402
 _SUMMARY = summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[])
 
 
-def _summarise():
-    return summary_agent.run_day_summary_agent(2, [], lineup=LINEUP)
+def _summarise(models):
+    return summary_agent.run_day_summary_agent(2, [], lineup=LINEUP, models=models)
 
 
-def test_a_stalled_summary_goes_to_the_rescue_model(monkeypatch, caplog, game_health):
+def test_a_stalled_summary_goes_to_the_rescue_model(caplog, game_health):
     # Arrange: a primary that stalls, and a working rescue
     primary, rescue = _StalledLLM(_bounce_429()), _CountingLLM(_SUMMARY)
-    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: primary)
-    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", lambda: rescue)
+    models = FakeModels(summary=primary, summary_rescue=rescue)
 
     # Act
     with caplog.at_level("WARNING"):
-        _, _, structured = _summarise()
+        _, _, structured = _summarise(models)
 
     # Assert
     assert structured == {"accusations": [], "role_claims": []}  # not the raw channel's {}
@@ -440,14 +432,13 @@ def test_a_stalled_summary_goes_to_the_rescue_model(monkeypatch, caplog, game_he
     assert any("written by the rescue model" in r.message for r in caplog.records)
 
 
-def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries(monkeypatch, game_health):
+def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries(game_health):
     # Arrange: a primary that gives wrong answers, and a working rescue
     primary, rescue = _StalledLLM(ValueError("off-schema output")), _CountingLLM(_SUMMARY)
-    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: primary)
-    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", lambda: rescue)
+    models = FakeModels(summary=primary, summary_rescue=rescue)
 
     # Act
-    _, _, structured = _summarise()
+    _, _, structured = _summarise(models)
 
     # Assert
     assert structured == {"accusations": [], "role_claims": []}
@@ -455,36 +446,35 @@ def test_a_summary_that_keeps_failing_goes_to_the_rescue_after_its_retries(monke
     assert game_health.stalls == 0  # a wrong answer is not a stall
 
 
-def test_a_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(monkeypatch, game_health):
+def test_a_summary_starts_on_the_rescue_while_the_primary_keeps_stalling(game_health):
     # Arrange: two stalls on record
     game_health.note_stall(); game_health.note_stall()
     primary, rescue = _StalledLLM(_bounce_429()), _CountingLLM(_SUMMARY)
-    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: primary)
-    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", lambda: rescue)
+    models = FakeModels(summary=primary, summary_rescue=rescue)
 
     # Act
-    _summarise()
+    _summarise(models)
 
     # Assert
     assert primary.calls == 0 and rescue.calls == 1
 
 
 @pytest.mark.parametrize("rescue", ["none", "fails", "cannot be built"])
-def test_a_summary_with_no_working_rescue_is_the_raw_channel(monkeypatch, caplog, game_health, rescue):
+def test_a_summary_with_no_working_rescue_is_the_raw_channel(caplog, game_health, rescue):
     # Arrange: a stalled primary, and a rescue that is missing, fails or cannot be built
-    def _unbuildable():
-        raise ValueError("CLAUDE_API_KEY not set")
+    class _UnbuildableRescue(FakeModels):
+        def summary_rescue(self):
+            raise ValueError("CLAUDE_API_KEY not set")
 
-    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: _StalledLLM(_bounce_429()))
-    monkeypatch.setattr(summary_agent, "get_llm_summary_fallback", {
-        "none": lambda: None,
-        "fails": lambda: _StalledLLM(_bounce_429()),
-        "cannot be built": _unbuildable,
-    }[rescue])
+    models = {
+        "none": FakeModels(summary=_StalledLLM(_bounce_429()), summary_rescue=None),
+        "fails": FakeModels(summary=_StalledLLM(_bounce_429()), summary_rescue=_StalledLLM(_bounce_429())),
+        "cannot be built": _UnbuildableRescue(summary=_StalledLLM(_bounce_429())),
+    }[rescue]
 
     # Act
     with caplog.at_level("ERROR"):
-        _, model, structured = _summarise()
+        _, model, structured = _summarise(models)
 
     # Assert
     assert (model, structured) == ("", {})
@@ -508,7 +498,7 @@ def test_openai_and_xai_prefixes_build_openai_protocol_clients(monkeypatch):
         assert llm.model_name == "some-model" and url in str(llm.openai_api_base)
 
 
-def test_an_exhausted_round_turn_keeps_its_round_on_the_technical_pass(monkeypatch):
+def test_an_exhausted_round_turn_keeps_its_round_on_the_technical_pass():
     # Seen in a step 8 game (2026-10-07): the accused's closing turn failed every attempt and its
     # pass marker landed in the transcript as day_round "discussion" after the closing's call
     # (fixed the same day: the technical pass copies the payload's day_round).
@@ -520,11 +510,10 @@ def test_an_exhausted_round_turn_keeps_its_round_on_the_technical_pass(monkeypat
         "day_summaries": [],
         "day_round": "closing",
     }
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=_BrokenLLM())
 
     # Act
-    out = agent_mod.run_agent(payload, HEALER_DAY_DISCUSS, DayDiscussOutput, "day_channel")
+    out = agent_mod.run_agent(payload, HEALER_DAY_DISCUSS, DayDiscussOutput, "day_channel", models=models)
 
     # Assert
     assert out.entry.pass_reason == DiscussionPassReason.GENERATION_FAILED
@@ -549,17 +538,16 @@ class _JsonModeLLM:
         return RunnableLambda(_answer)
 
 
-def test_a_json_mode_seat_is_asked_again_with_the_schema_enforced(monkeypatch, caplog):
+def test_a_json_mode_seat_is_asked_again_with_the_schema_enforced(caplog):
     # The retry stays on the seat's own model, enforced, so the rescue model is never needed.
 
     # Arrange: a seat that answers only when the schema is enforced, and a failing rescue
     primary = _JsonModeLLM(_result())
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: primary)
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _BrokenLLM())
+    models = FakeModels(seat=primary, seat_rescue=_BrokenLLM())
 
     # Act
     with caplog.at_level("INFO"):
-        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert out.entry == PROTECT_3
@@ -588,30 +576,28 @@ class _RefusedLLM:
         return RunnableLambda(_refuse)
 
 
-def test_a_refused_key_on_the_primary_ends_the_game(monkeypatch):
+def test_a_refused_key_on_the_primary_ends_the_game():
     """2026-10-17: an OpenAI key sent with Haiku played a whole day of technical passes."""
     import pytest
 
     from Agents.llm_factory.embeddings import ProviderKeyRejected
 
     # Arrange: a primary that refuses the key, and a working rescue
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _RefusedLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _WorkingLLM(_result()))
+    models = FakeModels(seat=_RefusedLLM(), seat_rescue=_WorkingLLM(_result()))
 
     # Act and assert
     with pytest.raises(ProviderKeyRejected,
                        match="refused this game's API key: 401, invalid x-api-key"):
-        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
 
-def test_a_refused_rescue_key_falls_to_the_typed_fallback(monkeypatch):
+def test_a_refused_rescue_key_falls_to_the_typed_fallback():
     """The rescue's own credential failing must not end a game whose primary works."""
     # Arrange: a failing primary, and a rescue that refuses its key
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _BrokenLLM())
-    monkeypatch.setattr(agent_mod, "get_llm_game_fallback", lambda: _RefusedLLM())
+    models = FakeModels(seat=_BrokenLLM(), seat_rescue=_RefusedLLM())
 
     # Act
-    out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target")
+    out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert isinstance(out, ResolvedNightChoice)
@@ -653,15 +639,14 @@ _NO_SITUATIONS = SimpleNamespace(situations=[])
 
 
 def _situations(monkeypatch, primary, rescue):
-    monkeypatch.setattr(situation_agent, "get_llm", lambda: primary)
-    monkeypatch.setattr(situation_agent, "get_llm_game_fallback", lambda: rescue)
     monkeypatch.setattr(situation_agent, "V6_SITUATION_SUMMARY", RunnableLambda(lambda x: x))
     monkeypatch.setattr(situation_agent, "build_agent_prompt_input", lambda p: {})
     monkeypatch.setattr(situation_agent, "compose_cell_guidance", lambda *a: {})
     monkeypatch.setattr(situation_agent, "_known_board_facts", lambda *a: "")
     monkeypatch.setattr(situation_agent, "_private_state", lambda *a: "")
     payload = {"player_id": "player_1", "player_role": "healer", "current_day": 2}
-    return situation_agent._generate_situations_for_agent(payload, "night_action")
+    return situation_agent._generate_situations_for_agent(
+        payload, "night_action", models=FakeModels(seat=primary, seat_rescue=rescue))
 
 
 def test_a_stalled_situation_summary_is_not_asked_again_and_the_rescue_writes_it(monkeypatch, game_health):
@@ -703,22 +688,22 @@ def test_a_situation_summary_with_a_wrong_answer_is_asked_again_and_is_not_a_sta
 _EARLIER = [DayChannel(day=2, seq=0, player="player_2", message="player_5 claimed healer late.")]
 
 
-def test_the_echo_gate_is_skipped_while_the_primary_keeps_stalling(monkeypatch, game_health):
+def test_the_echo_gate_is_skipped_while_the_primary_keeps_stalling(game_health):
     # Arrange: two stalls on record, and a judge that stalls
     game_health.note_stall(); game_health.note_stall()
     judge = _StalledLLM(_bounce_429())
-    monkeypatch.setattr(echo_gate, "get_llm_judge", lambda *_thinking: judge)
+    models = FakeModels(judge=judge)
 
     # Act and assert
-    assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER) == ""
+    assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER, models=models) == ""
     assert judge.calls == 0
 
 
-def test_a_stalled_echo_gate_keeps_the_line_and_counts_the_stall(monkeypatch, game_health):
+def test_a_stalled_echo_gate_keeps_the_line_and_counts_the_stall(game_health):
     # Arrange: a judge that stalls
     judge = _StalledLLM(_bounce_429())
-    monkeypatch.setattr(echo_gate, "get_llm_judge", lambda *_thinking: judge)
+    models = FakeModels(judge=judge)
 
     # Act and assert
-    assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER) == ""
+    assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER, models=models) == ""
     assert judge.calls == 1 and game_health.stalls == 1

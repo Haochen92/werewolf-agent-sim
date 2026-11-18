@@ -19,6 +19,7 @@ from Agents.schemas import (
 )
 from Agents.turn import echo_gate, resolve
 from Agents.turn.scheduler import build_reactive_queue
+from tests.factories.scripted_model import FakeModels
 
 
 # --- builders -----------------------------------------------------------------------------
@@ -44,14 +45,14 @@ def judge_saying(adds: str, same_point_as: str, seen: list | None = None):
             seen.append(prompt_value.to_string())
         return LineEchoVerdict(new_point="a point", adds=adds, same_point_as=same_point_as)
 
-    return lambda *_thinking: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
+    return FakeModels(judge=SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer)))
 
 
 def judge_raising(error: Exception):
     def answer(_prompt_value):
         raise error
 
-    return lambda *_thinking: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
+    return FakeModels(judge=SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer)))
 
 
 EARLIER = [
@@ -63,71 +64,71 @@ EARLIER = [
 
 # --- line_echo_of: when it holds ----------------------------------------------------------
 
-def test_holds_when_the_line_adds_nothing_and_names_an_earlier_speaker(monkeypatch):
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "player_2"))
+def test_holds_when_the_line_adds_nothing_and_names_an_earlier_speaker():
+    models = judge_saying("nothing", "player_2")
 
-    echo = echo_gate.line_echo_of("player_5's healer claim came late.", "player_4", EARLIER)
-
-    assert echo == "player_2"
-
-
-def test_the_adds_answer_is_normalised_before_it_is_read(monkeypatch):
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("  Nothing. ", "player_2"))
-
-    echo = echo_gate.line_echo_of("player_5's healer claim came late.", "player_4", EARLIER)
+    echo = echo_gate.line_echo_of("player_5's healer claim came late.", "player_4", EARLIER, models=models)
 
     assert echo == "player_2"
 
 
-def test_keeps_a_line_that_adds_something_even_when_a_player_is_named(monkeypatch):
-    monkeypatch.setattr(echo_gate, "get_llm_judge",
-                        judge_saying("asks player_5 to name who they protected", "player_2"))
+def test_the_adds_answer_is_normalised_before_it_is_read():
+    models = judge_saying("  Nothing. ", "player_2")
+
+    echo = echo_gate.line_echo_of("player_5's healer claim came late.", "player_4", EARLIER, models=models)
+
+    assert echo == "player_2"
+
+
+def test_keeps_a_line_that_adds_something_even_when_a_player_is_named():
+    models = judge_saying("asks player_5 to name who they protected", "player_2")
 
     echo = echo_gate.line_echo_of("player_2 is right; player_5, who did you protect?", "player_4",
-                                  EARLIER)
+                                  EARLIER, models=models)
 
     assert echo == ""
 
 
-def test_keeps_a_line_whose_named_repeat_is_the_speaker_or_nobody(monkeypatch):
+def test_keeps_a_line_whose_named_repeat_is_the_speaker_or_nobody():
     # Round 1: the judge names the speaker
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "player_4"))
-    assert echo_gate.line_echo_of("again", "player_4", EARLIER) == ""
+    models = judge_saying("nothing", "player_4")
+    assert echo_gate.line_echo_of("again", "player_4", EARLIER, models=models) == ""
 
     # Round 2: the judge names nobody
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", ""))
-    assert echo_gate.line_echo_of("again", "player_4", EARLIER) == ""
+    models = judge_saying("nothing", "")
+    assert echo_gate.line_echo_of("again", "player_4", EARLIER, models=models) == ""
 
 
-def test_holds_filler_that_repeats_no_particular_line(monkeypatch):
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "None"))
+def test_holds_filler_that_repeats_no_particular_line():
+    models = judge_saying("nothing", "None")
 
-    assert echo_gate.line_echo_of("Little to go on yet; let's be careful.", "player_4", EARLIER) == "filler"
+    assert echo_gate.line_echo_of("Little to go on yet; let's be careful.", "player_4", EARLIER,
+                                  models=models) == "filler"
 
 
-def test_keeps_a_line_whose_named_repeat_never_spoke(monkeypatch):
+def test_keeps_a_line_whose_named_repeat_never_spoke():
     # player_3 only passed and the moderator is not a player: neither can be echoed.
 
     # Round 1: the judge names a player who only passed
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "player_3"))
-    assert echo_gate.line_echo_of("again", "player_4", EARLIER) == ""
+    models = judge_saying("nothing", "player_3")
+    assert echo_gate.line_echo_of("again", "player_4", EARLIER, models=models) == ""
 
     # Round 2: the judge names the moderator
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "game_master"))
-    assert echo_gate.line_echo_of("again", "player_4", EARLIER) == ""
+    models = judge_saying("nothing", "game_master")
+    assert echo_gate.line_echo_of("again", "player_4", EARLIER, models=models) == ""
 
 
-def test_the_judge_sees_only_spoken_lines_and_is_not_called_before_anyone_spoke(monkeypatch):
+def test_the_judge_sees_only_spoken_lines_and_is_not_called_before_anyone_spoke():
     # Arrange: a judge that records what it is shown
     seen: list[str] = []
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_saying("nothing", "player_2", seen))
+    models = judge_saying("nothing", "player_2", seen)
 
     # Round 1: before anyone has spoken
-    assert echo_gate.line_echo_of("first words", "player_4", [voluntary_pass(0, "player_3")]) == ""
+    assert echo_gate.line_echo_of("first words", "player_4", [voluntary_pass(0, "player_3")], models=models) == ""
     assert seen == []
 
     # Round 2: after lines have been spoken
-    echo_gate.line_echo_of("player_5's claim came late.", "player_4", EARLIER)
+    echo_gate.line_echo_of("player_5's claim came late.", "player_4", EARLIER, models=models)
     assert len(seen) == 1
     assert "1. player_2: player_5 claimed healer" in seen[0]
     assert "A moderator line." not in seen[0]
@@ -136,17 +137,16 @@ def test_the_judge_sees_only_spoken_lines_and_is_not_called_before_anyone_spoke(
 
 # --- line_echo_of: fail open --------------------------------------------------------------
 
-def test_fails_open_when_the_call_raises(monkeypatch):
-    monkeypatch.setattr(echo_gate, "get_llm_judge", judge_raising(ConnectionError("provider down")))
+def test_fails_open_when_the_call_raises():
+    models = judge_raising(ConnectionError("provider down"))
 
-    assert echo_gate.line_echo_of("anything", "player_4", EARLIER) == ""
+    assert echo_gate.line_echo_of("anything", "player_4", EARLIER, models=models) == ""
 
 
-def test_fails_open_when_the_answer_cannot_be_parsed(monkeypatch):
-    monkeypatch.setattr(echo_gate, "get_llm_judge",
-                        judge_raising(OutputParserException("not the schema")))
+def test_fails_open_when_the_answer_cannot_be_parsed():
+    models = judge_raising(OutputParserException("not the schema"))
 
-    assert echo_gate.line_echo_of("anything", "player_4", EARLIER) == ""
+    assert echo_gate.line_echo_of("anything", "player_4", EARLIER, models=models) == ""
 
 
 # --- resolve_decision: where the gate is called -------------------------------------------
@@ -170,7 +170,7 @@ SWEEP = FiringReason(tier="proactive", sweep=1)
 
 
 def gate_returning(answer: str, calls: list):
-    def fake(message, player, earlier):
+    def fake(message, player, earlier, models=None):
         calls.append((message, player, len(earlier)))
         return answer
 

@@ -21,7 +21,7 @@ from logging import getLogger
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import get_llm_judge
+from Agents.llm_factory import GameModels
 from Agents.prompts.prompt_formatters import one_line
 from Agents.schemas import OpeningVerdicts
 from Agents.schemas.game_events import DayChannel, DiscussionPassReason
@@ -64,14 +64,15 @@ Give one verdict per line, in the same order.""",
 ALLOWED_OPENING_KINDS = {"claim", "night_action", "challenge"}
 
 
-def filter_openings(entries: list[DayChannel]) -> list[DayChannel]:
+def filter_openings(entries: list[DayChannel], *, models: GameModels | None = None) -> list[DayChannel]:
     """The opening round's entries with everything but a claim, an own night action or a
-    challenge turned into held pass markers; every spoken line gets its kind label. Order kept."""
+    challenge turned into held pass markers; every spoken line gets its kind label. Order kept.
+    The judge is ``models``' (the game's); None takes the accessors' models."""
     spoken = [entry for entry in entries if not entry.passed and entry.message]
     if not spoken:
         return entries
 
-    kinds = _judge_kinds(spoken)
+    kinds = _judge_kinds(spoken, models=models)
     if kinds is None:
         return entries
     # The speaker's own structured fields settle the kind when they say it: a line that filled in a
@@ -108,11 +109,12 @@ def _declared_kind(entry: DayChannel) -> str | None:
     return None
 
 
-def _judge_kinds(spoken: list[DayChannel]) -> dict[str, str] | None:
+def _judge_kinds(spoken: list[DayChannel], *, models: GameModels | None = None) -> dict[str, str] | None:
     """player -> the kind label; None = the call failed, so the caller keeps everything."""
     numbered = "\n".join(f"{i + 1}. {entry.player}: {one_line(entry.message)}" for i, entry in enumerate(spoken))
     try:
-        result = (OPENING_PROMPT | get_llm_judge().with_structured_output(OpeningVerdicts)).invoke(
+        judge = (models or GameModels()).judge()
+        result = (OPENING_PROMPT | judge.with_structured_output(OpeningVerdicts)).invoke(
             {"lines": numbered},
             config={"run_name": "opening_filter"},
         )

@@ -12,6 +12,7 @@ from langchain_core.runnables import RunnableLambda
 from Agents.nodes.day import flow
 from Agents.schemas import AddressedTarget, DayChannel, DiscussionPassReason, OpeningVerdict, OpeningVerdicts
 from Agents.turn import round_filter
+from tests.factories.scripted_model import FakeModels
 
 
 def opening(player: str, message: str, targets=None) -> DayChannel:
@@ -27,7 +28,7 @@ def opening_pass(player: str) -> DayChannel:
 
 
 def judge_saying(kinds: dict[str, str], seen: list | None = None):
-    """A stand-in for get_llm_judge whose structured call labels each player with ``kinds``."""
+    """Models whose judge's structured call labels each player with ``kinds``."""
     def answer(prompt_value):
         if seen is not None:
             seen.append(prompt_value.to_string())
@@ -36,17 +37,17 @@ def judge_saying(kinds: dict[str, str], seen: list | None = None):
             verdicts.append(OpeningVerdict(player=player, kind=kind, why="test"))
         return OpeningVerdicts(verdicts=verdicts)
 
-    return lambda: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
+    return FakeModels(judge=SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer)))
 
 
 def failing_judge():
     def answer(_prompt_value):
         raise ConnectionError("provider down")
 
-    return lambda: SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
+    return FakeModels(judge=SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer)))
 
 
-def test_padding_and_a_repeat_are_held_with_their_text_kept(monkeypatch):
+def test_padding_and_a_repeat_are_held_with_their_text_kept():
     # Arrange
     entries = [
         opening("player_1", "I investigated player_4 last night: wolf.",
@@ -54,12 +55,11 @@ def test_padding_and_a_repeat_are_held_with_their_text_kept(monkeypatch):
         opening("player_2", "Good that the healer saved someone; now let's look at the votes."),
         opening("player_3", "player_1 investigated player_4, who is a wolf."),
     ]
-    monkeypatch.setattr(round_filter, "get_llm_judge",
-                        judge_saying({"player_1": "night_action", "player_2": "other",
-                                      "player_3": "repeat"}))
+    models = judge_saying({"player_1": "night_action", "player_2": "other",
+                           "player_3": "repeat"})
 
     # Act
-    out = round_filter.filter_openings(entries)
+    out = round_filter.filter_openings(entries, models=models)
 
     # Assert
     kept, padding, repeat = out
@@ -80,17 +80,16 @@ def test_padding_and_a_repeat_are_held_with_their_text_kept(monkeypatch):
     assert repeat.opening_kind == "repeat"
 
 
-def test_a_counterclaim_is_kept(monkeypatch):
+def test_a_counterclaim_is_kept():
     # Arrange: two players both claim to be the investigator
     entries = [
         opening("player_2", "I am the investigator."),
         opening("player_6", "No, I am the investigator, and player_2 is lying."),
     ]
-    monkeypatch.setattr(round_filter, "get_llm_judge",
-                        judge_saying({"player_2": "claim", "player_6": "claim"}))
+    models = judge_saying({"player_2": "claim", "player_6": "claim"})
 
     # Act
-    out = round_filter.filter_openings(entries)
+    out = round_filter.filter_openings(entries, models=models)
 
     # Assert
     assert out[0].passed is False
@@ -100,81 +99,81 @@ def test_a_counterclaim_is_kept(monkeypatch):
     assert out[1].opening_kind == "claim"
 
 
-def test_a_held_line_keeps_its_accusation_tags(monkeypatch):
+def test_a_held_line_keeps_its_accusation_tags():
     # Arrange
     tag = AddressedTarget(target="player_4", addressed_form="mention", stance="accusation")
     entries = [opening("player_2", "player_4 seems shifty to me.", [tag])]
-    monkeypatch.setattr(round_filter, "get_llm_judge", judge_saying({"player_2": "other"}))
+    models = judge_saying({"player_2": "other"})
 
     # Act
-    (held,) = round_filter.filter_openings(entries)
+    (held,) = round_filter.filter_openings(entries, models=models)
 
     # Assert
     assert held.passed is True
     assert held.addressed_targets == [tag]
 
 
-def test_every_line_is_kept_when_the_judge_fails(monkeypatch):
+def test_every_line_is_kept_when_the_judge_fails():
     # Arrange: a judge that fails
     entries = [
         opening("player_1", "I am the healer."),
         opening("player_2", "Let's all be careful today."),
     ]
-    monkeypatch.setattr(round_filter, "get_llm_judge", failing_judge())
+    models = failing_judge()
 
     # Act
-    out = round_filter.filter_openings(entries)
+    out = round_filter.filter_openings(entries, models=models)
 
     # Assert
     assert out == entries
 
 
-def test_a_line_with_no_verdict_is_kept(monkeypatch):
+def test_a_line_with_no_verdict_is_kept():
     # Arrange: a judge that gives a verdict for player_1 only
     entries = [
         opening("player_1", "I am the healer."),
         opening("player_2", "Let's all be careful today."),
     ]
-    monkeypatch.setattr(round_filter, "get_llm_judge", judge_saying({"player_1": "claim"}))
+    models = judge_saying({"player_1": "claim"})
 
     # Act
-    out = round_filter.filter_openings(entries)
+    out = round_filter.filter_openings(entries, models=models)
 
     # Assert
     assert out[1].passed is False
     assert out[1].message == "Let's all be careful today."
 
 
-def test_passes_are_not_sent_to_the_judge_and_a_silent_round_makes_no_call(monkeypatch):
+def test_passes_are_not_sent_to_the_judge_and_a_silent_round_makes_no_call():
     # Arrange
     seen: list[str] = []
-    monkeypatch.setattr(round_filter, "get_llm_judge", judge_saying({"player_2": "claim"}, seen))
+    models = judge_saying({"player_2": "claim"}, seen)
 
     # Round 1: a round in which every player passes
     silent = [opening_pass("player_1"), opening_pass("player_2")]
-    assert round_filter.filter_openings(silent) == silent
+    assert round_filter.filter_openings(silent, models=models) == silent
     assert seen == []
 
     # Round 2: a round with one pass and one line
     mixed = [opening_pass("player_1"), opening("player_2", "I am the healer.")]
-    round_filter.filter_openings(mixed)
+    round_filter.filter_openings(mixed, models=models)
     assert len(seen) == 1
     assert "1. player_2: I am the healer." in seen[0]
     assert "player_1" not in seen[0]
 
 
-def test_a_human_opening_is_never_held(monkeypatch):
+def test_a_human_opening_is_never_held():
     # Arrange: a judge that would hold both lines; player_2 is human
     entries = [
         opening("player_1", "Watch player_3 today."),
         opening("player_2", "Watch player_3 today, I mean it."),
     ]
-    monkeypatch.setattr(round_filter, "get_llm_judge",
-                        judge_saying({"player_1": "other", "player_2": "other"}))
+    models = judge_saying({"player_1": "other", "player_2": "other"})
     state = {"human_players": ["player_2"]}
 
     # Act
-    out = flow._filter_keeping_humans(entries, state, round_filter.filter_openings)
+    out = flow._filter_keeping_humans(entries, state,
+                                      lambda lines: round_filter.filter_openings(lines, models=models))
 
     # Assert
     assert out[0].passed is True
@@ -182,7 +181,7 @@ def test_a_human_opening_is_never_held(monkeypatch):
     assert out[1] == entries[1]
 
 
-def test_a_line_whose_own_fields_say_night_action_or_claim_is_kept_whatever_the_judge_says(monkeypatch):
+def test_a_line_whose_own_fields_say_night_action_or_claim_is_kept_whatever_the_judge_says():
     # The judge labelled a trailseer's follow "other" in the persona voice games (2026-10-18).
     from Agents.schemas.game_events import SpokenNightAction
 
@@ -193,11 +192,10 @@ def test_a_line_whose_own_fields_say_night_action_or_claim_is_kept_whatever_the_
     claim = opening("player_2", "I'm the healer, and I want player_5 to answer for their vote.")
     claim = claim.model_copy(update={"claim": "healer"})
     unnamed = opening("player_3", "Let's look at the votes first.").model_copy(update={"claim": "sentinel"})
-    monkeypatch.setattr(round_filter, "get_llm_judge",
-                        judge_saying({"player_1": "other", "player_2": "other", "player_3": "other"}))
+    models = judge_saying({"player_1": "other", "player_2": "other", "player_3": "other"})
 
     # Act
-    out = round_filter.filter_openings([follow, claim, unnamed])
+    out = round_filter.filter_openings([follow, claim, unnamed], models=models)
 
     # Assert
     assert [(e.passed, e.opening_kind) for e in out] == [(False, "night_action"), (False, "claim"), (True, "other")]

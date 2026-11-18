@@ -23,6 +23,7 @@ from langgraph.runtime import Runtime
 from langgraph.types import Send
 
 from Agents.config import game_id_from_runnable
+from Agents.llm_factory import game_models
 from Agents.game_config import GameConfig, game_config_from_runnable
 from Agents.schemas import DayChannel, DayRound, DaySummary, FiringReason, RoundCandidate
 from Agents.rules.closing import closing_announcement, closing_speakers
@@ -376,9 +377,11 @@ def _round_order(state: DayGraphState, config: RunnableConfig) -> list[str]:
     return players
 
 
-def collect_round(state: DayGraphState, config: RunnableConfig):
+def collect_round(state: DayGraphState, config: RunnableConfig,
+                  runtime: Runtime[GraphContext] | None = None):
     """Barrier node after the round's turns: order the round's lines, run the opening's filter
-    (humans exempt), number them, and write them into day_channel in sequence."""
+    (humans exempt), number them, and write them into day_channel in sequence. The filter's judge
+    is the graph context's model; a direct call with no runtime takes the accessors'."""
     current_day = state["current_day"]
     day_round = state["day_round"]
 
@@ -403,7 +406,8 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
         ordered.append(by_player[player])
 
     if day_round == "opening":
-        ordered = _filter_keeping_humans(ordered, state, filter_openings)
+        models = game_models(getattr(runtime, "context", None))
+        ordered = _filter_keeping_humans(ordered, state, lambda entries: filter_openings(entries, models=models))
 
     first_seq = _todays_entry_count(state)
     numbered: list[DayChannel] = []
@@ -494,6 +498,7 @@ def summarize_day_discussion(
             cast_role_counts=cast_role_counts(state.get("roles", {})),
             lineup=state.get("lineup", []),
             earlier_messages=[m for m in state.get("day_channel", []) if m.day < current_day],
+            models=game_models(runtime.context),
         )
 
         day_summary_case = DaySummaryCase(

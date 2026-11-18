@@ -26,7 +26,7 @@ from logging import getLogger
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import get_llm_judge
+from Agents.llm_factory import GameModels
 from Agents.llm_factory.chat import GAME_LLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.prompts.prompt_formatters import one_line
@@ -85,9 +85,11 @@ First its point, then what it adds, then (only if it adds nothing) whose line it
 )
 
 
-def line_echo_of(message: str, player: str, earlier: list[DayChannel]) -> str:
+def line_echo_of(message: str, player: str, earlier: list[DayChannel], *,
+                 models: GameModels | None = None) -> str:
     """Why ``message`` is held: the player whose earlier spoken line it repeats, or "filler"; "" when
-    it adds something (or nothing was said yet, or the judge failed: the gate fails open)."""
+    it adds something (or nothing was said yet, or the judge failed: the gate fails open). The judge
+    is ``models``' (the turn's); None takes the accessors' models."""
     spoken: list[DayChannel] = []
     for entry in earlier:
         if entry.passed or not entry.message or entry.player == "game_master":
@@ -104,7 +106,8 @@ def line_echo_of(message: str, player: str, earlier: list[DayChannel]) -> str:
     for index, entry in enumerate(spoken):
         numbered_lines.append(f"{index + 1}. {entry.player}: {one_line(entry.message)}")
     try:
-        verdict = (LINE_ECHO_PROMPT | get_llm_judge("low").with_structured_output(LineEchoVerdict)).invoke(
+        judge = (models or GameModels()).judge("low")
+        verdict = (LINE_ECHO_PROMPT | judge.with_structured_output(LineEchoVerdict)).invoke(
             {"earlier": "\n".join(numbered_lines), "player": player, "message": one_line(message)},
             config={"run_name": f"echo_gate_{player}"},
         )

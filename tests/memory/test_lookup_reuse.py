@@ -17,7 +17,7 @@ def calls(monkeypatch):
     lookup_cache.clear()
     made = []
 
-    def fake_situations(payload, action_phase):
+    def fake_situations(payload, action_phase, models=None):
         made.append((payload["player_id"], payload["current_day"], action_phase))
         return [f"situation {len(made)}"], []
 

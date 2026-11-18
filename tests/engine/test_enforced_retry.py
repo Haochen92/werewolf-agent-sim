@@ -6,6 +6,7 @@ from langchain_core.runnables import RunnableLambda
 
 from Agents.memory.retrieval import situation_agent
 from Agents.nodes.day import summary_agent
+from tests.factories.scripted_model import FakeModels
 
 
 class _JsonModeLLM:
@@ -29,7 +30,7 @@ class _JsonModeLLM:
 def test_the_lookups_situation_summary_retries_enforced(monkeypatch):
     # Arrange: a JSON-mode model, with the rest of the lookup stubbed out
     llm = _JsonModeLLM(SimpleNamespace(situations=[]))
-    monkeypatch.setattr(situation_agent, "get_llm", lambda: llm)
+    models = FakeModels(seat=llm)
     monkeypatch.setattr(situation_agent, "V6_SITUATION_SUMMARY", RunnableLambda(lambda x: x))
     monkeypatch.setattr(situation_agent, "build_agent_prompt_input", lambda p: {})
     monkeypatch.setattr(situation_agent, "compose_cell_guidance", lambda *a: {})
@@ -39,17 +40,17 @@ def test_the_lookups_situation_summary_retries_enforced(monkeypatch):
 
     # Act and assert
     # The enforced reply is used: no generic "Day 2 as healer" fallback query.
-    assert situation_agent._generate_situations_for_agent(payload, "night_action") == ([], [])
+    assert situation_agent._generate_situations_for_agent(payload, "night_action", models=models) == ([], [])
     assert llm.enforced_calls == 1
 
 
-def test_the_day_summary_retries_enforced(monkeypatch):
+def test_the_day_summary_retries_enforced():
     # Arrange
     llm = _JsonModeLLM(summary_agent._SUMMARY_SCHEMA.model_construct(accusations=[], role_claims=[]))
-    monkeypatch.setattr(summary_agent, "get_llm_summary", lambda: llm)
+    models = FakeModels(summary=llm)
 
     # Act
-    _, _, structured = summary_agent.run_day_summary_agent(2, [])
+    _, _, structured = summary_agent.run_day_summary_agent(2, [], models=models)
 
     # Assert
     assert structured == {"accusations": [], "role_claims": []}  # not the raw-channel fallback's {}

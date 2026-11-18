@@ -16,7 +16,7 @@ from logging import getLogger
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import get_llm
+from Agents.llm_factory import GameModels
 from Agents.schemas.human_player import HumanTurnRequest
 
 logger = getLogger(__name__)
@@ -109,19 +109,20 @@ def player_direction(
     return "\n".join(lines)
 
 
-def draft_from_notes(request: HumanTurnRequest, notes: str) -> str:
+def draft_from_notes(request: HumanTurnRequest, notes: str, *, models: GameModels | None = None) -> str:
     """One line saying what ``notes`` say, in the player's voice, for the wolves' night talk
     turn ``request`` asks about. Blank ``notes`` leave the line to the model: one of its
     own, grounded in the talk so far.
 
     Raises RuntimeError, with the cause, when the model call fails or returns nothing; the
-    caller tells the player to type the line instead. Never returns an empty string.
+    caller tells the player to type the line instead. Never returns an empty string. A server
+    request runs outside the graph, so the model comes from ``models``; None takes the accessors'.
     """
     roster = [p for p in request.surviving_players if p != request.player_id]
     notes = notes.strip()
     prompt = DRAFTING_PROMPT if notes else FREE_DRAFTING_PROMPT
     try:
-        reply = (prompt | get_llm()).invoke(
+        reply = (prompt | (models or GameModels()).seat()).invoke(
             {
                 "player_id": request.player_id,
                 "audience": "your fellow wolves, in private",

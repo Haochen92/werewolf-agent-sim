@@ -9,7 +9,7 @@ from __future__ import annotations
 from logging import getLogger
 
 from Agents.prompts.prompt_formatters import format_claims_on_record, format_day_channel
-from Agents.llm_factory import get_llm_summary, get_llm_summary_fallback
+from Agents.llm_factory import GameModels
 from Agents.llm_factory.chat import GAME_LLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.llm_factory.providers.common import enforced_output
@@ -48,6 +48,8 @@ def run_day_summary_agent(
     cast_role_counts: dict[str, int] | None = None,
     lineup: list[str] | None = None,
     earlier_messages: list[DayChannel] | None = None,
+    *,
+    models: GameModels | None = None,
 ) -> tuple[str, str, dict]:
     """Summarise one day's messages into (summary_text, model_used, structured).
 
@@ -59,7 +61,7 @@ def run_day_summary_agent(
     after that the raw formatted channel (model_used "", structured {}). `day_summaries` (the game
     so far), `dead_roster` and `cast_role_counts` give the game master's record and the claim ledger
     the summary is written against; ``earlier_messages`` (the spoken entries of the days before)
-    give the ledger its role lines.
+    give the ledger its role lines. ``models`` is the game's; None takes the accessors' models.
     """
     public_record, claims_on_record = summary_context(day_summaries or [], dead_roster, cast_role_counts,
                                                       earlier_messages)
@@ -70,16 +72,17 @@ def run_day_summary_agent(
         public_record=public_record,
         claims_on_record=claims_on_record,
     )
+    models = models or GameModels()
     health = GAME_LLM.get().health
     try:
-        rescue = get_llm_summary_fallback()
+        rescue = models.summary_rescue()
     except Exception as exc:  # a rescue that cannot be built (no key here) is no rescue
         logger.warning(f"Day summary rescue model unavailable: {exc}")
         rescue = None
     on_rescue = rescue is not None and health.prefer_rescue()
     for attempt in range(0 if on_rescue else max_retries + 1):
         try:
-            llm = get_llm_summary()
+            llm = models.summary()
             # After a json_mode reply that broke the schema, the retry has it enforced.
             bound = ((enforced_output(llm, _SUMMARY_SCHEMA) if attempt else None)
                      or llm.with_structured_output(_SUMMARY_SCHEMA))

@@ -3,7 +3,9 @@
 What it replaces. In a game, each seat's turn asks a chat model for an object of one output
 schema (a discussion line, a vote, a night target). The tests that play a whole game replace
 that model with `ScriptedModel`, so a game runs offline, costs nothing, and plays the same way
-on every run with the same seed. `tests/fixtures/model.py` installs it.
+on every run with the same seed. `tests/fixtures/model.py` builds it, as `ScriptedModels`, which
+the test passes to the game in the graph context. `FakeModels` hands over one fake per model slot
+for a test of a single function.
 
 What it returns for each field of the schema it is asked for:
 
@@ -31,6 +33,8 @@ import typing
 
 from langchain_core.runnables import RunnableLambda
 from pydantic import BaseModel
+
+from Agents.llm_factory import GameModels
 
 
 def fill(schema: type[BaseModel], rng: random.Random, spare: frozenset[str] = frozenset()) -> BaseModel:
@@ -70,3 +74,48 @@ class ScriptedModel:
 
     def with_structured_output(self, schema, **kwargs):
         return RunnableLambda(lambda prompt: fill(schema, self.rng, self.spare))
+
+
+class ScriptedModels(GameModels):
+    """The models of a scripted game, for the graph context's ``models``: every seat's turn gets
+    a `ScriptedModel` on the one shared generator, and there is no rescue model. The other
+    slots are not used by a scripted game: the fixture replaces the day summary, the opening
+    filter and the echo check (`tests/fixtures/model.py`)."""
+
+    def __init__(self, rng: random.Random, spare: frozenset[str] = frozenset()):
+        self.rng, self.spare = rng, spare
+
+    def seat(self):
+        return ScriptedModel(self.rng, self.spare)
+
+    def seat_rescue(self):
+        return None
+
+
+class FakeModels(GameModels):
+    """A `GameModels` that returns the fake given for each slot, and None for a slot not
+    given, so a test hands the code under test exactly the models it needs and no real one."""
+
+    def __init__(self, *, seat=None, seat_rescue=None, summary=None, summary_rescue=None,
+                 judge=None, extractor=None):
+        self._seat, self._seat_rescue = seat, seat_rescue
+        self._summary, self._summary_rescue = summary, summary_rescue
+        self._judge, self._extractor = judge, extractor
+
+    def seat(self):
+        return self._seat
+
+    def seat_rescue(self):
+        return self._seat_rescue
+
+    def summary(self):
+        return self._summary
+
+    def summary_rescue(self):
+        return self._summary_rescue
+
+    def judge(self, default_thinking_level: str = "minimal"):
+        return self._judge
+
+    def extractor(self):
+        return self._extractor

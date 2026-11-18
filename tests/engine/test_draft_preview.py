@@ -18,8 +18,9 @@ import pytest
 from Agents.nodes.day.actors import preview_discuss
 from Agents.deduction import seat_view
 from Agents.schemas import day_discuss_output
-from Agents.turn import agent_player, pipeline
+from Agents.turn import pipeline
 from Agents.turn.drafting_agent import player_direction
+from tests.factories.scripted_model import FakeModels
 from tests.fixtures.day_discuss_prompt_golden import (
     GOLDEN,
     ROLES,
@@ -39,11 +40,11 @@ def _without_deductions(monkeypatch) -> dict:
     """The AI turns' prompts in a game set to "off": what a human seat's draft sees."""
     with monkeypatch.context() as patched:
         patched.setattr(seat_view, "DEFAULT_DEDUCTION_MODE", "off")
-        return render(patched)
+        return render()
 
 
-def test_ai_discuss_prompt_is_byte_identical_to_the_golden(monkeypatch):
-    assert render(monkeypatch) == json.loads(GOLDEN.read_text())
+def test_ai_discuss_prompt_is_byte_identical_to_the_golden():
+    assert render() == json.loads(GOLDEN.read_text())
 
 
 @pytest.mark.parametrize("role", ROLES)
@@ -51,10 +52,10 @@ def test_preview_without_direction_sends_the_real_turns_prompt(monkeypatch, role
     # Arrange
     expected = _without_deductions(monkeypatch)[role]
     sent: list = []
-    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+    models = FakeModels(seat=capturing_llm(sent))
 
     # Act
-    line = preview_discuss(_human_payload(role), {"configurable": {}}, runtime())
+    line = preview_discuss(_human_payload(role), {"configurable": {}}, runtime(), models=models)
 
     # Assert
     assert line == "player_2, answer the question."
@@ -71,12 +72,12 @@ def test_preview_with_direction_adds_one_message_and_nothing_else(monkeypatch):
     # Arrange
     golden = _without_deductions(monkeypatch)["healer"]
     sent: list = []
-    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+    models = FakeModels(seat=capturing_llm(sent))
     direction = player_direction("push on player_2 {softly}", "player_2 is odd",
                                  {"player_5": "quiet"}, "player_2")
 
     # Act
-    preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime(), direction)
+    preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime(), direction, models=models)
 
     # Assert
     assert [list(m) for m in sent[0]] == golden + [["human", direction]]
@@ -87,7 +88,7 @@ def test_preview_commits_and_records_nothing(monkeypatch):
     no strategy-adoption write-back to the memory store."""
     # Arrange: a model that records what it is sent, and a strategy write-back that fails the test
     sent: list = []
-    monkeypatch.setattr(agent_player, "get_llm", lambda: capturing_llm(sent))
+    models = FakeModels(seat=capturing_llm(sent))
 
     def no_adoption(*a, **k):
         raise AssertionError("the preview must not write strategy adoption back")
@@ -98,7 +99,7 @@ def test_preview_commits_and_records_nothing(monkeypatch):
     rt = runtime()
 
     # Act
-    line = preview_discuss(payload, {"configurable": {}}, rt, "be brief")
+    line = preview_discuss(payload, {"configurable": {}}, rt, "be brief", models=models)
 
     # Assert
     assert isinstance(line, str) and line
@@ -106,21 +107,20 @@ def test_preview_commits_and_records_nothing(monkeypatch):
     assert rt.context["eval_sink"].records == []
 
 
-def test_preview_reports_a_pass_as_empty_and_a_failure_as_an_error(monkeypatch):
+def test_preview_reports_a_pass_as_empty_and_a_failure_as_an_error():
     # Round 1: the model passes the turn
     passing = day_discuss_output(ROLES)(message="", pass_turn=True, claim="none", claimed_night_actions=[],
                                         updated_strategy="note",
                                         addressed_targets=[], strategy_verdicts=[],
                                         memory_applicability=[], reads=[])
-    monkeypatch.setattr(agent_player, "get_llm", lambda: _answering(passing))
+    models = FakeModels(seat=_answering(passing))
     payload = {**_human_payload("healer"), "firing_reason": None}  # proactive-free turn
-    assert preview_discuss(payload, {"configurable": {}}, runtime()) == ""
+    assert preview_discuss(payload, {"configurable": {}}, runtime(), models=models) == ""
 
     # Round 2: the model and the rescue model both fail
-    monkeypatch.setattr(agent_player, "get_llm", lambda: _answering(None))
-    monkeypatch.setattr(agent_player, "get_llm_game_fallback", lambda: None)
+    models = FakeModels(seat=_answering(None), seat_rescue=None)
     with pytest.raises(RuntimeError):
-        preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime())
+        preview_discuss(_human_payload("healer"), {"configurable": {}}, runtime(), models=models)
 
 
 def _answering(reply):

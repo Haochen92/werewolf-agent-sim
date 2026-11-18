@@ -32,6 +32,7 @@ from Agents.schemas.roles import ALL_LINEUPS, cast_role_counts, lineup
 from Agents.turn import agent_player as agent_mod
 from Agents.turn.action_space import output_schema_with_legal_targets
 from Agents.turn.eval import build_eval_private_context, _reads_coverage
+from tests.factories.scripted_model import FakeModels
 from tests.leak_test import check_reads_isolation
 
 
@@ -202,7 +203,7 @@ def test_reads_coverage_full_and_wolf_shape():
 
 
 class _FakeLLM:
-    """Stand-in for get_llm(): with_structured_output returns a runnable that ignores its input and
+    """Stand-in for the seat's model: with_structured_output returns a runnable that ignores its input and
     yields a canned decision, so run_agent exercises the tripwire branch without a real model call."""
 
     def __init__(self, result):
@@ -229,15 +230,15 @@ def _healer_result(read_players):
     )
 
 
-def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
+def test_tripwire_warns_on_undercoverage(caplog):
     # Arrange: a healer's reply that reads 6 of the 8 players
     payload = _healer_payload()
     result = _healer_result([f"player_{i}" for i in range(2, 8)])  # 6 of 8 -> 0.75
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
+    models = FakeModels(seat=_FakeLLM(result))
 
     # Act
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
-        out = agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+        out = agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert out.entry.target == "player_3"
@@ -245,15 +246,15 @@ def test_tripwire_warns_on_undercoverage(monkeypatch, caplog):
     assert "player_8" in caplog.text and "player_9" in caplog.text
 
 
-def test_tripwire_silent_on_full_coverage(monkeypatch, caplog):
+def test_tripwire_silent_on_full_coverage(caplog):
     # Arrange: a healer's reply that reads every player
     payload = _healer_payload()
     result = _healer_result(payload["surviving_players"])  # all 8
-    monkeypatch.setattr(agent_mod, "get_llm", lambda: _FakeLLM(result))
+    models = FakeModels(seat=_FakeLLM(result))
 
     # Act
     with caplog.at_level(logging.WARNING, logger="Agents.turn.eval"):
-        agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target")
+        agent_mod.run_agent(payload, HEALER_NIGHT, HealerOutput, "healer_target", models=models)
 
     # Assert
     assert "reads under-covered" not in caplog.text

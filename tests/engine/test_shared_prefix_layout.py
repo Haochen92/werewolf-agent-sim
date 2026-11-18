@@ -104,7 +104,7 @@ def test_a_round_turns_note_is_kept_only_for_a_line_the_filter_let_through(monke
     candidates = [RoundCandidate(day=2, day_round="opening", entry=said, strategy="note 1"),
                   RoundCandidate(day=2, day_round="opening", entry=held, strategy="note 2")]
 
-    def hold_player_2(ordered):
+    def hold_player_2(ordered, models=None):
         return [e.model_copy(update={"passed": True, "gated": True, "gated_candidate": e.message, "message": ""})
                 if e.player == "player_2" else e for e in ordered]
 

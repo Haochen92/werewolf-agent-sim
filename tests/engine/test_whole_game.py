@@ -28,10 +28,10 @@ from tests.factories.whole_game import play_game
 def test_a_whole_game_runs_on_the_real_graph_and_the_wire_accepts_every_chunk(scripted_model, game_graph,
                                                                               game):
     # Arrange
-    scripted_model(seed=3)
+    models = scripted_model(seed=3)
 
     # Act
-    result, events, units = play_game(game_graph, game, seed=3)
+    result, events, units = play_game(game_graph, game, seed=3, models=models)
 
     # Assert
     assert result["lineup"] == lineup(game["lone_killer"], game["neutral"])
@@ -56,11 +56,11 @@ def test_every_day_turn_reaches_the_replay_and_every_wolf_turn_says_what_it_deci
                                                                                     game_graph):
     # Arrange
     sink = EvalCaseSink()
-    scripted_model(seed=11)
+    models = scripted_model(seed=11)
 
     # Act
     result, events, _ = play_game(game_graph, {"lone_killer": "serial_killer", "neutral": "speculator"},
-                                  seed=11, sink=sink)
+                                  seed=11, sink=sink, models=models)
 
     # Assert
     # The translator sends one reads event per (player, day, round, phase): a player's later
@@ -101,8 +101,8 @@ def test_a_human_vigilantes_shot_is_spent_once_across_the_pause_and_resume(scrip
     # No scripted player targets the Vigilante, so its first shot always goes ahead and is kept on
     # record: a seat that dies that night gets no record, and the scripted players share one random
     # generator across threads, so without this the game played (and the count) varied by thread order.
-    scripted_model(seed=5, spare=frozenset(initialize_game({}, config)["human_players"]))
-    context = {"metrics": Metrics()}
+    models = scripted_model(seed=5, spare=frozenset(initialize_game({}, config)["human_players"]))
+    context = {"metrics": Metrics(), "models": models}
 
     # Act: play the game, answering each pause for the human
     result = game_graph.invoke(fresh_game_state(), config=config, context=context)
@@ -133,11 +133,11 @@ def test_a_finished_game_saves_its_extraction_input_and_extracts_nothing(scripte
 
     # Arrange
     sink = EvalCaseSink()
-    scripted_model(seed=5)
+    models = scripted_model(seed=5)
 
     # Act
     result, events, _ = play_game(game_graph, {"lone_killer": "necromancer", "neutral": "fortune_teller"},
-                                  seed=5, sink=sink)
+                                  seed=5, sink=sink, models=models)
 
     # Assert
     [record] = [r for r in sink.records if r["kind"] == "extraction_input"]

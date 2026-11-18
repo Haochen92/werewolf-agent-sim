@@ -99,10 +99,10 @@ def test_in_a_whole_game_every_morning_has_its_data_and_every_ai_turn_gets_it(mo
         return engine_entry(payload)
 
     monkeypatch.setattr(prompt_inputs, "_own_result_lines", spy)
-    scripted_model(seed=5)
+    models = scripted_model(seed=5)
 
     # Act: play a whole game with scripted seats
-    result, _, _ = play_game(game_graph, game, seed=5)
+    result, _, _ = play_game(game_graph, game, seed=5, models=models)
 
     # Assert
     mornings = [message.message for message in result["day_channel"]

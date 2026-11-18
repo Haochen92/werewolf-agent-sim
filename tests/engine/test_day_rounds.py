@@ -112,8 +112,8 @@ def play_day(monkeypatch):
         return ("the day in brief", "fake-model", {})
 
     monkeypatch.setattr(flow, "run_day_summary_agent", fake_summary)
-    monkeypatch.setattr(flow, "filter_openings", lambda entries: entries)
-    monkeypatch.setattr(resolve, "line_echo_of", lambda message, player, earlier: "")
+    monkeypatch.setattr(flow, "filter_openings", lambda entries, models=None: entries)
+    monkeypatch.setattr(resolve, "line_echo_of", lambda message, player, earlier, models=None: "")
 
     def run(day: int, table: ScriptedTable, game_config: GameConfig | None = None):
         if game_config is None:
@@ -433,7 +433,7 @@ def test_collect_round_plays_the_opening_in_the_drawn_order_with_a_human_line_ke
     # Arrange: an opening filter that holds every line it is given
     held = []
 
-    def hold_every_agent_line(entries):
+    def hold_every_agent_line(entries, models=None):
         held.append([entry.player for entry in entries])
         return [entry.model_copy(update={"passed": True}) for entry in entries]
 

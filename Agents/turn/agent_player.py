@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
-from Agents.llm_factory import get_llm, get_llm_game_fallback
+from Agents.llm_factory import GameModels
 from Agents.llm_factory.chat import GAME_LLM, provider_name
 from Agents.llm_factory.embeddings import (
     KEY_REFUSED,
@@ -69,9 +69,12 @@ def run_agent(
     output_schema: type[BaseModel],
     output_key: str,
     max_retries: int = 1,
+    *,
+    models: GameModels | None = None,
 ) -> ResolvedTurn | None:
     """Run one agent decision: constrain -> generate -> resolve, retrying on an LLM error or a
-    rejected decision, with a legal typed fallback if every attempt fails.
+    rejected decision, with a legal typed fallback if every attempt fails. ``models`` is the
+    game's (the caller's graph context); None takes the accessors' models.
 
     The human seat's counterpart is ``run_human_decision`` (human_turn.py): it swaps ``_generate``
     for ``interrupt()`` but takes the same ``resolve_decision`` path.
@@ -85,15 +88,16 @@ def run_agent(
     schema = output_schema_for_memory_shown(schema, payload)
     # A primary that stalled on the last turns (a timeout, a 429) is skipped for a while and
     # the turn starts on the rescue model; the game's health object keeps that count.
+    models = models or GameModels()
     health = GAME_LLM.get().health
-    fallback_llm = get_llm_game_fallback()
+    fallback_llm = models.seat_rescue()
     on_rescue = fallback_llm is not None and health.prefer_rescue()
     if on_rescue:
         logger.warning(
             "%s starts on the rescue model for %s: the primary stalled %d turns in a row",
             player_id, output_key, health.stalls,
         )
-    llm = fallback_llm if on_rescue else get_llm()
+    llm = fallback_llm if on_rescue else models.seat()
     chain = prompt_template | llm.with_structured_output(schema)
     prompt_input = build_agent_prompt_input(payload)
     log_prompt(payload, output_key, prompt_input)
@@ -122,7 +126,7 @@ def run_agent(
             continue
         reasoning = extract_agent_reasoning(result)
         record_reads(reasoning["reads"], payload, output_key, output_schema)
-        outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+        outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
         if outcome is not RETRY:
             if not on_rescue:
                 health.note_ok()
@@ -139,7 +143,7 @@ def run_agent(
         if result is not None and result is not _STALLED and not isinstance(result, _Rejected):
             reasoning = extract_agent_reasoning(result)
             record_reads(reasoning["reads"], payload, output_key, output_schema)
-            outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+            outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
             if outcome is not RETRY:
                 logger.warning(f"{player_id} rescued by the fallback model on {output_key}")
                 return outcome

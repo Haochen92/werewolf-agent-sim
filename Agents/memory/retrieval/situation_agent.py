@@ -14,7 +14,7 @@ from logging import getLogger
 from pydantic import BaseModel, Field, create_model
 
 from Agents.rules.board_clocks import criticality_from_census
-from Agents.llm_factory import get_llm, get_llm_game_fallback
+from Agents.llm_factory import GameModels
 from Agents.llm_factory.chat import GAME_LLM
 from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.llm_factory.providers.common import enforced_output
@@ -255,6 +255,8 @@ def _generate_situations_for_agent(
     payload: DayActorState,
     action_phase: str,
     max_retries: int = 1,
+    *,
+    models: GameModels | None = None,
 ) -> tuple[list[str], list[dict]]:
     """Returns (composed embed strings, structured query-situation dims). The dims are the v6 cell
     situation objects' model_dump (exposure_class / info_landscape_class / criticality / ...), parallel
@@ -265,7 +267,8 @@ def _generate_situations_for_agent(
     5xx) is counted and not asked again, a broken reply is asked again once, then the game's
     rescue model gets one try, and it goes first while the primary keeps stalling. Until
     2026-11-11 this call always used the primary and asked a stalled one again: up to two minutes
-    on a model the game already knew was stalled."""
+    on a model the game already knew was stalled. ``models`` is the turn's; None takes the
+    accessors' models."""
     player_id = payload["player_id"]
     role = payload["player_role"]
     current_day = payload["current_day"]
@@ -303,11 +306,12 @@ def _generate_situations_for_agent(
                 _override_deterministic_dims(situation, payload)
         return compose(result)
 
+    models = models or GameModels()
     health = GAME_LLM.get().health
-    rescue = _rescue_llm()
+    rescue = _rescue_llm(models)
     on_rescue = rescue is not None and health.prefer_rescue()
     if not on_rescue:
-        llm = get_llm()
+        llm = models.seat()
         chain = template | llm.with_structured_output(schema)
         enforced = False
         for attempt in range(max_retries + 1):
@@ -339,10 +343,10 @@ def _generate_situations_for_agent(
     return [f"Day {current_day} as {role}, round {current_round}"], []
 
 
-def _rescue_llm():
+def _rescue_llm(models: GameModels):
     """The game's rescue model, or None when the game has none or it cannot be built here."""
     try:
-        return get_llm_game_fallback()
+        return models.seat_rescue()
     except Exception as exc:
         logger.warning(f"Situation summary rescue model unavailable: {exc}")
         return None

@@ -9,11 +9,15 @@ evidence/metrics/. Field-level meaning is kept in inline comments next to each c
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, NotRequired, TypedDict
+from typing import TYPE_CHECKING, Any, NotRequired, TypedDict
 
 from pydantic import BaseModel, Field
 
 from Agents.observability.case_sink import EvalCaseSink
+
+if TYPE_CHECKING:
+    # Type-only: llm_factory's catalogue imports Agents.schemas, so a runtime import here is a cycle.
+    from Agents.llm_factory.game_models import GameModels
 
 
 # ---------------------------------------------------------------------------
@@ -93,6 +97,10 @@ class GraphContext(TypedDict):
     """A served game's puppet at each seat ({"player_3": "owl"}), filled by the server's session when
     it deals the cast, which it reads before any spoken turn runs. A seat's speaking voice is its
     puppet's (Agents/prompts/voices.py); a batch game has none and draws them from the game id."""
+    models: NotRequired[GameModels]
+    """The models the game's turns run on, so a caller (a test) can hand its own over. Absent, the
+    turn uses the accessors' models (``Agents.llm_factory.game_models``); no production caller
+    sets it. It carries no key: a player's key stays on ``GAME_LLM``."""
 
 
 # ---------------------------------------------------------------------------

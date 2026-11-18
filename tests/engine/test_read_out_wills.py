@@ -78,10 +78,10 @@ def test_in_a_whole_game_every_ai_turn_has_exactly_the_wills_read_out_before_it(
         return engine_entry(payload)
 
     monkeypatch.setattr(prompt_inputs, "_own_result_lines", spy)
-    scripted_model(seed=7)
+    models = scripted_model(seed=7)
 
     # Act: play a whole game with scripted seats
-    result, _, _ = play_game(game_graph, game, seed=7)
+    result, _, _ = play_game(game_graph, game, seed=7, models=models)
 
     # Assert
     mornings, wills = public_data_from_summaries(result["day_summaries"])
