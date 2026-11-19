@@ -495,15 +495,50 @@ Three questions are particularly useful when reviewing a test written by someone
 
 ### 5.1 Can the test actually fail?
 
-Suppose a test asserts that a function returned a non-null object. That assertion may pass even when the object contains an incorrect refund amount.
+**Two different things are called "testing failure".** They are easy to confuse, and only the second is the subject of this section.
 
-One useful verification technique is to introduce a deliberate fault and see whether the test detects it.
+| | What is being checked | What a pass means |
+|---|---|---|
+| A test of a failure case (step 3) | The code: does it refuse a bad input? | The code refused it |
+| "Can the test fail?" (this step) | The test: would it notice if the code were broken? | Nothing yet. The question is answered by breaking the code, not by running the test once more |
 
-For a refund limit, temporarily remove the limit in a controlled test environment. If the test still passes, it was not protecting the rule.
+A test of a failure case looks like this. The refund is above the limit, the code refuses it, and the test passes. That is a normal test.
 
-This is the principle behind mutation testing: changing the implementation in ways that should violate behaviour to assess whether the tests detect those changes.
+```python
+def test_a_refund_above_the_limit_is_refused():
+    result = refund(amount=600, limit=500)
+    assert result.accepted is False
+```
 
-It need not be applied to every single test manually. It is particularly valuable for critical rules, regressions and tests whose assertions are difficult to judge.
+**The check of the test itself** takes three steps:
+
+1. Break the behaviour on purpose. Here, remove the limit check so that every refund is accepted.
+2. Run the same test. It should now fail.
+3. Put the code back.
+
+If the test still passes in step 2, it was not protecting the rule, however sensible it looked. A test's result has to change when the behaviour changes. Running it a hundred times and seeing a hundred passes shows that it is stable, not that it can detect anything.
+
+**Why a test can pass on broken code.** A test that compares the result with one exact value rarely has this problem: `assert total == 33.0` fails as soon as the number is wrong. The problem appears when the assertion is far from the behaviour it is meant to protect. Four things create that distance:
+
+| Cause | Example | Why broken code still passes |
+|---|---|---|
+| The assertion is loose | `assert result is not None` | An accepted refund is also not `None` |
+| The assertion is on a test double | `mock_limit_check.assert_called_once()` | The check was called, and its answer may have been ignored (5.2) |
+| The set-up never reaches the code | The request is rejected earlier, for a missing field | The limit check never ran, so removing it changes nothing |
+| The test was changed together with the code | An assertion loosened until the test passed | The test now agrees with whatever the code does |
+
+The last cause needs attention when a coding agent writes or repairs tests. An instruction to make the tests pass can be satisfied by weakening an assertion.
+
+**When to do it.** Not for every test. It takes a few minutes per test, and it is worth them for:
+
+- the tests that protect the costliest claims;
+- a test built around a test double;
+- a test that was just repaired because it failed or was flaky;
+- a sample of the tests an agent wrote, starting with the important ones.
+
+One habit removes most of the need: write the test before the code, and watch it fail. A test that has been seen to fail for the right reason has already answered the question.
+
+**Mutation testing** does the same thing automatically. A tool makes many small changes to the code, one at a time, and reports the changes that no test noticed.
 
 ### 5.2 Test behaviour, not only implementation details
 
@@ -517,6 +552,27 @@ The first checks an implementation detail. It may pass even if the function's re
 The second checks the outcome that matters.
 
 Interaction assertions are still useful when the interaction itself is part of the requirement, such as ensuring a payment provider is called at most once. But they should not substitute for checking the final state when the final state is what matters.
+
+**How much one test checks.** The second assertion above has two parts: the refund was rejected, and no payment was issued. They belong in one test, because both describe the result of one action. The rule is one behaviour per test, which is not the same as one assertion per test: a test performs one action and then asserts everything needed to describe what that action did.
+
+```python
+def test_a_refund_above_the_limit_is_refused_and_nothing_is_paid():
+    payments = FakePayments()
+
+    result = handle_refund(amount=600, limit=500, payments=payments)
+
+    assert result.accepted is False
+    assert payments.issued == []
+```
+
+| Situation | What to write |
+|---|---|
+| Several results of one action | One test with several assertions |
+| A different behaviour, or a second action | A separate test |
+| The same behaviour with different inputs | One parametrised test, not copies |
+| A requirement about a call ("the provider is charged at most once") | Its own test, named for that requirement |
+
+The reason is what a failure tells the reader. A test named for one behaviour says what broke before any code is read. And a test stops at its first failed assertion, so a test that covers three behaviours never checks the second and third once the first fails. A quick check: the test's name can be written as one sentence in which "and" joins results of the same action, never two different actions.
 
 ### 5.3 Be precise about what passed
 
@@ -540,11 +596,11 @@ Suppose the support-assistant team wants to stop excessive refunds.
 
 | Decision             | What the team does                                                                                                                                   |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1. Claims**        | Separate two claims: no excessive refund may be paid, and the model should rarely request one                                                        |
-| **2. Checks**        | Test the refund service's enforcement in code, including a real-database check for concurrent refunds. Evaluate the model on saved customer requests |
-| **3. Failure cases** | Exactly at the limit, one cent above it, partial refunds, repeated requests, concurrent requests and provider failures                               |
-| **4. Running**       | Put deterministic checks in the routine suite; run the model evaluation when the prompt or model changes                                             |
-| **5. Review**        | Show that removing enforcement makes the relevant test fail. Report the model evaluation's observed counts and limitations                           |
+| **1. Identify the claims** | Separate two claims: no excessive refund may be paid, and the model should rarely request one                                                        |
+| **2. Design the checks** | Test the refund service's enforcement in code, including a real-database check for concurrent refunds. Evaluate the model on saved customer requests |
+| **3. Find failure cases** | Exactly at the limit, one cent above it, partial refunds, repeated requests, concurrent requests and provider failures                               |
+| **4. Make testing repeatable** | Put deterministic checks in the routine suite; run the model evaluation when the prompt or model changes                                             |
+| **5. Review the evidence** | Show that removing enforcement makes the relevant test fail. Report the model evaluation's observed counts and limitations                           |
 
 The table holds two separate claims. The application should not pay an excessive refund, even when the model asks for one. That guarantee belongs in the refund service.
 
