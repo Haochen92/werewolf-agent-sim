@@ -130,7 +130,7 @@ stay in the Done table only.
 
 - Symptom, first guess, cause and fix are kept apart in U2 section 3.1. Commit `2814776d`
   (2026-10-17). Design record: `frontend/docs/server_client_transport.md` section 8b. The mechanism
-  belongs to U5 (`u05_seed_notes.md`).
+  belongs to U5 (`working/u05_seed_notes.md`).
 
 ### A test that passed by thread order (U13 candidate)
 
@@ -141,7 +141,7 @@ stay in the Done table only.
 - **Evidence.** Failed 2 of 10 runs with the pool setting and 4 of 10 without
   (`measurements/u2_diag_vig.py`, `measurements/u2_diag_runs.txt`). The bullet was spent once in
   every run examined.
-- **Status.** Test unchanged. Two repairs in `u13_seed_notes.md`.
+- **Status.** Test unchanged. Two repairs in `working/u13_seed_notes.md`.
 - *2026-11-17 note.* The diagnosis was re-checked and the test repaired (not committed): thread
   order confirmed as the source of the variation, with string hashing ruled out; the bullet was
   spent once in all 70 replays; after the repair, 100 of 100 runs passed, and the test still fails

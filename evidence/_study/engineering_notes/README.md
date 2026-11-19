@@ -10,6 +10,17 @@ Not page copy, and linked from no page. The topic list, its order and the time b
 planning outline `writeup/_planning/ch7_ch8_syllabus.md` (2026-10-30). The treatment map
 `writeup/_planning/production_and_frontend_treatment.md` decides which public documents get written.
 
+## What is in this folder
+
+| Where | What |
+|---|---|
+| `00_` to `14_` at the top level | The notes, one per topic. The table further down lists each with its state |
+| `README.md`, `_note_template.md`, `improvements.md` | This page, the layout a note follows, and the one list of limitations the notes turned up |
+| `working/` | Material a note was written from or left behind: the seed points collected before a note existed, the map and the cut list from the test clean-up of 2026-11-18, and the worker design that waits for U15. Kept for the record; a note does not depend on reading them |
+| `measurements/` | The scripts and outputs behind numbers the notes quote, with their own README |
+| `vigilante_test/` | The log of one flaky test's diagnosis and repair (U13) |
+| `figures/` | Pictures the notes use |
+
 ## How a note is built
 
 **Short pass for U10 and U11, agreed 2026-11-16.** These two notes use a reduced layout and
@@ -196,9 +207,9 @@ Three rules on accuracy, added 2026-11-11 after an outside review of U2:
 | U0 | [System architecture](00_system_architecture.md) | written 2026-10-31; revised 2026-11-11 | | | |
 | U1 | [Resilience patterns for remote calls](01_resilience_patterns.md) | written 2026-10-31; revised 2026-11-11 | | | |
 | U2 | [Concurrency, blocking work and shared limits](02_concurrency_models.md) | written 2026-11-11; revised through the walkthrough | 2026-11-11 and 11-12 (Parts 1 and 3; Part 2 and the Problems skipped) | 5 to 6 hours over two days, most of it questions and corrections, against a 90 min reading estimate | My own estimate: 60 to 70% understood. A second, faster read later. Problems B and C still to do |
-| U3 | [State persistence: snapshots, event logs, replay](03_state_persistence.md) | written 2026-11-12; revised through the walkthrough; seed points in [u03_seed_notes.md](u03_seed_notes.md) | 2026-11-12 (Parts 1 to 3; Parts 4 and 5 left as optional) | One evening | Went deeper than needed into crash-window cases. Core and detail are now marked, and Part 6 is the page for a second read |
-| U4 | [Delivery and repeated work](04_delivery_and_idempotency.md) | drafted 2026-11-13, first in the core-and-detail layout; section 1.3 and sections 3.1 to 3.5 rewritten through the walkthrough; seed points in [u04_seed_notes.md](u04_seed_notes.md) | 2026-11-13 (sections 1.1 to 1.4 and 3.1 to 3.5; 1.5, Part 2, 3.6, 3.7 and Parts 4 to 6 not read) | About 4 hours | Understanding of the system not complete. To carry: the engine re-runs a paused step from its start; the three ways to handle a dual write; what makes a key too narrow or too broad |
-| U5 | [Waiting for a person: durable execution and human-in-the-loop](05_durable_execution_and_human_in_the_loop.md) | drafted 2026-11-13 from a fresh code read, restructured 2026-11-14; seed points in [u05_seed_notes.md](u05_seed_notes.md) | | | |
+| U3 | [State persistence: snapshots, event logs, replay](03_state_persistence.md) | written 2026-11-12; revised through the walkthrough; seed points in [working/u03_seed_notes.md](working/u03_seed_notes.md) | 2026-11-12 (Parts 1 to 3; Parts 4 and 5 left as optional) | One evening | Went deeper than needed into crash-window cases. Core and detail are now marked, and Part 6 is the page for a second read |
+| U4 | [Delivery and repeated work](04_delivery_and_idempotency.md) | drafted 2026-11-13, first in the core-and-detail layout; section 1.3 and sections 3.1 to 3.5 rewritten through the walkthrough; seed points in [working/u04_seed_notes.md](working/u04_seed_notes.md) | 2026-11-13 (sections 1.1 to 1.4 and 3.1 to 3.5; 1.5, Part 2, 3.6, 3.7 and Parts 4 to 6 not read) | About 4 hours | Understanding of the system not complete. To carry: the engine re-runs a paused step from its start; the three ways to handle a dual write; what makes a key too narrow or too broad |
+| U5 | [Waiting for a person: durable execution and human-in-the-loop](05_durable_execution_and_human_in_the_loop.md) | drafted 2026-11-13 from a fresh code read, restructured 2026-11-14; seed points in [working/u05_seed_notes.md](working/u05_seed_notes.md) | | | |
 | U6 | Real-time transport and client synchronisation | not started | | | |
 | U7 | Server-side authorization and side channels | not started | | | |
 | U8 | [Observability: finding out what happened in a run of model calls](08_llm_observability.md) | drafted 2026-11-14 from a fresh code read; 1.6a, 1.8a, 1.9, 3.5a and the third choice in Part 4 added 2026-11-16 while reading; Part 1 and Part 3 up to 3.5a read 2026-11-16, about 3.5 hours with the walkthrough; stopped there. Left: 3.6 to 3.8, the first two tables of Part 4, the two summaries in Part 5 (about 20 minutes) | | | |
@@ -206,9 +217,9 @@ Three rules on accuracy, added 2026-11-11 after an outside review of U2:
 | U10 | [Secrets: a key's whole lifetime in a model application](10_secrets_management.md) | drafted 2026-11-16 from a fresh code read, short by my choice (about 25 minutes); revised for the agreed short pass with a stopping check and scoped claims; the walkthrough on 2026-11-16 added the planted-key test (1.3), the provider check (3.6) and the three ways a value reaches code (Part 4) | 2026-11-16 (Parts 1 to 3) | | |
 | U11 | [Prompt injection: when outside content tries to control an agent](11_prompt_injection_and_trust_boundaries.md) | drafted 2026-11-16 from a fresh code read; reworded 2026-11-17 for first-read clarity (`docs/writing/core_rules.md`); Part 1 is written for agents with tools, which my system does not have; section 3.3 rewritten around a measured result (`evidence/agent_boundaries/forged_speaker/`) | 2026-11-17 (read and closed) | | |
 | U12 | Client-side state and rendering | not started | | | |
-| U13 | [Testing: what to check, how to check it, and what a pass proves](13_testing_and_verification.md) | rewritten 2026-11-17 around five decisions (claims, checks, failure cases, running, review), with the Werewolf system under the same five headings; its two worked cases are the quotation-marks change and the Vigilante test that failed on some runs; read by me 2026-11-17, the test code itself not yet read; the project's testing guide for agents is `docs/testing.md`; seed points in [u13_seed_notes.md](u13_seed_notes.md) | | | |
+| U13 | [Testing: what to check, how to check it, and what a pass proves](13_testing_and_verification.md) | rewritten 2026-11-17 around five decisions (claims, checks, failure cases, running, review), with the Werewolf system under the same five headings; its two worked cases are the quotation-marks change and the Vigilante test that failed on some runs; read by me 2026-11-17, the test code itself not yet read; the project's testing guide for agents is `docs/testing.md`; seed points in [working/u13_seed_notes.md](working/u13_seed_notes.md) | | | |
 | U14 | [Operations: releasing safely, changing settings live, limiting spend](14_operations.md) | drafted 2026-11-16 from a fresh code and host read; reworded 2026-11-17 for first-read clarity; answers the U2 walkthrough's question on Docker Compose in Part 4; the walkthrough added data recovery (1.2), the temporary-container steps (3.1) and the prepaid balance as the monthly limit (3.4) | 2026-11-17 (read and closed) | | |
-| U15 | Capacity: limits, the bottleneck, a cap on games | seed points in [u15_seed_notes.md](u15_seed_notes.md); the worker design, moved out of U5 on 2026-11-14, is in [u15_detail_workers_and_leases.md](u15_detail_workers_and_leases.md) | | | |
+| U15 | Capacity: limits, the bottleneck, a cap on games | seed points in [working/u15_seed_notes.md](working/u15_seed_notes.md); the worker design, moved out of U5 on 2026-11-14, is in [working/u15_detail_workers_and_leases.md](working/u15_detail_workers_and_leases.md) | | | |
 
 ## Open items
 
@@ -269,7 +280,7 @@ below are about the notes themselves: what a later note has to cover.
   about 256 MB idle, host 23 GB with about 12 GB available. Not known: memory per running game,
   which needs the container watched with one game and with several. U8 says how to record it; U15
   sets the two limits and says what a refused game is told.
-- For U15, from the U2 walkthrough (2026-11-12): one capacity table for the whole server (started in [u15_seed_notes.md](u15_seed_notes.md)). No note
+- For U15, from the U2 walkthrough (2026-11-12): one capacity table for the whole server (started in [working/u15_seed_notes.md](working/u15_seed_notes.md)). No note
   is about scale; each has its own "what breaks" section, so the limits are scattered. U15 should
   gather them in one table: each resource (main-pool threads, per-phase threads, memory, checkpoint
   connections, lesson-store connections, the server's own connections, open browser connections,

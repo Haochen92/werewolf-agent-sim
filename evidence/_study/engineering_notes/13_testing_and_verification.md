@@ -804,7 +804,7 @@ For each sentence, say what evidence stands behind it and what remains uncertain
 - `contract` and `slow` excluded by default: **code** `pyproject.toml` (`[tool.pytest.ini_options]`)
 - The full local run: **run** on 2026-11-18 (`poetry run pytest -q -m "not contract"`): 2,324 passed, 170 deselected, 571 s. The run of 2026-11-17 before the cut: 2,481 passed, 1 skipped, 170 deselected, 818 s
 - The Postgres container and the database per test: **code** `tests/fixtures/database.py`; the tests that use it: `tests/server/integration/`, `tests/memory/integration/`
-- What was cut and what was kept: **doc** [`u13_cut_list.md`](u13_cut_list.md), [`u13_test_map.md`](u13_test_map.md) (the map describes the suite before the cut)
+- What was cut and what was kept: **doc** [`working/u13_cut_list.md`](working/u13_cut_list.md), [`working/u13_test_map.md`](working/u13_test_map.md) (the map describes the suite before the cut)
 - Frontend unit tests, 73 files, 1,607 tests, passed in 56 s: **run** (`npx vitest run` in `frontend/`)
 - Browser spec files (8), `test(` declarations (115, counted by a text search), screenshots (99): **code** `frontend/e2e/`, `frontend/playwright.config.ts`; not run
 - The shared setup, fixtures and factories: **code** [`tests/conftest.py`](../../../tests/conftest.py), `tests/fixtures/`, `tests/factories/`

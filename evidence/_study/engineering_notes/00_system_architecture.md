@@ -500,9 +500,9 @@ One idea per sentence, to rebuild the details from.
 > routing answers, streaming output back, and making sure only one worker runs each game.
 
 The deeper points from that revision are kept for the units that own them:
-[U3](u03_seed_notes.md) (why the engine resumes from the checkpoint, not the log),
-[U4](u04_seed_notes.md) (at-least-once, idempotency, dual writes; dota2pred as the worked example) and
-[U5](u05_seed_notes.md) (moving games to workers: the GameSession split, leases).
+[U3](working/u03_seed_notes.md) (why the engine resumes from the checkpoint, not the log),
+[U4](working/u04_seed_notes.md) (at-least-once, idempotency, dual writes; dota2pred as the worked example) and
+[U5](working/u05_seed_notes.md) (moving games to workers: the GameSession split, leases).
 
 ---
 

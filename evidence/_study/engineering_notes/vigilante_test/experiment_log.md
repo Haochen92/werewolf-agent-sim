@@ -6,7 +6,7 @@ Entries are in date order. Later entries replace earlier ones where they disagre
 are not rewritten. All of this work is exploratory (debugging), not a planned comparison.
 
 The earlier diagnosis this log starts from is in `../improvements.md` (row 15 and the section
-"Records for the write-up") and `../u13_seed_notes.md`; its replays are in
+"Records for the write-up") and `../working/u13_seed_notes.md`; its replays are in
 `../measurements/u2_diag_vig.py` and `../measurements/u2_diag_runs.txt`.
 
 ## 2026-11-17: the question, and what is taken from the earlier diagnosis

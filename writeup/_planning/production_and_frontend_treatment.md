@@ -112,7 +112,7 @@ gaps too: one new report (S2) and the server-half concepts.
 [2026-11-11: accessibility, not an eleventh story. At most one line on the ch 8 page, stated as a
 known gap with a planned check ("built with semantic HTML, labels and live regions; not yet
 audited"), never "accessible". Record: `frontend/docs/testing.md` ("What none of this covers",
-"Later, not now"). Concept: `evidence/_study/engineering_notes/u13_seed_notes.md`. If the planned
+"Later, not now"). Concept: `evidence/_study/engineering_notes/working/u13_seed_notes.md`. If the planned
 axe and keyboard checks are done first, the line becomes "checked with axe and keyboard-tested".]
 
 ---

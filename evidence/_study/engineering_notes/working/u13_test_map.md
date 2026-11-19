@@ -4,7 +4,7 @@
 
 A map of `tests/engine`, `tests/server`, `tests/memory`, `tests/evaluation`, `tests/live` and the
 shared setup, made on 2026-11-17 for the review that follows U13
-([13_testing_and_verification.md](13_testing_and_verification.md)). It is a working record, not a
+([13_testing_and_verification.md](../13_testing_and_verification.md)). It is a working record, not a
 note: it lists what each group of tests protects, what is real in it, and what is wrong with the
 structure, so that I can decide which set each group belongs to and which tests to read closely.
 
@@ -34,13 +34,13 @@ Ordered by what they cost if left alone.
 
 | # | Finding | Step | Status |
 |---|---|---|---|
-| 1 | **One default test connects to the database the development `.env` points at, creates tables and commits.** `test_db_roundtrip_in_temp_schema` ([test_consolidation_graduation.py:137](../../../tests/memory/test_consolidation_graduation.py#L137)) relies only on `SET search_path TO pg_temp` to keep its tables temporary. Three more memory tests create and drop a throwaway database on the same server. The testing guide says a test must never write to that database | 4 | **checked** (the code); that `pg_temp` keeps the tables temporary is not verified |
+| 1 | **One default test connects to the database the development `.env` points at, creates tables and commits.** `test_db_roundtrip_in_temp_schema` ([test_consolidation_graduation.py:137](../../../../tests/memory/test_consolidation_graduation.py#L137)) relies only on `SET search_path TO pg_temp` to keep its tables temporary. Three more memory tests create and drop a throwaway database on the same server. The testing guide says a test must never write to that database | 4 | **checked** (the code); that `pg_temp` keeps the tables temporary is not verified |
 | 2 | **No test reads a real Postgres checkpoint back and resumes a game.** In every recovery test the checkpoint is a hand-built object and the stored events are an empty list. The one real-Postgres server test (`test_postgres_round_trip`) is skipped here and does not cover the functions recovery uses | 2 | agent's reading |
-| 3 | **Four of the nine batch leak checks have no test showing they can find a leak.** Two of them look for fields of the old nine-seat game, by their own descriptions ([leak_test.py:105](../../../tests/leak_test.py#L105), [:138](../../../tests/leak_test.py#L138)). The agent infers that three checks can only return "no leak" on a ten-seat game | 5 | descriptions **checked**; the inference is not |
-| 4 | **A stub is left in place for the rest of the run.** [test_dedup_thresholds.py:113](../../../tests/memory/test_dedup_thresholds.py#L113) creates `pytest.MonkeyPatch()` and never undoes it, so the embedding and similarity stubs stay for every later test | 4 | **checked** |
-| 5 | **A fresh clone gives a different result.** [test_memory_persistence.py:158](../../../tests/memory/test_memory_persistence.py#L158) asserts that `memory_stores/v6_1` exists, and that folder is git-ignored. Two evaluation tests skip without notice when a data file is absent. This will show on the first CI run | 4 | **checked** (the first); the two skips are the agent's reading |
+| 3 | **Four of the nine batch leak checks have no test showing they can find a leak.** Two of them look for fields of the old nine-seat game, by their own descriptions ([leak_test.py:105](../../../../tests/leak_test.py#L105), [:138](../../../../tests/leak_test.py#L138)). The agent infers that three checks can only return "no leak" on a ten-seat game | 5 | descriptions **checked**; the inference is not |
+| 4 | **A stub is left in place for the rest of the run.** [test_dedup_thresholds.py:113](../../../../tests/memory/test_dedup_thresholds.py#L113) creates `pytest.MonkeyPatch()` and never undoes it, so the embedding and similarity stubs stay for every later test | 4 | **checked** |
+| 5 | **A fresh clone gives a different result.** [test_memory_persistence.py:158](../../../../tests/memory/test_memory_persistence.py#L158) asserts that `memory_stores/v6_1` exists, and that folder is git-ignored. Two evaluation tests skip without notice when a data file is absent. This will show on the first CI run | 4 | **checked** (the first); the two skips are the agent's reading |
 | 6 | **The `slow` marker is declared and used by no test.** The ten slowest tests are all deduction tests over random games: six take 73 to 101 s, four take 22 to 26 s, about 9.5 minutes together | 4 | **checked** (the marker) |
-| 7 | **Some tests cannot fail.** [test_byok.py:82](../../../tests/server/test_byok.py#L82) asserts only when the Gemini client carries a key, and on this machine it is built without one (inferred). [test_retrieval_judge_fallback.py:30](../../../tests/evaluation/test_retrieval_judge_fallback.py#L30) sets a field to False and asserts it is False. [test_ten_seat_game.py:349](../../../tests/engine/test_ten_seat_game.py#L349) matches a player's name with `in` on a string, so `player_1` would match `player_10` | 5 | **checked** (all three passages) |
+| 7 | **Some tests cannot fail.** [test_byok.py:82](../../../../tests/server/test_byok.py#L82) asserts only when the Gemini client carries a key, and on this machine it is built without one (inferred). [test_retrieval_judge_fallback.py:30](../../../../tests/evaluation/test_retrieval_judge_fallback.py#L30) sets a field to False and asserts it is False. [test_ten_seat_game.py:349](../../../../tests/engine/test_ten_seat_game.py#L349) matches a player's name with `in` on a string, so `player_1` would match `player_10` | 5 | **checked** (all three passages) |
 | 8 | **Whole-game tests share one process-wide checkpoint store, keyed by game id.** The seeds were chosen by hand so that no two tests use the same id. A reused id would resume another test's game | 4 | agent's reading |
 | 9 | **Timer tests in `test_game_session.py` wait real time** (0.2 to 0.6 s) and assert narrow windows. They could fail on a loaded machine (inferred, not measured) | 4 | agent's reading |
 | 10 | **The nightly leak audit of hosted games exists and is tested, and is not scheduled on this machine.** U13 step 1 says hosted games are not checked; more exactly, the check exists (`server/housekeeping/leak_audit.py`, 7 tests) and nothing runs it. Production code there imports from `tests/leak_test.py` | 1 | not scheduled: **checked** |
@@ -167,13 +167,13 @@ Three kinds: a costly claim, a story I already know, and a weak test.
 
 | Test | Why |
 |---|---|
-| [test_ten_seat_game.py:160](../../../tests/engine/test_ten_seat_game.py#L160) the Vigilante test, with the scripted model at lines 42 to 86 | The story I know; the only resume of the real game graph |
-| [test_night_payload_leaks.py:185](../../../tests/engine/test_night_payload_leaks.py#L185) a full run of the leak checks is clean | Costly claim; for four of the nine checks this assertion cannot fail (finding 3) |
-| [test_byok.py:169](../../../tests/server/test_byok.py#L169) a dead game's error never holds the key | Costly claim; it checks the session's error only |
-| [test_durability.py:322](../../../tests/server/test_durability.py#L322) a parked game revives and resumes | The main restart test; shows the registry's logic, not a real checkpoint |
-| [test_draft_preview.py:45](../../../tests/engine/test_draft_preview.py#L45) the prompt golden | Costly claim; read with the board it is built from to see which sections stay empty |
-| [test_subgraph_interrupt.py:58](../../../tests/engine/test_subgraph_interrupt.py#L58) a pause inside a subgraph | Weak by its own description: it passes even if the helper it exercises returns nothing |
-| [test_ten_seat_game.py:341](../../../tests/engine/test_ten_seat_game.py#L341) a dead player gets no record | Weak assertion (finding 7); it is the example name in the testing guide |
+| [test_ten_seat_game.py:160](../../../../tests/engine/test_ten_seat_game.py#L160) the Vigilante test, with the scripted model at lines 42 to 86 | The story I know; the only resume of the real game graph |
+| [test_night_payload_leaks.py:185](../../../../tests/engine/test_night_payload_leaks.py#L185) a full run of the leak checks is clean | Costly claim; for four of the nine checks this assertion cannot fail (finding 3) |
+| [test_byok.py:169](../../../../tests/server/test_byok.py#L169) a dead game's error never holds the key | Costly claim; it checks the session's error only |
+| [test_durability.py:322](../../../../tests/server/test_durability.py#L322) a parked game revives and resumes | The main restart test; shows the registry's logic, not a real checkpoint |
+| [test_draft_preview.py:45](../../../../tests/engine/test_draft_preview.py#L45) the prompt golden | Costly claim; read with the board it is built from to see which sections stay empty |
+| [test_subgraph_interrupt.py:58](../../../../tests/engine/test_subgraph_interrupt.py#L58) a pause inside a subgraph | Weak by its own description: it passes even if the helper it exercises returns nothing |
+| [test_ten_seat_game.py:341](../../../../tests/engine/test_ten_seat_game.py#L341) a dead player gets no record | Weak assertion (finding 7); it is the example name in the testing guide |
 
 ## Not checked
 
