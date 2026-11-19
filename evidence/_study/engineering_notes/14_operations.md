@@ -65,10 +65,65 @@ page load, does the health-check address answer, does one real request work from
 finish. It is kept short. Its purpose is to detect that the system is not serving at all. It
 is not a second run of the full test suite.
 
-These steps can be run automatically by a pipeline on every merge. This is called continuous
-integration and continuous delivery (CI/CD). They can also be run by a person following a
-written procedure. A pipeline guarantees that no step is skipped. A written procedure is the
-minimum: without one, each release depends on what the person remembers.
+These steps can be run automatically by a pipeline on every merge. They can also be run by a
+person following a written procedure. A pipeline guarantees that no step is skipped. A written
+procedure is the minimum: without one, each release depends on what the person remembers.
+
+### 1.1.1 Running the steps automatically: CI and CD
+
+*Added on 2026-11-19, after I built the first half of this for my own system (3.1.1).*
+
+A **pipeline** is a list of steps that a service runs for me when I push a commit. The service
+(GitHub Actions, GitLab CI and others) starts a clean machine called a **runner**, checks the
+commit out on it, and runs the steps in order. The pipeline has two halves, and they answer
+different questions.
+
+```text
+push a commit
+   │
+   ▼
+CI   check out the commit on a clean machine → install the locked packages
+     → run the tests → build the image                 "Is this commit good?"
+   │
+   │  only for the branch that is deployed, and only if CI passed
+   ▼
+CD   put the image on the server → change the database → swap → smoke test
+     → roll back if the smoke test fails               "Is this commit running?"
+```
+
+**Continuous integration (CI)** tests every push. Its value comes from the clean machine: the
+runner has none of my uncommitted edits, none of my settings files and none of the packages I
+installed by hand, so a pass means the commit works as it is stored in git.
+
+**CD** is used for two different things:
+
+| Name | What happens after CI passes | Who decides that a commit goes live |
+|---|---|---|
+| Continuous delivery | The commit is built and ready, and one approval or one command deploys it | A person, each time |
+| Continuous deployment | The commit is deployed with no further step | Nobody: passing CI is the decision |
+
+**Where is the image built?** There are two common arrangements.
+
+| Arrangement | How it works | Benefit | Cost |
+|---|---|---|---|
+| Build on the server | The pipeline logs in to the server, fetches the commit and builds the image there | Nothing extra to run. Suits one server | The server spends its processor, memory and disk on builds, and keeps the build's intermediate files. The image that runs was never the image CI tested: it was built a second time |
+| Build in CI, store in a registry | CI builds the image once and uploads it to a **registry**, a store for images. The server downloads that image and runs it | The image that was tested is the image that runs. The server needs no source code and no build tools. Every server gets the same image | A registry to pay for or run, and a login to it for CI and for the server |
+
+**Which secrets does the pipeline hold?** Only what it needs to deliver: the server's address
+and a login for it, or a login to the registry. The application's own secrets (the support
+assistant's model key, its database password) stay on the server or in a secrets manager and
+are read there when the container starts. A pipeline that holds the application's secrets has
+copied them to one more place (U10).
+
+**What a pipeline cannot decide without being told.** The four questions of 1.1 still have to
+be answered, now in a form a script can check:
+
+- *Who is interrupted?* The script needs a way to ask the running system whether work is in
+  progress, and a rule for what to do when it is.
+- *Can I undo it?* Swapping the image back is easy to script. A database change is not undone
+  that way (1.2), so the pipeline needs a rule for which changes it may apply unattended.
+- *Does it serve?* The smoke test has to be requests a script can make and judge. A check that
+  needs a person's eyes stays a manual step, or the pipeline stops and waits for approval.
 
 ## 1.2 Database changes need their own rollback plan
 
@@ -217,8 +272,8 @@ A web server in front of everything (Caddy) is a separate project.
 
 ## 3.1 How a release is done
 
-Every step is done by hand. The procedure was never written as a document of its own. It
-developed over many entries in a deploy log, and the log's summary states it:
+Every step is done by hand. For most of the project the procedure was not a document of its
+own. It developed over many entries in a deploy log, and the log's summary states it:
 
 ```text
 1  Build the image from a clean checkout of the commit being released,
@@ -267,9 +322,50 @@ Step 5 is how my system answers "who is interrupted?". A restart has these effec
 Waiting until nothing is in progress avoids all three. That is possible only because the site
 has little traffic.
 
-The server's README gives one build command. The other steps are only in the log.
+The server's README gives one build command. Until 2026-11-19 the other steps were only in the
+log; they are now a checklist, `docs/deploy.md`, written from the log and not yet used for a
+release.
 
-**Record:** `frontend/docs/deploy_log.md`; `server/README.md`; `Dockerfile`.
+**Record:** `frontend/docs/deploy_log.md`; `server/README.md`; `Dockerfile`; `docs/deploy.md`.
+
+### 3.1.1 What is automated since 2026-11-18
+
+**The first half, CI, exists.** A workflow on GitHub Actions (`.github/workflows/ci.yml`) runs
+on a clean runner with no settings file, made-up model keys and the packages of the lock file.
+
+| When | What runs |
+|---|---|
+| Every push to any branch | A check that the lock file matches the dependency list, a lint report, and the quick tests (about two minutes) |
+| A push to `main`, a pull request to `main`, or a run I start by hand | The same, then the tests that need a Postgres container, the slow tests, and a build of the server image in which the server must start and answer |
+
+So a green run answers question 1 of 1.1 better than before: the commit, as stored in git,
+passes its tests on a machine that is not mine. By 2026-11-19 only the short run had run on
+GitHub. The full run is described in U13.
+
+**The second half, CD, does not exist.** A release is still the seven steps above, done by
+hand, and nothing stops me releasing a commit whose run failed.
+
+**Two faults that only the clean machine showed.** The server image used to install a
+hand-kept list of packages. The first image built from the lock file did not start: three
+packages that the game imports had been installed by hand and were never declared. And the
+first run on GitHub failed before any test, because the runner I had named "latest" had moved
+to an operating system release for which my exact Python version is not built. I had rehearsed
+every test step on my own machine first, and neither fault could appear there.
+
+**What stands between this and an automatic release.** My dota2pred project already deploys
+from its pipeline: after the tests pass on `main`, the pipeline logs in to the server over
+SSH, fetches the commit and rebuilds the containers there. GitHub holds only the login for the
+server. The same shape would work here, with three decisions first:
+
+| Step of the release | What a script cannot decide alone |
+|---|---|
+| Swap only when nothing is in progress | The server has no way to say "no room is waiting and no game is live". Today I look |
+| Apply the migration | Whether a migration may run without my reading it. Every one so far only added things, which is a habit and not a rule the code enforces |
+| Smoke test | Three checks are requests a script can make. "One game or replay through the browser" is not |
+
+I build on the server and keep no registry. With one server that is the cheaper arrangement,
+and its cost is the one in the table of 1.1.1: the image that runs is built a second time, and
+the server's disk holds every image I have not removed.
 
 ## 3.2 How a release is undone
 
@@ -365,7 +461,7 @@ There is no limit on how many games run at the same time (U15).
 
 | Gap | Why it matters | Possible improvement |
 |---|---|---|
-| 1. Every release step is done by hand, and nothing runs the tests before a release | A skipped step would not be detected. The log shows the steps were followed, but nothing enforces them | One script for the steps; run the tests automatically on every push |
+| 1. Every release step is done by hand. (Until 2026-11-18 nothing ran the tests automatically either; CI now does on every push, 3.1.1) | A skipped step would not be detected. The log shows the steps were followed, but nothing enforces them, and a commit whose CI run failed can still be released | One script for the steps, then a deploy job that runs only after a green run on `main` (the three decisions in 3.1.1 come first) |
 | 2. No backup before a migration, and none on a schedule | A faulty migration or a lost disk would lose the games and the lessons | A database dump before each migration; a nightly dump |
 | 3. The server does not check the database's version at start-up | Started against a database missing a migration, it fails later, on the first query that needs it | Compare versions at start-up and refuse to start on a mismatch |
 | 4. The admin endpoints are disabled in production | The three house settings can be changed only by writing to the database by hand. The catalogue script handles the one case that has occurred | Set the token, or give the settings a script like the catalogue's |
@@ -385,8 +481,8 @@ releases; the log's table has 76.
 
 | Design | Benefit | Cost | My system |
 |---|---|---|---|
-| A person, following a written procedure and logging each release | No infrastructure to build. Every release has a record with its reasons | A step can be skipped, and nothing runs the tests first | Yes |
-| A pipeline that runs on every merge | Every step runs every time | The pipeline has to be built and maintained | No |
+| A person, following a written procedure and logging each release | No infrastructure to build. Every release has a record with its reasons | A step can be skipped, and nothing runs the tests first | Yes, for the release itself |
+| A pipeline that runs on every merge | Every step runs every time | The pipeline has to be built and maintained | Half: the tests run on every push since 2026-11-18; the release is not in the pipeline |
 
 **Where does the spending count come from?**
 
@@ -432,7 +528,9 @@ releases; the log's table has 76.
 Everything runs on one host under Docker Compose, with the game database kept outside Compose.
 A release is done by hand, following a procedure that developed over the entries of a deploy
 log: build from a clean checkout, keep the previous image, apply any migration first, check
-inside the new image, swap when no game is in progress, smoke test, and write a log entry. The
+inside the new image, swap when no game is in progress, smoke test, and write a log entry.
+Since 2026-11-18 a pipeline tests every push on a clean machine; the release itself is not in
+the pipeline. The
 model catalogue and three house settings are stored in Postgres and re-read every 10 seconds.
 The catalogue is the one I have actually used: it moved the default model away from a provider
 whose credits had run out, with no release. House-paid games are limited per day by counting
@@ -486,9 +584,11 @@ database by hand, the third is changed through the catalogue, and the count is b
 3. Swap when no game is in progress.
 4. Smoke test, and write the log entry.
 
-Missing: nothing runs the tests automatically, no step is scripted, there is no backup before
-the migration, the rollback command is not written down, and the server does not check that
-the database matches the code.
+Missing: no step is scripted, there is no backup before the migration, and the server does not
+check that the database matches the code. (When I wrote this answer nothing ran the tests
+automatically and the rollback command was not written down. Since 2026-11-18 CI runs the
+tests on every push, and since 2026-11-19 the rollback command is in `docs/deploy.md`, which
+has not yet been used for a release.)
 
 ---
 
