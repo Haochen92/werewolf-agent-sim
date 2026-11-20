@@ -10,7 +10,7 @@ round's, judged here one at a time).
 Writes every held line next to the line it was judged to repeat, for reading by hand, and a hold
 rate per source. One cheap judge call per line.
 
-    poetry run python evaluation/experiments/line_echo_gate_check.py --out evidence/game_play_enhancement/data/line_echo_check --limit 20
+    poetry run python evaluation/experiments/line_echo_gate_check.py --out evidence/gameplay/data/line_echo_check --limit 20
 """
 
 from __future__ import annotations

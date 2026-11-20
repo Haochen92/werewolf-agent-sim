@@ -1,0 +1,20 @@
+{
+ "without": {
+  "fake": 12,
+  "real": 16,
+  "voices-05 d4 fake": 3,
+  "voices-06 d2 fake": 7,
+  "voices-06 d2 real": 4,
+  "voices-07 d3 fake": 2,
+  "voices-07 d3 real": 12
+ },
+ "with": {
+  "fake": 12,
+  "real": 17,
+  "voices-05 d4 fake": 3,
+  "voices-06 d2 fake": 5,
+  "voices-06 d2 real": 7,
+  "voices-07 d3 fake": 4,
+  "voices-07 d3 real": 10
+ }
+}

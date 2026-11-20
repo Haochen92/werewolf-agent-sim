@@ -1,0 +1,44 @@
+{
+ "samples": {
+  "covers3": {
+   "n": 81,
+   "passed": 12,
+   "claim_field_set": 43
+  }
+ },
+ "answer": {
+  "covers3": {
+   "claims_role": 42,
+   "deflects": 24,
+   "denies": 1,
+   "other": 2
+  }
+ },
+ "claim_fits": {
+  "covers3": "41/42"
+ },
+ "contested": {
+  "covers3": "0/42"
+ },
+ "town_would_catch": {
+  "covers3": "1/42"
+ },
+ "explains_sighting": {
+  "covers3": "37/69"
+ },
+ "contradicts_sighting": {
+  "covers3": "0/42"
+ },
+ "claimed_roles": {
+  "covers3": {
+   "fortune teller": 2,
+   "healer": 9,
+   "investigator": 15,
+   "sentinel": 2,
+   "sigilist": 4,
+   "speculator": 1,
+   "trailseer": 2,
+   "vigilante": 7
+  }
+ }
+}

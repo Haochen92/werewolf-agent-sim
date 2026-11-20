@@ -13,12 +13,14 @@ from datetime import datetime
 import logging
 from typing import Any, Sequence
 
-from sqlalchemy import func, null
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import cast as sql_cast
+from sqlalchemy import func, null, text
+from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlmodel import select, update
 
 from server.database_models.capture import PromptCaptureRow
 from server.database_models.cast import GameCastRow
+from server.database_models.eval_cases import GameEvalCasesRow
 from server.database_models.game import (
     COMPLETED,
     DROPPED,
@@ -199,6 +201,25 @@ class GameRepository:
             logger.exception("game %s: cast persistence failed (game unaffected)", game_id)
             return False
 
+    async def record_run(self, game_id: str, run: dict[str, Any]) -> bool:
+        """Add one run of the game's task to the game's row: its trace id, when it started,
+        whether it was a recovery, and the fingerprint of the code that ran it. Appended in the
+        database, so a game resumed by a new process keeps the earlier runs. True after commit
+        or when storage is off; False on a logged failure."""
+        if not self._database.configured:
+            return True
+        try:
+            appended = func.coalesce(GameRow.runs, text("'[]'::jsonb")).op("||")(
+                sql_cast([run], JSONB))
+            stmt = update(GameRow).where(GameRow.game_id == game_id).values(runs=appended)
+            async with self._database.session() as session:
+                await session.execute(stmt)
+                await session.commit()
+            return True
+        except Exception:
+            logger.exception("game %s: run record not saved (game unaffected)", game_id)
+            return False
+
     async def record_capture(self, game_id: str, capture: bytes, *, n_prompts: int,
                              partial: bool) -> bool:
         """Keep a finished game's compressed prompts for the offline leak audit
@@ -218,6 +239,27 @@ class GameRepository:
             return True
         except Exception:
             logger.exception("game %s: prompt capture not saved (game unaffected)", game_id)
+            return False
+
+    async def record_eval_cases(self, game_id: str, cases: bytes, *, n_cases: int,
+                                partial: bool, record_format: str) -> bool:
+        """Keep a finished game's compressed evaluation cases, so served play can be evaluated
+        without the trace store (server/storage/eval_cases.py packs them). Written once, when
+        the game ends; a second write replaces the first. True after commit or when storage is
+        off; False on a logged failure."""
+        if not self._database.configured:
+            return True
+        try:
+            values = {"cases": cases, "n_cases": n_cases, "partial": partial,
+                      "record_format": record_format}
+            stmt = insert(GameEvalCasesRow).values(game_id=game_id, **values).on_conflict_do_update(
+                index_elements=["game_id"], set_={**values, "saved_at": func.now()})
+            async with self._database.session() as session:
+                await session.execute(stmt)
+                await session.commit()
+            return True
+        except Exception:
+            logger.exception("game %s: evaluation cases not saved (game unaffected)", game_id)
             return False
 
     async def load_cast(self, game_id: str) -> list[CastSeat]:

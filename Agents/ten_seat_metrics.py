@@ -5,7 +5,9 @@ The nine-seat metrics in ``compute_metrics`` read per-role night fields (``heale
 This module computes the same metrics from what a ten-seat night records (every choice, what the
 rules made of them, and every actor's result: ``NightResolutionMetric.choices/outcome/records``),
 with sides taken from the role registry, plus the proxies for the new roles (plan 2026-10-11 §8.2,
-§8.3). Every proxy here is unvalidated on the ten-seat game; none pushes as "validated".
+§8.3). None pushes as "validated". Their check against each side's win on 78 ten-seat games
+(2026-10-24, `evaluation/experiments/ten_seat_win_check.py`) is recorded in
+`evidence/evaluation/metrics/report.md` §4: the lynch scores carry over, the healer save rate does not.
 
 Grading uses what the engine decided (the plan's rule: consequences are graded on engine truth),
 except where a result has to reach its actor to count: a find the investigator never learned (it

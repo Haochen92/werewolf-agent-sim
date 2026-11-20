@@ -1,5 +1,10 @@
 # Strategy-Adoption Judge — Validation Protocol
 
+> **Superseded, never executed (2026-10-26).** Parked on 2026-06-01 and never run. The judge it would
+> calibrate scored the May adoption list, which a verdict per lesson replaced in June 2026; that
+> judge's scores survive only in the May [adoption](report.md) and [ablation](../ablation/report.md)
+> reports, as one uncalibrated model judge's.
+
 > **🛑 EXECUTION DEFERRED (2026-06-01).** The protocol below is final, but running it is parked until
 > after the foundation rebuild — the spot-check labels would be on old-structure (parallel, 4-role,
 > day-only, v4-DB) games that are about to change. The *method* is substrate-independent and carries
@@ -20,7 +25,7 @@ important the thing it judges feels:
 |---|---|---|
 | **A — directional dev-aid** | rank prompt v1 vs v2, pick the better wording, iterate | none beyond cheap hygiene |
 | **B — reported comparative claim** | "config X applies strategy more than config Y" | this protocol |
-| **C — gold** | ground-truth labels other evals are scored against | full panel + human anchor (see `retrieval/context_eval`) |
+| **C — gold** | ground-truth labels other evals are scored against | full panel + human anchor (see `evaluation/labeling/context_eval`) |
 
 The strategy-adoption judge is **bucket B**: it makes an **absolute** claim that gets quoted
 ("agents apply a useful strategy N% of the time"). Absolute claims need a calibration anchor.
@@ -56,7 +61,7 @@ portfolio's load-bearing claim. This protocol protects a *secondary, qualitative
 
 **What this is NOT:** not a panel, not a third model, not a gold set. One labeler, ~28 labels,
 an afternoon. (The full panel + human-anchor machinery is reserved for the bucket-C retrieval
-gold — see `evidence/retrieval/context_eval/experiment_log.md` §6.)
+gold — see `evidence/evaluation/labeling/context_eval/experiment_log.md` §6.)
 
 ## Why the other judges don't get this
 

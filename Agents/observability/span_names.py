@@ -1,8 +1,12 @@
-"""Single source of truth for eval-case span names.
+"""The names of the trace spans that carry an evaluation case.
 
-Producers (game-time emission sites) and the eval read side
-(``evaluation/src/data/langfuse.py``) both import from here, so a rename can
-never silently strand the frozen-set builders matching a stale prefix.
+During a game, some spans are saved with an evaluation case in their output, for example one
+span for each decision a player makes. Later, the evaluation code finds those spans in the trace
+by their names.
+
+The game code and the evaluation code (``evaluation/src/data/sources/langfuse.py``) both take
+the names from this file. If each kept its own copy, renaming a span in the game would leave the
+evaluation code searching for the old name. It would find nothing, and report no error.
 """
 
 # Observation names that start with these prefixes carry an eval case in

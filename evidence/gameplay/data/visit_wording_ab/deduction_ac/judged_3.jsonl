@@ -1,0 +1,47 @@
+{"id": "v003", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result; only questions player_7 and player_8."}
+{"id": "v007", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v011", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v015", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v019", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v023", "mech": 0, "chew": 0, "clear": 0, "note": "(passed)"}
+{"id": "v027", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v031", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v035", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v039", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result; only questions player_7."}
+{"id": "v043", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v047", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v051", "mech": 1, "chew": 1, "clear": null, "note": "Says a follow can't show player_3 visiting player_4's door; it can. Line is about result wording."}
+{"id": "v055", "mech": 1, "chew": 0, "clear": null, "note": "Says a night-2 check meant no visit for a trailseer to see; a check is a visit."}
+{"id": "v059", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v063", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v067", "mech": 0, "chew": 0, "clear": 0, "note": "Only implies part of watch (player_10 at player_7); unsourced, leaves out player_2 and player_5."}
+{"id": "v071", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v075", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v079", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v083", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v087", "mech": 1, "chew": 0, "clear": null, "note": "Sentinel who watched player_4 denies visiting them; a watch is a visit."}
+{"id": "v091", "mech": 0, "chew": 0, "clear": 0, "note": "States 'went nowhere' without saying it was its own follow; source unclear."}
+{"id": "v095", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v099", "mech": 1, "chew": 1, "clear": null, "note": "Says a follow result can't show player_3 coming to player_4; it can. Main point is wording."}
+{"id": "v103", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v107", "mech": 0, "chew": 0, "clear": 0, "note": "Hints at a watch but never states its own result (no one visited player_4)."}
+{"id": "v111", "mech": 0, "chew": 0, "clear": 0, "note": "Watch named only player_10; leaves out player_2 and player_5, so implies a single visitor."}
+{"id": "v115", "mech": 1, "chew": 0, "clear": 0, "note": "Sentinel denies going to the door it watched; watch is a visit. Never reports own watch result."}
+{"id": "v119", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v123", "mech": 1, "chew": 0, "clear": null, "note": "Treats watch seeing no one as contradicting follow; Sentinel never appears in its own result."}
+{"id": "v127", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v131", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v135", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v139", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v143", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v147", "mech": 1, "chew": 0, "clear": null, "note": "Asks Sentinel whether anyone came to it; a player can't see its own visitors."}
+{"id": "v151", "mech": 0, "chew": 0, "clear": 0, "note": "(passed)"}
+{"id": "v155", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own watch result; only questions player_7."}
+{"id": "v159", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v163", "mech": 1, "chew": 0, "clear": null, "note": "Reads follow's no-visit result as about visitors to player_7; a follow shows where the followed went."}
+{"id": "v167", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v171", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v175", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v179", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v183", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v187", "mech": 0, "chew": 0, "clear": null, "note": ""}

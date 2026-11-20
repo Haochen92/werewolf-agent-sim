@@ -4,7 +4,7 @@ only another player should know?
 The batch runner checks every game it plays this way (tests/leak_test.py); the website's games
 were never checked. Now each finished game saves the prompts its AI players were sent, their
 private reads and its final state (server/storage/prompt_captures.py), and this job runs the same
-nine checks over those saved games after the fact. It prints one line per game, writes the
+seven checks over those saved games after the fact. It prints one line per game, writes the
 verdict back on the game's capture row (``audited_at`` and ``leaks``), and exits 1 if any game
 leaked, 2 if a game could not be read, 0 when every game is clean.
 

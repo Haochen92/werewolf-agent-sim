@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" font-family="Helvetica, Arial, sans-serif">
+  <title>A human's vote pauses the game; on resume the step repeats, and cached AI ballots keep it from changing</title>
+  <rect width="900" height="520" fill="#ffffff"/>
+
+  <!-- Timeline -->
+  <text x="20" y="28" font-size="16" font-weight="bold" fill="#222">A vote with one human player</text>
+
+  <rect x="20" y="42" width="190" height="84" rx="10" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
+  <text x="34" y="66" font-size="13.5" font-weight="bold" fill="#26325a">1. The vote starts</text>
+  <text x="34" y="88" font-size="12.5" fill="#333">Every seat is asked</text>
+  <text x="34" y="105" font-size="12.5" fill="#333">at the same time</text>
+
+  <rect x="240" y="42" width="190" height="84" rx="10" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
+  <text x="254" y="66" font-size="13.5" font-weight="bold" fill="#26325a">2. AI ballots are in</text>
+  <text x="254" y="88" font-size="12.5" fill="#333">The human is still</text>
+  <text x="254" y="105" font-size="12.5" fill="#333">deciding</text>
+
+  <rect x="460" y="42" width="190" height="84" rx="10" fill="#eef5ec" stroke="#4f8a4a" stroke-width="2"/>
+  <text x="474" y="66" font-size="13.5" font-weight="bold" fill="#2c5a28">3. The game pauses</text>
+  <text x="474" y="88" font-size="12.5" fill="#333">Its progress is saved;</text>
+  <text x="474" y="105" font-size="12.5" fill="#333">nothing runs meanwhile</text>
+
+  <rect x="680" y="42" width="200" height="84" rx="10" fill="#fdebd8" stroke="#c4732e" stroke-width="2"/>
+  <text x="694" y="66" font-size="13.5" font-weight="bold" fill="#5c3410">4. The human answers</text>
+  <text x="694" y="88" font-size="12.5" fill="#333">The paused step runs</text>
+  <text x="694" y="105" font-size="12.5" fill="#333">again from its start</text>
+
+  <line x1="210" y1="84" x2="230" y2="84" stroke="#444" stroke-width="2"/>
+  <polygon points="240,84 228,78 228,90" fill="#444"/>
+  <line x1="430" y1="84" x2="450" y2="84" stroke="#444" stroke-width="2"/>
+  <polygon points="460,84 448,78 448,90" fill="#444"/>
+  <line x1="650" y1="84" x2="670" y2="84" stroke="#444" stroke-width="2"/>
+  <polygon points="680,84 668,78 668,90" fill="#444"/>
+
+  <!-- Fork -->
+  <polyline points="780,126 780,150 230,150 230,172" fill="none" stroke="#444" stroke-width="2"/>
+  <polygon points="230,182 224,170 236,170" fill="#444"/>
+  <line x1="670" y1="150" x2="670" y2="172" stroke="#444" stroke-width="2"/>
+  <polygon points="670,182 664,170 676,170" fill="#444"/>
+
+  <!-- Without cache -->
+  <rect x="20" y="182" width="420" height="130" rx="12" fill="#fdf3f3" stroke="#a33b3b" stroke-width="2"/>
+  <text x="36" y="207" font-size="14.5" font-weight="bold" fill="#6b1f1f">Without the cache: my first test</text>
+  <text x="36" y="232" font-size="13" fill="#333">The AI voters are asked again.</text>
+  <text x="36" y="252" font-size="13" fill="#333">Some give a different vote from the one they</text>
+  <text x="36" y="272" font-size="13" fill="#333">had already cast.</text>
+  <text x="36" y="298" font-size="13" font-weight="bold" fill="#a33b3b">Votes change after they were cast.</text>
+
+  <!-- With cache -->
+  <rect x="460" y="182" width="420" height="130" rx="12" fill="#eef5ec" stroke="#4f8a4a" stroke-width="2"/>
+  <text x="476" y="207" font-size="14.5" font-weight="bold" fill="#2c5a28">With the cache</text>
+  <text x="476" y="232" font-size="13" fill="#333">Each finished AI ballot is reused as it was,</text>
+  <text x="476" y="252" font-size="13" fill="#333">with no new model call. The human's answer is</text>
+  <text x="476" y="272" font-size="13" fill="#333">checked like any other.</text>
+  <text x="476" y="298" font-size="13" font-weight="bold" fill="#2c5a28">Every ballot is counted as cast.</text>
+
+  <!-- Two stores -->
+  <text x="20" y="352" font-size="16" font-weight="bold" fill="#222">Two kinds of saved work, with different lifetimes</text>
+
+  <rect x="20" y="366" width="420" height="104" rx="12" fill="#eef5ec" stroke="#4f8a4a" stroke-width="2"/>
+  <text x="36" y="391" font-size="14.5" font-weight="bold" fill="#2c5a28">Saved progress (the checkpoint)</text>
+  <text x="36" y="415" font-size="13" fill="#333">Where the game is: kept in the database.</text>
+  <text x="36" y="435" font-size="13" fill="#333">Survives a server restart, so a paused game</text>
+  <text x="36" y="455" font-size="13" fill="#333">can continue.</text>
+
+  <rect x="460" y="366" width="420" height="104" rx="12" fill="#fffaf0" stroke="#c99a2e" stroke-width="2"/>
+  <text x="476" y="391" font-size="14.5" font-weight="bold" fill="#5c4410">Finished AI answers (the cache)</text>
+  <text x="476" y="415" font-size="13" fill="#333">Temporary: kept in the server's memory, it</text>
+  <text x="476" y="435" font-size="13" fill="#333">expires and is lost on a restart. Then the AI</text>
+  <text x="476" y="455" font-size="13" fill="#333">players in the repeated step decide again.</text>
+
+  <text x="20" y="502" font-size="12.5" fill="#555">If the human never answers, the seat's AI agent takes the turn.</text>
+</svg>

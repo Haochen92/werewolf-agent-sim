@@ -1,0 +1,29 @@
+{
+  "kind": "v7_endpoint_ab",
+  "design": "30 shared boards x {final-store ON (town_only) vs memory-OFF}; paired by game_id; one same-epoch block; measurement only (no tick/extraction/store writes)",
+  "amendment": "see PREREG_AMENDMENT.md (owner-approved 2026-07-20, pre-data)",
+  "hardening": "2 boards x {ON+OFF together} = 4 games, board-paired (owner: ON/OFF run under identical capacity); per-game fallback screen (HARD=disqualify+replay, SOFT=count); breaker>=6 disqualified games; after the conc-6 clamp attempt",
+  "boards": 30,
+  "concurrency": "2 pairs x 2 arms = 4 (board-paired)",
+  "on": {
+    "configs": "town_only",
+    "retrieval_types": "strategy_points_only",
+    "seed_store_dir": "/home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/final_store_snapshot",
+    "tell_book": "/home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/tell_book_final.json",
+    "seed_store_provenance": "/home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_compound_town5/store",
+    "tell_book_provenance": "/home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_compound_town5/tell_store/book.json"
+  },
+  "off": {
+    "configs": "all_disabled",
+    "no_memory_seed": true
+  },
+  "model": "gemini-3.1-flash-lite",
+  "env_pins": {
+    "GOOGLE_GENAI_PRO_MODEL": "gemini-3.1-flash-lite",
+    "GOOGLE_GENAI_PRO_BACKUP_MODEL": "gemini-3.1-flash-lite",
+    "MEMORY_BATCH_DEDUP_MODEL": "gemini-3.1-flash-lite",
+    "EMBED_RETRY_ATTEMPTS": "8",
+    "EMBED_RETRY_MAX_DELAY": "60"
+  },
+  "epoch_reference": "runtime_fingerprint of batch_results/v7_compound_town5/run_meta.json"
+}

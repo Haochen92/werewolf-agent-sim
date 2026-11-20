@@ -78,8 +78,10 @@ def next_turn(day: list[DayChannel], max_sweeps: int = 2):
 # --- sweep 1 --------------------------------------------------------------------------------
 
 def test_first_sweep_goes_round_the_silent_survivors_in_seat_order():
+    # Arrange
     day = quiet_opening()
 
+    # Round 1: the first turn of the sweep
     decision = next_turn(day)
 
     assert decision.terminate is False
@@ -87,6 +89,7 @@ def test_first_sweep_goes_round_the_silent_survivors_in_seat_order():
     assert decision.firing_reason.tier == "proactive"
     assert decision.firing_reason.sweep == 1
 
+    # Round 2: after player_1 passes
     day.append(sweep_pass(4, "player_1", 1))
     decision = next_turn(day)
     assert decision.speaker == "player_2"
@@ -94,6 +97,7 @@ def test_first_sweep_goes_round_the_silent_survivors_in_seat_order():
 
 
 def test_first_sweep_skips_a_player_who_spoke_in_the_opening():
+    # Arrange
     day = [
         opening_pass(0, "player_1"),
         opening_line(1, "player_2"),
@@ -102,18 +106,23 @@ def test_first_sweep_skips_a_player_who_spoke_in_the_opening():
         sweep_pass(4, "player_1", 1),
     ]
 
+    # Act
     decision = next_turn(day)
 
+    # Assert
     assert decision.speaker == "player_3"
     assert decision.firing_reason.sweep == 1
 
 
 def test_a_debt_outranks_the_next_sweep_player():
+    # Arrange: player_1 accuses player_4 in the first sweep
     day = quiet_opening()
     day.append(sweep_line(4, "player_1", 1, targets=accuse("player_4")))
 
+    # Act
     decision = next_turn(day)
 
+    # Assert
     # player_2 is next in the sweep, but player_4 owes player_1 an answer.
     assert decision.speaker == "player_4"
     assert decision.firing_reason.tier == "reactive"
@@ -122,26 +131,32 @@ def test_a_debt_outranks_the_next_sweep_player():
 
 
 def test_a_player_who_answered_a_debt_during_the_sweep_is_not_asked_in_it():
+    # Arrange: player_3 answers player_1's accusation, then player_2 passes
     day = quiet_opening()
     day.append(sweep_line(4, "player_1", 1, targets=accuse("player_3")))
     day.append(reactive_line(5, "player_3", owes=["player_1"]))
     day.append(sweep_pass(6, "player_2", 1))
 
+    # Act
     decision = next_turn(day)
 
+    # Assert
     # player_3 spoke (in answer to player_1), so the sweep moves on to player_4.
     assert decision.speaker == "player_4"
     assert decision.firing_reason.sweep == 1
 
 
 def test_a_player_who_passed_in_this_sweep_is_not_asked_again_in_it():
+    # Arrange
     day = quiet_opening()
     day.append(sweep_pass(4, "player_1", 1))
     day.append(sweep_pass(5, "player_2", 1))
     day.append(sweep_line(6, "player_3", 1))
 
+    # Act
     decision = next_turn(day)
 
+    # Assert
     assert decision.speaker == "player_4"
     assert decision.firing_reason.sweep == 1
 
@@ -149,19 +164,23 @@ def test_a_player_who_passed_in_this_sweep_is_not_asked_again_in_it():
 # --- sweep 2 --------------------------------------------------------------------------------
 
 def test_no_second_sweep_when_the_first_produced_no_line():
+    # Arrange: every player passes in the first sweep
     day = quiet_opening()
     day.append(sweep_pass(4, "player_1", 1))
     day.append(sweep_pass(5, "player_2", 1))
     day.append(sweep_pass(6, "player_3", 1))
     day.append(sweep_pass(7, "player_4", 1))
 
+    # Act
     decision = next_turn(day)
 
+    # Assert
     assert decision.terminate is True
     assert decision.terminate_reason == "no_obligations"
 
 
 def test_a_second_sweep_follows_a_first_that_produced_a_line():
+    # Arrange: a first sweep in which player_3 spoke
     day = [
         opening_pass(0, "player_1"),
         opening_line(1, "player_2"),
@@ -172,6 +191,7 @@ def test_a_second_sweep_follows_a_first_that_produced_a_line():
         sweep_pass(6, "player_4", 1),
     ]
 
+    # Round 1: the first turn of the second sweep
     decision = next_turn(day)
 
     # Sweep 2 asks those silent since sweep 1 began: player_1 and player_4 passed, and
@@ -181,11 +201,13 @@ def test_a_second_sweep_follows_a_first_that_produced_a_line():
     assert decision.firing_reason.tier == "proactive"
     assert decision.firing_reason.sweep == 2
 
+    # Round 2: after player_1 passes
     day.append(sweep_pass(7, "player_1", 2))
     decision = next_turn(day)
     assert decision.speaker == "player_2"
     assert decision.firing_reason.sweep == 2
 
+    # Round 3: after player_2 passes
     day.append(sweep_pass(8, "player_2", 2))
     decision = next_turn(day)
     assert decision.speaker == "player_4"
@@ -193,12 +215,14 @@ def test_a_second_sweep_follows_a_first_that_produced_a_line():
 
 
 def test_a_player_held_by_the_echo_gate_is_not_asked_again_that_day():
+    # Arrange: player_1's line is held in the first sweep
     day = quiet_opening()
     day.append(sweep_held(4, "player_1", 1))
     day.append(sweep_line(5, "player_2", 1))
     day.append(sweep_pass(6, "player_3", 1))
     day.append(sweep_pass(7, "player_4", 1))
 
+    # Round 1: the first turn of the second sweep
     decision = next_turn(day)
 
     # player_1's line was held in sweep 1: sweep 2 starts with player_3 (a voluntary pass is
@@ -206,10 +230,12 @@ def test_a_player_held_by_the_echo_gate_is_not_asked_again_that_day():
     assert decision.speaker == "player_3"
     assert decision.firing_reason.sweep == 2
 
+    # Round 2: after player_3 passes
     day.append(sweep_pass(8, "player_3", 2))
     decision = next_turn(day)
     assert decision.speaker == "player_4"
 
+    # Round 3: after player_4 passes
     day.append(sweep_pass(9, "player_4", 2))
     decision = next_turn(day)
     assert decision.terminate is True
@@ -219,6 +245,7 @@ def test_a_player_held_by_the_echo_gate_is_not_asked_again_that_day():
 # --- the sweep budget -------------------------------------------------------------------------
 
 def test_the_day_ends_when_the_sweeps_are_used_up():
+    # Arrange: two sweeps, each with a line
     day = quiet_opening()
     day.append(sweep_line(4, "player_1", 1))
     day.append(sweep_pass(5, "player_2", 1))
@@ -228,42 +255,53 @@ def test_the_day_ends_when_the_sweeps_are_used_up():
     day.append(sweep_pass(9, "player_3", 2))
     day.append(sweep_pass(10, "player_4", 2))
 
+    # Act
     decision = next_turn(day, max_sweeps=2)
 
+    # Assert
     # Sweep 2 produced a line, but two sweeps is the budget: no third.
     assert decision.terminate is True
     assert decision.terminate_reason == "no_obligations"
 
 
 def test_one_sweep_budget_stops_after_the_first_sweep():
+    # Arrange: a first sweep with one line
     day = quiet_opening()
     day.append(sweep_line(4, "player_1", 1))
     day.append(sweep_pass(5, "player_2", 1))
     day.append(sweep_pass(6, "player_3", 1))
     day.append(sweep_pass(7, "player_4", 1))
 
+    # Act
     decision = next_turn(day, max_sweeps=1)
 
+    # Assert
     assert decision.terminate is True
     assert decision.terminate_reason == "no_obligations"
 
 
 def test_zero_sweeps_means_no_sweep_at_all():
+    # Arrange
     day = quiet_opening()
 
+    # Act
     decision = next_turn(day, max_sweeps=0)
 
+    # Assert
     assert decision.terminate is True
     assert decision.terminate_reason == "no_obligations"
 
 
 def test_zero_sweeps_still_answers_a_debt_from_the_opening():
+    # Arrange: player_2 accuses player_4 in the opening
     day = quiet_opening()
     day[1] = DayChannel(day=2, seq=1, player="player_2", message="I checked player_4: wolf.",
                         day_round="opening", addressed_targets=accuse("player_4"))
 
+    # Act
     decision = next_turn(day, max_sweeps=0)
 
+    # Assert
     assert decision.speaker == "player_4"
     assert decision.firing_reason.tier == "reactive"
     assert decision.firing_reason.owes == ["player_2"]

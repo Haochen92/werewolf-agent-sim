@@ -1,6 +1,6 @@
 """Freeze the Phase 3 reasoning failures as hallucination-bench cases, without playing new games.
 
-Each case is one discussion turn from a captured ten-seat game (evidence/game_play_enhancement/
+Each case is one discussion turn from a captured ten-seat game (evidence/gameplay/
 data/phase3_*), frozen as the game state the engine held just before the speaker spoke: the
 transcript up to that line, the earlier summaries, the dead roster, the night records, the pack's
 chat, the uses left, the speaker's strategy note. The state is rebuilt from the game's record and
@@ -24,7 +24,7 @@ from pathlib import Path
 from evaluation.src.data.builders.hallucination_bench import _case_id, _facts
 
 MAIN = Path(__file__).resolve().parents[2]
-DATA = MAIN / "evidence/game_play_enhancement/data"
+DATA = MAIN / "evidence/gameplay/data"
 OUT = DATA / "phase3_turn_replay/cases.jsonl"
 
 _WATCH_ONLY = ("A sentinel's watch shows only who visited the watched player. It cannot show what a visitor did "

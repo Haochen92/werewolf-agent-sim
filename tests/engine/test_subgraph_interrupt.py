@@ -5,7 +5,7 @@ resumes when the parent is compiled with a checkpointer and the wrapper forwards
 READ THIS BEFORE TRUSTING IT: this test does NOT validate that the helper preserved anything.
 LangGraph propagates the checkpointer via ambient contextvars, so this passes even if the helper
 returned an empty config (verified: scratchpad ambient spike). The helper's correctness is pinned by
-tests/test_child_config_unit.py. Keep this test for what it IS: proof the wrapper/checkpointer wiring
+tests/engine/test_child_config_unit.py. Keep this test for what it IS: proof the wrapper/checkpointer wiring
 is intact and interrupts survive the imperative subgraph boundary + resume cleanly across TWO calls
 on one thread (the real game re-invokes each phase every day).
 """
@@ -56,13 +56,16 @@ def _build_parent():
 
 
 def test_interrupt_pauses_and_resumes_through_imperative_subgraph():
+    # Arrange
     parent = _build_parent()
     cfg = {"configurable": {"thread_id": "game-hitl"}}
 
+    # Round 1: the first call pauses at the interrupt
     first = parent.invoke({"day": 1}, config=cfg)
     assert "__interrupt__" in first
     assert first["__interrupt__"][0].value == {"ask": "human decision?"}
 
+    # Round 2: resume with the human's answer
     resumed = parent.invoke(Command(resume="LYNCH player_3"), config=cfg)
     assert resumed["out"] == "LYNCH player_3"
 
@@ -70,13 +73,16 @@ def test_interrupt_pauses_and_resumes_through_imperative_subgraph():
 def test_repeated_phase_calls_on_one_thread_resume_independently():
     """Two phases on the same thread (the game re-invokes phases each day): each interrupt must
     resume with its OWN answer, no Day-1 checkpoint bleeding into Day-2."""
+    # Arrange
     parent = _build_parent()
     cfg = {"configurable": {"thread_id": "game-hitl-2days"}}
 
+    # Round 1: day 1 pauses and resumes with its own answer
     parent.invoke({"day": 1}, config=cfg)
     r1 = parent.invoke(Command(resume="answer_1"), config=cfg)
     assert r1["out"] == "answer_1"
 
+    # Round 2: day 2 pauses and resumes with its own answer
     parent.invoke({"day": 2}, config=cfg)
     r2 = parent.invoke(Command(resume="answer_2"), config=cfg)
     assert r2["out"] == "answer_2"

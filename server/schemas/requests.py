@@ -69,6 +69,10 @@ class ModelsMenu(BaseModel):
 
     models: list[ModelRow]
     house: HouseFunding
+    backups: dict[str, str] = Field(default_factory=dict)
+    """The model a backup key runs on, by the key's company (anthropic, openai, google,
+    deepseek): the game's rescue when its own model stalls or fails, on the player's key for
+    that company (POST /games and POST /rooms ``backup``)."""
     memory_available: bool
     """Whether a new game may switch memory on: the deployment allows it and the database's
     lesson store is published for this server's embedder. The page holds its switch off
@@ -91,6 +95,18 @@ class CharacterCard(BaseModel):
 
 
 # --- the solo door: one person's table, started on the spot ------------------------
+
+
+class BackupKey(BaseModel):
+    """A player's key for a second company, sent with their own key: held, checked and dropped
+    like it, never stored or recorded."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    company: Literal["anthropic", "openai", "google", "deepseek"]
+    """Whose key it is, as the page saved it (a plain ``sk-`` key could be OpenAI's or
+    DeepSeek's)."""
+    api_key: str = Field(min_length=1)
 
 
 class NewSoloGame(BaseModel):
@@ -117,6 +133,9 @@ class NewSoloGame(BaseModel):
     character: str | None = None
     """The puppet the human stands as, by id from GET /characters; None lets the house
     draw one. Ignored for an all-AI game. A puppet says nothing about a role."""
+    backup: BackupKey | None = None
+    """The player's key for a second company (optional, with ``api_key`` only): the game's
+    rescue runs on that company's backup model (GET /models ``backups``) on this key."""
 
 
 
@@ -153,6 +172,8 @@ class NewRoom(BaseModel):
     name: str = Field(default="", max_length=40)
     """Public room title shown in the GET /rooms browser; "" renders as unnamed
     client-side. Capped server-side — it is the one free-text field strangers see."""
+    backup: BackupKey | None = None
+    """The creator's key for a second company. Same semantics as the solo door."""
 
 
 

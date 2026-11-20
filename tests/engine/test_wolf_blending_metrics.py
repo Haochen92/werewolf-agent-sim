@@ -40,10 +40,14 @@ def test_unconditioned_blending_counts_all_lynch_days_and_excludes_self():
     # Day 1 (town lynched): w1 aligns with the lynch, w2 dissents -> 1/2.
     # Day 2 (wolf w1 lynched): w2 blends (votes w1), w1 is the target so his vote is excluded
     #   -> 1/1. Total across both days = 2 aligned / 3 votes.
+
+    # Act
     m = _compute([
         _day(1, [("w1", "t1"), ("w2", "t2"), ("t1", "t1")], "t1", "villager"),
         _day(2, [("w2", "w1"), ("w1", "w2"), ("t2", "w1")], "w1", "wolf"),
     ])
+
+    # Assert
     assert m.wolf_blend_votes_aligned == 2
     assert m.wolf_blend_votes_total == 3
     assert abs(m.wolf_unconditioned_blending_rate - 2 / 3) < 1e-9

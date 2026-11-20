@@ -75,13 +75,15 @@ import { TRACKS, bedFor, lobbyBed, stingFor, type Moment } from '@/music/cues';
 import { useStageMusic } from '@/music/music';
 import type { DurableGameEvent, GameStatus } from '@/types/contracts';
 import { isNineSeat } from '../card-text';
-import { castForRoom, resolveCast } from '../cast/castForGame';
+import { castForRoom, liveCastSize, resolveCast } from '../cast/castForGame';
 import { beatsFor } from '../beats/beatsFor';
 import type { SceneBeat } from '../beats/types';
+import { recordLiveFrame } from '../diagnostics';
 import { DEFAULT_FILTERS, packNight, wolfViewer } from '../drawer/drawer-lines';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
+import { SideSlot } from '../SideSlot';
 import { StageMotion } from '../motion';
-import { notebookForAgent, useNotebook, useNoteEditing } from '../notebook';
+import { notebookForAgent, useNotebook } from '../notebook';
 import { ConnectionPill } from '../instruments/ConnectionPill';
 import { CardOverlay } from '../instruments/FramedCard';
 import { AwayNotice, LeaveConfirm } from '../instruments/TopStrip';
@@ -336,7 +338,7 @@ export function LiveTheatre({
   const picks =
     status?.state === 'waiting' ? JSON.stringify(status.characters ?? []) : null;
   // the table's size: the dealt roster once it is in, the room's size until then
-  const seatTotal = view.seats.length || (status?.max_seats ?? 9);
+  const seatTotal = liveCastSize(view.seats.length, status, heldRoom?.places);
   const cast = useMemo(
     () =>
       picks !== null
@@ -448,11 +450,16 @@ export function LiveTheatre({
   const onDelegate = useCallback(() => answer({ delegate: true }), [answer]);
 
   // The seat notebook goes with a draft only while "Use my seat notes" is ticked; a dead
-  // seat's role guess is dropped, as the rail drops it.
+  // seat's role guess is dropped, as the rail drops it; the player's own file is their claims.
   const book = useNotebook(me ? gameId : null);
   const notebook = useMemo(
-    () => notebookForAgent(book, (n) => !view.alive.includes(`player_${n}`)),
-    [book, view.alive],
+    () =>
+      notebookForAgent(
+        book,
+        (n) => !view.alive.includes(`player_${n}`),
+        me ? seatNumber(me) : null,
+      ),
+    [book, view.alive, me],
   );
   const onDraft = useCallback(
     // the seat's own agent writes its line; the notes steer it and revise the line in the box
@@ -544,6 +551,32 @@ export function LiveTheatre({
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const [recordPick, setRecordPick] = useState<RecordPick | null>(null);
+  // Keep the displayed beat separate from the server's ending in crash reports: the
+  // stream can finish while this viewer is still reading earlier speeches or the vote.
+  const diagnosticBeat = beat?.id ?? null;
+  const diagnosticSeq = beat?.seq ?? null;
+  const diagnosticSeat = fileSeat?.seat ?? null;
+  useLayoutEffect(() => {
+    recordLiveFrame({
+      gameId,
+      beat: diagnosticBeat,
+      seq: diagnosticSeq,
+      slot: state.slot,
+      revealed: xrayShown,
+      serverOver: xray,
+      fileTab: filmTab,
+      fileSeat: diagnosticSeat,
+    });
+  }, [
+    gameId,
+    diagnosticBeat,
+    diagnosticSeq,
+    state.slot,
+    xrayShown,
+    xray,
+    filmTab,
+    diagnosticSeat,
+  ]);
   // the claim ledger for the file's Record (public, so from the first morning): asked again
   // each time a new day begins, which is a new morning's ledger
   const morning =
@@ -551,8 +584,6 @@ export function LiveTheatre({
       ? view.timeline.reduce((m, t) => (t.phase === 'day' ? Math.max(m, t.day) : m), 0)
       : 0;
   const ledger = useLedger(gameId, morning);
-  // the seat notebook's open editor: it stays open while beats and scenes go by
-  const noteEditing = useNoteEditing();
   // the strip's door: "Leave the table?" is open (a seated player, until the game ends)
   const [leaving, setLeaving] = useState(false);
   // what went by while the page was away (a drop, a sleep, a reload): told once in this tab,
@@ -616,7 +647,6 @@ export function LiveTheatre({
       recordPick,
       onRecordPick: setRecordPick,
       onShowRecord: () => dispatch({ type: 'show-record' }),
-      notebook: noteEditing,
       // the closed file's way to the thinking turn by turn (the curtain's "Watch the replay"),
       // once the replay is filed
       replayHref: toReplay.replay ?? undefined,
@@ -624,9 +654,11 @@ export function LiveTheatre({
       onTranscript: () => dispatch({ type: 'transcript' }),
       // the file opens any time: until the game's end it holds the Record alone
       onFile: () => dispatch({ type: 'file' }),
+      // a seat's file: the agent's after the game; until then the seated player's own on it,
+      // which opens the case file as the Record does (it is theirs to see)
       onOpenFile: (seat) => {
         setFileSeat({ seat, key: null });
-        dispatch({ type: 'show-file', xray: xrayShown });
+        dispatch(xrayShown ? { type: 'show-file', xray: true } : { type: 'show-record' });
       },
       // Reveal is locked until the stage reaches the game's end, then on for good
       revealLocked: !xrayShown,
@@ -643,7 +675,6 @@ export function LiveTheatre({
       fileSeat,
       ledger,
       recordPick,
-      noteEditing,
       ahead,
       xrayShown,
       toReplay.replay,
@@ -839,6 +870,13 @@ export function LiveTheatre({
               // a tap on the speech box: this page is read, end its hold
               onNext={onNext}
               wayOut={wayOut}
+            />
+            <SideSlot
+              view={sceneView}
+              beat={beat}
+              me={me}
+              presentation={presentation}
+              slot={slotInput}
             />
           </StageMotion>
         ) : null}

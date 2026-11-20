@@ -1,5 +1,5 @@
 """Every schema a seat is asked for, with a short in-character prompt for each and the check its
-reply must pass. Shared by the live regression test (tests/live/test_model_structured_output.py)
+reply must pass. Shared by the paid regression test (tests/contract/test_model_structured_output.py)
 and the model admission run, so both ask the same questions and judge the answers the same way."""
 
 from __future__ import annotations

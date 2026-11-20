@@ -8,6 +8,7 @@ config -> (game, run) and never config -> tracing, so settings stay framework/ob
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 from langchain_core.runnables import RunnableConfig
@@ -34,6 +35,11 @@ def turn_cache_key(payload: dict[str, Any]) -> bytes:
     pydantic entries carry a different ``__pydantic_fields_set__`` than the originals
     (same values, different bytes) — so the default key never hits exactly when the
     cache is needed (proven offline, 2026-08-19). Hash VALUES, not object state.
+
+    The payload must carry the game's id (``game_id``). LangGraph keys the cache by node and this
+    key alone, and one cache serves every game in the process, so without the id two games whose
+    turn payloads matched shared one answer: a day-1 opening at the same seat, role and lineup
+    (found 2026-10-26).
     """
     def jsonable(obj: Any) -> Any:
         if hasattr(obj, "model_dump"):
@@ -68,6 +74,8 @@ def build_runnable_config(
             "sp_exploration_slot": run.sp_exploration_slot,
             "stage_filter": run.stage_filter,
             "deduction_mode": run.deduction_mode,
+            "deduction_by_side": dict(run.deduction_by_side),
+            "persona_voices": run.persona_voices,
             "game_config": game_config_dict(run.game),
             "memory_persistence_config": run.memory_persistence.model_dump(mode="json"),
             "session_id": run.session_id,
@@ -92,11 +100,41 @@ def child_runnable_config(
     when a caller passes one explicitly (the day phase derives a cap-based limit).
 
     Note: propagation of the checkpointer works via ambient contextvars too, so this helper's
-    correctness is pinned by tests/test_child_config_unit.py, NOT by the interrupt integration test.
+    correctness is pinned by tests/engine/test_child_config_unit.py, NOT by the interrupt integration test.
+
+    The child also gets a `max_concurrency` sized to the game's seats (see
+    subgraph_max_concurrency). It goes on the CHILD only: on the root of an async run LangGraph
+    turns it into a semaphore over the whole main graph, where a night step runs up to nine parts.
     """
     if recursion_limit is None:
         recursion_limit = (parent or {}).get("recursion_limit", DEFAULT_RECURSION_LIMIT)
-    return patch_config(parent or {}, recursion_limit=recursion_limit)
+    return patch_config(
+        parent or {},
+        recursion_limit=recursion_limit,
+        max_concurrency=subgraph_max_concurrency(game_config_from_runnable(parent)),
+    )
+
+
+def subgraph_max_concurrency(game: GameConfig) -> int:
+    """Thread-pool size for a subgraph's parallel seats (the day rounds and votes, the pack).
+
+    A sync subgraph run gets its own pool, sized by `max_concurrency` or else by Python's default
+    (cpu count + 4, capped at 32): 8 on a 4-CPU host, so with ten seats two waited for a second
+    wave and a round took two model calls' time. One thread per seat puts every seat in one wave;
+    the floor keeps a small game from getting a smaller pool than the default gave. The threads
+    mostly wait on the network, so the extra ones are cheap.
+    """
+    python_default = min(32, (os.cpu_count() or 1) + 4)
+    return max(game.seats, python_default)
+
+
+def game_id_from_runnable(config: dict[str, Any] | None) -> str:
+    """The game's id out of the runtime config, inside a graph node ("" when none was pinned).
+
+    The subgraph wrappers copy it into the subgraph's state so the turn payloads carry it: the
+    cache key reads only the payload (see turn_cache_key)."""
+    configurable = config.get("configurable", {}) if config else {}
+    return str(configurable.get("game_id") or "")
 
 
 def game_config_from_runnable(config: dict[str, Any] | None) -> GameConfig:

@@ -1,6 +1,6 @@
 """Day summaries on Haiku 5.5 (live) against Sonnet 5.5: which records the day more faithfully?
 
-Record: evidence/reasoning_failures/experiment_log.md. Owner, 2026-10-16: Sonnet is too
+Record: evidence/gameplay/deduction/experiment_log.md. Owner, 2026-10-16: Sonnet is too
 dear for player turns, but the summary is one call a day, so it may run on Sonnet if it judges better.
 Game 2f19d908's day-3 summary is the case that raised it: its record_check said the record was
 "consistent with" an argument that misread the rules.
@@ -39,7 +39,7 @@ import evaluation.experiments.haiku_game_turn_cases as turns  # noqa: E402
 GAMES = ["403f4dbc-4a16-45fc-bb22-1c5e67bd5936", "2f19d908-a6b3-4faf-8f16-c2a009bb0428"]
 ARMS = {"haiku": "anthropic/claude-haiku-5-5", "sonnet": "anthropic/claude-sonnet-5-5"}
 JUDGE = "claude-sonnet-5-5"
-OUT = Path("evidence/reasoning_failures/data/haiku_summary_compare")
+OUT = Path("evidence/gameplay/deduction/data/haiku_summary_compare")
 
 
 # --- the days -------------------------------------------------------------------------------

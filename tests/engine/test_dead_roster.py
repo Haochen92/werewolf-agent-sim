@@ -34,6 +34,7 @@ def _fr() -> FiringReason:
 # --- (1) death paths append an ordered, role-revealing DeathRecord ----------
 
 def test_night_kill_records_dead_with_revealed_role():
+    # Arrange
     night_state = {
         "current_day": 1,
         "roles": {"w0": "chanteuse", "t0": "sentinel", "h": "healer", "inv": "investigator"},
@@ -44,8 +45,12 @@ def test_night_kill_records_dead_with_revealed_role():
         "wolf_channel": [],
         "night_choices": [NightChoice("w0", "chanteuse", "kill", "t0")],
     }
+
+    # Act
     update = night_resolution(night_state, _runtime())
     roster = update["dead_roster"]
+
+    # Assert
     assert roster == [DeathRecord(player="t0", role="sentinel", day=1, phase="night")]
 
 
@@ -169,11 +174,14 @@ def test_roster_block_rendered_in_discuss_and_vote_prompts_all_roles():
 # --- (3) formatter: compact rendering + empty case --------------------------
 
 def test_format_dead_roster_compact_and_empty():
+    # Round 1: an empty roster, and a roster whose roles were revealed
     assert format_dead_roster([]) == "No one has died yet."
     assert (
         format_dead_roster(_ROSTER)
         == "player_2 (sentinel, night 1), player_5 (chanteuse, lynched day 2)"
     )
+
+    # Round 2: a death whose role was concealed
     # A death that did not reveal the role (a body the illusionist concealed) reads as such.
     unknown = [DeathRecord(player="p9", role="", day=1, phase="night", concealed=True)]
     assert format_dead_roster(unknown) == "p9 (role not revealed, night 1)"
@@ -184,9 +192,15 @@ def test_format_dead_roster_compact_and_empty():
 def test_dead_wolf_on_roster_does_not_trip_wolf_identity_leak():
     # player_5 is a dead wolf publicly announced when lynched; it lives on the public roster but
     # NOT in any non-wolf's surviving_wolves field, so the living-ally leak check stays clean.
+
+    # Arrange
     state = _day_state(roles={**_PLAYERS, "player_5": "chanteuse"})
+
+    # Act: build each player's prompt input
     entries = []
     for pid, role in _PLAYERS.items():
         pi = build_agent_prompt_input(build_speaker_send(state, pid, role, _fr()).arg)
         entries.append({"player_id": pid, "player_role": role, "prompt_input": pi})
+
+    # Assert
     assert check_wolf_identity_isolation(entries, state["roles"]) == []

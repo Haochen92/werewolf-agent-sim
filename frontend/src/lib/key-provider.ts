@@ -70,6 +70,35 @@ export function keyHint(
   };
 }
 
+// A backup key's companies, in the order one is chosen when several are saved (owner, 2026-10-21).
+export const BACKUP_ORDER: Provider[] = ['anthropic', 'openai', 'google', 'deepseek'];
+
+export interface Backup {
+  provider: Provider;
+  key: string;
+  /** the model the server runs on it as the game's rescue (`GET /models` `backups`) */
+  model: string;
+}
+
+/**
+ * The saved key a game on `model` may fall back on: the first in `BACKUP_ORDER` of another company
+ * than the model's whose backup model the menu offers; null when there is none.
+ */
+export function backupFor(
+  saved: readonly { provider: Provider; key: string }[],
+  model: string,
+  backups: Record<string, string> | undefined,
+): Backup | null {
+  const own = modelProvider(model);
+  for (const provider of BACKUP_ORDER) {
+    const key = saved.find((s) => s.provider === provider)?.key;
+    const backupModel = backups?.[provider];
+    if (provider !== own && key && backupModel)
+      return { provider, key, model: backupModel };
+  }
+  return null;
+}
+
 // the server's start-time key check (server/game/key_check.py): "<Provider> refused this key: …"
 // or "<Provider> did not answer within 20 s. Try again."
 const KEY_REFUSAL = /refused this key|did not answer within/;

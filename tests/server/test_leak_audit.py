@@ -42,9 +42,13 @@ def fixture_game(**state_over) -> GameCapture:
 
 
 def test_a_capture_round_trips_through_its_compressed_form():
+    # Arrange
     capture = fixture_game()
+
+    # Act
     blob = encode_capture(capture)
 
+    # Assert
     assert decode_capture(blob) == capture
     assert len(blob) * 5 < len(capture.model_dump_json())  # the prompts repeat; gzip earns its keep
     assert capture.final_state["wolf_channel"][0]["message"] == "take player_2 tonight"
@@ -59,12 +63,15 @@ def test_the_audit_finds_the_saved_game_clean():
 
 
 def test_the_audit_flags_a_planted_leak():
+    # Arrange: a saved game with wolf-channel text planted in a villager's prompt
     capture = decode_capture(encode_capture(fixture_game()))
     villager = next(e for e in capture.prompt_log if e["player_id"] == "player_1")  # the sentinel
     villager["prompt_input"]["wolf_channel"] = "[Day 1] player_4: take player_2 tonight"
 
+    # Act
     leaks = audit_capture(capture)
 
+    # Assert
     assert len(leaks) == 1 and "player_1 (sentinel)" in leaks[0]
 
 
@@ -113,15 +120,19 @@ class PromptingGraph(FakeGraph):
 
 
 async def test_concurrent_served_games_each_save_only_their_own_prompts(quiet_session, fixture_chunks):
+    # Arrange: two served games that share one repository
     before = len(prompt_log)
     repository = CapturingRepository()
     sessions = {name: quiet_session(PromptingGraph(name, copy.deepcopy(fixture_chunks)),
                                     repository=repository)
                 for name in ("alpha", "beta")}
+
+    # Act: run both games at once
     for session in sessions.values():
         session.start()
     await asyncio.wait_for(asyncio.gather(*(s.wait_finished() for s in sessions.values())), 30)
 
+    # Assert
     for name, session in sessions.items():
         assert session.error is None and session.game_over
         saved, n_prompts, partial = repository.captures[session.game_id]
@@ -133,11 +144,15 @@ async def test_concurrent_served_games_each_save_only_their_own_prompts(quiet_se
 
 
 async def test_a_capture_that_cannot_be_saved_never_fails_the_game(quiet_session, fixture_chunks):
+    # Arrange: a repository that cannot save captures
     repository = CapturingRepository(fail=True)
     session = quiet_session(PromptingGraph("alpha", fixture_chunks), repository=repository)
+
+    # Act: run the game to its end
     session.start()
     await asyncio.wait_for(session.wait_finished(), 30)
 
+    # Assert
     assert session.error is None and session.game_over
     assert len(repository.completions) == 1 and repository.captures == {}
 
@@ -163,16 +178,19 @@ class FakeCaptureStore:
 
 
 async def test_the_audit_prints_a_line_per_game_records_verdicts_and_fails_on_a_leak(capsys):
+    # Arrange: one clean saved game and one with a planted leak
     leaky = fixture_game()
     leaky.prompt_log[0]["prompt_input"]["wolf_channel"] = "[Day 1] player_4: take player_2 tonight"
     store = FakeCaptureStore({"g-clean": fixture_game(), "g-leaky": leaky})
 
+    # Round 1: audit both games
     assert await run_audit(store) == 1
     lines = capsys.readouterr().out.splitlines()
     assert len(lines) == 3  # one per game, then the summary
     assert "g-clean  clean" in lines[0] and "g-leaky  LEAK" in lines[1]
     assert store.verdicts["g-clean"] == [] and len(store.verdicts["g-leaky"]) == 1
 
+    # Round 2: audit a clean game without recording verdicts
     clean_only = FakeCaptureStore({"g-clean": fixture_game()})
     assert await run_audit(clean_only, record=False) == 0
     assert clean_only.verdicts == {}

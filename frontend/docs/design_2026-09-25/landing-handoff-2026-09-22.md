@@ -1,5 +1,7 @@
 # Werewolf landing page — handoff
 
+Status (2026-10-26): Dated handoff of 2026-09-22, superseded by `design_2026-09-26/pages_review.md` §F and `site_architecture.md`.
+
 ## What this is
 Landing page for **wolf.liuhaochen.com**, a multi-agent LLM werewolf game.
 Nine LLM agents play social deduction; every private deliberation is recorded and

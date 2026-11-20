@@ -55,7 +55,7 @@ const phase3NecroEvents = phase3NecroGame.events as unknown as readonly DurableG
  * The ten-seat games (Phase 3). The default (no `game=`, or `game=phase3`): the translator's golden for the captured
  * 2026-10 game (serial killer and fortune teller drawn; a sigil kill, a concealed body, the
  * fortune teller's win at game over). `game=phase3-necro`: batch game e04 of
- * evidence/game_play_enhancement/data/phase3_balance_4 through the translator (necromancer and
+ * evidence/gameplay/data/phase3_balance_4 through the translator (necromancer and
  * speculator drawn; the necromancer acts through a body, the speculator picks the wolves, a
  * save). Both built by `scripts/export_replay_fixture.py`; AI-only, memory off, no ledger.
  */

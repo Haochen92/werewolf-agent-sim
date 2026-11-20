@@ -11,6 +11,9 @@ is actually playing, or one that has already ended.
 
 Waiting rooms have a shelf life too: a room nobody departed within ROOM_LIST_TTL_SECONDS
 is closed on the same pass (``LiveGameRegistry.expire_rooms``).
+
+A finished game's stored evaluation cases have one as well (``EVAL_CASES_TTL_DAYS``): the same
+pass deletes rows older than it (``expire_eval_cases``), so that table stays bounded.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ from datetime import datetime, timedelta, timezone
 from server.config import ServerSettings, server_settings
 from server.game.live_game_registry import LiveGameRegistry
 from server.game.game_session import GameSession
+from server.storage.eval_cases import EvalCaseArchive
 
 logger = logging.getLogger(__name__)
 
@@ -82,14 +86,31 @@ async def sweep_parked_games(registry: LiveGameRegistry,
     return dropped
 
 
+async def expire_eval_cases(archive: EvalCaseArchive,
+                            settings: ServerSettings = server_settings,
+                            now: datetime | None = None) -> int:
+    """Delete the stored evaluation cases of games that ended longer ago than their shelf
+    life. Returns how many games' cases were deleted."""
+    now = now or datetime.now(timezone.utc)
+    deleted = await archive.delete_saved_before(now - timedelta(days=settings.EVAL_CASES_TTL_DAYS))
+    if deleted:
+        logger.info("sweep: evaluation cases of %d game(s) deleted (older than %d days)",
+                    deleted, settings.EVAL_CASES_TTL_DAYS)
+    return deleted
+
+
 async def run_sweeper(registry: LiveGameRegistry,
-                      settings: ServerSettings = server_settings) -> None:
+                      settings: ServerSettings = server_settings,
+                      eval_cases: EvalCaseArchive | None = None) -> None:
     """The background loop the app starts at boot and cancels at shutdown. Each pass also
-    closes the waiting rooms nobody departed within their shelf life."""
+    closes the waiting rooms nobody departed within their shelf life, and deletes stored
+    evaluation cases past theirs."""
     while True:
         await asyncio.sleep(settings.SWEEP_INTERVAL_SECONDS)
         try:
             await sweep_parked_games(registry, settings)
             registry.expire_rooms(settings.ROOM_LIST_TTL_SECONDS)
+            if eval_cases is not None:
+                await expire_eval_cases(eval_cases, settings)
         except Exception:
             logger.exception("sweep: pass failed")

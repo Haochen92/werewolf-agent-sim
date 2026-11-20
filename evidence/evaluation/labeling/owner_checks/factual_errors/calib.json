@@ -1,0 +1,19 @@
+{
+  "human_labels_path": "evidence/evaluation/labeling/owner_checks/factual_errors/human.json",
+  "model_label_paths": [
+    "evidence/evaluation/labeling/owner_checks/factual_errors/judge_labels.json"
+  ],
+  "model_sources": [
+    "judge"
+  ],
+  "stratum_path": "evidence/evaluation/labeling/owner_checks/factual_errors/strata.json",
+  "allowed_labels": [
+    "error",
+    "no_error"
+  ],
+  "positive_label": "error",
+  "min_agreement": 0.8,
+  "min_ci_lower": 0.75,
+  "bias_alpha": 0.05,
+  "output_dir": "evidence/evaluation/labeling/owner_checks/factual_errors/reports"
+}

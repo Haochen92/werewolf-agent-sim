@@ -30,7 +30,10 @@ def replay():
 # ---- global contract properties over the whole real game ---------------------------------
 
 def test_replay_handles_every_part_and_seq_is_strictly_monotone(replay):
+    # Arrange
     _, events = replay
+
+    # Assert
     assert events, "a full game translated to zero events"
     seqs = [e.seq for e in events]
     assert seqs == sorted(set(seqs)), "seq must be strictly increasing with no reuse"
@@ -47,7 +50,10 @@ def test_buffers_are_empty_at_game_end(replay):
 
 
 def test_game_frame_events(replay):
+    # Arrange
     _, events = replay
+
+    # Assert
     (started,) = [e for e in events if e.type == "game_started"]
     assert len(started.seats) == 10
     assert sum(started.cast_role_counts.values()) == 10
@@ -60,9 +66,12 @@ def test_game_frame_events(replay):
 
 
 def test_vote_casts_match_lynch_tallies(replay):
+    # Arrange
     _, events = replay
     casts = [e for e in events if e.type == "vote_cast"]
     lynches = [e for e in events if e.type == "lynch_result"]
+
+    # Assert
     assert lynches, "no day resolution translated"
     assert sum(sum(r.vote_counts.values()) for r in lynches) == len(casts)
     for r in lynches:
@@ -70,8 +79,11 @@ def test_vote_casts_match_lynch_tallies(replay):
 
 
 def test_night_results_match_public_deaths(replay):
+    # Arrange
     _, events = replay
     nights = [e for e in events if e.type == "night_result"]
+
+    # Assert
     assert nights, "no night resolution translated"
     for n in nights:
         for death in n.deaths:
@@ -83,8 +95,11 @@ def test_night_results_match_public_deaths(replay):
 # ---- spot checks: one real specimen per interesting derivation row -----------------------
 
 def test_fixture_part_6_is_a_voluntary_pass_not_speech(replay):
+    # Arrange
     _, events = replay
     passes = [e for e in events if e.type == "pass_marker"]
+
+    # Assert
     assert any(p.pass_reason == "voluntary" for p in passes)
     # A pass never doubles as speech: no speech event shares (day, channel_seq) with a pass.
     speech_keys = {(e.day, e.channel_seq) for e in events if e.type == "speech"}
@@ -98,9 +113,12 @@ def test_fixture_part_6_is_a_voluntary_pass_not_speech(replay):
 def test_a_concealed_death_hides_the_role(replay):
     # Night 2: the illusionist concealed the body of the trailseer the pack and the serial
     # killer both attacked.
+    # Arrange
     _, events = replay
     (night_2,) = [e for e in events if e.type == "night_result" and e.day == 2]
     (death,) = night_2.deaths
+
+    # Assert
     assert (death.player, death.role, death.concealed) == ("player_3", "", True)
     assert death.attacker_types == ["wolves", "serial_killer"]
     assert night_2.save is None and night_2.saves == [] and night_2.pick is None
@@ -108,16 +126,22 @@ def test_a_concealed_death_hides_the_role(replay):
 
 def test_a_sigils_kill_is_announced_by_its_attacker_type(replay):
     # Night 1: the sigilist's sigil struck down the chanteuse, who attacked that night.
+    # Arrange
     _, events = replay
     (night_1,) = [e for e in events if e.type == "night_result" and e.day == 1]
     by_player = {d.player: d for d in night_1.deaths}
+
+    # Assert
     assert by_player["player_5"].attacker_types == ["sigilist"]
     assert (by_player["player_5"].role, by_player["player_5"].concealed) == ("chanteuse", False)
 
 
 def test_a_night_record_reaches_only_its_actor(replay):
+    # Arrange
     _, events = replay
     records = [e for e in events if e.type == "night_record" and e.actor != "wolves"]
+
+    # Assert
     assert records, "the captured game delivered night records"
     assert all(r.player == r.actor for r in records)
     (sigil,) = [r for r in records if r.action == "sigil"]
@@ -151,8 +175,11 @@ def test_a_wolf_who_died_tonight_gets_no_kill_record(replay):
 
 
 def test_uses_remaining_reaches_the_holder(replay):
+    # Arrange
     translator, events = replay
     uses = [e for e in events if e.type == "uses_remaining"]
+
+    # Assert
     assert uses, "the captured game reported what limited abilities have left"
     assert all(translator.roles[u.player] == u.role for u in uses)
     after_night_1 = {u.role: u.count for u in uses if u.day == 1}
@@ -162,16 +189,22 @@ def test_uses_remaining_reaches_the_holder(replay):
 
 
 def test_the_carriers_kill_is_sent_with_the_carrier_and_there_is_no_pack_vote(replay):
+    # Arrange
     _, events = replay
     decided = [(e.day, e.target, e.carrier) for e in events if e.type == "wolf_kill_decided"]
+
+    # Assert
     assert decided == [(1, "player_7", "player_5"), (2, "player_3", "player_6"),
                        (3, "player_1", "player_6")]
     assert not [e for e in events if e.type == "wolf_vote"]
 
 
 def test_game_started_carries_the_lineup_and_game_over_the_neutrals_result(replay):
+    # Arrange
     _, events = replay
     (started,) = [e for e in events if e.type == "game_started"]
+
+    # Assert
     assert started.lineup == ["investigator", "sentinel", "trailseer", "vigilante", "sigilist",
                               "healer", "chanteuse", "illusionist", "serial_killer",
                               "fortune_teller"]
@@ -181,11 +214,14 @@ def test_game_started_carries_the_lineup_and_game_over_the_neutrals_result(repla
 
 
 def test_phase_changes_cover_every_day(replay):
+    # Arrange
     _, events = replay
     phases = [e for e in events if e.type == "phase_change"]
     days = {e.day for e in events}
     day_marks = {e.day for e in phases if e.phase == "day"}
     night_marks = {e.day for e in phases if e.phase == "night"}
+
+    # Assert
     assert day_marks == days, "every game day opens with a phase_change(day)"
     assert night_marks == days, "every night opens with a phase_change(night) (NIGHT_START anchor)"
     assert any(e.phase == "voting" for e in phases)
@@ -204,8 +240,11 @@ def _seeded_translator() -> Translator:
 def test_every_real_chunk_re_delivered_as_cached_sends_nothing(replay):
     """After a crash, tasks whose writes had landed come back tagged cached (LangGraph
     re-applies them instead of re-running). Every family in a real game must vanish."""
+    # Arrange
     translator, _ = replay
     seq_before = translator.seq
+
+    # Act and assert, once for each update chunk, re-delivered as cached
     for chunk in load_fixture_chunks():
         if chunk["type"] != "updates":
             continue  # custom chunks carry no metadata; turn_started re-fires by design
@@ -233,12 +272,17 @@ def test_night_start_anchors_the_night_marker():
 
 
 def test_interrupt_becomes_input_request():
+    # Arrange
     t = _seeded_translator()
     chunk = {"type": "updates", "ns": [], "data": {"__interrupt__": [
         {"value": {"player_id": "v", "phase": "vigilante_target", "day": 2,
                    "valid_targets": ["t0", "sk"]}}
     ]}}
+
+    # Act
     (event,) = t.translate(chunk)
+
+    # Assert
     assert event.type == "input_request"
     assert event.action_kind == "vigilante_target"
     assert event.candidates == ["t0", "sk"]
@@ -258,6 +302,7 @@ def test_unexpected_key_raises_not_skips():
 
 
 def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
+    # Arrange: ballots for t0, and a resolution that names h
     t = _seeded_translator()
     t._last_day_ballots = [("w0", "t0"), ("w1", "t0")]
     chunk = {"type": "updates", "ns": [], "data": {"DAY_RESOLUTION": {
@@ -267,6 +312,8 @@ def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
         "surviving_wolves": ["w0", "w1"],
         "surviving_villagers": ["inv", "h", "sk", "v"],
     }}}
+
+    # Act and assert
     with pytest.raises(TranslationError, match="kernel/delta mismatch"):
         t.translate(chunk)
 
@@ -278,6 +325,7 @@ def test_lynch_cross_check_raises_on_kernel_delta_mismatch():
 def test_silent_whiff_sends_nothing_public():
     # The carrier hits the serial killer: no deaths, no save, no public trace — absence is the
     # design. The pack's own record of the kill is the wolves' only trace of the failure.
+    # Arrange: a night in which the pack's kill on the serial killer fails
     t = _seeded_translator()
     immune = ("sk was unharmed: immune to night kills tonight. "
               "The public was told nothing about this attack.")
@@ -289,7 +337,11 @@ def test_silent_whiff_sends_nothing_public():
                            "result": "immune", "outcome": immune, "seen": []}],
         "night_report": {"night": 1, "deaths": [], "saves": [], "pick": None},
     }}}
+
+    # Act
     events = t.translate(chunk)
+
+    # Assert
     (night,) = [e for e in events if e.type == "night_result"]
     assert night.deaths == [] and night.save is None and night.saves == []
     notes = [e for e in events if e.type == "night_record"]
@@ -312,6 +364,7 @@ def test_reexecuted_ballots_overwrite_the_aborted_ones():
     interrupt aborts the superstep, and on resume every voter re-executes — two LLMs
     CHANGE their vote. The engine keeps only the re-run (proven by its GM recap), so
     the buffer must be last-write-wins per voter or the kernel tallies retracted truth."""
+    # Arrange: the ballots of the aborted superstep, then the re-executed ones
     t = _seeded_translator()
     # the aborted attempt (streamed live, then discarded by the engine)
     for voter, votee in [("w0", "t0"), ("w1", "inv"), ("v", "t0")]:
@@ -321,11 +374,14 @@ def test_reexecuted_ballots_overwrite_the_aborted_ones():
                          ("h", "t0"), ("inv", "abstain")]:
         t.translate(_vote_chunk(voter, votee))
 
+    # Round 1: collect the votes
     casts = t.translate({"type": "updates", "ns": ["DAY_PHASE:x"],
                          "data": {"collect_votes": None}})
     assert len(casts) == 5  # one per living voter — never per execution
     assert {(c.voter, c.votee) for c in casts} == {
         ("w0", "t0"), ("w1", "t0"), ("v", "abstain"), ("h", "t0"), ("inv", "abstain")}
+
+    # Round 2: resolve the day
     # kernel must agree with the engine's tally over the KEPT ballots (t0: 3)
     (lynch,) = [e for e in t.translate({"type": "updates", "ns": [], "data": {
         "DAY_RESOLUTION": {"day_channel": [], "day_summaries": [],
@@ -341,14 +397,19 @@ def test_reexecuted_ballots_overwrite_the_aborted_ones():
 def test_identical_reexecution_does_not_double_count():
     """Re-runs that happen to repeat the same votee (the common case) must still land
     exactly one ballot per voter — a doubled tally is invisible until it breaks a tie."""
+    # Arrange: every ballot delivered twice, unchanged
     t = _seeded_translator()
     for _ in range(2):  # original + identical re-execution
         for voter, votee in [("w0", "t0"), ("w1", "t0"),
                              ("inv", "abstain"), ("h", "abstain"), ("v", "abstain")]:
             t.translate(_vote_chunk(voter, votee))
+
+    # Round 1: collect the votes
     casts = t.translate({"type": "updates", "ns": ["DAY_PHASE:x"],
                          "data": {"collect_votes": None}})
     assert len(casts) == 5
+
+    # Round 2: resolve the day
     (lynch,) = [e for e in t.translate({"type": "updates", "ns": [], "data": {
         "DAY_RESOLUTION": {"day_channel": [], "day_summaries": [],
                            "voted_player": None, "no_lynch_streak": 1},
@@ -361,21 +422,27 @@ def test_identical_reexecution_does_not_double_count():
 
 
 def test_reexecuted_discussion_entry_is_sent_once():
+    # Arrange
     t = _seeded_translator()
     chunk = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "discuss": {"day_channel": [{"day": 1, "seq": 3, "player": "t0",
                                      "message": "inv is lying", "passed": False}]},
     }}
+
+    # Act and assert: the first delivery, then an identical one
     assert [e.type for e in t.translate(chunk)] == ["speech"]
     assert t.translate(chunk) == []  # identical re-delivery
 
 
 def test_reexecuted_wolf_line_is_sent_once():
+    # Arrange
     t = _seeded_translator()
     chat = {"type": "updates", "ns": ["PACK_NIGHT_PHASE:x"], "data": {
         "PACK_CHAT": {"wolf_channel": [
             {"day": 1, "round": 1, "wolf": "w0", "message": "t0 tonight", "vote": ""}]},
     }}
+
+    # Act and assert: the first delivery, then an identical one
     assert [e.type for e in t.translate(chat)] == ["wolf_message"]
     assert t.translate(chat) == []
 
@@ -383,8 +450,11 @@ def test_reexecuted_wolf_line_is_sent_once():
 def test_reexecuted_memory_consultation_is_sent_once():
     from tests.fixtures.translator_golden import _memory_consulted
 
+    # Arrange
     t = _seeded_translator()
     chunk = _memory_consulted("t0", "healer", 2)
+
+    # Act and assert: deliver, deliver again, then deliver another day's
     assert [e.type for e in t.translate(chunk)] == ["memory_consulted"]
     assert t.translate(chunk) == []  # the node re-ran and streamed it again
     assert [e.type for e in t.translate(_memory_consulted("t0", "healer", 3))] == ["memory_consulted"]
@@ -393,8 +463,11 @@ def test_reexecuted_memory_consultation_is_sent_once():
 def test_reexecuted_reads_are_sent_once():
     from tests.fixtures.translator_golden import _player_reads
 
+    # Arrange
     t = _seeded_translator()
     chunk = _player_reads("t0", "sentinel", 2)
+
+    # Act and assert: deliver, deliver again, then deliver another phase's
     assert [e.type for e in t.translate(chunk)] == ["player_reads"]
     assert t.translate(chunk) == []  # the node re-ran and streamed them again
     assert [e.type for e in t.translate(_player_reads("t0", "sentinel", 2, "day_vote"))] == ["player_reads"]
@@ -403,18 +476,26 @@ def test_reexecuted_reads_are_sent_once():
 def test_reexecuted_memory_extraction_is_sent_once():
     from tests.fixtures.translator_golden import _memory_extracted
 
+    # Arrange
     t = _seeded_translator()
+
+    # Act and assert: deliver, then deliver again
     assert [e.type for e in t.translate(_memory_extracted(3))] == ["memory_extracted"]
     assert t.translate(_memory_extracted(3)) == []  # the post-game node re-ran
 
 
 def test_reexecuted_strategy_note_is_sent_once_but_changes_still_are():
+    # Arrange
     t = _seeded_translator()
+
+    # Round 1: a strategy note, delivered twice
     note = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "vote": {"day_votes": [], "agent_strategies": {"t0": "trust inv"}},
     }}
     assert [e.type for e in t.translate(note)] == ["strategy_update"]
     assert t.translate(note) == []  # identical note re-delivered by the re-run
+
+    # Round 2: a changed note
     changed = {"type": "updates", "ns": ["DAY_PHASE:x"], "data": {
         "vote": {"day_votes": [], "agent_strategies": {"t0": "inv turned"}},
     }}
@@ -428,12 +509,15 @@ def _day_chunk(node_name: str, delta: dict) -> dict:
 
 
 def test_start_opening_emits_round_opened_with_the_players_in_order():
+    # Arrange
     t = _seeded_translator()
     t.current_day = 2
     players = ["h", "inv", "sk", "t0", "v", "w0", "w1"]
 
+    # Act
     events = t.translate(_day_chunk("START_OPENING", {"day_round": "opening", "round_players": players}))
 
+    # Assert
     (opened,) = events
     assert opened.type == "round_opened"
     assert opened.round == "opening"
@@ -442,6 +526,7 @@ def test_start_opening_emits_round_opened_with_the_players_in_order():
 
 
 def test_start_closing_emits_the_moderator_line_then_round_opened():
+    # Arrange
     t = _seeded_translator()
     t.current_day = 3
     line = "Before the vote: w0 has been accused by inv and t0. w0 gets a last word."
@@ -452,8 +537,10 @@ def test_start_closing_emits_the_moderator_line_then_round_opened():
         "round_players": ["w0"],
     }
 
+    # Act
     events = t.translate(_day_chunk("START_CLOSING", delta))
 
+    # Assert
     types = []
     for event in events:
         types.append(event.type)
@@ -465,14 +552,17 @@ def test_start_closing_emits_the_moderator_line_then_round_opened():
 
 
 def test_a_round_turn_sends_only_its_strategy_note():
+    # Arrange
     t = _seeded_translator()
     held_line = {"day": 2, "day_round": "opening",
                  "entry": {"day": 2, "seq": 0, "player": "t0", "message": "I am the healer.",
                            "passed": False}}
     delta = {"round_candidates": [held_line], "agent_strategies": {"t0": "claim early"}}
 
+    # Act
     events = t.translate(_day_chunk("round_turn", delta))
 
+    # Assert
     types = []
     for event in events:
         types.append(event.type)
@@ -480,6 +570,7 @@ def test_a_round_turn_sends_only_its_strategy_note():
 
 
 def test_collect_round_sends_the_round_lines_like_discussion_turns():
+    # Arrange
     t = _seeded_translator()
     delta = {"day_channel": [
         {"day": 2, "seq": 0, "player": "inv", "message": "I checked w0: wolf.", "passed": False,
@@ -489,8 +580,10 @@ def test_collect_round_sends_the_round_lines_like_discussion_turns():
          "pass_reason": "voluntary"},
     ]}
 
+    # Act
     events = t.translate(_day_chunk("COLLECT_ROUND", delta))
 
+    # Assert
     types = []
     for event in events:
         types.append(event.type)
@@ -513,27 +606,32 @@ def test_a_discuss_ask_carries_its_round():
 
 
 def test_every_other_ask_carries_no_round():
+    # Round 1: a vote ask
     t = _seeded_translator()
     (vote,) = t.translate(_interrupt_for("day_votes", "opening"))
     assert vote.action_kind == "vote"
     assert vote.round is None
 
+    # Round 2: a discuss ask from a record with no round
     t = _seeded_translator()
     (old_record,) = t.translate(_interrupt_for("day_channel", "absent"))
     assert old_record.round is None
 
 
 def test_an_announced_round_turn_carries_its_round_and_the_interrupt_sends_no_second_ask():
+    # Arrange: a human turn announced in the opening round
     t = _seeded_translator()
     announced = {"type": "custom", "ns": ["DAY_PHASE:x"], "data": {
         "event": "human_turn_opened", "player": "t0", "role": "villager", "phase": "day_channel",
         "day": 2, "valid_targets": [], "day_round": "opening"}}
 
+    # Round 1: the announcement
     (ask,) = t.translate(announced)
     assert ask.type == "input_request"
     assert ask.action_kind == "discuss"
     assert ask.round == "opening"
 
+    # Round 2: the interrupt for the same turn
     assert t.translate(_interrupt_for("day_channel", "opening")) == []
 
 
@@ -546,6 +644,7 @@ def test_live_shaped_chunk_translates_like_its_saved_form():
     from Agents.schemas.game_events import DayChannel, DiscussionPassReason, FiringReason
     from tests.factories.builders import human_turn_request
 
+    # Arrange: the same two chunks, live-shaped and as saved
     entry = DayChannel(day=1, seq=2, player="t0", message="", passed=True,
                        pass_reason=DiscussionPassReason.VOLUNTARY,
                        firing_reason=FiringReason(tier="reactive", owes=["t1"]))
@@ -561,9 +660,13 @@ def test_live_shaped_chunk_translates_like_its_saved_form():
         {"type": "updates", "ns": [],
          "data": {"__interrupt__": [{"value": request.model_dump(mode="json"), "id": "i1"}]}},
     ]
+
+    # Act
     a, b = Translator(), Translator()
     got = [e for c in live for e in a.translate(c)]
     want = [e for c in saved for e in b.translate(c)]
+
+    # Assert
     assert [e.type for e in got] == ["pass_marker", "firing_reason", "input_request"]
     assert got == want
     assert got[0].pass_reason == "voluntary"
@@ -579,7 +682,11 @@ def test_fixture_replay_matches_the_golden_event_for_event():
 def test_human_path_matches_the_golden_event_for_event():
     from tests.fixtures.translator_golden import (
         GOLDEN_HUMAN, events_of, human_path_chunks, load_golden)
+
+    # Act
     got = events_of(human_path_chunks())
+
+    # Assert
     assert got == load_golden(GOLDEN_HUMAN)
     # the paths the captured game cannot reach are all present
     types = {e["type"] for e in got}
@@ -596,21 +703,31 @@ def test_human_path_matches_the_golden_event_for_event():
 
 
 def test_a_speech_carries_the_speakers_claim():
+    # Arrange
     t = _seeded_translator()
     delta = {"day_channel": [{"day": 2, "seq": 1, "player": "inv", "message": "I am the investigator.",
                               "claim": "investigator", "addressed_targets": []}]}
+
+    # Act
     (speech,) = t.translate({"type": "updates", "ns": [], "data": {"discuss": delta}})
+
+    # Assert
     assert (speech.type, speech.claim) == ("speech", "investigator")
 
 
 def test_an_announced_necromancer_turn_carries_its_bodies():
+    # Arrange
     t = _seeded_translator()
+
+    # Round 1: an announced turn
     chunk = {"type": "custom", "ns": [], "data": {
         "event": "human_turn_opened", "player": "sk", "role": "necromancer",
         "phase": "necromancer_target", "day": 3, "valid_targets": ["t0", "stay_put"],
         "day_round": None, "bodies": ["v"]}}
     (ask,) = t.translate(chunk)
     assert (ask.action_kind, ask.candidates, ask.bodies) == ("necromancer_target", ["t0", "stay_put"], ["v"])
+
+    # Round 2: an interrupt
     interrupt = {"type": "updates", "ns": [], "data": {"__interrupt__": [
         {"value": {"player_id": "h", "phase": "necromancer_target", "day": 3,
                    "valid_targets": ["t0"], "bodies": ["v", "w0"]}}]}}
@@ -621,18 +738,25 @@ def test_an_announced_necromancer_turn_carries_its_bodies():
 def test_the_carriers_kill_reads_and_its_skill_reads_are_both_sent():
     from Agents.nodes.night.pack import CARRIER_ROUND, SKILL_ROUND
     from tests.fixtures.translator_golden import _player_reads
+
+    # Arrange: reads from the carrier's kill round and from the skill round
     t = _seeded_translator()
     kill = _player_reads("w1", "illusionist", 2, "night_action")
     kill["data"]["round"] = CARRIER_ROUND
     skill = _player_reads("w1", "illusionist", 2, "night_action")
     skill["data"]["round"] = SKILL_ROUND
+
+    # Act and assert
     assert [e.round for e in [*t.translate(kill), *t.translate(skill)]] == [CARRIER_ROUND, SKILL_ROUND]
     assert t.translate(skill) == []  # a re-run of the skill turn is still sent once
 
 
 def test_the_extraction_input_is_kept_for_completion_and_never_sent():
+    # Arrange
     t = _seeded_translator()
     case = {"game_id": "g", "roles": {"player_1": "healer"}, "formatted_discussions": "..."}
     chunk = {"type": "custom", "ns": [], "data": {"event": "extraction_input", "case": case}}
+
+    # Act and assert
     assert t.translate(chunk) == []
     assert t.extraction_input == case

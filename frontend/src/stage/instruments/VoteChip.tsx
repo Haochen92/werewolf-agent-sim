@@ -6,9 +6,11 @@
  * the voter's head in a paper ring with the seat's numeral (the same face as a hung chip), or,
  * with no seat, an empty dashed ring.
  *
- * `FlatChip` is a chip lying on a surface, seen from the house: a squashed disc with its edge
- * showing, back up (anonymous, in the jar) or face up (counted, on a plate). Numbers from the
- * vote bench (rev 64 `chipBack`, `chipFace`, `chipFlat`).
+ * `FlatChip` is a chip lying on a surface, seen from the house: back up (anonymous, in the jar),
+ * the owner's navy wooden chip as a picture (2026-10-18, scripts/fit_chips.py); counted, on a
+ * plate's tower, the owner's maple ring with the voter's face inlaid in it (2026-10-19, the same
+ * script); face up anywhere else (your own chip in the jar), a squashed disc drawn with its edge
+ * showing. Numbers from the vote bench (rev 64 `chipBack`, `chipFace`, `chipFlat`).
  */
 import { useId } from 'react';
 import { SPRITES, type Character } from '@/assets/manifest';
@@ -130,11 +132,58 @@ export interface FlatChipProps {
   face?: Omit<ChipFaceProps, 'x' | 'y' | 'r' | 'sw'> | null;
   /** Its thickness, as a fraction of the radius: the step a tower of them climbs by. */
   t?: number;
+  /** Counted, on a plate's tower: the maple ring, the face inlaid in it (its edge is the step). */
+  ring?: boolean;
 }
 
+/**
+ * The hidden chip's picture, in radii from its top-left, as fit_chips.py cut it: its width and
+ * height, and its face's centre (squashed to the table's 0.42; its edge is 0.21, the jar's 0.2).
+ */
+const HIDDEN_R = { w: 2.0084, h: 1.0602, cx: 1.0042, cy: 0.4239 } as const;
+
+/**
+ * The counted chip's ring, the same way: stretched to 0.42, its edge 0.425 (the towers' step); its
+ * hole is 0.73 across, so the face inlaid in it is drawn a touch wider and nothing shows through.
+ */
+const RING_R = { w: 2.0049, h: 1.2744, cx: 1.0012, cy: 0.4235, face: 0.74 } as const;
+
 /** A chip lying on its back (anonymous) or face up, the edge showing below the top. */
-export function FlatChip({ x, y, r, face, t = 0.2 }: FlatChipProps) {
-  const ec = face ? CHIP.faceEdge : CHIP.edge;
+export function FlatChip({ x, y, r, face, t = 0.2, ring = false }: FlatChipProps) {
+  // a phone draws the chip far under its file's size: its copy
+  const small = useSmall();
+  if (!face) {
+    const pic = small ? SPRITES.small.props.chipHidden : SPRITES.props.chipHidden;
+    return (
+      <image
+        href={pic.src}
+        x={x - HIDDEN_R.cx * r}
+        y={y - HIDDEN_R.cy * r}
+        width={HIDDEN_R.w * r}
+        height={HIDDEN_R.h * r}
+        preserveAspectRatio="none"
+      />
+    );
+  }
+  if (ring) {
+    const pic = small ? SPRITES.small.props.chipRing : SPRITES.props.chipRing;
+    return (
+      <g>
+        <image
+          href={pic.src}
+          x={x - RING_R.cx * r}
+          y={y - RING_R.cy * r}
+          width={RING_R.w * r}
+          height={RING_R.h * r}
+          preserveAspectRatio="none"
+        />
+        <g transform={`translate(0,${(y * (1 - 0.42)).toFixed(2)}) scale(1,0.42)`}>
+          <ChipFace x={x} y={y} r={r * RING_R.face} sw={1 / 0.7} {...face} />
+        </g>
+      </g>
+    );
+  }
+  const ec = CHIP.faceEdge;
   const ry = r * 0.42;
   return (
     <g>
@@ -158,40 +207,16 @@ export function FlatChip({ x, y, r, face, t = 0.2 }: FlatChipProps) {
           dangerouslySetInnerHTML={{
             __html: stitch(
               `M${x - r * 0.8},${y + r * t * 0.5 + r * 0.3} Q${x},${y + r * t * 0.5 + r * 0.5} ${x + r * 0.8},${y + r * t * 0.5 + r * 0.3}`,
-              face ? '#8d7a55' : CHIP.ring,
+              '#8d7a55',
               1,
               0.8,
             ),
           }}
         />
       ) : null}
-      {face ? (
-        <g transform={`translate(0,${(y * (1 - 0.42)).toFixed(2)}) scale(1,0.42)`}>
-          <ChipFace x={x} y={y} r={r} sw={1 / 0.7} {...face} />
-        </g>
-      ) : (
-        <>
-          <ellipse
-            cx={x}
-            cy={y}
-            rx={r}
-            ry={ry}
-            fill={CHIP.back}
-            stroke={K2}
-            strokeWidth={1.3}
-          />
-          <ellipse
-            cx={x}
-            cy={y}
-            rx={r * 0.68}
-            ry={r * 0.28}
-            fill="none"
-            stroke={CHIP.ring}
-            strokeWidth={1}
-            strokeDasharray="2 2"
-          />
-        </>
-      )}
+      <g transform={`translate(0,${(y * (1 - 0.42)).toFixed(2)}) scale(1,0.42)`}>
+        <ChipFace x={x} y={y} r={r} sw={1 / 0.7} {...face} />
+      </g>
     </g>
   );
 }

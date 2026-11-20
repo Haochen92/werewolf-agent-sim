@@ -1,7 +1,7 @@
 """Freeze the healer's passed day-2 turns of game 2f19d908, as played and with the roleblock's certain
 consequence written into its night record.
 
-Record: evidence/reasoning_failures/experiment_log.md (case R1). On night 1 the healer (seat 8) was
+Record: evidence/gameplay/deduction/experiment_log.md (case R1). On night 1 the healer (seat 8) was
 roleblocked. On day 2 the trailseer said it followed player_7 to player_8, and player_7 admitted the
 visit and refused to claim a role. In this cast only the Chanteuse blocks, and blocking is a visit, so
 the healer held every premise for "player_7 is very likely the Chanteuse", wrote them side by side in
@@ -35,8 +35,8 @@ import evaluation.experiments.haiku_game_turn_cases as turns  # noqa: E402
 from evaluation.src.data.builders.hallucination_bench import _case_id  # noqa: E402
 
 GAME = "2f19d908-a6b3-4faf-8f16-c2a009bb0428"
-OUT = Path("evidence/reasoning_failures/data/deduction_injection/cases.jsonl")
-SILENCE_OUT = Path("evidence/reasoning_failures/data/deduction_injection/silence_cases.jsonl")
+OUT = Path("evidence/gameplay/deduction/data/deduction_injection/cases.jsonl")
+SILENCE_OUT = Path("evidence/gameplay/deduction/data/deduction_injection/silence_cases.jsonl")
 SPEAKER = "player_8"
 
 AS_PLAYED = "You were roleblocked: your action was not carried out and you learned nothing tonight."

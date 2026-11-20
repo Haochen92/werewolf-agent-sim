@@ -1,6 +1,6 @@
 {
   "label": "phase3_haiku_summary",
-  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "dataset": "evidence/gameplay/data/phase3_turn_replay/cases.jsonl",
   "n": 5,
   "workers": 3,
   "slices": ["pinned", "control", "f02_rule"],

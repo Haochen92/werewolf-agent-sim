@@ -1,0 +1,50 @@
+{
+  "artifact": "evidence/game_play_enhancement/data/phase3_turn_replay/runs/phase3_f02_wording/eval_results/judged_flashlite_wording.jsonl",
+  "config": {
+    "arms": [
+      {
+        "env": {},
+        "label": "luna_wording",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      },
+      {
+        "env": {},
+        "label": "flashlite_wording",
+        "memory": "none",
+        "model": "gemini-3.5-flash-lite"
+      }
+    ],
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "golden_model": "gemini-3.5-flash",
+    "label": "phase3_f02_wording",
+    "n": 5,
+    "note": "The four f02 rule turns after the illusionist card states the carrier exception in one sentence; the baseline is phase3_luna (the same turns and models on the previous wording).",
+    "precision_model": "gemini-3.5-flash",
+    "recall_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "f02_rule"
+    ],
+    "workers": 3
+  },
+  "config_sha256": "37e7ee62f32b56e2624f5bb9d7f02fb4d01287dee5babe7b868f05ab15d6f57a",
+  "config_source": "evaluation/config/hallucination_bench_phase3_f02_wording.json",
+  "created_at": "2026-10-23T01:56:38.513685",
+  "created_from": "eval-hallucination-bench run 'phase3_f02_wording' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/phase3_f02_wording/judged_flashlite_wording.jsonl",
+  "inputs": [
+    {
+      "count": 18,
+      "path": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "sha256": "4d9688fb54a34a7c5676d59ccee6d2261c09aa2a4afe114374a613e262a7c107"
+    }
+  ],
+  "models": [
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "openai/gpt-6-luna"
+  ]
+}

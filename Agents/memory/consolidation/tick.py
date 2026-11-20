@@ -7,15 +7,17 @@
   every change it made.
 - **The learning tick** (``run_tick``; paid, every N games): fold the window's new observations (the
   offline extraction job's output), advance the decay clocks, synthesize (reading the lessons' labels
-  as the last credit pass left them) and run the point dedup, persist to Postgres, and export the
+  as the last credit pass left them) and, when ``TickConfig.sp_dedup`` is on (off until tuned), run the
+  point dedup, persist to Postgres, and export the
   frozen ``demo_gen{k}`` snapshot. It never prunes or evicts; that is the credit pass's.
 
 Baseline coherence in production (load-bearing): the OFF window MUST be memory-off, agent-only
 games graded by the same fixed rule — mode-1 traffic (+ the self-play trickle) is that stream. The
-human-seat poisoning guard lives in ``credit_rules._iter_game_records``, so human-involved games
-are inert here even if a glob accidentally includes them; per-game extraction dump dirs for
-human games must still be excluded by the caller (extraction has no record-level guard). The
-offline extraction job's output (``--extracted``) skips its human-seat games itself.
+human-seat guard lives in ``credit_rules`` (``_iter_game_records``, ``iter_eval_cases``): credit
+reads games with a human seat but grades only their AI seats' decisions (owner, 2026-10-26).
+Extraction stays AI-only: per-game extraction dump dirs for human games must still be excluded by
+the caller (extraction has no record-level guard), and the offline extraction job's output
+(``--extracted``) skips its human-seat games itself.
 
 Ten-seat since 2026-10-13: the store bootstraps from ``ten_seat_v2`` and its snapshots go to their own
 folder (the nine-seat ``demo_snapshots`` are left as they are).
@@ -95,7 +97,9 @@ def run_credit_pass(window, off_window: str, cfg: TickConfig | None = None, dsn:
         try:
             db.materialize(conn, scratch)
             sp_path = scratch / "strategy_points.json"
-            cstats = credit_apply(sp_path, games, base_rates=compute_base_rates(off_window), off_window=off_window)
+            cstats = credit_apply(sp_path, games, off_window=off_window,
+                                  base_rates=compute_base_rates(off_window, cfg.baseline_by_day),
+                                  by_day=cfg.baseline_by_day, min_n=cfg.baseline_min_n)
             cdist = credit_distribution(sp_path, min_follow=cfg.prune_min_follow)
             store = json.loads(sp_path.read_text())
             rates = json.loads((scratch / "base_rates.json").read_text())
@@ -103,7 +107,8 @@ def run_credit_pass(window, off_window: str, cfg: TickConfig | None = None, dsn:
             sp_path.write_text(json.dumps(store, indent=2))
             changes = pe.pop("changes", [])
             db.ingest(conn, scratch)
-            stats = {"games": len(games), "credit": cstats, "credit_distribution": cdist, "prune_evict": pe}
+            stats = {"games": len(games), "credit": cstats, "credit_distribution": cdist, "prune_evict": pe,
+                     "baseline": {"by_day": cfg.baseline_by_day, "min_n": cfg.baseline_min_n}}
             db.record_credit_run(conn, stats, changes, [g.get("game_id") for g in games])
             if cfg.publish:
                 stats["publish"] = publish_from_db(conn, dsn, source={"step": "credit", "games": len(games)})
@@ -146,7 +151,7 @@ def run_tick(game_store_dirs: list[str] | None = None,
             first_seen, reinforced, counts = db.load_obs_sidecar(conn)
             _stamp_obs_generations(scratch, gen, first_seen, reinforced, counts)
 
-            # 3. consolidation store-ops (decay -> synth -> dedup), on the labels the last credit pass left
+            # 3. consolidation store-ops (decay -> synth -> dedup when sp_dedup), on the labels the last credit pass left
             cons = consolidate(scratch, cfg, obs_gen_map=first_seen, current_gen=gen,
                                reinforced_map=reinforced)
 

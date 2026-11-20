@@ -44,10 +44,9 @@ def _apply_strategy_operation(
     if survivor_key is None:
         return "failed", 0
     survivor_value = items_by_key[survivor_key].value
-    # Never across stages, whatever the judge says: a point learned at another stage of the game
-    # (alive bucket, partner lost, uses left) stays, since the live stage filter serves it to seats the
-    # survivor does not reach. Deterministic, the filter's own check (the flash-lite dry run of
-    # 2026-10-13 merged across stages in 10 of 30 drops).
+    # Backstop: a point from another stage is served to seats the survivor never reaches, so it stays
+    # whatever the judge says. The partition (sp_gate_key) already keeps stages apart before the judge,
+    # so this fires only on an ungated run (gate_enabled=False); within a partition stages are equal.
     from Agents.memory.retrieval.dimension_gating import stage_mismatch
 
     survivor_dims = survivor_value.get("dimensions") or {}

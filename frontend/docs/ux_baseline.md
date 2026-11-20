@@ -1,5 +1,10 @@
 # Frontend UX baseline — v1 (the build spec for the first version)
 
+- **Question:** what should v1 of the app look like and do, page by page?
+- **Decision:** ruled 2026-08-20, refined 2026-08-22.
+- **Answer:** built as v1 (build_log); the theatre replaced 2026-09-25, the type 2026-10-16.
+- **What followed:** `stage_architecture.md`, `beat_sheet.md`, `site_architecture.md`, `typography.md`. Two cross-page rules survive (§4: no token streaming; the client never gates).
+
 > Ruled 2026-08-20. This is the UX/visual companion to [`build_plan.md`](build_plan.md)
 > (architecture/stack/phasing) — together they are the complete handoff for implementation.
 > Idea source: [`design_log.md`](design_log.md) §3/§7 (aesthetics) and §2/§6/§8 (UX); wire
@@ -113,7 +118,7 @@ select (from `GET /models`, disabled until a key is entered; empty = house defau
 `build_plan.md` §5) · start button → redirect to `/games/[id]`. Copy states plainly:
 key is sent once, never stored server-side, BYOK games do not survive server restarts.
 
-### Rooms `/rooms` and `/rooms/new`
+### Rooms `/rooms` and `/play/room` (the room form, under Play since 2026-10-18)
 Browser: rows from `GET /rooms` — name (fallback "Unnamed table"), roster count
 (`players/max_seats`), created-ago, lock state (locked rows render with a padlock,
 join disabled). Join = name prompt → `POST /join` → `/games/[id]`. Create page: room

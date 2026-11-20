@@ -63,6 +63,10 @@ class ServerSettings(BaseSettings):
     left (default 1 day). While parked it costs nothing; the sweep just stops recovery
     reviving it forever."""
 
+    EVAL_CASES_TTL_DAYS: int = 183
+    """How long a finished game's evaluation cases are kept (default about six months). The
+    sweeper deletes older rows, so the table stays bounded: about 0.4 MB a game."""
+
     SWEEP_INTERVAL_SECONDS: int = 60
     """How often the retention sweeper looks for parked games past their shelf life."""
 

@@ -1,0 +1,177 @@
+/* The hero's paper ticket (HeroTicket.tsx). Still at rest: the shape is a mask, the shadow and
+   the aged rim are drawn once; a hover lifts the whole ticket (a move, no repaint) and nudges
+   its arrow. */
+
+.ticket {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: var(--ticket-w, 248px);
+  color: var(--town-ink);
+  text-decoration: none;
+  text-align: left;
+  transition: transform 0.2s ease;
+}
+/* the shadow it casts on the scene: unmasked, under the paper, a little inside its edges */
+.ticket::before {
+  content: '';
+  position: absolute;
+  inset: 8px 10px 0;
+  z-index: -1;
+  border-radius: 6px;
+  box-shadow: 0 16px 26px -8px rgba(0, 0, 0, 0.85);
+}
+.ticket:hover {
+  transform: translateY(-3px);
+}
+.ticket:focus-visible {
+  outline: 2px solid var(--town);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* the paper: the fibre tile, an aged rim, a printed inner rule; the scalloped ends, their middle
+   notches and the bite out of the top are cut from it (each mask layer is the paper less one
+   cut, and the layers intersect) */
+.face {
+  --scallop: 3.4px;
+  --notch: 10px;
+  position: relative;
+  /* as tall as its neighbour, its foot at the bottom */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 15px;
+  border-radius: 4px;
+  font-family: var(--font-serif);
+  background:
+    url('../../../../assets/site/ticket-paper.webp') 0 0 / 256px 256px repeat,
+    var(--paper);
+  box-shadow:
+    inset 0 0 0 1px rgba(110, 70, 25, 0.22),
+    inset 0 0 22px rgba(120, 78, 28, 0.3);
+  -webkit-mask:
+    radial-gradient(circle var(--scallop) at 0 50%, transparent 95%, #000) 0 0 / 100% 11px
+      repeat-y,
+    radial-gradient(circle var(--scallop) at 100% 50%, transparent 95%, #000) 0 0 / 100%
+      11px repeat-y,
+    radial-gradient(circle var(--notch) at 0 50%, transparent 97%, #000),
+    radial-gradient(circle var(--notch) at 100% 50%, transparent 97%, #000),
+    radial-gradient(circle 6px at 50% 0, transparent 96%, #000);
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle var(--scallop) at 0 50%, transparent 95%, #000) 0 0 / 100% 11px
+      repeat-y,
+    radial-gradient(circle var(--scallop) at 100% 50%, transparent 95%, #000) 0 0 / 100%
+      11px repeat-y,
+    radial-gradient(circle var(--notch) at 0 50%, transparent 97%, #000),
+    radial-gradient(circle var(--notch) at 100% 50%, transparent 97%, #000),
+    radial-gradient(circle 6px at 50% 0, transparent 96%, #000);
+  mask-composite: intersect;
+}
+.face::before {
+  content: '';
+  position: absolute;
+  inset: 8px 12px;
+  border: 1px solid rgba(74, 46, 10, 0.28);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* the print a shade stronger than a tag's (owner, 2026-10-18): a bolder title, the small lines darker */
+.kicker {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.78;
+}
+.title {
+  display: block;
+  margin: 4px 0 6px;
+  font-size: var(--ticket-title, 27px);
+  font-weight: 600;
+  line-height: 1.05;
+}
+.line {
+  display: block;
+  margin-bottom: 10px;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.92;
+}
+/* the rule, ending in the way in */
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+}
+.foot::before {
+  content: '';
+  flex: 1;
+  height: 1.3px;
+  background: var(--town-ink);
+}
+.go {
+  font-size: 17px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+.ticket:hover .go {
+  transform: translateX(3px);
+}
+
+/* a phone (and a portrait tablet: the site's phone layout, two rows of nav): the title and the
+   way in, one line each ticket, two side by side (owner's mock, 2026-10-18; the hall's too) */
+@media (max-width: 860px) {
+  .ticket {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    max-width: 260px;
+  }
+  .face {
+    --scallop: 2.8px;
+    --notch: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 4px;
+    height: 100%;
+    padding: 19px 14px 18px 16px;
+  }
+  .face::before {
+    inset: 6px 9px;
+  }
+  .kicker,
+  .line {
+    display: none;
+  }
+  .title {
+    grid-column: 1;
+    margin: 0;
+    font-size: clamp(15px, 4.3vw, 19px);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .foot {
+    grid-column: 2;
+    margin: 0;
+  }
+  .foot::before {
+    display: none;
+  }
+  .go {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket,
+  .go {
+    transition: none;
+  }
+}

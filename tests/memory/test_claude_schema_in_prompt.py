@@ -72,3 +72,42 @@ def test_a_batch_with_the_schema_in_the_prompt_sends_no_enforced_format(monkeypa
     assert all("output_config" not in r["params"] or "format" not in r["params"]["output_config"]
                for r in sent["requests"])
     assert out == {"r1": _Verdict(verdict="a", score=1), "r2": None}
+
+
+def _ended_batches(created: list, retrieved: list):
+    class _Batches:
+        def create(self, requests):
+            created.append(requests)
+            return SimpleNamespace(id="b-new", processing_status="ended")
+
+        def retrieve(self, batch_id):
+            retrieved.append(batch_id)
+            return SimpleNamespace(id=batch_id, processing_status="ended")
+
+        def results(self, batch_id):
+            return [SimpleNamespace(custom_id="r1", result=SimpleNamespace(type="succeeded", message=SimpleNamespace(
+                usage=_usage(), content=[SimpleNamespace(type="text", text='{"verdict": "a", "score": 1}')],
+                stop_reason="end_turn")))]
+
+    return _Batches()
+
+
+def test_a_new_batch_reports_its_id_before_it_is_waited_on(monkeypatch):
+    created, retrieved, seen = [], [], []
+    monkeypatch.setattr(cs, "_client", lambda: SimpleNamespace(
+        messages=SimpleNamespace(batches=_ended_batches(created, retrieved))))
+    monkeypatch.setattr(cs, "_trace", lambda *a, **k: None)
+    out = cs.batch_parse({"r1": ("P x", _Verdict)}, "claude-haiku-5-5", "off", on_submit=seen.append)
+    assert seen == ["b-new"] and len(created) == 1
+    assert out == {"r1": _Verdict(verdict="a", score=1)}
+
+
+def test_a_resumed_batch_is_collected_and_never_sent_again(monkeypatch):
+    created, retrieved, seen = [], [], []
+    monkeypatch.setattr(cs, "_client", lambda: SimpleNamespace(
+        messages=SimpleNamespace(batches=_ended_batches(created, retrieved))))
+    monkeypatch.setattr(cs, "_trace", lambda *a, **k: None)
+    out = cs.batch_parse({"r1": ("P x", _Verdict)}, "claude-haiku-5-5", "off", batch_id="b-old",
+                         on_submit=seen.append)
+    assert created == [] and seen == [] and retrieved == ["b-old"]
+    assert out == {"r1": _Verdict(verdict="a", score=1)}

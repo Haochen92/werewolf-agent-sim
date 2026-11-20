@@ -11,10 +11,17 @@
  * remounts its scene never remounts the picture: a remounted `<img>` on iPhone Safari shows
  * nothing until its decode lands, a black frame per beat, and decodes the sheet again each
  * time (build log §8.8).
+ *
+ * `WingContext`: the same for the seat rail. A scene describes its wing (`StageWing`) and the
+ * Stage draws one, at the foot of the HUD layer, kept from the waiting room to the game's end:
+ * the dining car, a night room and the platform each describe theirs, and a change between
+ * them updates the same wing in place instead of building it again (owner, 2026-10-18: the
+ * HUD that stays all game is drawn once).
  */
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type ComponentProps } from 'react';
 import type { Phase } from './paint/materials';
 import type { Hud } from './units';
+import type { Wing } from './instruments/Wing';
 
 /** The stage is drawn small (`data-small`): a phone, or a window that draws it under three-quarter size. */
 export const SmallContext = createContext(false);
@@ -49,6 +56,8 @@ export interface BackdropSpec {
   /** Played: the hour the car was at before this beat. */
   from: Phase | null;
   fadeDelay: number;
+  /** The hour the next beat turns to: its sheet is decoded now, so the change finds it ready. */
+  ahead: Phase | null;
   /** The motion speed the scene plays at (the sheet is drawn outside the scene's provider). */
   k: number;
 }
@@ -56,3 +65,17 @@ export interface BackdropSpec {
 export const BackdropContext = createContext<((spec: BackdropSpec | null) => void) | null>(
   null,
 );
+
+/** A scene's wing, as it describes it: the wing's own props. */
+export type WingSpec = ComponentProps<typeof Wing>;
+
+/**
+ * The Stage owns the wing for its whole lifetime. Scenes update its description without
+ * withdrawing it on unmount: a successor may arrive in a later commit. A scene can explicitly
+ * hide the wing with width 0 (the workbench's HUD-free view).
+ */
+export interface WingHost {
+  show(spec: WingSpec): void;
+}
+
+export const WingContext = createContext<WingHost | null>(null);

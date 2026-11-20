@@ -22,7 +22,8 @@ from server.schemas.requests import (
 )
 
 from ._shared import (
-    authorize_model, clear_seat_cookie, live_status, require_memory_available, set_seat_cookie,
+    authorize_model, clear_seat_cookie, live_status, require_memory_available, resolve_backup,
+    set_seat_cookie,
 )
 
 router = APIRouter(tags=["rooms"])
@@ -43,9 +44,11 @@ async def create_room(body: NewRoom, games: GamesRegistry, house: House,
     """
     await require_memory_available(body.memory, runtime)
     model = await authorize_model(house, body.api_key, body.model)
+    backup_model, backup_key = resolve_backup(body.backup, body.api_key, model)
     try:
         room = await games.open_room(api_key=body.api_key, model=model, name=body.name,
-                                     memory=body.memory)
+                                     memory=body.memory, backup_model=backup_model,
+                                     backup_key=backup_key)
     except KeyRefused as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return RoomCreated(game_id=room.game_id, host_key=room.host_key)

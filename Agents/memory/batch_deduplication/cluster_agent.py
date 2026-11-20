@@ -171,5 +171,5 @@ def _downgrade_merge_to_keep(
 
 
 def _langfuse_handler():
-    from langfuse.langchain import CallbackHandler
-    return CallbackHandler()
+    from Agents.tracing import create_langfuse_handler
+    return create_langfuse_handler()

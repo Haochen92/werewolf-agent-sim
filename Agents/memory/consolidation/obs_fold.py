@@ -46,9 +46,9 @@ def merge_new_obs(store_dir: str | Path, snapshot_dir: str | Path, temp_dirs: li
                   dedup: bool = True, dedup_model: str = "anthropic/claude-haiku-5-5",
                   no_merge: bool = True) -> dict:
     """Append the parallel games' new obs into store_dir (which equals the snapshot at call time), then
-    freeze-old dedup. Returns {"new_obs": n, "deduped": bool, "no_merge": bool}. The dedup self-advances
-    last_dedup_at, so each generation's new obs are the 'new' set and the prior store is frozen (cold
-    gen-1 dedups all).
+    freeze-old dedup. Returns {"new_obs": n, "deduped": bool, "no_merge": bool}. The appended keys are
+    passed as the dedup's new set (``new_keys``), so only they are judged and the prior store is frozen;
+    the tick's scratch folder carries no last_dedup_at marker to fall back on.
 
     no_merge=True (default) runs the dedup TRIAGE-ONLY (pass 1 on `dedup_model`, a cheap model): KEEP/DISCARD
     collapse exact dups + bump observation_count, but near-dups are kept SEPARATE (no merge text, no
@@ -69,9 +69,12 @@ def merge_new_obs(store_dir: str | Path, snapshot_dir: str | Path, temp_dirs: li
         from Agents.memory.batch_deduplication.config import BatchDedupRunConfig, TwoPassConfig
         from Agents.memory.batch_deduplication.orchestration import run_batch_memory_dedup
         two_pass = TwoPassConfig(triage_model=dedup_model, skip_verify=True) if no_merge else None
+        # The appended keys are the new set: the tick's working folder has no last-dedup marker,
+        # so without them every stored observation would be re-judged against every other.
+        appended = {r["key"] for recs in new_by_ns.values() for r in recs}
         cfg = BatchDedupRunConfig(
             seed_store_dir=store_dir, dump_store_dir=store_dir, model=dedup_model, two_pass=two_pass,
-            incremental=True, apply=True, memory_kinds=["observations"],
+            incremental=True, new_keys=appended, apply=True, memory_kinds=["observations"],
         )
         run_batch_memory_dedup(cfg)  # freeze-old: only new-key clusters touched; old frozen
     return {"new_obs": n, "deduped": bool(dedup and n), "no_merge": no_merge}

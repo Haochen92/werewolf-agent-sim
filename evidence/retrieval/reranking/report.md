@@ -1,3 +1,24 @@
+> **Write-up: no detailed read needed.** Its blocks (41–42) are already filed in the
+> [map](../../../writeup/_planning/map.md); read the [retrieval report](../report.md) instead.
+
+> **Superseded record (May 2026).** Written 2026-05-23 and kept as it was, with its 2026-10-14 addendum
+> at the end. The read path today, and this study beside the filter and capacity studies, are in the
+> [retrieval report](../report.md), "The model reranker". Code paths below are May's; current ones are
+> in the addendum.
+>
+> - **Question.** Does a model call that re-scores the retrieved candidates against the situation give a
+>   seat better-fitting, less repetitive lessons?
+> - **Test.** The same 5 frozen cases on the nine-seat v4 store, cleaned (v4_deduped) and not, in four
+>   configurations; one judge (Gemini 2.5 Flash).
+> - **Answer.** For strategy points, reranking alone raised efficiency from 1.80 to 3.60 and relevance
+>   from 3.20 to 3.80 on the cleaned store, with smaller sets (2.8 items against 3.8); filtering first
+>   scored lower (efficiency 2.20). Observations gained nothing. A direction on 5 cases, not a size.
+> - **What followed.** Both rerank switches are off by default; served games do not rerank, so the
+>   "Final Pipeline Configuration" below never ran there. A trained cross-encoder built to replace the
+>   call is not wired in ([fine-tuning report](../../fine_tuning/report.md)).
+
+---
+
 # Reranking: LLM Re-scoring for Strategy Point Relevance
 
 ## The Problem
@@ -90,3 +111,14 @@ Cost profile:
 - `Agents/agents.py:_reranking_enabled_for_role` — per-role reranking toggle
 - `eval_configs/reranking_experiment.json` — clean store reranking eval config
 - `eval_configs/rerank_dirty_store.json` — dirty store reranking eval config
+
+*Addendum 2026-10-14.* Where this stands in today's code. The reranker is in
+`Agents/memory/retrieval/rerank_agent.py`, with observations and strategy points switched separately
+per role by `reranking_config` on `RunConfig` (`Agents/config/run.py`). Both are off by default.
+The served game retrieves strategy points only and does not rerank them, so the recommended
+configuration above does not run in the deployed demo. The paired memory A/B
+(`../../memory_system/effectiveness/`) ran a reranked arm, and its result is reported there. A
+cross-encoder was later trained as a cheaper replacement for this LLM call
+(`../../fine_tuning/cross_encoder/`). It was not wired into the read path. The eval configs are
+now in `evaluation/config/reranking/`. Every number above comes from 5 scenarios on the nine-seat
+v4 store, so it gives a direction and is not a score.

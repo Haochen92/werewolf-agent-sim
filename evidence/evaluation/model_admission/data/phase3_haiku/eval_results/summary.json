@@ -1,0 +1,143 @@
+{
+  "label": "phase3_haiku",
+  "run_at": "2026-10-11T14:16:51.127993+00:00",
+  "config": {
+    "label": "phase3_haiku",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "flashlite_current",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "haiku55_nothink",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "minimal",
+          "LLM_STRUCTURED_MODE": "forced_tool"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "haiku55_medium",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "Claude Haiku 5.5 (Anthropic API, Max-plan credits) on the fourteen Phase 3 frozen turns, same judges as phase3_luna: thinking off (forced tool call) and adaptive thinking at effort medium (JSON-schema output), against gemini-3.5-flash-lite, the live default, regenerated on today's code."
+  },
+  "n_cases": 14,
+  "arms": {
+    "flashlite_current": {
+      "bad": {
+        "all": "27/69 (39%)",
+        "phase:day_discussion": "27/69 (39%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "1/10 (10%)",
+        "role:sentinel": "10/15 (67%)",
+        "role:sigilist": "5/10 (50%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "5/19 (26%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:control": "9/10 (90%)",
+        "slice:f02_rule": "10/19 (53%)",
+        "slice:pinned": "8/40 (20%)",
+        "source:phase3_capture": "27/69 (39%)"
+      },
+      "deception": 0,
+      "invalid": 1,
+      "generation_per_sample": {
+        "input": 7075.1,
+        "cached": 4014.2,
+        "output": 1873.5,
+        "reasoning": 1410.1,
+        "seconds": 6.2
+      },
+      "generation_samples_measured": 69
+    },
+    "haiku55_nothink": {
+      "bad": {
+        "all": "21/67 (31%)",
+        "phase:day_discussion": "21/67 (31%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "1/8 (12%)",
+        "role:sentinel": "3/15 (20%)",
+        "role:sigilist": "7/10 (70%)",
+        "role:speculator": "0/5 (0%)",
+        "role:trailseer": "5/19 (26%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:control": "3/10 (30%)",
+        "slice:f02_rule": "11/20 (55%)",
+        "slice:pinned": "7/37 (19%)",
+        "source:phase3_capture": "21/67 (31%)"
+      },
+      "deception": 0,
+      "invalid": 3,
+      "generation_per_sample": {
+        "input": 9560.1,
+        "cached": 7045.1,
+        "output": 815.9,
+        "reasoning": 0.0,
+        "seconds": 4.1
+      },
+      "generation_samples_measured": 67
+    },
+    "haiku55_medium": {
+      "bad": {
+        "all": "11/70 (16%)",
+        "phase:day_discussion": "11/70 (16%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "4/10 (40%)",
+        "role:sentinel": "1/15 (7%)",
+        "role:sigilist": "0/10 (0%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "5/20 (25%)",
+        "role:vigilante": "0/5 (0%)",
+        "slice:control": "1/10 (10%)",
+        "slice:f02_rule": "1/20 (5%)",
+        "slice:pinned": "9/40 (22%)",
+        "source:phase3_capture": "11/70 (16%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10135.5,
+        "cached": 7614.3,
+        "output": 2746.5,
+        "reasoning": 2130.9,
+        "seconds": 13.7
+      },
+      "generation_samples_measured": 70
+    }
+  },
+  "paired_vs_first": {
+    "haiku55_nothink": {
+      "cases": 14,
+      "better": 6,
+      "worse": 5,
+      "two_sided_sign_p": 1.0
+    },
+    "haiku55_medium": {
+      "cases": 14,
+      "better": 7,
+      "worse": 3,
+      "two_sided_sign_p": 0.3438
+    }
+  }
+}

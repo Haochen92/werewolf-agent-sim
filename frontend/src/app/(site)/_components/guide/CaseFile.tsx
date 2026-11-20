@@ -9,6 +9,7 @@
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { Slate } from '@/components/site';
+import { RevealSign } from '@/stage/instruments/RevealSign';
 import type { ReplaySummary } from '@/types/contracts';
 import { ReplayDemo } from './StopDemos';
 import { useTabs } from './useTabs';
@@ -129,12 +130,15 @@ export function CaseFile() {
 
         <article className={classes.file} {...t.panel('reveal')}>
           <div className={`${classes.clip} ${classes.live}`}>
+            {/* the switch as it stands on the stage's strip, on (owner, 2026-10-22) */}
+            <RevealSign className={classes.reveal} />
             <RevealDemo />
           </div>
           <IndexCard title="Reveal and the case file">
             <li>
-              <b>Reveal</b> shows what was hidden: every role, the night actions, the
-              wolves&rsquo; chat, and why a player passed.
+              <b>Reveal</b>, the switch at the top of the stage, shows what was hidden:
+              every role, the night actions, the wolves&rsquo; chat, and why a player
+              passed.
             </li>
             <li>
               Select a player for their case file. <b>Notes</b>: their private plan, page by

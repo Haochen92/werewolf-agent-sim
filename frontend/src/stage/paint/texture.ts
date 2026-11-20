@@ -1,6 +1,6 @@
 /**
- * The room's painted surfaces as SVG patterns: seamless tiles of walnut veneer, floor boards and
- * velvet, laid in the world's units. The shapes stay the paint's own vector; the tile only fills
+ * The room's painted surfaces as SVG patterns: seamless tiles of walnut veneer and floor boards,
+ * laid in the world's units. The shapes stay the paint's own vector; the tile only fills
  * them, anchored to the world rather than to the shape, so the grain stays put when the side
  * slot moves the room, and carries on across two drawings that meet (the room and its bleed).
  *
@@ -18,9 +18,6 @@ export interface Wood {
 /** Units per repeat of the walnut tile (640 px): the grain reads as veneer at stage size. */
 export const WALNUT = 400;
 
-/** Units per repeat of the velvet tile (512 px): a fold every ~50 units. */
-export const VELVET = 400;
-
 /** The walnut tile, defined once in a drawing's defs for its patterns to `<use>`. */
 export const walnutImage = (id: string, href: string): string =>
   `<image id="${id}" href="${href}" width="${WALNUT}" height="${WALNUT}" preserveAspectRatio="none"/>`;
@@ -36,10 +33,6 @@ export const walnutAcross = (id: string, img: string): string =>
  */
 export const boards = (id: string, href: string, y0: number, plank: number): string =>
   `<pattern id="${id}" patternUnits="userSpaceOnUse" x="0" y="${y0}" width="${16 * plank}" height="${8 * plank}"><image href="${href}" width="${16 * plank}" height="${8 * plank}" preserveAspectRatio="none"/></pattern>`;
-
-/** Velvet in soft vertical folds. */
-export const velvet = (id: string, href: string): string =>
-  `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${VELVET}" height="${VELVET}"><image href="${href}" width="${VELVET}" height="${VELVET}" preserveAspectRatio="none"/></pattern>`;
 
 /**
  * The black veil's opacity that brings the walnut tile (averaging `#4a2c18`) down to a darker

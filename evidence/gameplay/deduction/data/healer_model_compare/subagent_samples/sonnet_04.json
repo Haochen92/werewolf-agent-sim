@@ -1,0 +1,21 @@
+{
+ "reads": [
+  {"player": "player_2", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_3", "why": "follow of player_7 matches what I know: a visit to me did happen", "suspected_role": "trailseer", "confidence": "high"},
+  {"player": "player_4", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_5", "why": "claims investigator; unverified, player_9 read unconfirmed", "suspected_role": "investigator", "confidence": "low"},
+  {"player": "player_6", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_7", "why": "admits going to player_8, which fits the chanteuse block on me; stays vague and claims no role", "suspected_role": "chanteuse", "confidence": "high"},
+  {"player": "player_9", "why": "named suspicious by player_5, only a claim so far", "suspected_role": "unclear", "confidence": "low"},
+  {"player": "player_10", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"}
+ ],
+ "updated_strategy": "Night 1 I was roleblocked by the Chanteuse, so player_7 (who admits going to me) is almost surely the Chanteuse wolf, and player_3's trailseer claim checks out against my own night. Vote player_7 today. Do not reveal healer yet; I may be a wolf target now. If I protect tonight, prefer player_3 or player_5 (if still believable). Watch whether player_5's read on player_9 holds up.",
+ "pass_turn": false,
+ "message": "player_7 did go to player_8, and I can back that up: someone came to me that night. That lines up with player_3's follow. player_7 won't say what they did there or what role they hold, and I'd vote player_7 today.",
+ "claim": "none",
+ "claimed_night_actions": [],
+ "addressed_targets": [
+  {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+  {"target": "player_3", "addressed_form": "mention", "stance": "defense"}
+ ]
+}

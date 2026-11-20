@@ -1,3 +1,26 @@
+> **Write-up: no detailed read needed.** Its blocks (40–42, 45, 46) are already filed in the
+> [map](../../../writeup/_planning/map.md); read the [retrieval report](../report.md) instead.
+
+> **Superseded record (May 2026).** Written 2026-05-23 and kept as it was, with its 2026-10-14 addendum
+> at the end. The read path today, and this study beside the reranker and capacity studies, are in the
+> [retrieval report](../report.md), "The near-repeat filter". Code paths below are May's; current ones
+> are in the addendum.
+>
+> - **Question.** Does a filter after the search (a similarity gate for observations, MMR for strategy
+>   points, a cap of three per situation) make the retrieved set less repetitive without losing
+>   relevance?
+> - **Test.** Four runs on the nine-seat v4 store (522 items), 10 cases in the first run and 5 in each
+>   later one, one model judge per run (the judge changed between runs).
+> - **Answer.** A similarity line of 0.85 cut five of ten cases to a single observation; 0.92 kept the
+>   volume. On the final run (5 cases) the filtered sets scored relevance 4.20 for observations and 3.00
+>   for strategy points. On a deduplicated store the same filter lowered observation relevance from
+>   4.60 to 4.00 (5 cases).
+> - **What followed.** Filtering is built and off for every role and in served games; only the cap of
+>   three runs. The opposing-lessons example under *Threshold tuning* is a hypothesis: the first run
+>   kept that pair (see the addendum).
+
+---
+
 # Retrieval Pipeline: From Raw Similarity Search to Useful Memory
 
 ## The Problem
@@ -107,3 +130,26 @@ The strongest case was the investigator/day_vote scenario, where 5 observations 
 - `evaluation/judges/prompts.py:RETRIEVAL_USER_PROMPT` — cluster-based judge prompt
 - `evaluation/experiments/retrieval.py` — experiment runner
 - `evaluation/core/report.py` — deterministic markdown report generator
+
+*Addendum 2026-10-14.* Where this stands in today's code. The three filters are in
+`Agents/memory/retrieval/filters.py` and run from `_apply_filtering` in
+`Agents/memory/retrieval/pipeline.py`. The per-role switch is `filtering_config` on `RunConfig`
+(`Agents/config/run.py`), and it is off for every role by default and in the served game. The
+"final configuration" above was the end of this study, not what shipped. The same day,
+`../reranking/` found filtering plus reranking worse than reranking alone, and
+`../../dedup/store_retrieval_impact/` found filtering did not improve a deduplicated store. Filtering
+stayed as a switch for the gaps between batch dedup runs. "Reranking is available but parked" above
+was likewise overtaken by `../reranking/`. The 0.92 line was set on gemini-embedding-001, and the
+line is now kept per embedding model (0.87 on gemini-embedding-2, 0.80 on Qwen3-Embedding-8B, in
+`Agents/llm_factory/embeddings.py`). The per-situation cap of 3 is the one stage that always runs.
+The cluster-first judge prompt is still the retrieval judge (`evaluation/src/judges/prompts/retrieval.py`),
+and the runner is now `evaluation/src/cli_runner/regen_replay/both/retrieval.py`. Every number above
+comes from 5 scenarios on the nine-seat v4 store, so it gives a direction and is not a score.
+
+The colocated run 1 does not bear out the example under *Threshold tuning*. In the healer case the
+0.85 line kept both observations, the one where the healer stayed quiet and survived and the one
+where the healer spoke up and was killed, and the judge called them "opposing strategies for this
+exact situation" (`01_baseline_threshold085_pro.md`, first case). What run 1 does show is the
+collapse: five of the ten cases were cut to a single observation, two of them from 15 and 16
+candidates. Read the opposing-lessons sentence as the hypothesis behind raising the line, not as an
+observed removal.

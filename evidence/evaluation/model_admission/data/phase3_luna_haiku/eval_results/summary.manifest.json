@@ -1,0 +1,74 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/phase3_luna_haiku/eval_results/summary.json",
+  "config": {
+    "arms": [
+      {
+        "env": {},
+        "label": "flashlite_current",
+        "memory": "none",
+        "model": "gemini-3.5-flash-lite"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "luna_low",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "luna_medium",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      },
+      {
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "label": "haiku55_low",
+        "memory": "none",
+        "model": "anthropic/claude-haiku-5-5"
+      }
+    ],
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "golden_model": "gemini-3.5-flash",
+    "label": "phase3_luna_haiku",
+    "n": 5,
+    "note": "Side by side on today's code and the same judges: GPT-6 Luna at effort low (never benched before; Oct 4 tried medium and high) and medium, against Claude Haiku 5.5 at effort low (phase3_haiku_low: 10% bad, ~1.2k reasoning) and gemini-3.5-flash-lite, the live default.",
+    "precision_model": "gemini-3.5-flash",
+    "recall_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule"
+    ],
+    "workers": 3
+  },
+  "config_sha256": "298ccff3119e81783c077e3e38fbf6b346242930559958e2d4828ea3a5fc8bb9",
+  "config_source": "evaluation/config/hallucination_bench_phase3_luna_haiku.json",
+  "created_at": "2026-10-23T01:56:38.308134",
+  "created_from": "eval-hallucination-bench run 'phase3_luna_haiku' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/phase3_luna_haiku/summary.json",
+  "inputs": [
+    {
+      "count": 18,
+      "path": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "sha256": "4d9688fb54a34a7c5676d59ccee6d2261c09aa2a4afe114374a613e262a7c107"
+    }
+  ],
+  "models": [
+    "anthropic/claude-haiku-5-5",
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "openai/gpt-6-luna"
+  ]
+}

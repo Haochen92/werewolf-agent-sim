@@ -19,8 +19,8 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
-from Agents.llm_factory import get_llm, get_llm_game_fallback
-from Agents.llm_factory.chat import GAME_LLM, provider_name
+from Agents.llm_factory import GameModels, env_models
+from Agents.llm_factory.outcomes import FAILED_PASS, NO_ACTION_DEFAULT, RANDOM_DEFAULT, RESCUE
 from Agents.llm_factory.embeddings import (
     KEY_REFUSED,
     ProviderKeyRejected,
@@ -69,9 +69,12 @@ def run_agent(
     output_schema: type[BaseModel],
     output_key: str,
     max_retries: int = 1,
+    *,
+    models: GameModels | None = None,
 ) -> ResolvedTurn | None:
     """Run one agent decision: constrain -> generate -> resolve, retrying on an LLM error or a
-    rejected decision, with a legal typed fallback if every attempt fails.
+    rejected decision, with a legal typed fallback if every attempt fails. ``models`` is the
+    game's (the caller's graph context); None takes the environment's models.
 
     The human seat's counterpart is ``run_human_decision`` (human_turn.py): it swaps ``_generate``
     for ``interrupt()`` but takes the same ``resolve_decision`` path.
@@ -85,26 +88,28 @@ def run_agent(
     schema = output_schema_for_memory_shown(schema, payload)
     # A primary that stalled on the last turns (a timeout, a 429) is skipped for a while and
     # the turn starts on the rescue model; the game's health object keeps that count.
-    health = GAME_LLM.get().health
-    fallback_llm = get_llm_game_fallback()
+    models = models or env_models()
+    health = models.health
+    turn = {"player": player_id, "day": payload.get("current_day"), "turn": output_key}
+    fallback_llm = models.seat_rescue()
     on_rescue = fallback_llm is not None and health.prefer_rescue()
     if on_rescue:
         logger.warning(
             "%s starts on the rescue model for %s: the primary stalled %d turns in a row",
             player_id, output_key, health.stalls,
         )
-    llm = fallback_llm if on_rescue else get_llm()
+    llm = fallback_llm if on_rescue else models.seat()
     chain = prompt_template | llm.with_structured_output(schema)
     prompt_input = build_agent_prompt_input(payload)
     log_prompt(payload, output_key, prompt_input)
 
     enforced = False
     for _ in range(max_retries + 1):
-        result = _generate(chain, prompt_input, output_key, player_id)
+        result = _generate(chain, prompt_input, output_key, player_id, models)
         if isinstance(result, _Rejected):
             if not on_rescue:
                 raise ProviderKeyRejected(
-                    f"{provider_name(GAME_LLM.get().model)} {KEY_REFUSED}: {result.detail}.")
+                    f"{models.provider()} {KEY_REFUSED}: {result.detail}.")
             break  # the rescue's own credential: the turn falls to the typed fallback
         if result is _STALLED:
             # Slow or full is not asked again: the rescue takes the turn, and the count
@@ -122,9 +127,11 @@ def run_agent(
             continue
         reasoning = extract_agent_reasoning(result)
         record_reads(reasoning["reads"], payload, output_key, output_schema)
-        outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+        outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
         if outcome is not RETRY:
-            if not on_rescue:
+            if on_rescue:
+                models.outcomes.note(RESCUE, **turn)
+            else:
                 health.note_ok()
             return outcome
 
@@ -133,15 +140,16 @@ def run_agent(
     # tool-calling emits off-schema output that Gemini's constrained decoding cannot).
     if fallback_llm is not None and not on_rescue:
         fallback_chain = prompt_template | fallback_llm.with_structured_output(schema)
-        result = _generate(fallback_chain, prompt_input, output_key, player_id)
+        result = _generate(fallback_chain, prompt_input, output_key, player_id, models)
         # The rescue can stall too (both models bounced under load, 2026-10-09): then the turn
         # falls to the typed fallback below, never to the resolver.
         if result is not None and result is not _STALLED and not isinstance(result, _Rejected):
             reasoning = extract_agent_reasoning(result)
             record_reads(reasoning["reads"], payload, output_key, output_schema)
-            outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+            outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
             if outcome is not RETRY:
                 logger.warning(f"{player_id} rescued by the fallback model on {output_key}")
+                models.outcomes.note(RESCUE, **turn)
                 return outcome
 
     # Exhausted discussion becomes a typed technical pass. Persisting the classification advances
@@ -159,6 +167,7 @@ def run_agent(
             player_id,
             output_key,
         )
+        models.outcomes.note(FAILED_PASS, **turn)
         return ResolvedDayDiscussion(
             entry=DayChannel(
                 day=current_day,
@@ -177,6 +186,7 @@ def run_agent(
             player_id,
             output_key,
         )
+        models.outcomes.note(FAILED_PASS, **turn)
         return ResolvedWolfDiscussion(
             entry=WolfChannel(
                 day=payload.get("current_day", 1),
@@ -191,10 +201,12 @@ def run_agent(
 
     logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")
     if output_key == "day_votes":
+        models.outcomes.note(RANDOM_DEFAULT, **turn)
         return ResolvedDayVote(
             entry=DayVote(voter=player_id, votee=random.choice(valid_targets))
         )
     if output_key == KILL_TARGET:
+        models.outcomes.note(RANDOM_DEFAULT, **turn)
         return ResolvedNightChoice(entry=NightChoice(
             player_id, payload.get("player_role", ""), "kill", random.choice(valid_targets)))
     role = role_for_field(output_key)
@@ -202,6 +214,7 @@ def run_agent(
         # The role's no-action word when it has one (a random shot or sigil is worse play than
         # none); a random legal choice otherwise. A necromancer stays put.
         spec = ROLE_SPECS[role]
+        models.outcomes.note(NO_ACTION_DEFAULT if spec.no_action else RANDOM_DEFAULT, **turn)
         fallback = SimpleNamespace(**{output_key: spec.no_action or random.choice(valid_targets), "body": None, "bet_role": "none"})
         choice = night_choice(role, player_id, fallback, payload, valid_targets)
         return ResolvedNightChoice(entry=None if choice is RETRY else choice)
@@ -220,18 +233,23 @@ class _Rejected:
 
 
 
-def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str):
+def _generate(chain: Any, prompt_input: dict, output_key: str, player_id: str, models: GameModels):
     """One structured LLM call. Returns the parsed decision; None on a parse or request error;
     ``_STALLED`` when the provider timed out or bounced the call (429, 5xx, dropped);
     ``_Rejected`` when it refused the key (401/403, out of credit)."""
     try:
         return chain.invoke(prompt_input, config={"run_name": f"{output_key}_{player_id}"})
     except Exception as e:
+        # A provider's error can quote the key. Only the scrubbed text is logged or kept: the
+        # refusal below is raised to end the game, and LangGraph saves a raised error in the
+        # game's checkpoint.
+        redact = models.redact
+        said = redact(str(e))
         if is_key_rejected_error(e):
-            logger.error(f"LLM call for {player_id}: the provider rejected the key: {e}")
-            return _Rejected(provider_complaint(e))
+            logger.error(f"LLM call for {player_id}: the provider rejected the key: {said}")
+            return _Rejected(provider_complaint(e, scrub=redact))
         if is_transient_provider_error(e):
-            logger.warning(f"LLM call stalled for {player_id} (slow or full): {e}")
+            logger.warning(f"LLM call stalled for {player_id} (slow or full): {said}")
             return _STALLED
-        logger.warning(f"LLM call failed for {player_id}: {e}")
+        logger.warning(f"LLM call failed for {player_id}: {said}")
         return None

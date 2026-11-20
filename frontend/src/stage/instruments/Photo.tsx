@@ -70,9 +70,7 @@ export function Photo({
   const step = useSteps();
   const Tag = onChoose ? motion.button : motion.div;
   const tilt = TILT[(seat - 1) % TILT.length] ?? 0;
-  // the peg: a clothes-peg's two wooden legs and its spring, clipping the print's top edge
-  const pw = w * 0.13,
-    ph = w * 0.3;
+  const ph = w * PEG_H;
   return (
     <Tag
       type={onChoose ? 'button' : undefined}
@@ -149,46 +147,58 @@ export function Photo({
             transition={{ duration: 0.6 * k }}
           />
         </span>
-        <svg
-          className={styles.peg}
-          viewBox="0 0 13 30"
-          style={{ left: (w - pw) / 2, top: -ph * 0.42, width: pw, height: ph }}
-          aria-hidden="true"
-        >
-          <rect
-            x="1"
-            y="0.5"
-            width="5.2"
-            height="29"
-            rx="1.6"
-            fill="#b88c5a"
-            stroke="#3a2412"
-            strokeWidth=".8"
-          />
-          <rect
-            x="6.8"
-            y="0.5"
-            width="5.2"
-            height="29"
-            rx="1.6"
-            fill="#a47a4a"
-            stroke="#3a2412"
-            strokeWidth=".8"
-          />
-          <rect
-            x="0.6"
-            y="10.5"
-            width="11.8"
-            height="3.2"
-            rx="1"
-            fill="#8d8a84"
-            stroke="#3a3530"
-            strokeWidth=".6"
-          />
-          <path d="M2,2 V26" stroke="#e2c08e" strokeOpacity=".45" strokeWidth=".8" />
-        </svg>
+        <Peg w={w} />
         {children}
       </span>
     </Tag>
+  );
+}
+
+/** The peg's height, as a share of the width of the edge it clips. */
+export const PEG_H = 0.3;
+
+/** A clothes-peg's two wooden legs and its spring, clipping the top edge of something `w` wide. */
+export function Peg({ w }: { w: number }) {
+  const pw = w * 0.13,
+    ph = w * PEG_H;
+  return (
+    <svg
+      className={styles.peg}
+      viewBox="0 0 13 30"
+      style={{ left: (w - pw) / 2, top: -ph * 0.42, width: pw, height: ph }}
+      aria-hidden="true"
+    >
+      <rect
+        x="1"
+        y="0.5"
+        width="5.2"
+        height="29"
+        rx="1.6"
+        fill="#b88c5a"
+        stroke="#3a2412"
+        strokeWidth=".8"
+      />
+      <rect
+        x="6.8"
+        y="0.5"
+        width="5.2"
+        height="29"
+        rx="1.6"
+        fill="#a47a4a"
+        stroke="#3a2412"
+        strokeWidth=".8"
+      />
+      <rect
+        x="0.6"
+        y="10.5"
+        width="11.8"
+        height="3.2"
+        rx="1"
+        fill="#8d8a84"
+        stroke="#3a3530"
+        strokeWidth=".6"
+      />
+      <path d="M2,2 V26" stroke="#e2c08e" strokeOpacity=".45" strokeWidth=".8" />
+    </svg>
   );
 }

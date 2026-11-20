@@ -12,4 +12,4 @@ and its chronological journey:
 
 Forced per-memory applicability is a strategy-adoption question and therefore lives at
 [`../../memory_system/strategy_adoption/forced_schema_screen/`](../../memory_system/strategy_adoption/forced_schema_screen/).
-The historical cross-subsystem roadmaps live under [`../../execution_plan/`](../../execution_plan/).
+The historical cross-subsystem roadmaps live under [`../../memory_system/v7/execution_plan/`](../../memory_system/v7/execution_plan/).

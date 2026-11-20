@@ -30,6 +30,7 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { SETS, type SetScale } from '@/assets/sets';
 import { useMotionScale } from '../motion';
+import { recordBackdrop } from '../diagnostics';
 import { BackdropContext, useSmall, useStageWidth, type BackdropSpec } from '../set';
 import type { Phase } from '../paint/materials';
 import { BLEED, CAMERA_ZOOM_MAX, STAGE_H, STAGE_W, geometry, type Hud } from '../units';
@@ -104,6 +105,7 @@ export function Backdrop({
   side = false,
   from,
   fadeDelay = 1.2,
+  ahead,
 }: {
   phase: Phase;
   hud: Hud;
@@ -112,45 +114,83 @@ export function Backdrop({
   /** Played: the hour the car was at before this beat. */
   from?: Phase | null;
   fadeDelay?: number;
+  /** The hour the next beat turns to, decoded ahead. */
+  ahead?: Phase | null;
 }) {
   const set = useContext(BackdropContext);
   const k = useMotionScale();
   // the description's JSON is its identity: a new-but-equal one changes nothing
-  const key = JSON.stringify({ phase, hud, side, from: from ?? null, fadeDelay, k });
+  const key = JSON.stringify({
+    phase,
+    hud,
+    side,
+    from: from ?? null,
+    fadeDelay,
+    ahead: ahead ?? null,
+    k,
+  });
   useLayoutEffect(() => {
     if (!set) return;
-    set(JSON.parse(key) as BackdropSpec);
+    const spec = JSON.parse(key) as BackdropSpec;
+    recordBackdrop(spec);
+    set(spec);
     // the next description lands in the same commit as this one's clearing (the next beat's,
     // or the next scene's), so the Stage never draws the gap between them
-    return () => set(null);
+    return () => {
+      recordBackdrop(null);
+      set(null);
+    };
   }, [set, key]);
   return null;
 }
 
 /**
- * The baked layout a HUD's sheet was made at, and how far it slides. No HUD (the landing's
- * carriage on an upright phone) has no sheets of its own: it takes the live HUD's, slid by the
- * wing the live layout keeps (its room is centred 96 units further left, 136.5 with the side
- * slot open; the car follows the puppet's centre line, so a slide is exact). Unslid, the
- * shutter, drawn from geometry('none'), fell short of the painted window's right side
+ * The baked layout a HUD's sheet was made at, and how far it slides. Every sheet is baked with
+ * the side slot closed; the car follows the puppet's centre line, so a layout centred elsewhere
+ * takes the same sheet slid by the difference, which is exact for the car (only the felt
+ * country in its window slides with it). The open slot (the transcript, the case file) slides
+ * it 296 units left, so opening the slot costs no second sheet's decode (owner, 2026-10-18; the
+ * second set of sheets cost a phone ~17 MB per toggle). No HUD (the landing's carriage on an
+ * upright phone) takes the live HUD's sheet, slid by the wing the live layout keeps. Unslid,
+ * the shutter, drawn from geometry('none'), fell short of the painted window's right side
  * (2026-10-15); `backdrop.test.ts` holds the two centres equal for every layout.
  */
 export function sheetFor(
   hud: Hud,
   side: boolean,
 ): { layout: 'live' | 'replay'; dx: number } {
-  if (hud === 'replay') return { layout: 'replay', dx: 0 };
-  const dx = hud === 'none' ? geometry('none', side).cx - geometry('live', side).cx : 0;
-  return { layout: 'live', dx };
+  const layout = hud === 'replay' ? 'replay' : 'live';
+  return { layout, dx: geometry(hud, side).cx - geometry(layout, false).cx };
 }
 
 /** The sheet itself, drawn by the Stage from the scene's description. */
-export function BackdropSheet({ phase, hud, side, from, fadeDelay, k }: BackdropSpec) {
+export function BackdropSheet({
+  phase,
+  hud,
+  side,
+  from,
+  fadeDelay,
+  ahead,
+  k,
+}: BackdropSpec) {
   const { scale, narrow } = useScreen();
   const cut = useCut(narrow ? from : null, phase, fadeDelay * k);
   const { layout, dx } = sheetFor(hud, side);
+  // The next hour's sheet decoded off the main thread while this one is held: the winners' hour
+  // otherwise decoded at its own cut on a phone, in the frames of the shutter's rise. One held.
+  const next =
+    ahead && ahead !== phase && scale ? SETS.car[ahead][layout][scale].src : null;
+  useEffect(() => {
+    if (!next) return;
+    const img = new window.Image();
+    img.src = next;
+    img.decode().catch(() => {});
+    return () => {
+      img.src = '';
+    };
+  }, [next]);
   if (!scale) return null;
-  const at = (p: Phase) => SETS.car[p][layout][side ? 'side' : 'full'][scale];
+  const at = (p: Phase) => SETS.car[p][layout][scale];
   const sheet = {
     position: 'absolute',
     top: 0,

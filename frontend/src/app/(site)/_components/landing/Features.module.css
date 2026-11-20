@@ -1,31 +1,62 @@
 /* "What makes it different": the workshop (landing mockup, bench 77, chosen), with the three
-   features on it, side by side (owner, 2026-10-15). The car's walnut in less light, paper cards
-   screwed under brass plates; below 860px of bench, the plates are the tabs. Paper and ink
-   colours are the mockup's own, inside the fiction. */
+   features on it, side by side (owner, 2026-10-15). Paper cards screwed under brass plates on a
+   walnut board in a brass rim; below 860px of bench, the plates are the tabs. The materials are
+   the owner's kit (2026-10-18, scripts/fit_kit.py): the walnut tiles, each card's paper and each
+   slip's are laid once (their light falls off to the corners), the plates are a 9-slice. Paper
+   and ink colours are the mockup's own, inside the fiction. */
 
 .shop {
+  /* the rim's screws, this far in from each corner */
+  --screw: 14px;
   container-type: inline-size;
   position: relative;
   padding: 40px 34px 30px;
-  border-radius: 14px;
+  border-radius: 10px;
   color: var(--bone);
   font-family: var(--font-sans);
-  /* the car's wood, darkened and desaturated toward the page's panels, the grain only near the centre */
+  /* the walnut, its edges in shadow; a brass screw in each corner of the rim */
   background:
     radial-gradient(
-      ellipse 75% 70% at 50% 42%,
-      transparent 0,
-      rgba(10, 7, 4, 0.55) 65%,
-      rgba(8, 5, 3, 0.92) 100%
-    ),
-    linear-gradient(rgba(26, 20, 15, 0.58), rgba(26, 20, 15, 0.58)),
-    linear-gradient(rgba(70, 60, 52, 0.35), rgba(70, 60, 52, 0.35)),
-    var(--wood, none) 0 0 / 560px auto,
-    #2a1a0e;
-  background-blend-mode: normal, normal, saturation, normal, normal;
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      var(--screw) var(--screw) / 9px 9px no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      calc(100% - var(--screw)) var(--screw) / 9px 9px no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      var(--screw) calc(100% - var(--screw)) / 9px 9px no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        #f4dca0 0 1px,
+        #b08a4a 2px,
+        #6a4c20 4px,
+        transparent 4.5px
+      )
+      calc(100% - var(--screw)) calc(100% - var(--screw)) / 9px 9px no-repeat,
+    radial-gradient(ellipse 80% 75% at 50% 45%, transparent 40%, rgba(12, 6, 2, 0.6) 100%),
+    url('../../../../assets/site/kit/walnut.webp') 0 0 / 314px 314px repeat,
+    #2c1a0e;
+  /* the brass rim round the board */
   box-shadow:
-    inset 0 2px 0 rgba(255, 220, 170, 0.1),
-    inset 0 -10px 24px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 3px #b8914c,
+    inset 0 0 0 4px rgba(255, 236, 190, 0.35),
+    inset 0 0 0 6px rgba(40, 22, 6, 0.7),
+    0 0 0 1px #4a3214,
     0 24px 50px -20px rgba(0, 0, 0, 0.9);
 }
 
@@ -58,10 +89,8 @@
   min-width: 0;
   padding: 44px 20px 22px;
   border-radius: 3px;
-  background: #efe2c2;
-  background-image:
-    radial-gradient(ellipse at 30% 20%, rgba(255, 250, 235, 0.6), transparent 60%),
-    repeating-linear-gradient(115deg, rgba(120, 90, 50, 0.03) 0 2px, transparent 2px 7px);
+  background: url('../../../../assets/site/kit/card-paper.webp') 50% 50% / cover no-repeat
+    #efe2c2;
   color: #3a2a18;
   box-shadow:
     0 12px 20px -8px rgba(0, 0, 0, 0.75),
@@ -84,47 +113,26 @@
   color: #4a3a24;
 }
 
-/* the brass plate: the kit's brass, screwed to the card's top edge */
+/* the brass plate: the kit's plate, its screwed ends kept and its middle stretched to the name
+   (a 9-slice: 740 x 120 shipped, 40px high on screen) */
 .brass {
-  background: linear-gradient(180deg, #e6c98e, #b08a4a 55%, #7d5f2e);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 245, 210, 0.8),
-    inset 0 -1px 0 rgba(60, 35, 5, 0.6),
-    0 3px 6px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  height: 40px;
+  border-style: solid;
+  border-width: 0 30px;
+  border-image: url('../../../../assets/site/kit/brass-plate.webp') 0 90 fill / 0 30px
+    stretch;
   color: #2e1c06;
-  border-radius: 4px;
 }
 .plate {
   position: absolute;
   left: 50%;
-  top: -15px;
+  top: -18px;
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 7px 18px;
+  align-items: center;
+  padding: 0 4px;
   white-space: nowrap;
   transform: translateX(-50%);
-}
-.plate::before,
-.plate::after,
-.ptab::before,
-.ptab::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  margin-top: -3px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff3cf, #7d5f2e 70%);
-}
-.plate::before,
-.ptab::before {
-  left: 5px;
-}
-.plate::after,
-.ptab::after {
-  right: 5px;
 }
 .num {
   font-family: var(--font-serif);
@@ -142,7 +150,8 @@
   vertical-align: middle;
 }
 
-/* card 1: the lesson it recalled as a typed slip, stamped with its verdict; what came of it */
+/* card 1: the lesson it recalled as a typed slip, clipped to the card and stamped with its
+   verdict; what came of it */
 .slip {
   position: relative;
   display: flex;
@@ -150,8 +159,20 @@
   gap: 8px;
   padding: 14px 16px 16px;
   border-radius: 1px;
-  background: #fffaf0;
+  background: url('../../../../assets/site/kit/cream.webp') 50% 50% / cover no-repeat
+    #fffaf0;
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+/* the brass clip over the slip's left edge, by its top */
+.slip::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: -16px;
+  width: 17px;
+  height: 76px;
+  background: url('../../../../assets/site/kit/paperclip.webp') 0 0 / 100% 100% no-repeat;
+  transform: rotate(-4deg);
 }
 .who {
   display: flex;
@@ -181,10 +202,11 @@
   right: 12px;
   top: 12px;
   padding: 2px 7px;
-  border: 1.5px solid #b0402f;
+  border: 2px solid #b0402f;
   border-radius: 4px;
-  background: rgba(255, 250, 240, 0.7);
   color: #b0402f;
+  /* worn ink: where the stamp's ink did not take (the kit's speckle, a still mask) */
+  mask: url('../../../../assets/site/kit/ink.webp') 0 0 / 128px 128px repeat;
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
@@ -215,13 +237,14 @@
   align-self: stretch;
   padding: 10px 14px 12px;
   border-radius: 2px;
-  background: #fffaf0;
-  background-image: repeating-linear-gradient(
-    180deg,
-    transparent 0 21px,
-    rgba(90, 120, 170, 0.22) 21px 22px
-  );
-  background-position: 0 32px;
+  background:
+    repeating-linear-gradient(
+        180deg,
+        transparent 0 21px,
+        rgba(90, 120, 170, 0.22) 21px 22px
+      )
+      0 32px,
+    url('../../../../assets/site/kit/cream.webp') 50% 50% / cover no-repeat #fffaf0;
   color: #2a2418;
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
   transform: rotate(-0.6deg);
@@ -353,28 +376,32 @@
     gap: 8px;
     margin: 6px 0 22px;
   }
+  /* the plates as tabs: the one shown lifted and bright, the others dimmed (opacity, not a
+     filter) */
   .ptab {
     position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 8px 12px 7px;
-    border: 0;
+    justify-content: center;
+    min-width: 0;
+    padding: 0;
+    /* narrower plates: their screwed ends drawn smaller */
+    border-width: 0 18px;
+    border-image-width: 0 18px;
+    background: none;
     font: inherit;
     cursor: pointer;
-    filter: saturate(0.6) brightness(0.9);
-    opacity: 0.92;
+    opacity: 0.62;
     transition:
-      filter 0.2s,
+      opacity 0.2s,
       transform 0.2s;
   }
   .ptab .num {
-    font-size: 18px;
+    font-size: 17px;
     white-space: nowrap;
   }
   .ptab[aria-selected='true'] {
-    filter: none;
+    opacity: 1;
     transform: translateY(-2px);
   }
   .ptab:focus-visible {
@@ -405,8 +432,9 @@
 
 @media (max-width: 700px) {
   .shop {
+    --screw: 7px;
     padding: 22px 12px 20px;
-    border-radius: 12px;
+    border-radius: 10px;
   }
 }
 

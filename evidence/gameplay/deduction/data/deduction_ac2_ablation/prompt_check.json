@@ -1,0 +1,50 @@
+[
+ {
+  "variant": "V0",
+  "removed": [],
+  "chars": 11115,
+  "chars_removed": 0,
+  "equals_sum_of_removals": true,
+  "remaining_counts": []
+ },
+ {
+  "variant": "V1",
+  "removed": [
+   " player_2 says player_8 came to you on night 2, and player_8 says it protected you that night. These agree; the sighting does not show which action player_8 took."
+  ],
+  "chars": 10953,
+  "chars_removed": 162,
+  "equals_sum_of_removals": true,
+  "remaining_counts": [
+   0
+  ]
+ },
+ {
+  "variant": "V2",
+  "removed": [
+   " player_3's will shows player_7, the Chanteuse, went to player_8 on night 1. The pack's kill that night was on player_1, so that visit was her block on player_8."
+  ],
+  "chars": 10954,
+  "chars_removed": 161,
+  "equals_sum_of_removals": true,
+  "remaining_counts": [
+   0
+  ]
+ },
+ {
+  "variant": "V3",
+  "removed": [
+   " player_2 says player_8 came to you on night 2, and player_8 says it protected you that night. These agree; the sighting does not show which action player_8 took.",
+   " player_3's will shows player_7, the Chanteuse, went to player_8 on night 1. The pack's kill that night was on player_1, so that visit was her block on player_8.",
+   "- No one else claims the Investigator, the Sentinel, the Sigilist or the Healer. player_6 and player_10 have made no role claim.\n"
+  ],
+  "chars": 10663,
+  "chars_removed": 452,
+  "equals_sum_of_removals": true,
+  "remaining_counts": [
+   0,
+   0,
+   0
+  ]
+ }
+]

@@ -19,17 +19,16 @@ class KeyRefused(ValueError):
 async def check_key(model: str, api_key: str) -> None:
     """Raise KeyRefused with a one-line reason when the provider will not serve this
     model on this key. The sync client runs in a worker thread so the loop stays free."""
-    from Agents.llm_factory import GAME_LLM, GameLLM, create_chat_model
+    from Agents.llm_factory import GameModels
     from Agents.llm_factory.chat import provider_name
     from Agents.llm_factory.embeddings import provider_complaint
 
+    # A models object of its own, dropped after the one question: the key reaches the provider
+    # by the same path a game's turn uses, and nothing of it is kept.
+    models = GameModels(api_key=api_key, model=model)
+
     def call() -> None:
-        token = GAME_LLM.set(GameLLM(api_key=api_key, model=model))
-        try:
-            # Temperature 1: OpenAI's reasoning models (GPT-6 Luna) refuse any other value.
-            create_chat_model(model, temperature=1.0).invoke("Reply with the single word OK.")
-        finally:
-            GAME_LLM.reset(token)
+        models.probe().invoke("Reply with the single word OK.")
 
     try:
         await asyncio.wait_for(asyncio.to_thread(call), timeout=_TIMEOUT_SECONDS)
@@ -37,5 +36,5 @@ async def check_key(model: str, api_key: str) -> None:
         raise KeyRefused(f"{provider_name(model)} did not answer within "
                          f"{int(_TIMEOUT_SECONDS)} s. Try again.") from exc
     except Exception as exc:  # the provider's complaint is the useful part
-        detail = provider_complaint(exc).replace(api_key, "***")
+        detail = provider_complaint(exc, scrub=models.redact)
         raise KeyRefused(f"{provider_name(model)} refused this key: {detail}.") from exc

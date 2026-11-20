@@ -182,6 +182,11 @@ vote-grain metrics as the endpoint forensics:
 | raw obs (n=447) | **55%** (z=+4.0) | 22% (z=−0.8) | **23%** (z=−3.7) |
 | reranked (n=433) | **53%** (z=+3.4) | 26% (z=+0.6) | **21%** (z=−4.4) |
 
+> *Correction 2026-10-26.* "+17/+33pp" above joins two arms of the June A/B. The raw arm rose +17 points
+> (McNemar p = 0.267, not significant); the reranked arm rose +33 points (p = 0.013) and carries a
+> drift caveat. The joined figure is recorded as a fusion error in `evidence/memory_system/v7/evaluator_review.md`
+> F7; the scoped result is in `evidence/memory_system/effectiveness/report.md`.
+
 **The obs benefit rode the INFERENCE lever, not the caution lever** — abstains flat, discrimination
 sharply up: the mirror-opposite of the v7 SP signature (hit 50→35, abstain 23→31, townmate-vote
 27→34). Also the structural reason obs escaped the Goodhart dynamic: descriptive content with no
@@ -297,6 +302,11 @@ compounding: pre-registered negative-leaning (primary −0.147, p≈.06; decisio
 screen-grade). Consequences: no store promotion · live ships memory-OFF · the roadmap's freeze gate
 has nothing to certify (consistent) · every positive claim carries its epoch stamp.
 
+> *Correction 2026-10-26.* In (a), "+17/+33pp; reranked p=0.013" joins two arms. The raw arm's +17
+> points had p = 0.267 (not significant); p = 0.013 belongs to the reranked arm's +33 points, which
+> carries a drift caveat. See the fusion note in `evidence/memory_system/v7/evaluator_review.md` F7 and the
+> scoped result in `evidence/memory_system/effectiveness/report.md`.
+
 **Not conceded:** the June result within its epoch; the mechanism findings (inference-vs-caution
 lever, the blind-spot forensics, Goodhart selection under a partial measure, the self-correction-lag
 hypothesis, the night-channel placebo); the fix pair's instrument-grain validation. These are the
@@ -314,7 +324,7 @@ inspector + replay viewer + playable game), not as a memory-wins product claim.
 
 **What was missed.** Game turns run at the thinking level "minimal", which the code turns into a
 128-token thinking budget on Vertex. A probe made for the hallucination bench on 2026-10-04
-(`evidence/game_play_enhancement/discussion_evidence.md` §6.7) found that `gemini-3.1-flash-lite`,
+(`evidence/gameplay/discussion_evidence.md` §6.7) found that `gemini-3.1-flash-lite`,
 asked for the game's structured output at that budget, reasons for 0 tokens. It starts reasoning only
 at "low" (1,024). Every run record stamped the thinking level in its runtime fingerprint, but nobody
 checked whether that level produced any reasoning. So every game behind the memory verdicts was
@@ -325,7 +335,7 @@ played by agents that answered without a reasoning step.
 | Run | Dates | Game records | Game model · thinking level |
 |---|---|---|---|
 | June static paired A/B (`batch_results/ab_*.jsonl`) | 2026-06-11 to 06-12 | 398 | `gemini-3.1-flash-lite` · minimal |
-| v7 loop runs (`evidence/v7_final/runs/`: smokes, loop_gate, town_only_run1/2, v2_full) | 2026-06-19 to 06-22 | 222 | `gemini-3.1-flash-lite` · minimal |
+| v7 loop runs (`evidence/memory_system/v7/runs/`: smokes, loop_gate, town_only_run1/2, v2_full) | 2026-06-19 to 06-22 | 222 | `gemini-3.1-flash-lite` · minimal |
 | v7 endpoint (`batch_results/v7_endpoint_ab`, 30 boards × 2 arms) | 2026-07-20 | 60 | `gemini-3.1-flash-lite` · minimal |
 
 Day summaries ran at "medium" throughout, so the summaries the players read did come from a reasoning
@@ -342,6 +352,10 @@ negative are both results for a player that does not reason. The framing adopted
 flash-lite class models", should read "gemini flash-lite class models, with no reasoning on game
 turns". No game in this program says whether memory would help, hurt, or do nothing for a player that
 reasons first.
+
+> *Correction 2026-10-26.* "The June +17/+33pp result" joins two arms: +17 points on the raw arm
+> (p = 0.267, not significant) and +33 points on the reranked arm (p = 0.013, with a drift caveat). See
+> `evidence/memory_system/v7/evaluator_review.md` F7 and `evidence/memory_system/effectiveness/report.md`.
 
 **Why it might matter.** These are hypotheses. None was tested.
 
@@ -361,7 +375,7 @@ reasons first.
 
 **Lesson.** A configured value is not the behaviour it was meant to produce. The fingerprint stamped
 "minimal" on every record, which proved the setting was pinned, not that the model reasoned. This is
-the same class of failure as the `all_enabled` slip in the v7 loop run (`evidence/v7_final/report.md`
+the same class of failure as the `all_enabled` slip in the v7 loop run (`evidence/memory_system/v7/report.md`
 §5c): the harness ran something other than what we believed, and the record showed the setting rather
 than its effect. Record the effect as well. The bench now records reasoning tokens per turn
 (`3e05e8a7`). Any future memory measurement should record them per game too, and should state the

@@ -1,0 +1,321 @@
+{
+ "model": "openai/gpt-6-luna",
+ "run_at": "2026-10-13T12:33:40.138660+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "91d5b339a00f82a1fe9edb0c767bdc07333384cb",
+  "git_dirty": true,
+  "prompt_bundle_hash": "374305bd038c3090",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-3.8-flash",
+  "pro_backup_model": "gemini-2.5-pro",
+  "embedding_model": "qwen/qwen3-embedding-8b",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "low",
+ "structured": [
+  {
+   "mode": "json_mode",
+   "passed": "169/170",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayVoteOutput",
+     "problem": "OutputParserException: reply is not a valid DayVoteOutput: 1 validation error for DayVoteOutput\nreads.1.suspected_role\n  Input should be 'unclear', 'investigator', 'sentinel', 'trailseer', 'vigilante', 'sigilist', 'healer', 'chanteuse', 'illusionist', 'serial_kil"
+    }
+   ],
+   "in_schema_order": "170/170",
+   "out_of_order": [],
+   "mean_per_call": {
+    "input": 784.1,
+    "cached": 56.7,
+    "output": 331.0,
+    "reasoning": 133.7,
+    "seconds": 4.7
+   }
+  }
+ ],
+ "recommended_mode": null,
+ "recommended_mode_why": "no mode passed every call (best: json_mode at 169/170)",
+ "cache_floor": {
+  "floor_tokens": null,
+  "sizes": [
+   {
+    "target_tokens": 1024,
+    "input_tokens": 938,
+    "cached_tokens": 0,
+    "sends": 3
+   }
+  ]
+ },
+ "real_prompt_mode": "json_mode",
+ "real_prompts": [
+  {
+   "case_id": "183500fda11b66d6",
+   "first": {
+    "input": 6551,
+    "cached": 0,
+    "output": 751,
+    "reasoning": 317,
+    "seconds": 8.16,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 6571,
+    "cached": 3707,
+    "output": 860,
+    "reasoning": 444,
+    "seconds": 9.66,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 5615
+   },
+   "other_seat": {
+    "input": 7128,
+    "cached": 0,
+    "output": 827,
+    "reasoning": 356,
+    "seconds": 12.2,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3689
+   }
+  },
+  {
+   "case_id": "cc56ed2046f3f402",
+   "first": {
+    "input": 6256,
+    "cached": 3707,
+    "output": 756,
+    "reasoning": 220,
+    "seconds": 8.43,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 6276,
+    "cached": 3707,
+    "output": 1077,
+    "reasoning": 267,
+    "seconds": 9.73,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 5386
+   },
+   "other_seat": {
+    "input": 6718,
+    "cached": 0,
+    "output": 715,
+    "reasoning": 263,
+    "seconds": 7.49,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3682
+   }
+  },
+  {
+   "case_id": "1802f1e99ed17696",
+   "first": {
+    "input": 6579,
+    "cached": 0,
+    "output": 977,
+    "reasoning": 532,
+    "seconds": 10.93,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 6599,
+    "cached": 3419,
+    "output": 692,
+    "reasoning": 227,
+    "seconds": 7.15,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 5824
+   },
+   "other_seat": {
+    "input": 7477,
+    "cached": 0,
+    "output": 1045,
+    "reasoning": 685,
+    "seconds": 12.04,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3360
+   }
+  },
+  {
+   "case_id": "282e2bd964a73304",
+   "first": {
+    "input": 6368,
+    "cached": 0,
+    "output": 657,
+    "reasoning": 239,
+    "seconds": 8.35,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 6388,
+    "cached": 3742,
+    "output": 617,
+    "reasoning": 221,
+    "seconds": 7.49,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 5561
+   },
+   "other_seat": {
+    "input": 7083,
+    "cached": 3936,
+    "output": 1072,
+    "reasoning": 512,
+    "seconds": 13.51,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3707
+   }
+  },
+  {
+   "case_id": "2ae4571be87b642d",
+   "first": {
+    "input": 6123,
+    "cached": 0,
+    "output": 536,
+    "reasoning": 129,
+    "seconds": 6.87,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 6143,
+    "cached": 3803,
+    "output": 861,
+    "reasoning": 239,
+    "seconds": 9.41,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 5349
+   },
+   "other_seat": {
+    "input": 6716,
+    "cached": 0,
+    "output": 740,
+    "reasoning": 269,
+    "seconds": 9.75,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3759
+   }
+  },
+  {
+   "case_id": "65f6e315065d38ba",
+   "first": {
+    "input": 6018,
+    "cached": 0,
+    "output": 629,
+    "reasoning": 264,
+    "seconds": 8.57,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 6038,
+    "cached": 3704,
+    "output": 799,
+    "reasoning": 321,
+    "seconds": 10.47,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 5095
+   },
+   "other_seat": {
+    "input": 6557,
+    "cached": 0,
+    "output": 895,
+    "reasoning": 349,
+    "seconds": 10.32,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3723
+   }
+  },
+  {
+   "case_id": "7548abc483c94539",
+   "first": {
+    "input": 7554,
+    "cached": 0,
+    "output": 827,
+    "reasoning": 454,
+    "seconds": 10.85,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 7574,
+    "cached": 3724,
+    "output": 671,
+    "reasoning": 288,
+    "seconds": 8.65,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 6780
+   },
+   "other_seat": {
+    "input": 7672,
+    "cached": 0,
+    "output": 831,
+    "reasoning": 411,
+    "seconds": 9.44,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3647
+   }
+  },
+  {
+   "case_id": "7b22e2b9cc9be59a",
+   "first": {
+    "input": 5644,
+    "cached": 0,
+    "output": 555,
+    "reasoning": 131,
+    "seconds": 5.64,
+    "error": null,
+    "in_order": true
+   },
+   "next_turn": {
+    "input": 5664,
+    "cached": 3394,
+    "output": 644,
+    "reasoning": 210,
+    "seconds": 8.71,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 4831
+   },
+   "other_seat": {
+    "input": 6378,
+    "cached": 0,
+    "output": 737,
+    "reasoning": 237,
+    "seconds": 7.93,
+    "error": null,
+    "in_order": true,
+    "shared_prefix_est": 3396
+   }
+  }
+ ],
+ "real_prompt_failures": "0/24",
+ "real_prompts_in_schema_order": "24/24",
+ "cached_share": {
+  "next_turn": 0.57,
+  "other_seat": 0.071
+ }
+}

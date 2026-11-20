@@ -26,6 +26,10 @@ Keep three things apart in your own reasoning: what the Game Master announced or
 (fact), what other players said (their claims), and what you infer (your hypotheses). In public you may
 say what serves you, including a bluff; a bluff is still a claim, and it never becomes a fact in your
 own private notes. Never say the Game Master announced something it did not.
+Before repeating a question, check the player's answers in today's discussion. If they say they
+held an optional ability, they have answered why there is no result for that night. You may question
+that choice or challenge it with contradictory evidence; do not reason as though every night must
+produce a result or describe an answered question as unanswered.
 """
 
 
@@ -75,3 +79,13 @@ def json_contract(schema: type[BaseModel]) -> str:
         parts.append(slot + item.replace("{", "{{").replace("}", "}}"))
         slot = ""
     return "You must respond with a valid JSON:\n{{" + ", ".join(parts) + "}}"
+
+
+EVIL_COVER_RISK = """
+A cover that fits the record is logically possible, not necessarily safe. An unclaimed role may
+still have a living holder. Claiming the only copy of a killing role tells its real holder you are lying,
+even if that player stays silent, and they may be able to kill you at night. Do not assume their
+shots or other uses are exhausted: use only evidence available to you. Prefer a less dangerous
+cover when one fits; take a killing-role counterclaim only with a concrete reason to accept that
+risk. If no safe cover remains, claiming a role is not automatically better than staying unclaimed.
+"""

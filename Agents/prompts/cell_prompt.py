@@ -3,8 +3,7 @@ the generated dimension menu (WHICH dims, from each mixin Field(description)) an
 driver/horizon registry (what to LEAD WITH + outcome ordering). The alignment rule (spec
 sections 4/5): every surface derives from (1) the per-dimension Field(description) and (2) the
 mixin DAG (cell_*_schema_for), so extraction prompt, live-query prompt, embedding, model schema,
-and dedup fragments move together. Data validators (e.g. consensus coercion) live in
-Agents/memory/validators.py, not here."""
+and dedup fragments move together."""
 
 from __future__ import annotations
 

@@ -1,5 +1,13 @@
 # Frontend build plan — `frontend/`
 
+Status (2026-10-26): Plan ruled 2026-08-20. P0 to P3 were built by 2026-08-21 and deployed at
+wolf.liuhaochen.com that day; every deploy since is in [`deploy_log.md`](deploy_log.md). The v1
+theatre this plan laid out was replaced on 2026-09-25 by the stage
+([`stage_architecture.md`](stage_architecture.md), [`beat_sheet.md`](beat_sheet.md)). §4 and §5 are
+the client's design rulings and hold, with dated notes below where the build departed; the
+browser's current account is [`client_design/client_design.md`](client_design/client_design.md).
+§9 is superseded by [`testing.md`](testing.md). The rest is the plan as ruled.
+
 > Decision record + implementation plan, ruled 2026-08-20. Supersedes the stale
 > `BUILD_BRIEF.md` (2026-07-17, lived in the abandoned `ww-frontend-app` worktree) — that brief
 > assumed "build against mocks, backend staged last"; the backend has since been fully built and
@@ -107,6 +115,12 @@ frontend/
     └── styles/                             # shared design-layer CSS module (styling pass)
 ```
 
+[2026-10-26: the routes as built differ. The site pages sit in a `(site)` route group
+(`site_architecture.md` "Routes"), with `/guide` added; the room door is `/play/room` since
+2026-10-18, and `/rooms/new` redirects to it (`frontend/next.config.mjs`); a `workbench` route
+draws single scenes (`stage_architecture.md` §7). `useFilterState` was deleted with the v1 theatre
+on 2026-09-25 (`stage_architecture.md` §10).]
+
 Conventions (dota2pred, kept): route-private components in `_components/`; server `page.tsx` =
 metadata + `<Suspense fallback={<Skeleton/>}>` + `<XClient/>`; container/presenter split
 (`XClient` fetches → typed props → pure `XView`); skeletons are first-class; `kebab-case.ts`
@@ -116,6 +130,9 @@ non-components, `PascalCase.tsx` components; responsive via `visibleFrom`/`hidde
 Type codegen: `"generate-api-types": "openapi-typescript http://localhost:8000/openapi.json -o src/types/contracts/api.ts"`
 — committed output; the façade `contracts/index.ts` renames generated types so app code never
 imports `api.ts` directly (regeneration can't ripple).
+[2026-10-26: since 2026-09-15 the script needs no running server. `generate-api-types` in
+`frontend/package.json` runs `python -m server.openapi` into a committed
+`src/types/contracts/openapi.json`, then `openapi-typescript` on that file. The façade holds.]
 
 **Image assets (ruled 2026-08-21; direction = `ux_baseline.md` §1).** Art ships via static
 imports + `next/image` — content-hashed URLs (regenerated art can never get stuck behind a
@@ -166,6 +183,13 @@ Three state planes, three tools, no overlap:
    pattern): replay-list pagination, replay-theater scrubber position (`?day=3&seq=214`) —
    shareable deep links ("play of the game" wants this later).
 
+[2026-10-26: plane 3 was not built for the scrubber: the stage replaced it on 2026-09-25, and the
+replay page reads only `from` and `still` from its URL
+(`app/replays/[gameId]/_components/TheaterClient.tsx`). Plane 2 is one module-level store,
+`src/game/store.ts::useGameSession`, hydrated and reset per game, rather than one store per game;
+its design (append-only log, folded view, live seqs, monotonic pacing, per-slice selectors)
+holds.]
+
 **`foldEvents` is the heart of the app**: one pure function folding `DurableGameEvent[]` into
 `GameView`. Replay = fetch `/replays/{id}.events` → fold once. Live = SSE → fold incrementally.
 Post-game R7 flush = the same fold absorbing the withheld observer backlog. The play UI is the
@@ -195,6 +219,14 @@ was shaped for (`ReplayGame.events` is the same durable log the SSE stream carri
 }
 ```
 
+[2026-10-26: the sketch was refined as it said it would be. The view as built is
+`src/game/types.ts::GameView`: `days` (each day's slots, votes and night) in place of
+`transcript`, `votes` and `nights`; `timeline`, `over`, `lineup`, `neutralResult` and `thinking`
+added; and `xray.available` in place of `xrayUnlocked`, a flag that the observer events have
+arrived, not a permission (`src/game/foldEvents.ts`, head comment). The rule below holds except
+its last sentence: `day_summary_structured` fires, public since 2026-10-04
+(`src/game/types.ts::DayView`, `summaryStructured`).]
+
 Tier filtering is server-side — the client folds whatever arrives and renders what exists;
 `xrayUnlocked` flips on `game_over`. Never gate client-side on information the server withheld
 (there is nothing to gate — it never arrives pre-unlock). `day_summary_structured` never fires
@@ -221,6 +253,13 @@ not configured.
    (server honors it over the fossil query cursor). Two event names: `game` (durable, fold it)
    and `pacing` (ephemeral snapshot, monotonic-max into the store).
 3. `onerror`: ignore when `document.hidden`; log on `CONNECTING`; close + surface otherwise.
+   [2026-10-26: superseded. Since 2026-10-11 the page reopens the stream itself on
+   `visibilitychange` and `online`, from the newest seq folded. Since 2026-10-15 a watch reopens
+   a stream silent past 40 s (the server pings every 15 s) and retries one the browser closed for
+   good every 10 s, never while hidden; catch-up frames that arrive together are folded as one
+   block. Since 2026-10-17 a drop under 20 s plays as news, not history. In
+   `src/hooks/catch-up-boundary.ts` (`streamStalled`, `catchUpBatch`, `briefDrop`) and
+   `src/hooks/useGameStream.ts`; the account is `client_design/client_design.md` §3.]
 4. **Status poll fallback** (~10–15 s, TanStack `refetchInterval` while state === 'running'):
    a dead game task emits NO stream signal (heartbeats keep flowing, `state` stays `"running"`,
    only `GameStatus.error` fills) — the poll is the only detector. It also refreshes
@@ -240,10 +279,20 @@ never reads any of it; one `lib/storage.ts` module owns the key names):
 | `host_{gameId}` | room creator's host_key | `POST /rooms` | after `/start` succeeds (its only use) |
 | `byok_key` | remembered API key — **opt-in only** | "remember on this device" checked | the "clear saved key" button; also never written unless opted in |
 | `ghost_{gameId}` | ghost-mode guesses keyed by phase | guess widget (ruling 7) | never (it's the user's history) |
-| `notes_{gameId}` | the seated player's notes per seat, the one suspect, whether the rail's hint was seen | the seat rail's note editor (HUD pass 2, 2026-09-29) | never (it's the user's own record) |
+| `notes_{gameId}` | the seated player's file on each seat: the claim, the guess, each night's claim, each day's lines | the case file's player files (2026-10-18; the rail's note editor before) | never (it's the user's own record) |
 | `music` | `on` or `off`, the viewer's last choice of music; absent = never chosen (the game plays it, the guide does not) | the sound button (the stage's strip, the guide) | never |
 | `depart_{gameId}` (**sessionStorage**) | a game for one's departure: the ticket's puppet and when it was bought | the ticket office's solo create | once its train has left (the curtain falls); not read after 60 s; with the tab |
 | `told_{gameId}_{seat}` (**sessionStorage**) | the seat has been told of its own death that came in while the page was away, or watched it live | the live theatre's "While you were away" notice, dismissed; a live `night_result`/`lynch_result` naming the seat (2026-10-11) | with the tab |
+
+[2026-10-26: the table is stale in four places; the code is the truth (`src/lib/storage.ts::KEYS`),
+mirrored once in [`client_design/client_design.md`](client_design/client_design.md) §6. `byok_key`
+is one key per company, `byok_key:{provider}`, since 2026-10-21, the old slot migrated.
+`told_{gameId}_{seat}` is gone: the death notice was folded into "You're back" on 2026-10-11,
+whose two sessionStorage keys, `live_{gameId}` (`liveSeen`) and `away_{gameId}` (`awayTold`), are
+missing here. The seat token is not cleared when a game finishes, only on leaving a room, the
+host closing it, or a refusal, so the device can list the games it played. Two keys live outside
+`lib/storage.ts`: `ninth-express:home-screen-tip` (`src/stage/HomeScreenTip.tsx`) and
+`music-bench-keep` (the music workbench).]
 
 BYOK-remember explicitly needs ZERO additional server support: the key's only wire appearance
 is the create-request body; the server retains it only in the live game object's memory, while
@@ -266,6 +315,9 @@ the client never re-routes across the transition.
 through `/turns` like any typed line. Three drafts per turn, server-enforced; the wait is
 credited back to the seat's clock and the returned `deadline` is the new countdown. 409 =
 no turn / no drafts left; 503 = model failure, "type it instead".
+[2026-10-26: the UI was built on 2026-09-29 and reworked the same day into a preview of the seat's
+own agent's turn, with an optional steer; its home is [`ux_journeys.md`](ux_journeys.md) D25, "As
+built".]
 
 ## 6. Server tweaks shipping with P0 (ruling 5) — ⭐BOTH LANDED 2026-08-21
 
@@ -347,161 +399,16 @@ Three things the deploy surfaced that no amount of local testing would have:
 3. **`memory_stores/` must be mounted.** A served game runs with `dump_enabled: false`, but
    the engine still SEEDS retrieval from `memory_stores/v6_1` at game creation, so a missing
    store is a 500 on `POST /games`. It is 37 MB and not in git, hence a mount, not a COPY.
+   [2026-10-26: superseded 2026-10-14. The server reads lessons from LangGraph's Postgres store;
+   nothing is seeded into the process, and the `memory_stores` mount is gone
+   ([`deploy_log.md`](deploy_log.md), 2026-10-14, `344b9e58`).]
 
 Caddy lives in `~/projects/caddy` (its own compose, owns `shared-caddy-network`, holds the
 Cloudflare origin certs) and fronts six other domains — validate before every reload.
 
-**Deploy record.** 2026-08-21 first deploy · 2026-08-24 rebuild at `8efbc32` · 2026-09-10
-server-only rebuild · **2026-09-15 both containers rebuilt at `db6628c`** (branch
-`feature-frontend-v1`, pushed): the site now matches the branch, so the D1–D24 ruling pass
-runs against current code. Rollback = the `:prev` image tags left on the host. Smoke: health,
-model menu with `needs_key`, replay list carrying `model`, one house-funded AI game
-streaming, the replay page chunk carrying the new player. Not set: `ADMIN_TOKEN` (the house
-runs on process defaults; set it before the demo URL goes into applications) and the
-Langfuse keys (production has never traced; the server logs the disabled-client warning at boot).
-· **2026-09-17 both containers rebuilt at `223fc9b`** (the AI-memory switch + the three X-ray
-events; built from a clean detached worktree so uncommitted work stayed out). Order that
-mattered: `alembic upgrade head` (0006, `games.memory`) ran first, from inside the NEW server
-image on the `werewolf` network — the host cannot resolve the DSN's `ww-postgres` name, and
-the old image lacks the migration file. Then `.env.production` gained
-`WW_MEMORY_STORE_DIR=/app/memory_stores/demo_snapshots/demo_gen1` (absolute: the server's cwd
-is `/app`; the snapshot's `indexed_cache.pkl` was built on the host first, the mount is ro).
-Pre-flight in the slim image before the switch: the memory-on import closure resolves and the
-snapshot loads from cache with no embedding call (the Dockerfile's "memory back on" warning did
-not bite — nothing on the retrieval path imports the filtered ML stack). Smoke: as before, plus
-the OpenAPI carries `memory` on both doors and the three event types, and one house-funded
-memory-on game (`9369a5c1`, wolves, 407 events: 53 `memory_consulted`, 52 `player_reads`, one
-`memory_extracted` with 51 observations; the store loaded from cache, 723 vectors; the observer
-backlog flushed over the public stream at game over). Same day, server-only rebuild: served
-games retrieve **strategy points only** (`run_config.py`, owner's ruling — the town half of the
-store never had observations, so both factions now get the same kind of memory). That one change
-is applied on top of `223fc9b` in the image; commit pending (landed later in `c8a41e6`).
-· **2026-09-28 both containers rebuilt at `447d8d4`** (the Playhouse redesign: the stage and its
-scenes, the five site pages, the waiting room, the painted set and the atmosphere pass; built with
-`docker build` from a clean detached worktree, then `compose up -d --no-build`). No migration step:
-the shared `ww-postgres` was already at `0007` (applied 2026-09-26 for the local server; the old
-image ran on it unharmed, the migration only adds a column). Rollback = the `:prev` tags (the
-2026-09-17 images). Smoke: every site route and `/api` health, replays (with `X-Total-Count`),
-rooms, models; a live replay rendered in headless Chromium loading the painted window, textures
-and lantern.
-· **2026-10-01, later: frontend only, `946c898` → `314b7cc` → `d6a19fe` → `a40f011`** (the GPU
-probe; no SVG mask on the stage; no CSS mask either; the pace probe), each a frontend image
-built from a detached worktree and `compose up -d --no-build wolf-frontend`; the server stayed at
-`a651988`. The iPhone Safari crash on every stage page (build log §8.1) ended at `d6a19fe`; the
-pace probe went up alone so the phone's floor could be read before the scene split (`196ebee`,
-build log §8.3) went up after it; then `200ffed` (the split, the history-API steps), `8f29e70`
-(the `noclip` probe word), `49c58c9` (the baked backdrop for the day and the morning), `3a5aa83`
-(the phone's cut and the probe's loop range) and, on 2026-10-02, `7fadcd4` (every car scene on
-the backdrop, the camera off its layer on phones, the tappable transport band) and `7f9cadf`
-(safe areas, no pinch-zoom, no pull-to-refresh on the theatre pages), `8b71e4b` (the morning
-roll after the chips, the drawer's dawn line held until it) `f33c89a` (the jar's tip and the
-shutter's slide on HTML boxes, the Home Screen manifest and the iPhone's line for it) ,
-`86955eb` (on a phone the camera cuts and the figures cast no filtered shadow) `d924ea0`
-(on a phone nothing animates at rest: the night room's felt row, the wing's glows, the
-station's snow) and `9cfe8d4` (the phone rule as a gate and its sweep fixed in one batch: the
-kit's idle life, the lift's layer, the train, the ledger, one phone flag; the wolf card) and `ddacb4e`
-(a fast second tap on a control is the control's, not a double-tap zoom) and `a9a066c` (the
-same for a tap anywhere in the theatre: the viewport's no-zoom flags, which iOS honours for the
-double tap, and the rule on every element) and `fbaef8c` (the backdrop belongs to the Stage,
-kept across beats and scenes; every stage picture decodes synchronously) and `a3d6404` (the
-phone's frame time, one batch: the car's set under one host and kept from scene to scene, the
-vote, the lynch, the lobby and the night rooms playing by their props; moves stepped at 24 fps
-on a phone; the light's screened sheets boxed, its drawings remembered; the grade's grain off
-and a room's choice cut on a phone; 55 phone-size picture copies; the next speaker decoded a
-turn ahead; the gate's remount check — build log §8.9: the vote's raster 67 s → 23 s over its
-41 steps) and `a07067e` (the box, not the figure: every mover's box cut to its load, the ending
-held still on a phone, the epilogue's sheet with a close, the live night rooms kept across beats,
-the live countdown ticking in its own leaf, the live suite's waits sized to their streams — build
-log §8.10; rollback = `:prev` = `a3d6404`), each frontend only.
-· **2026-10-01 both containers rebuilt at `a651988`** (branch pushed first; built with
-`docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
-request budget and stall rescue (30 s, two attempts, two stalls → the rescue model for five
-minutes), the 700-character line cap and the 20 s draft-credit cap, the draft endpoint. Frontend:
-the live pass — the morning roll, the once-only beats, the card in every scene, the known-role
-bands, the role-guess listbox, the drawer's foot, the leave door, the loading platform, the
-composer and the three-plaque dock, reading-pace holds with no fast backlog, the deal after a
-departure, Reveal and File on the stage's clock, the notebook across beats, the curtain's wait
-for the filed replay. No migration (the DB was at 0007). Rollback = the `:prev` tags (the
-2026-09-28 images). Smoke: `/api` health, models, replays with `X-Total-Count` 11, the five site
-routes and a replay page all 200; headless Chromium loaded a replay to `deal.table-seated` with
-the Reveal switch and no page errors.
-· **2026-10-03 both containers rebuilt at `9ae5056`** (built with `docker build` from a clean
-detached worktree, then `compose up -d --no-build`; branch not pushed). Server: the
-discussion-evidence prompt pass, switched on by `WW_DISCUSSION_PROMPT=v2` added to
-`.env.production` (evidence/game_play_enhancement/discussion_evidence.md), and the human line cap
-700 → 500. Frontend: the composer's cap 700 → 500. Pre-flight in the new server image with the
-production env: the switch reads on, the rules carry the turn-order line, the wolf has the
-claiming option, the cap is 500, the summary uses its v2 format. No migration. Rollback = the
-`:prev` tags (server `a651988`, frontend `a07067e`); to keep the new images but the old prompts,
-drop the env line and recreate the server. Smoke: `/api` health, models, replays, `/`, `/play`,
-`/rooms`, `/replays` all 200.
-· **2026-10-04 both containers rebuilt at `60c7cc0b`** (branch pushed first; built with
-`docker build` from a clean detached worktree, then `compose up -d --no-build`). Server: the
-information-fidelity pass (private night records, the game master's record shown apart from
-claims), day summary v4 with the code-checked claim ledger, memory instructions only with
-memories, and thinking per game model (3.5 flash-lite medium, 3.1 flash-lite low; rescues get
-their own model's level), all in evidence/game_play_enhancement/discussion_evidence.md §6.4–6.7;
-plus the cast record and the four new puppets. Frontend: the cast picker and new puppets, and
-the v4 summary in the X-ray brief and the drawer. No migration step: the shared `ww-postgres` was
-already at `0009` (applied for the local server). The images running before this deploy, 16
-hours old and newer than the `9ae5056` tags, are kept as `:prev`. Pre-flight in the new server
-image: the thinking levels and the rescue table resolve. Smoke: `/api` health, models,
-replays, characters, `/`, `/play`, `/rooms`, `/replays` and an old replay page all 200.
-· **2026-10-04 both containers rebuilt at `2d8bab5e`** (branch pushed first; clean detached
-worktree, `docker build`, `compose up -d --no-build`). Server: day summary v4.1 (a plan for
-tonight is recorded apart from actions already taken, with the player's reason when they differ;
-a vague result is "not stated"; accusation fields at most 30 words), the claim ledger's same-night
-double claims and plans, `GET /games/{id}/ledger`, and `day_summary_structured` made public; plus
-the per-game usage record (`games.usage`), dated price table, calling modes per model and the
-model menu's mean game cost. Frontend: the File's Record tab (opens without Reveal), the
-transcript's one-line pointer to it, and the replay slate's cost line and grouped model menu.
-Migration `0010` was already applied to the shared `ww-postgres` (nullable column, so the old
-server ran fine on it). The `60c7cc0b` images are kept as `:prev`. Smoke: `/api` health, models,
-replays, characters, `/`, `/play`, `/rooms`, `/replays`, an old replay page and the ledger
-endpoint (game 140610ad: mornings 2 and 3) all 200; the Record tab renders the real ledger.
-· **2026-10-04 server hotfix at `ae64e8ed`** (server image only). The private night record
-(`NightActionRecord`, in state since the fidelity pass, deployed at `60c7cc0b`) was missing from the
-checkpoint serializer's allowlist, so a human turn after a night resumed it as a plain dict and the
-game died ("'dict' object has no attribute 'day'"; game 6ad64e96). Games whose human died on night 1
-never resumed after a night, which is why the earlier game did not hit it. A new test walks every
-graph state's models against the allowlist. `:prev` for the server is now `2d8bab5e`.
-· **2026-10-04 server at `5441a564`** (server image only; prompt change = new epoch). The rules
-now say day 1 has no vote, and day 1's moderator line reads "There is no vote on day 1, so no one
-voted and no one is eliminated" instead of a "vote result" with no votes: agents in game 48e56d44
-cited a day-1 abstention that never happened. `:prev` for the server is now `ae64e8ed`.
-· **2026-10-04 server at `1964f993`** (server image only; branch pushed first; clean detached
-worktree). Two player-key rows join the model menu after admission and the hallucination bench:
-GPT-6 Luna (medium reasoning, json_schema output; 6% bad bench samples against 3.5 flash-lite
-medium's 9%) and GLM-5.3 Flash (no thinking, json_mode; 32%, a cheap option). Shipped with the
-fix they depend on: OpenAI, OpenRouter, xAI and NVIDIA models had ignored a player's own key and
-used the server's, so a player's game would have billed the server and any key passed the check
-(`8cd83ba7`; never exploitable before, since no such row was on the menu). No migration. Pre-flight
-in the new image: both rows, their calling modes, thinking levels and prices resolve, and a
-player's OpenRouter key reaches the client. Smoke: `/api` health, models (both rows, `needs_key`
-true), replays, characters, `/`, `/play`, `/rooms`, `/replays` and an old replay page all 200; the
-replay API carries `cost_usd` 0.5151 and `avg_call_seconds` 5.13 for game 48e56d44. `:prev` for
-the server is now `5441a564`.
-· **2026-10-11 both containers rebuilt at `74d8206b`** (branch pushed first; `docker build` from a clean detached worktree, then `compose up -d --no-build`; `:prev` = the 2026-10-04 images, rollback). The ten-seat cast: the Phase 3 engine and its balance and hallucination fixes (72 commits since the last deploy), the frontend pass (`docs/ten_seat_pass.md`), the night bar's total as the living seats, the workbench on the ten-seat game, the backdrop density and preview lifecycle. No migration step: the shared `ww-postgres` was already at `0010`. Memory stays off (the ticket's switch disabled until a ten-seat store ships). Smoke: `/api/health`, the OpenAPI carrying the ten-seat ask kinds and the night record events, replays with the archive's nine-seat game parsing and its page serving, the landing saying four sides and ten seats, `/play`, the model menu. Not yet run on this build: a live ten-seat game through the server (the owner's user testing is the first).
-· **2026-10-14 both containers rebuilt at `d41b1c0c`** (branch and the `prompt-layout-baseline` tag pushed first; `docker build` from a clean detached worktree, then `compose up -d --no-build`; `:prev` = the images that ran before: server `837b9b6d`, frontend `3c4b8bee`). The branch tip, 145 commits past the frontend's base: the shared-prefix prompt layout as the only layout (every seat turn and lookup opens with the rules and the public record, the cache boundary; a new prompt epoch, `evidence/caching/experiment_log.md` §13-15), reads-first seat schemas, OpenAI explicit cache breakpoints, Claude's unenforced schema mode, cache writes priced at their premium; and the other sessions' work since `837b9b6d`: the v8 memory pipeline (credit, stage filter, synthesis), served games saving their extraction input instead of extracting, the model catalogue in the database, the Qwen embedder via OpenRouter. Migration `0012` and `OPENROUTER_API_KEY` applied by the owner before the swap. Pre-flight in the new server image: imports, the layout and the embedder resolve. Smoke: `/api` health, models (all ten menu rows), replays, characters, `/`, `/play`, `/rooms`, `/replays` all 200, no errors in the server log. Not yet run on this build: a live game (the owner's next).
-· **2026-10-14 server only rebuilt at `7f508c4d`** (branch pushed first; same clean-worktree build; `:prev` = server `d41b1c0c`; frontend unchanged). A json_mode seat (Haiku, Luna) whose reply breaks the schema is asked again with the schema enforced, so the turn stays on its own model instead of going to the rescue; and `run_batch --stage-filter`. Pre-flight in the image: the retry's code imports with the server's environment. Smoke: `/api/health`, `/api/models`, `/api/replays`, `/` all 200, no errors in the server log.
-· **2026-10-14 server only rebuilt at `68cef8b0`** (same procedure; `:prev` = server `7f508c4d`). The enforced retry extended to the lookup's situation summary and the day summary, after a demo game's lookup fell back to a generic query on a broken json_mode reply. Haiku accepted both schemas enforced (one probe call each). Same smoke, all 200, no errors.
-· **2026-10-14 server only rebuilt at `a1e47ad6`** (same procedure; `:prev` = server `68cef8b0`). A prompt change: a turn shown no lessons gets no verdict field and no verdict example (Haiku had copied the example's lesson-1 verdict onto 426 turns with no lessons in the v8 demo games); after the cache boundary, so the cached prefix is unchanged. One real Haiku discussion turn checked before the swap (no verdicts, parsed). Same smoke, all 200, no errors.
-· **2026-10-14 both containers rebuilt at `344b9e58`** (same procedure; `:prev` = server `a1e47ad6`, frontend `d41b1c0c`). The outage first: since the `d41b1c0c` deploy every POST /games had died with a 500, because the session seeded the file store on every game, memory on or off, the Qwen embedder switch had made `demo_gen1`'s `indexed_cache.pkl` stale, and the rewrite hit the read-only mount (each attempt also re-embedded 723 records through OpenRouter for nothing). The fix is the store swap ruled in July: the graph is compiled over LangGraph's Postgres store on `ww-postgres` (records and vectors in the database; the tick publishes into it after each pass, `tick publish` by hand), nothing is seeded into the process, `WW_MEMORY_STORE_DIR` and the `memory_stores` mount are gone. `GET /models` now carries `memory_available`, the ticket's switch follows it (default still off), and a memory-on request is refused with 409 while the store is unpublished or embedded by another model. Before the swap the owner resized the leftover empty `store_vectors` column (an earlier experiment had created it at 8 dimensions) to 1536. Order: compose up (memory-off games back at once; `/models` said memory unavailable, "no lessons published"), then the publish from the host (2,498 records, 490 strategy points, 3 min 15 s through OpenRouter), after which `/models` flipped to available with no restart. Smoke: health, models (ten rows), the 409 before the publish, a vector search through the server's own store, one house-funded memory-on Haiku game `2f19d908` (the first memory-on game served on the ten-seat cast).
-· **2026-10-15 both containers rebuilt at `2482f370`** (branch pushed first; `docker build` from a clean detached worktree, then `compose up -d --no-build`; `:prev` = server and frontend `344b9e58`). 91 commits: the landing reworked (the hero's new words and the guide's sign, a ten-seat game in the carriage, three cards from real games, the replay section, the closing with its case-study plate), the guide rebuilt (introduction, live demos, the sides' rooms, "The end of the line"), the controls kit (cream and brass plates, wells, text buttons, links, plate tabs); and the other session's batch: a finished game keeps its prompts for the nightly leak audit, the replay list carries how the neutral fared, the slates show the roles dealt. Migrations `0013` (prompt captures) and `0014` (`games.neutral_result`, filled for finished games) applied by the owner before the swap. Smoke: `/api` health, models, replays (`neutral_result` filled), characters, `/`, `/play`, `/rooms`, `/replays`, `/guide` and the carriage's replay page all 200; the new image is the running one; no errors in the server log.
-· **2026-10-15 frontend only rebuilt at `d4295e49`** (branch pushed first; `docker build` from a clean detached worktree, then `compose up -d --no-build --no-deps wolf-frontend`; `:prev` = frontend `2482f370`, the server unchanged at `2482f370`). The guide's role cards at reading size: two to a page on a desktop (417 px at 1440, from 270), 85% of the row on a phone; and the music bench (`/workbench/music`), whose files are not in git, so on the site it lists no candidates. Smoke: `/`, `/guide`, `/replays`, `/rooms`, `/play`, an old replay page and `/api` health, models and replays all 200; the guide's chunk carries the new width; no errors in the frontend log.
-· **2026-10-16 frontend only rebuilt at `87499f98`** (not pushed; `docker build` from a clean detached worktree, then `compose up -d --no-build --no-deps wolf-frontend`; `:prev` = the frontend image that ran before; no rooms waiting and no game traffic in the 20 minutes before). The typography review (`docs/typography.md`): Young Serif retired from the theatre (Garamond 600 for its signs, scaled by `--display-scale`; Literata 600 for its small text and controls; even digits on signs and controls); the site's titles in Garamond; speech in Literata, typed notes in Courier Prime, one style for the small labels; the landing's hero as a poster (the game's name as the sign, the hook in a lamplit Garamond 500, the lamps hung from the name's position) and its story moved into the reading room under one light by "What makes it different". Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays` and `/api` health, models and replays all 200; the landing's HTML carries the new name, hook and story; no errors in the frontend log. Disk after the build: 9.7 GB free (94%).
-· **2026-10-16 frontend only rebuilt at `91216f7f`** (not pushed; same procedure; `:prev` = frontend `87499f98`). The landing's hero on a phone darker (the doors' light under the tags and smaller, the candle glow at half, the wall's tiles a shade darker; the desktop unchanged), and the music back on an iPhone after another app or a call (an `interrupted` AudioContext is closed and remade on the next press). No rooms waiting and no game traffic before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays` and `/api` health, models and replays all 200; no errors in the frontend log. Disk after the build: 8.1 GB free (95%).
-· **2026-10-16 frontend only rebuilt at `1a04c23d`** (not pushed; same procedure; `:prev` = frontend `91216f7f`). The replay's night counts seats, not rooms: the night stop's notice says the seats that acted (a ten-seat wolf with its own room and the pack's is one; it had read "11 acted" beside "Acted 10 of 10"), and the pill inside the rooms reaches full on the last room (`ten_seat_pass.md` §11). No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay page and `/api` health, models and replays all 200; the live chunk counts `acted.size`; no errors in the frontend log. Disk after the build: 39 GB free (72% of `/home`, where Docker keeps its data).
-· **2026-10-16 frontend only rebuilt at `79a7c802`** (not pushed; same procedure; `:prev` = frontend `1a04c23d`). The replay's opening stop: with Reveal on the play pauses on the opening, a seat's card opens its file led by what it wrote (its line, or its pass with the reason and what it held back), Play the opening ▶ or Skip the opening →, and a round's passes are one placard (beat sheet §2); and the next speaker's rest pose decoded ahead of a pass (`81ca9b13`): on the old build each pass's pose was first fetched 1.4 s into its beat, as the puppet changed into it, on this one 4 to 6 s before. No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay page and `/api` health, models and replays all 200; the live chunk carries the stop; no errors in the frontend log. Disk after the build: 39 GB free (73% of `/home`).
-· **2026-10-16 frontend only rebuilt at `34230767`** (not pushed; same procedure; `:prev` = frontend `79a7c802`). At the opening's stop a seat's file reads as of the round's end (its notes, reads and lessons written with its opening; at the round's start they were empty), the stage and the transcript staying at its start. The first `docker build` failed and its output was not kept (`-q`); the rebuild from the same worktree passed with no errors, and nothing was swapped in between. No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay page and `/api` health, models and replays all 200; no errors in the frontend log. Disk after the build: 38 GB free (74% of `/home`).
-· **2026-10-16 frontend only rebuilt at `399d48fa`** (not pushed; same procedure; `:prev` = frontend `34230767`). The game's card says what you do at night in short (nine roles; the sigilist's and chanteuse's in the owner's words), its count only in the uses line, which is now the standard on every card the game shows (the deal's box too; the vigilante counts bullets); the replay's rooms show what the actor had left that night; the guide's Tools gain Your card (a Day | Night demo of the role card). No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay page and `/api` health, models and replays all 200; the guide's HTML names three aids; no errors in the frontend log. Disk after the build: 36 GB free (75% of `/home`).
-· **2026-10-16 frontend only rebuilt at `b4d10bce`** (not pushed; same procedure; `:prev` = frontend `399d48fa`; another session's uncommitted morning-roll and contract edits stayed out, the build being a clean checkout). The guide's Your card is now the sigilist's night room (one baked picture, `scripts/bake-guide-room.mjs`, 34 KB, drawn only once its tab is shown) with the game's card on the table, opening full size on a tap; the opened card's phone growth became a knob (`--card-max`, the game's value by default). No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay page and `/api` health, models and replays all 200; the guide's role-card and tab-height tests pass against the live site; no errors in the frontend log. Disk after the build: 36 GB free (75% of `/home`).
-· **2026-10-16 frontend only rebuilt at `aceaf93f`** (not pushed; same procedure; `:prev` = frontend `b4d10bce`). The landing carriage waits under the house's loading picture (`TrainLoader`) in place of "Rewinding the reels…", up from when the carriage comes near until the stage's pictures are in, then faded off; the archive's failure keeps its line. No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay page and `/api` health, models and replays all 200; on the live landing, with the pictures held back, the train is in the window and gone once they are drawn; no errors in the frontend log. Disk after the build: 35 GB free (76% of `/home`).
-· **2026-10-17 both containers rebuilt at `c00ec36c`** (not pushed; same procedure, from a clean detached worktree, so another session's uncommitted engine work stayed out; `:prev` = server `676d89ba` (the 2026-10-15 image), frontend `aceaf93f`). Server: the whole pack learns the role the illusionist hid (a new prompt epoch: one sentence of the rules), and the deduction engine's slices 1–2 (`9c7f37b6`, `deduction_mode` full by default, the human seat off), whose built image `9ca84fc4` had never been swapped in. Frontend: the wolves' night in the transcript (a Wolf filter; live, a wolf's transcript opens on it for the night and closes at dawn; the chat box left the pack's room), the pack's dawn record told only when it says something new, a wolf's wing showing the concealed role it was told, the transcript's "acts on seat 0" fixed, and the landing's closing section (owner). Full e2e on a scratch build first: 173 of 175, the two failures a flaky guide test (passed on rerun) and a workbench beat index my change shifted (renumbered); goldens kept only where the change explains them. No rooms waiting and no games running before the swap. Pre-flight in the server image: the record and deduction modules import, the rules say every wolf. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, replay 645228e7 and `/api` health, models and replays all 200; the landing serves the new question; no errors in either log. Disk after the builds: 34 GB free (76% of `/home`).
-· **2026-10-17 both containers rebuilt at `ea1c3176`** (not pushed; same procedure, from a clean detached worktree; `:prev` = server and frontend `c00ec36c`). Server: a human wolf's skill turn (block, conceal) is announced before the pack's parallel skill step ends (`2814776d`), and the other session's committed fortune-teller self-bet announcement and ledger fix (`06f21018`, `cedfcdea`). Frontend: a tappable seat card keeps its photo on iPadOS 18 (`ea1c3176`; full e2e 175/175 on a scratch build, no golden explained by it), and the self-bet morning lines. Held while a human game was running; swapped once it had finished, with no rooms or games live. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, replay 645228e7 and `/api` health, models and replays all 200; the live server's `pack_fan_out_skills` announces; no errors in either log. Disk after the builds: 33 GB free (77% of `/home`).
-· **2026-10-17 both containers rebuilt at `9c87b441`** (not pushed; same procedure, from a clean detached worktree; `:prev` = server and frontend `ea1c3176`). Mine: each prompt's plate holds its own "Let my agent …" button (vote, choose, talk) in the plate's second-button dress, the top plaque gone, and a night plate that wraps within the room (`9c87b441`). The other session's, deployed at the owner's word: day 1 not counting toward the forced vote (`095c9d94`), the pack chat as a conversation with a voluntary pass shown (`c30af7ba`), the wolves knowing each other's roles (`3e2f6c1b`) and a human wolf told its packmate's role at the deal (`6b9fe05c`), the night-1 lot suggested as the AI wolf's own pick (`3222638c`). Python suite 1701 passed and full e2e 175/175 on a clean build of this HEAD before the build. No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, replay 645228e7 and `/api` health, models and replays all 200; the live server builds `pack_roles`, the live frontend carries "Let my agent vote"; no errors in either log. Disk after the builds: 32 GB free (78% of `/home`).
-· **2026-10-17 both containers rebuilt at `ac7acec7`** (not pushed; same procedure, from a clean detached worktree; `:prev` = server and frontend `9c87b441`). The owner's live bug report of the day: a draw no longer drops a finished game (`ae5bfe7d`); a player's key is tried on the provider before a game or room opens, and a key refused mid-game ends the game with "Your key stopped working" instead of a game of technical passes (`34cefb05`, `c018f6a5`, `6962f065`); every send is retried and says "Sending…" until the server has it, the ballot reopening on a failure (`205813bb`); a packmate's line no longer holds a human wolf's prompt (`3a7fea5c`); one house loader for every wait on `/games/[id]` (StationStill gone), the connection pill, a drop under 20 s is a blip (`5d11f5b1`); 64 graph threads (`3b9a7326`); Sentry on both sides, one project, every data category off and the model-provider integrations off (`bbd708bc`, `22bc79cf`, `ac7acec7`; server DSN in `.env.production`, the browser's as a build arg). Python suite 1711 passed on the clean worktree (one environment-only failure: the untracked `memory_stores`), full e2e 183/183 on `5d11f5b1` (only `loading-game.png` regenerated). No rooms waiting and no games running before the swap. Smoke: `/`, `/guide`, `/play`, `/rooms`, `/replays`, a replay, a game page and `/api` health, models and replays all 200; OpenAPI carries `error_kind`; the server logs "error reporting on"; on the live `/play` the browser SDK is loaded, an OpenAI-style key with Haiku gets the hint, no console errors. Draw game `f2e944a3` (dropped by the post-game crash) restored by the owner from its 525 stored events (`complete_game`, as a normal finish).
-· **2026-10-17 server rebuilt at `cca44ed8`** (frontend unchanged at `ac7acec7`; server `:prev` = `ac7acec7`). The restored draw answered 404: the replay list and lookup required a winner, so no draw could ever be watched (`cca44ed8`: the winner is not a listing condition; the replay's winner is None for a draw). Server suite 296 passed. Smoke: replay `f2e944a3` 200 (winner none, the fortune teller "won (2 points)", 525 events), first in `/replays` as "Draw", its page plays with no console errors; `/`, `/replays`, `/api/health` 200.
+**Deploy record.** [2026-10-26: lifted whole to [`deploy_log.md`](deploy_log.md): 72 dated
+deploys from 2026-08-21 to 2026-10-22, each with its commit, rollback image, checks and smoke. New
+deploys are recorded there.]
 
 **P4 — deploy + polish.** Caddy site (same-origin `/api`), HTTPS + `Secure` cookie flag on ·
 production compose (Postgres + `alembic upgrade head` before first boot; one `WW_POSTGRES_DSN`
@@ -535,9 +442,20 @@ server — schedule as its own slice when the memory-showcase mode is taken up.
 | Ghost guesses (§9), daily puzzle (§7), MVP score (§6.4), accounts (§6.1) | ❌ none | localStorage ghost v1 now; rest = "later" list |
 | Session durability | ✅ full (2026-08-20, normalized 2026-08-22) | Postgres checkpointer + unified games/events tables + boot recovery; a server restart re-parks pending turns and games resume (restart smoke passed). Completed `GameRow`s and their existing `EventRow`s are the replay—there is no copied replay blob. BYOK games are the one exception: the key dies with the process, so they become dropped with a clear `GameStatus.error`. Unset `WW_POSTGRES_DSN` degrades gracefully to RAM-only. |
 
+[2026-10-26: two rows are stale. Memory: live games are no longer memory-off by rule. Memory is a
+per-game switch on both doors since 2026-09-17 (`6ded53c8`, `7745fd0f`, which also put memory in
+the X-ray), off by default, and available on the ten-seat cast since 2026-10-14 (the Postgres
+store). Draft: the UI was built on 2026-09-29 (ux_journeys D25).]
+
 ## 9. Testing & quality line (ruling 8)
 
 Vitest on `src/game/` only (fold correctness: full-game fixture folds, R7-unlock fold,
 pacing monotonic-max, tier-absent robustness). Prettier everywhere. ESLint = `next/core-web-vitals`
 flat config. No component tests, no E2E for now. All-TS — zero `.js` files, no `any` at view-prop
 boundaries (dota2pred's `historyData: any[]` mistake is the named anti-pattern).
+
+[2026-10-26: superseded by [`testing.md`](testing.md). Playwright came in on 2026-09-25
+(`stage_architecture.md` §1 ruling 1) and now holds eight spec files in `frontend/e2e/`; the unit
+tests cover the stage, the hooks and `lib/` as well as `src/game/`, including server-rendered
+component tests of who sees private data. There is no CI: a check runs when a person or an agent
+runs it.]

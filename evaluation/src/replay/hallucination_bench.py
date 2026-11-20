@@ -13,8 +13,8 @@ not covered yet.
 
 Engine-written parts of an old state are brought up to the checked-out engine, as a game played on
 it would have them: game-master summaries are labelled as such, ballot lines take today's wording,
-and the private night record is rebuilt from the case's stored night targets when the state
-predates it. What players and the summariser wrote stays as it was, unless an arm re-summarises
+the private night record is rebuilt from the case's stored night targets when the state
+predates it, and the mornings and read-out wills as data from the game-master prose. What players and the summariser wrote stays as it was, unless an arm re-summarises
 the earlier days (``resummarize``), which tests the current summariser.
 
 Reads nine-seat records: the frozen bench is nine-seat, and the ten-seat prompts render only a case
@@ -53,8 +53,15 @@ _BALLOT = re.compile(r"^(\s+\S+) voted for (\S+)$", re.M)
 _GM_OPENERS = ("Night of day", "Here's the vote result")
 
 
+# The closing call before 2026-10-16 counted the accusers ("player_8 has been accused by player_2,
+# player_5 and player_4. player_8 gets a last word."); today it names only who speaks (rules/closing.py).
+_CLOSING_CALL = re.compile(r"^Before the vote: .*?((?:\S+, )*(?:\S+ and )?\S+ (?:gets|each get) a last word\.)$")
+
+
 def _engine_wording(text: str) -> str:
-    """Ballot lines as the engine writes them now ("voted to eliminate" / "voted to abstain")."""
+    """Ballot lines and the closing call as the engine writes them now ("voted to eliminate" / "voted
+    to abstain"; "Before the vote: player_8 gets a last word.")."""
+    text = _CLOSING_CALL.sub(lambda m: f"Before the vote: {m.group(1)}", text)
     return _BALLOT.sub(lambda m: f"{m.group(1)} voted to " + (
         "abstain" if m.group(2) == "abstain" else f"eliminate {m.group(2)}"), text)
 
@@ -78,6 +85,14 @@ def hydrate_state(state: dict[str, Any]) -> dict[str, Any]:
     for key, model in _LIST_MODELS.items():
         source = {"day_summaries": summaries, "day_channel": channel}.get(key, state.get(key) or [])
         out[key] = [model.model_validate(x) for x in source]
+    if "night_announcements" not in state or "read_out_wills" not in state:
+        # A state from before the mornings and the read-out wills were kept as data: rebuilt from
+        # the game-master prose with the engine's own reader, so the deduction engine sees them.
+        from Agents.rules.public_prose import public_data_from_summaries
+
+        mornings, wills = public_data_from_summaries(out["day_summaries"])
+        out.setdefault("night_announcements", mornings)
+        out.setdefault("read_out_wills", wills)
     return out
 
 

@@ -14,7 +14,10 @@ def _payload(text: str) -> dict:
 
 
 def test_the_system_message_and_the_transcripts_last_line_are_marked():
+    # Act
     payload = _payload(TRANSCRIPT)
+
+    # Assert
     assert payload["system"][-1]["cache_control"] == {"type": "ephemeral"}
     pieces = payload["messages"][-1]["content"]
     marked = [p["text"] for p in pieces if "cache_control" in p]
@@ -23,8 +26,13 @@ def test_the_system_message_and_the_transcripts_last_line_are_marked():
 
 
 def test_a_longer_transcript_keeps_the_pieces_of_the_shorter_one():
+    # Arrange
     shorter = _marked_message(TRANSCRIPT)
+
+    # Act
     longer = _marked_message(TRANSCRIPT.replace("player_2: hello\n", "player_2: hello\nplayer_3: hey\n"))
+
+    # Assert
     texts = [p["text"] for p in longer]
     assert texts[: len(shorter) - 1] == [p["text"] for p in shorter[:-1]]
 
@@ -35,10 +43,15 @@ def test_no_piece_is_blank_and_a_message_without_a_transcript_is_sent_whole():
 
 
 def test_claude_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeypatch):
+    # Arrange
     monkeypatch.setenv("CLAUDE_API_KEY", "k")
+
+    # Act: build a model with a forced tool call, with a schema, and with thinking minimal
     forced = _build_chat_model("anthropic/claude-haiku-5-5", thinking_level="medium", structured_mode="forced_tool")
     schema = _build_chat_model("anthropic/claude-haiku-5-5", thinking_level="medium", structured_mode="json_schema")
     off = _build_chat_model("anthropic/claude-haiku-5-5", thinking_level="minimal", structured_mode="json_schema")
+
+    # Assert
     assert forced.thinking == {"type": "disabled"} and off.thinking == {"type": "disabled"}
     assert off.temperature is None  # Haiku 5.5 refuses a temperature
     assert schema.thinking == {"type": "adaptive"} and schema.reasoning_effort == "medium"
@@ -46,8 +59,13 @@ def test_claude_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeypat
 
 
 def test_sonnet_5_5_with_thinking_off_asks_for_between_tools_and_sends_no_temperature(monkeypatch):
+    # Arrange
     monkeypatch.setenv("CLAUDE_API_KEY", "k")
+
+    # Act
     llm = _build_chat_model("anthropic/claude-sonnet-5-5", thinking_level=None)
+
+    # Assert
     assert llm.thinking == {"type": "between_tools"} and llm.temperature is None
     assert llm.structured_mode == "json_schema"
 
@@ -60,6 +78,7 @@ def test_json_mode_puts_the_schema_after_the_transcripts_mark_and_validates_in_c
     from langchain_core.messages import AIMessage
     from pydantic import BaseModel
 
+    # Arrange: a Claude seat whose model call records the request and returns a fixed reply
     class Vote(BaseModel):
         target: Literal["player_1", "player_2"]
 
@@ -74,7 +93,11 @@ def test_json_mode_puts_the_schema_after_the_transcripts_mark_and_validates_in_c
             content=[thinking, {"type": "text", "text": 'Here: {"target": "player_2"}'}]))])
 
     monkeypatch.setattr(ClaudeChat, "_generate", fake_generate)
+
+    # Act
     out = llm.with_structured_output(Vote).invoke([SystemMessage("the rules"), HumanMessage(TRANSCRIPT)])
+
+    # Assert
     assert out.target == "player_2"  # thinking block skipped, the sentence around the object tolerated
     pieces = sent["payload"]["messages"][-1]["content"]
     assert [p["text"] for p in pieces if "cache_control" in p] == ["player_2: hello\n"]
@@ -91,9 +114,11 @@ def test_json_mode_rejects_a_target_outside_the_schema():
 
     from Agents.llm_factory.providers.common import _parse_json_reply
 
+    # Arrange
     class Vote(BaseModel):
         target: Literal["player_1", "player_2"]
 
+    # Act and assert
     with pytest.raises(OutputParserException):
         _parse_json_reply(Vote, AIMessage('{"target": "player_9"}'))
 
@@ -101,6 +126,7 @@ def test_json_mode_rejects_a_target_outside_the_schema():
 def test_a_json_mode_seat_retries_with_claudes_enforced_schema(monkeypatch):
     from pydantic import BaseModel
 
+    # Arrange: a vote schema, and a stand-in for the enforced call that records its arguments
     class Vote(BaseModel):
         target: str
 
@@ -112,8 +138,12 @@ def test_a_json_mode_seat_retries_with_claudes_enforced_schema(monkeypatch):
 
     from langchain_anthropic import ChatAnthropic
     monkeypatch.setattr(ChatAnthropic, "with_structured_output", fake)
+
+    # Round 1: a json_mode seat
     llm = ClaudeChat(model="claude-haiku-5-5", api_key="k", structured_mode="json_mode")
     assert llm.enforced_structured_output(Vote) == "runnable"
     assert seen == {"method": "json_schema"}
+
+    # Round 2: a json_schema seat
     enforced = ClaudeChat(model="claude-haiku-5-5", api_key="k", structured_mode="json_schema")
     assert enforced.enforced_structured_output(Vote) is None

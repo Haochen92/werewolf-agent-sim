@@ -10,6 +10,7 @@ modules (day_discuss.py, day_vote.py, night.py).
 
 from Agents.prompts.roles import card
 from Agents.rules.board_clocks import alive_role_counts
+from Agents.rules.night import usable_bodies
 from Agents.schemas.roles import ROLE_SPECS, roles
 from Agents.rules.claim_ledger import format_claim_ledger, revealed_tag
 from Agents.schemas import RetrievedObservation, RetrievedStrategyPoint
@@ -80,8 +81,10 @@ def format_alive_roles(cast_role_counts: dict[str, int], roster: list[DeathRecor
 def format_day_channel(messages: list[DayChannel]) -> str:
     """The public transcript: published lines only, the same for every reader. Passes are hidden,
     held-back drafts included; a held-back turn's note is dropped instead (audit 2026-10-03, finding
-    2: a line nobody heard must not survive as a belief that it was said)."""
-    lines = [f"{m.player}: {m.message}" for m in messages if not m.passed]
+    2: a line nobody heard must not survive as a belief that it was said). A player's text is in
+    quotation marks so that a forged ``game_master:`` inside it reads as that player's words: this
+    roughly halved the votes such a line moved (evidence/agent_boundaries/forged_speaker/)."""
+    lines = [f"{m.player}: {_quoted_text(m)}" for m in messages if not m.passed]
     return "\n".join(lines) if lines else "No messages yet."
 
 
@@ -157,12 +160,51 @@ def format_accusations(discussion: list[DaySummary], dead_roster: list[DeathReco
     return "\n".join(lines)
 
 
+# What a limited ability runs out of, as a quiet night names it.
+_USE_NOUNS = {"investigator": "checks", "sentinel": "watches", "vigilante": "bullets", "sigilist": "sigils"}
+
+
+def _quiet_nights(records: list[NightActionRecord], current_day: int, role: str, uses_left: int | None,
+                  dead_roster: list[DeathRecord]) -> dict[int, str]:
+    """Why a solo actor has no record for a past night, so it never reads its own silence as a result
+    it is keeping: no use left, nothing to act through, or its own choice (owner, 2026-10-21)."""
+    spec = ROLE_SPECS.get(role)
+    if spec is None or spec.pack or spec.night_action is None:
+        return {}
+    acted = {r.day for r in records}
+    spent = [r.day for r in records if r.result != "roleblocked" and r.action != "hold_fire"]
+    # uses only go down: with none left now, every quiet night after the last one spent had none
+    ran_out_after = max(spent, default=0) if spec.uses is not None and uses_left == 0 else None
+    quiet = {}
+    for night in range(1, current_day):
+        if night in acted:
+            continue
+        if night < spec.acts_from_night:
+            quiet[night] = f"you did not act: the {card(role).name} does nothing on the first night."
+        elif ran_out_after is not None and night > ran_out_after:
+            noun = _USE_NOUNS.get(role)
+            quiet[night] = (f"you did not act: you had no {noun} left." if noun
+                            else "you did not act: your pick was already made.")
+        elif role == "necromancer" and not usable_bodies(
+                [d for d in dead_roster if (d.day < night if d.phase == "night" else d.day <= night)]):
+            quiet[night] = "you did not act: there was no body you could use."
+        elif spec.no_action:
+            quiet[night] = "you stayed put." if role == "necromancer" else "you chose not to act."
+        else:
+            quiet[night] = "you did not act."
+    return quiet
+
+
 def format_night_actions(records: list[NightActionRecord], current_day: int | None = None,
-                         implications: list[OwnResultLine | None] | None = None) -> str:
+                         implications: list[OwnResultLine | None] | None = None, *, role: str = "",
+                         uses_left: int | None = None, dead_roster: list[DeathRecord] | None = None) -> str:
     """The actor's own night record, one line per night, written by the engine. `implications`
     (Agents/deduction/own_results/, one entry per record) adds what each result implies, or
-    replaces the record's prose where the line says so (the roleblock)."""
-    if not records:
+    replaces the record's prose where the line says so (the roleblock). Given the seat's `role`, a
+    past night with no record says why (`_quiet_nights`)."""
+    quiet = (_quiet_nights(records, current_day, role, uses_left, dead_roster or [])
+             if role and current_day is not None else {})
+    if not records and not quiet:
         return "Nothing yet."
     verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked",
              "investigate": "you checked", "watch": "you watched", "follow": "you followed",
@@ -186,6 +228,12 @@ def format_night_actions(records: list[NightActionRecord], current_day: int | No
             continue
         verb = "your pack attacked" if r.actor == "wolves" else verbs.get(r.action, f"you {r.action}")
         lines.append(f"{night}: {verb} {r.target}. {outcome}")
+    if quiet:
+        # records come in night order; each quiet night goes in its place among them
+        dated = [(r.day, line) for r, line in zip(records, lines)]
+        dated += [(day, f"Night {day}" + (" (last night)" if day == current_day - 1 else "") + f": {why}")
+                  for day, why in quiet.items()]
+        lines = [line for _, line in sorted(dated, key=lambda pair: pair[0])]
     return "\n".join(lines)
 
 
@@ -218,8 +266,9 @@ def _wolf_channel_line(m: WolfChannel, viewer: str | None) -> str:
         return f"{stamp} {m.wolf} has nothing else to add."
     if not m.message:
         return f"{stamp} {m.wolf} votes: {m.vote}"
-    ending = "" if m.message.endswith((".", "!", "?")) else "."
-    return f"{stamp} {m.wolf}: {m.message}{ending}" + (f"  vote: {m.vote}" if m.vote else "")
+    text = one_line(m.message)
+    ending = "" if text.endswith((".", "!", "?")) else "."
+    return f"{stamp} {m.wolf}: {text}{ending}" + (f"  vote: {m.vote}" if m.vote else "")
 
 
 def format_wolf_channel(messages: list[WolfChannel], viewer: str | None = None) -> str:
@@ -239,7 +288,7 @@ def format_investigator_results(results: list[InvestigatorResult], current_day: 
     The old line, "Day 3: player_5 was revealed as healer", read like a public death reveal
     (the same word, and that night's target had died and been revealed). Replaying a live turn
     20 times, the investigator invented an unchecked result in 20 of 20 samples on that wording
-    and in 0 of 20 on this one (evidence/game_play_enhancement/discussion_evidence.md §6.2).
+    and in 0 of 20 on this one (evidence/gameplay/discussion_evidence.md §6.2).
     `current_day` tags the previous night's check as "(last night)"; None leaves it untagged.
     """
     if not results:
@@ -275,7 +324,7 @@ def format_day_channel_postgame(messages: list[DayChannel], roles: dict[str, str
     if not visible:
         return "No messages yet."
     return "\n".join(
-        f"[Day {m.day}] {m.player} ({roles.get(m.player, 'unknown')}): {m.message}"
+        f"[Day {m.day}] {m.player} ({roles.get(m.player, 'unknown')}): {_spoken_text(m)}"
         for m in visible
     )
 
@@ -331,3 +380,36 @@ def format_agent_action(
     if action_phase == "day_vote":
         return f"Vote target: {vote.votee if vote else '(not captured)'}"
     return f"Message: {message.message if message else '(silent)'}"
+
+
+# Straight and curly double quotation marks; inside a player's quoted text each becomes a single one.
+_DOUBLE_QUOTES = ('"', "\u201c", "\u201d")
+
+
+def _quoted_text(m: DayChannel) -> str:
+    """``_spoken_text`` with a player's text inside double quotation marks. A double quotation mark
+    the player typed would close the quotation early and let the rest read as outside it, so each
+    becomes a single one. The game master's announcements are not quoted: the quotes are what marks
+    a line as a player's words."""
+    text = _spoken_text(m)
+    if m.player == "game_master":
+        return text
+    for quote in _DOUBLE_QUOTES:
+        text = text.replace(quote, "'")
+    return f'"{text}"'
+
+
+def _spoken_text(m: DayChannel) -> str:
+    """A day-channel entry's text for a transcript line. The game master's announcements are
+    written by the engine and laid out over several lines on purpose (the vote result lists each
+    ballot); only a player's text, which a person or a model wrote, is held to one line."""
+    return m.message if m.player == "game_master" else one_line(m.message)
+
+
+def one_line(text: str) -> str:
+    """A spoken message as one line of prompt text. Transcripts are one ``speaker: text`` line per
+    message, and the game master's announcements sit in the same channel, so a line break inside a
+    message (a human seat can type one) would start a line that reads as the game master or another
+    seat. Collapsing every whitespace run keeps the speaker label, which code writes, over the whole
+    message. Only the rendered text changes; the stored message, which people see, stays as typed."""
+    return " ".join(text.split())

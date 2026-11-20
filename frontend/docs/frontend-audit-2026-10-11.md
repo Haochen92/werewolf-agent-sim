@@ -1,5 +1,9 @@
 # Frontend performance and ownership audit — 2026-10-11
 
+Status (2026-10-26): Dated audit 2026-10-11 with a follow-up 2026-10-15. Items 1, 3 and 5 are
+done; 2, 4 and 6 partly. The dead-stream item was fixed 2026-10-15 (multiplayer audit, finding
+7). There is no CI: the gates run only when someone runs them.
+
 The existing stack is viable. Keep Next/React and the shared renderer; improve resource
 selection, presentation lifetime and computation before considering a renderer replacement.
 The user confirmed that earlier Safari crashes were resolved. This review concerns additional
@@ -281,7 +285,8 @@ duration and missed frame deadlines relative to the device refresh rate, not onl
 Use warm and cold runs; thermal degradation is different from a JavaScript leak.
 [WebKit memory tools](https://webkit.org/blog/6425/memory-debugging-with-web-inspector/).
 
-Use behavior and visual equivalence as hard CI gates. Establish repeatable device baselines
+Use behavior and visual equivalence as hard CI gates. [2026-10-26: this project has no CI;
+these gates run only when someone runs them.] Establish repeatable device baselines
 before inventing fixed memory/FPS thresholds. Linux Playwright WebKit is valuable compatibility
 coverage, but not the iOS process or its memory limits. [Playwright browsers](https://playwright.dev/docs/browsers).
 
@@ -409,7 +414,10 @@ composer. Renders are counted by component from a stand-in React DevTools hook (
 - **A stream left half-open by a phone's sleep may never be noticed** (suspected). The server's
   heartbeat is an SSE comment, which no script sees, and the page reopens only a stream that
   is not open. Open. The fix: a named heartbeat event, and a reopen after about 30 s of
-  silence. It needs a device to confirm.
+  silence. It needs a device to confirm. [2026-10-26: fixed the same day: the server's named
+  `ping` (`f44028d8`) and the page's reopen of a silent stream,
+  `frontend/src/hooks/catch-up-boundary.ts::streamStalled` (`a0fa2e44`); multiplayer audit,
+  finding 7.]
 - **The landing preloads six stage fonts, about 135 KB.** Deferred to the font change (owner).
   Turning preload off would flash a fallback face on the game pages, where the stage is the
   page. So the fix is to load them with the carriage instead.

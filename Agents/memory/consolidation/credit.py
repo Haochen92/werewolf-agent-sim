@@ -8,8 +8,9 @@ Channel map (one SP = one instrument): vote and night decisions via ``credit_rul
 ``grading``); day discussion by the day's lynch, refined by a landed accusation, once per seat per day;
 concealment-typed SPs of the evil seats by the accusation-heat floor. The memory-off bases come from
 the paired OFF window through the SAME instruments (baseline coherence). Each SP's base is the
-follow-weighted mean of its follows' channels (``credit_base``); a follow whose channel has no
-memory-off data leaves the SP unscored, never compared with 0.
+follow-weighted mean of its follows' channels (``credit_base``), each follow matched to its channel's
+base on the same game day (since 2026-10-28; all days when that day has too few memory-off
+decisions); a follow whose channel has no memory-off data leaves the SP unscored, never compared with 0.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from Agents.memory.consolidation.credit_rules import (
+    BASELINE_MIN_N,
     VERDICT_RANK,
     VERDICT_VALUE,
     SPCredit,
@@ -28,6 +30,7 @@ from Agents.memory.consolidation.credit_rules import (
     decision_scope,
     followed_keys,
     iter_eval_cases,
+    rate_table,
 )
 from Agents.memory.consolidation.grading import EVIL, GameView, side
 
@@ -109,13 +112,14 @@ def _discussion_ledger(dumps_glob: str, conceal_keys: frozenset = frozenset()) -
             if v is None or v == "read_excluded":
                 skipped[f"{v or 'unscored'}/{role}/day_discussion"] += 1
                 continue
-            ledger[key].add(v, f"{role}/day_discussion")
+            ledger[key].add(v, f"{role}/day_discussion", day)
     return dict(ledger), skipped
 
 
-def _discussion_off_base(off_dumps_glob: str) -> dict:
+def _discussion_off_base(off_dumps_glob: str, by_day: bool = False) -> dict:
     """The discussion base from the memory-OFF arm: each seat-day's grade (the same function as the
-    ledger, the day's spoken accusations pooled). Returns channel -> (mean, n)."""
+    ledger, the day's spoken accusations pooled). Returns channel -> (mean, n), and with ``by_day``
+    the per-day bases too (``rate_table``)."""
     days: dict[tuple, set] = defaultdict(set)
     meta: dict[tuple, tuple] = {}
     for g, view, ec in _iter_disc_cases(off_dumps_glob):
@@ -124,16 +128,13 @@ def _discussion_off_base(off_dumps_glob: str) -> dict:
         unit = (g.get("game_id"), ec.get("player_id"), ec.get("day"))
         meta[unit] = (view, ec.get("player_role"))
         days[unit] |= _accused(ec)
-    sums, ns = defaultdict(float), defaultdict(int)
+    grades = []
     for (gid, player, day), accused in days.items():
         view, role = meta[(gid, player, day)]
         v = view.discussion_grade(player, role, day, accused)
-        if v not in VERDICT_VALUE:
-            continue
-        ch = f"{role}/day_discussion"
-        sums[ch] += VERDICT_VALUE[v]
-        ns[ch] += 1
-    return {ch: (sums[ch] / ns[ch], ns[ch]) for ch in ns}
+        if v in VERDICT_VALUE:
+            grades.append((f"{role}/day_discussion", day, VERDICT_VALUE[v]))
+    return rate_table(grades, by_day)
 
 
 # ── the concealment floor ─────────────────────────────────────────────────────────────────────────
@@ -213,14 +214,15 @@ def _concealment_ledger(dumps_glob: str, conceal_keys: frozenset) -> tuple[dict,
             skipped[f"conceal_no_opportunity/{role}"] += 1
             continue
         for k in keys:
-            ledger[k].add(v, f"conceal/{role}/day_discussion")
+            ledger[k].add(v, f"conceal/{role}/day_discussion", day)
     return dict(ledger), skipped
 
 
-def _conceal_off_base(off_dumps_glob: str) -> dict:
+def _conceal_off_base(off_dumps_glob: str, by_day: bool = False) -> dict:
     """Ambient concealment verdict of memory-OFF evil player-days (same instrument: spoke-gated,
-    opportunity-normalized) — the ``conceal/<role>/day_discussion`` OFF base."""
-    sums, ns = defaultdict(float), defaultdict(int)
+    opportunity-normalized) — the ``conceal/<role>/day_discussion`` OFF base, and with ``by_day`` its
+    per-day bases (``rate_table``)."""
+    grades = []
     stats_by_game: dict = {}
     seen: set = set()
     for g, _view, ec in _iter_disc_cases(off_dumps_glob):
@@ -240,10 +242,8 @@ def _conceal_off_base(off_dumps_glob: str) -> dict:
                              total.get(ec.get("day"), 0), alive_n.get(ec.get("day"), 0))
         if v is None:
             continue
-        ch = f"conceal/{ec.get('player_role')}/day_discussion"
-        sums[ch] += VERDICT_VALUE[v]
-        ns[ch] += 1
-    return {ch: (sums[ch] / ns[ch], ns[ch]) for ch in ns}
+        grades.append((f"conceal/{ec.get('player_role')}/day_discussion", ec.get("day"), VERDICT_VALUE[v]))
+    return rate_table(grades, by_day)
 
 
 def _adoption_counts(dumps_glob: str) -> dict:
@@ -288,6 +288,17 @@ def _merged_into(store: dict) -> dict[str, str]:
             for merged in r.get("value", {}).get("merged_keys") or []}
 
 
+def _pack_moves(store: dict) -> dict[str, str]:
+    """Lesson key -> the pack's move a wolf night lesson is about; a merged duplicate's key maps to its
+    survivor's move, since its follows are credited to the survivor."""
+    moves = {r["key"]: r["value"]["pack_move"] for recs in store.get("namespaces", {}).values() for r in recs
+             if r.get("value", {}).get("pack_move")}
+    for merged, survivor in _merged_into(store).items():
+        if survivor in moves:
+            moves.setdefault(merged, moves[survivor])
+    return moves
+
+
 def _fold_merged(ledger: dict, adoption: dict, alias: dict[str, str]) -> tuple[dict, dict]:
     """Credit and adoption counts recorded against a merged duplicate's key, added to its survivor's."""
     folded: dict = defaultdict(SPCredit)
@@ -307,20 +318,23 @@ def _fold_merged(ledger: dict, adoption: dict, alias: dict[str, str]) -> tuple[d
 
 def credit_apply(store_sp_path: str | Path, dumps_glob,
                  base_rates: dict | None = None,
-                 off_window: str | None = None) -> dict:
+                 off_window: str | None = None,
+                 by_day: bool = True, min_n: int = BASELINE_MIN_N) -> dict:
     """Recompute the ledger over ``dumps_glob`` and SET the credit counters on matching SPs in
     ``store_sp_path``, with each SP's base (``credit_base``); persist the per-channel bases next to
     the store. ``dumps_glob``: a glob spec of batch-run dumps, or games already loaded
     (``sources``). A lesson the point dedup merged into another keeps its credit there (decisions §14). base_rates default = memory-off means from the same dumps; production passes the paired
     OFF window's. ``off_window`` supplies the same-instrument OFF bases for the discussion and
-    concealment channels — without it those SPs stay unscored."""
+    concealment channels — without it those SPs stay unscored. ``by_day`` / ``min_n``: compare each
+    follow with memory-off play on the same game day when that day has ``min_n`` memory-off decisions
+    (``TickConfig.baseline_by_day`` / ``baseline_min_n``); off = the all-days base, as before."""
     store_sp_path = Path(store_sp_path)
     store = json.loads(store_sp_path.read_text())
     conceal_keys = frozenset(
         r["key"] for recs in store.get("namespaces", {}).values() for r in recs
         if r.get("value", {}).get("sp_type") == "concealment")
-    base_rates = dict(base_rates if base_rates is not None else compute_base_rates(dumps_glob))
-    ledger, det_skipped = build_ledger(dumps_glob)
+    base_rates = dict(base_rates if base_rates is not None else compute_base_rates(dumps_glob, by_day))
+    ledger, det_skipped = build_ledger(dumps_glob, _pack_moves(store))
     skipped = Counter({k: n for k, n in det_skipped.items() if k.startswith("read_excluded/")})
     disc_ledger, disc_skipped = _discussion_ledger(dumps_glob, conceal_keys)
     conceal_ledger, conceal_skipped = _concealment_ledger(dumps_glob, conceal_keys)
@@ -330,9 +344,9 @@ def credit_apply(store_sp_path: str | Path, dumps_glob,
     # SPs are excluded from the endpoint ledger (one SP = one instrument).
     ledger = {**ledger, **disc_ledger, **conceal_ledger}
     if off_window:  # same-instrument OFF bases, never ON-window incidentals
-        for cell, mn in _discussion_off_base(off_window).items():
+        for cell, mn in _discussion_off_base(off_window, by_day).items():
             base_rates[cell] = mn
-        for cell, mn in _conceal_off_base(off_window).items():
+        for cell, mn in _conceal_off_base(off_window, by_day).items():
             base_rates[cell] = mn
     disc_credited = len(disc_ledger) + len(conceal_ledger)  # the engaged-guard signal
 
@@ -361,13 +375,13 @@ def credit_apply(store_sp_path: str | Path, dumps_glob,
             v["neutral_count"] = c.neutral
             v["negative_count"] = c.negative
             v["follow_count"] = c.follow
-            v["credit_base"] = c.base(base_rates)
+            v["credit_base"] = c.base(base_rates, by_day, min_n)
             unscored += v["credit_base"] is None
             credited += 1
     store_sp_path.write_text(json.dumps(store, indent=2))
     (store_sp_path.parent / "base_rates.json").write_text(
         json.dumps({k: list(v) for k, v in base_rates.items()}, indent=2))
-    credited_channels = {ch: _grading_of(ch) for c in ledger.values() for ch in c.channels}
+    credited_channels = {ch: _grading_of(ch) for c in ledger.values() for ch, _day in c.channels}
     return {"total_sps": total, "credited": credited, "ledger_keys": len(ledger), "matched": matched,
             "unscored": unscored, "disc_credited": disc_credited, "credited_channels": credited_channels,
             "read_excluded": sum(n for k, n in skipped.items() if k.startswith("read_excluded/")),

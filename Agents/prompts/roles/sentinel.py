@@ -25,6 +25,7 @@ share a result is your call; revealing your role could mark you as a night targe
 
 DISCUSS_CONTEXT = """
 Surviving players: {surviving_players}
+Watches left: {watches_left}
 Your night actions (private; recorded by the game master, and only you know them):
 {night_actions}
 """
@@ -39,6 +40,7 @@ your own results and how events actually played out.
 
 VOTE_CONTEXT = """
 Here are the surviving players: {surviving_players}
+Watches left: {watches_left}
 Your night actions (private; recorded by the game master, and only you know them):
 {night_actions}
 """

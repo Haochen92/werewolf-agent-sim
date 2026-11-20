@@ -71,6 +71,7 @@ def test_every_dealt_role_has_a_night_output_on_its_card_field():
 
 
 def test_the_second_fields():
+    # Act and assert
     assert list(night_output("necromancer", NECRO_FORTUNE).model_fields)[4:] == ["necromancer_target", "body"]
     assert list(night_output("fortune_teller", NECRO_FORTUNE).model_fields)[4:] == ["bet_target", "bet_role"]
     pick = _enum(night_output("speculator", SK_SPECULATOR), "speculator_pick")
@@ -80,7 +81,7 @@ def test_the_second_fields():
 
 def test_the_day_and_pack_turns_keep_the_tested_order():
     assert list(day_discuss_output(SK_SPECULATOR).model_fields) == [
-        *TESTED_ORDER, "pass_turn", "message", "claim", "addressed_targets",
+        *TESTED_ORDER, "pass_turn", "message", "claim", "claimed_night_actions", "addressed_targets",
     ]
     assert list(day_vote_output(SK_SPECULATOR).model_fields) == [*TESTED_ORDER, "vote_target"]
     assert list(wolf_chat_output(SK_SPECULATOR).model_fields) == [*TESTED_ORDER, "pass_turn", "message"]
@@ -108,10 +109,63 @@ def test_the_reads_keep_the_medium_fold():
 def test_the_model_sees_plain_class_names():
     # A filled class keeps its own name as the tool name and as every nested definition's key, in
     # every structured mode: tool calling, and the raw JSON schema of json_schema / json_mode.
+
+    # Act
     healer = night_output("healer", SK_SPECULATOR)
+
+    # Assert
     assert healer.__name__ == "HealerOutput"
     assert convert_to_openai_tool(healer)["function"]["name"] == "HealerOutput"
     schema = healer.model_json_schema()
     assert list(schema["$defs"]) == ["MemoryVerdict", "PlayerRead", "StrategyVerdict"]
     assert schema["properties"]["reads"]["items"] == {"$ref": "#/$defs/PlayerRead"}
     assert "Literal" not in json.dumps(schema)
+
+
+# --- the speaker's claimed night actions (slice 9a, owner 2026-10-17) ---
+
+def test_a_claimed_night_action_is_all_required_names_no_role_and_has_no_class_docstring():
+    for cast in ALL_LINEUPS:
+        claim = day_discuss_output(cast).model_json_schema()["$defs"]["NightActionClaim"]
+        assert claim["required"] == ["night", "action", "target", "result", "seen"]
+        assert "description" not in claim
+        assert not set(claim["properties"]["result"]["enum"]) & {*cast, "not_a_wolf"}
+
+
+def test_the_claimed_actions_ride_the_spoken_entry_when_the_line_names_them():
+    from types import SimpleNamespace
+
+    from Agents.turn.resolve import resolve_decision
+
+    # Arrange: an agent's reply whose line names one of its three claimed actions
+    model = day_discuss_output(SK_SPECULATOR)
+    claim = model.model_fields["claimed_night_actions"].annotation.__args__[0]
+    said = claim(night=1, action="follow", target="player_7", result="not_said", seen=["player_8"])
+    unsaid = claim(night=1, action="block", target="player_5", result="not_said", seen=[])  # the truth, not said
+    unsaid_sighting = claim(night=1, action="watch", target="player_7", result="not_said", seen=["player_2"])
+    reply = model(reads=[], updated_strategy="", pass_turn=False, claim="trailseer",
+                  message="I followed player_7 last night and they went to player_8.",
+                  claimed_night_actions=[said, unsaid, unsaid_sighting], addressed_targets=[])
+    payload = {"player_id": "player_3", "current_day": 2, "day_channel": [], "day_round": "discussion"}
+
+    # Round 1: the agent's reply
+    turn = resolve_decision(reply, {"strategy": None, "strategy_verdicts": [], "memory_verdicts": [], "reads": []},
+                            "day_channel", payload, [])
+    assert [a.model_dump() for a in turn.entry.claimed_night_actions] == [
+        {"night": 1, "action": "follow", "target": "player_7", "result": "not_said", "seen": ["player_8"]}]
+
+    # Round 2: a human's line
+    human = SimpleNamespace(pass_turn=False, message="I followed player_7.", addressed_targets=[])
+    assert resolve_decision(human, {"strategy": None, "strategy_verdicts": [], "memory_verdicts": [], "reads": []},
+                            "day_channel", payload, []).entry.claimed_night_actions == []
+
+
+def test_the_speaker_and_the_summariser_share_one_action_list():
+    from Agents.schemas.output import ClaimedNightAction
+
+    # Act
+    spoken = day_discuss_output(SK_SPECULATOR).model_json_schema()["$defs"]["NightActionClaim"]["properties"]["action"]
+    summary = ClaimedNightAction.model_json_schema()["properties"]["action"]
+
+    # Assert
+    assert spoken["enum"] == summary["enum"] and "visit" in spoken["enum"]

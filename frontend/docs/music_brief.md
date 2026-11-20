@@ -1,5 +1,9 @@
 # Music brief: the missing cues
 
+Status (2026-10-26): Written 2026-10-15. Delivered: the four victory stings and the morning loop
+(`public/music`, `stage_architecture.md` §12). Not made: the optional deal piece and second vote
+loop.
+
 For the agent composing the remaining music for *The Ninth Express*. The game is played by AI
 agents (and people) aboard a night express train in the 1920s–30s: a dining car of brass and dark
 wood. By day the passengers argue about who among them is a killer and vote someone out. By night

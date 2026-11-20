@@ -14,7 +14,8 @@ from logging import getLogger
 from pydantic import BaseModel, Field, create_model
 
 from Agents.rules.board_clocks import criticality_from_census
-from Agents.llm_factory import get_llm
+from Agents.llm_factory import GameModels, env_models
+from Agents.llm_factory.embeddings import is_transient_provider_error
 from Agents.llm_factory.providers.common import enforced_output
 from Agents.prompts.prompt_inputs import (
     build_agent_prompt_input,
@@ -253,11 +254,20 @@ def _generate_situations_for_agent(
     payload: DayActorState,
     action_phase: str,
     max_retries: int = 1,
+    *,
+    models: GameModels | None = None,
 ) -> tuple[list[str], list[dict]]:
     """Returns (composed embed strings, structured query-situation dims). The dims are the v6 cell
     situation objects' model_dump (exposure_class / info_landscape_class / criticality / ...), parallel
     to the strings; they feed the live dimension-gating filter (default-off per role) and the offline
-    gating screens. [] on the legacy path / fallback."""
+    gating screens. [] on the legacy path / fallback.
+
+    The model call follows the turn's rules (``agent_player.run_agent``): a stall (timeout, 429,
+    5xx) is counted and not asked again, a broken reply is asked again once, then the game's
+    rescue model gets one try, and it goes first while the primary keeps stalling. Until
+    2026-11-11 this call always used the primary and asked a stalled one again: up to two minutes
+    on a model the game already knew was stalled. ``models`` is the turn's; None takes the
+    accessors' models."""
     player_id = payload["player_id"]
     role = payload["player_role"]
     current_day = payload["current_day"]
@@ -268,7 +278,6 @@ def _generate_situations_for_agent(
     if cell_schema is not None:
         cell_schema = _query_cell(cell_schema)
     extra: dict = {}
-    llm = get_llm()
     if cell_schema is not None:
         template, schema = V6_SITUATION_SUMMARY, _summary_container(cell_schema)
         compose = lambda r: (  # noqa: E731
@@ -284,29 +293,60 @@ def _generate_situations_for_agent(
         template = _LEGACY_PROMPT_BY_ROLE.get(role, VILLAGER_SITUATION_SUMMARY)
         schema = SituationSummary
         compose = lambda r: (r.composed_situations, [])  # noqa: E731
-    chain = template | llm.with_structured_output(schema)
 
-    enforced = False
-    for attempt in range(max_retries + 1):
+    def ask(chain):
+        result = chain.invoke(
+            {**build_agent_prompt_input(payload), **extra}, config={"run_name": run_name}
+        )
+        if cell_schema is not None:
+            # Correct the agent-knowable dims from game state before composing the dims/embeds
+            # (the legacy path emits no structured dims, so nothing to override there).
+            for situation in result.situations:
+                _override_deterministic_dims(situation, payload)
+        return compose(result)
+
+    models = models or env_models()
+    health = models.health
+    rescue = _rescue_llm(models)
+    on_rescue = rescue is not None and health.prefer_rescue()
+    if not on_rescue:
+        llm = models.seat()
+        chain = template | llm.with_structured_output(schema)
+        enforced = False
+        for attempt in range(max_retries + 1):
+            try:
+                situations = ask(chain)
+                health.note_ok()
+                return situations
+            except Exception as e:
+                logger.warning(f"Situation summary LLM call failed for {player_id}: {models.redact(str(e))}")
+                if is_transient_provider_error(e):
+                    # slow or full is not asked again, as on a turn: the rescue takes it
+                    health.note_stall()
+                    break
+                if attempt < max_retries:
+                    # A json_mode reply that broke the schema is asked again with it enforced.
+                    strict = None if enforced else enforced_output(llm, schema)
+                    if strict is not None:
+                        chain, enforced = template | strict, True
+
+    if rescue is not None:
         try:
-            result = chain.invoke(
-                {**build_agent_prompt_input(payload), **extra}, config={"run_name": run_name}
-            )
-            if cell_schema is not None:
-                # Correct the agent-knowable dims from game state before composing the dims/embeds
-                # (the legacy path emits no structured dims, so nothing to override there).
-                for situation in result.situations:
-                    _override_deterministic_dims(situation, payload)
-            return compose(result)
+            situations = ask(template | rescue.with_structured_output(schema))
+            logger.warning(f"{player_id} situation summary written by the rescue model")
+            return situations
         except Exception as e:
-            logger.warning(f"Situation summary LLM call failed for {player_id}: {e}")
-            if attempt < max_retries:
-                # A json_mode reply that broke the schema is asked again with it enforced.
-                strict = None if enforced else enforced_output(llm, schema)
-                if strict is not None:
-                    chain, enforced = template | strict, True
-                continue
-            break
+            logger.warning(f"Situation summary failed on the rescue model for {player_id}: "
+                           f"{models.redact(str(e))}")
 
     logger.error(f"{player_id} situation summary failed all retries, using fallback")
     return [f"Day {current_day} as {role}, round {current_round}"], []
+
+
+def _rescue_llm(models: GameModels):
+    """The game's rescue model, or None when the game has none or it cannot be built here."""
+    try:
+        return models.seat_rescue()
+    except Exception as exc:
+        logger.warning(f"Situation summary rescue model unavailable: {models.redact(str(exc))}")
+        return None

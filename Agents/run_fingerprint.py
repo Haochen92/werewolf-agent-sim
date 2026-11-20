@@ -5,9 +5,9 @@ backend) bundle that generated it — model identity, prompt text, sampling para
 and even the API backend (Google AI vs Vertex differ at temp=0) all condition
 outputs. Prompts here are code, versioned in git, so instead of an external
 prompt registry the fingerprint records the git commit/dirty state plus a content
-hash of the covered prompt modules, alongside principal model IDs and generation
-params. A clean commit is reconstructable; a dirty stamp detects drift but does
-not preserve the diff.
+hash of every prompt source file under ``Agents/prompts/``, alongside principal
+model IDs and generation params. A clean commit is reconstructable; a dirty stamp
+detects drift but does not preserve the diff.
 
 Consumed by ``Agents.tracing`` (trace metadata + Langfuse release field) and
 ``scripts/run_batch.py`` (per-game JSONL records). See
@@ -25,6 +25,12 @@ from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
+
+# Bump when the fingerprint's definition changes, so a change of definition is not read as a
+# change of setup. A record with no such field is schema 1: the prompt hash covered top-level
+# files only. Schema 2 widened the hash to every prompt file. Schema 3 reads ``llm_backend``
+# from the game model's id; before it the field said vertex or google whatever the model was.
+FINGERPRINT_SCHEMA = 3
 
 
 def _git(*args: str) -> str | None:
@@ -61,28 +67,38 @@ def git_revision() -> dict:
 
 @lru_cache(maxsize=1)
 def prompt_bundle_hash() -> str:
-    """SHA-256 over top-level prompt modules (sorted), truncated to 16 hex chars.
+    """SHA-256 over every prompt source file under ``Agents/prompts/``, truncated to 16 hex chars.
 
-    This is the prompt surface as content: it changes whenever any prompt text
-    in a covered top-level file changes, including uncommitted edits the git SHA
-    alone would miss. The bundle includes the top-level prompt strings and
-    rendering layer (prompt_formatters.py / prompt_inputs.py). It currently does
-    NOT recurse into ``prompts/extraction/`` or ``prompts/memory/``; that known
-    coverage gap is documented in evidence/tracing/fingerprinting/report.md.
+    It changes whenever prompt source changes, including uncommitted edits the git SHA alone would
+    miss. Each file is keyed by its path inside the prompts folder, so a role card and a top-level
+    module with the same name, or a file moved between folders, give different hashes.
 
-    Records stamped before the rendering layer joined the bundle, 2026-06-10,
-    carry an older hash purely from the smaller glob, not a prompt change — see
-    the companion experiment_log.md.
+    Records with no ``fingerprint_schema`` field (before 2026-11-16) carry a hash over the
+    top-level files only, so an old and a new hash differ for that reason alone. See the
+    companion experiment_log.md.
     """
     digest = hashlib.sha256()
-    for path in sorted(_PROMPTS_DIR.glob("*.py")):
-        digest.update(path.name.encode())
+    for path in _prompt_source_files():
+        digest.update(path.relative_to(_PROMPTS_DIR).as_posix().encode())
         digest.update(path.read_bytes())
     return digest.hexdigest()[:16]
 
 
-def runtime_fingerprint() -> dict:
+def _prompt_source_files() -> list[Path]:
+    return sorted(
+        path
+        for path in _PROMPTS_DIR.rglob("*.py")
+        if "__pycache__" not in path.parts
+        # goldens/ holds a snapshot test's stored texts and their renderer; no game code reads it.
+        and path.relative_to(_PROMPTS_DIR).parts[0] != "goldens"
+    )
+
+
+def runtime_fingerprint(game_model: str | None = None) -> dict:
     """Resolve the principal generation settings from env vars + factory defaults.
+
+    ``game_model`` is the model a game was started on, when its starter chose one (a served
+    game); None reads the environment's, which is what a command-line or batch game runs on.
 
     Mirrors the original Google/Vertex accessors in ``Agents.llm_factory`` using
     the same env vars, defaults, and imported constants. Newer backend/per-call
@@ -97,20 +113,19 @@ def runtime_fingerprint() -> dict:
         DEFAULT_PRO_MODEL,
         DEFAULT_SUMMARY_THINKING_LEVEL,
         _thinking_level_from_env,
-        _use_vertex,
         game_thinking_level,
     )
 
-    backend = "vertex" if _use_vertex() else "google"
+    game_model = game_model or os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
+    backend = _llm_backend(game_model)
     fingerprint = {
+        "fingerprint_schema": FINGERPRINT_SCHEMA,
         **git_revision(),
         "prompt_bundle_hash": prompt_bundle_hash(),
         "llm_backend": backend,
-        "game_model": os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL),
+        "game_model": game_model,
         "temperature": float(os.getenv("GOOGLE_GENAI_TEMPERATURE", "1.0")),
-        "game_thinking_level": game_thinking_level(
-            os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
-        ),
+        "game_thinking_level": game_thinking_level(game_model),
         "summary_thinking_level": _thinking_level_from_env(
             "GOOGLE_GENAI_SUMMARY_THINKING_LEVEL", DEFAULT_SUMMARY_THINKING_LEVEL
         ),
@@ -127,3 +142,16 @@ def runtime_fingerprint() -> dict:
     if backend == "vertex":
         fingerprint["vertex_location"] = os.getenv("VERTEX_LOCATION", "global")
     return fingerprint
+
+
+def _llm_backend(game_model: str) -> str:
+    """The service that answers the game model's calls, read from its id the way the model
+    factory routes it: the id's prefix (anthropic, deepseek, openrouter…), or for a bare Gemini
+    id, vertex or google."""
+    from Agents.llm_factory import _use_vertex
+    from Agents.llm_factory.chat import provider_family
+
+    family = provider_family(game_model)
+    if family != "google":
+        return family
+    return "vertex" if _use_vertex() else "google"

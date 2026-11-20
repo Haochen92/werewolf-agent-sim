@@ -1,0 +1,25 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "hasn't spoken yet, nothing to go on", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer claim saying player_7 went to me matches my own block result, so the follow looks real", "suspected_role": "trailseer", "confidence": "high"},
+    {"player": "player_4", "why": "hasn't spoken yet, nothing to go on", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious on player_9; uncontested so far but unbacked", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked player_7 the right question, no claim", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me night 1, the night the Chanteuse blocked me, and refuses to name a role", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "player_5's claimed Suspicious read; unconfirmed", "suspected_role": "illusionist", "confidence": "low"},
+    {"player": "player_10", "why": "hasn't spoken yet, nothing to go on", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Fact: the Chanteuse blocked me night 1; player_7 admits going to me and player_3's follow matches, so player_7 is very likely the Chanteuse. I said publicly I was roleblocked but did not name healer; keep the role hidden unless it's needed to land the vote. Vote player_7 today unless they claim sentinel/sigilist with a checkable result (a sentinel on me would have to name my visitors). Tonight protect player_3 or player_5, whichever claim holds up better.",
+  "pass_turn": false,
+  "message": "I'm town with a night action, and last night I was told I was roleblocked. Only the Chanteuse can block, so a wolf came to me night 1. player_7 just admitted going to me and won't say a role. player_7, if you were watching me or putting a sigil on me, claim it now and say who else came to me. Otherwise you're my vote.",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

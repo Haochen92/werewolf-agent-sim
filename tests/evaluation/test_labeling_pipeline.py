@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 
 from evaluation.src.labeling.config import LabelingPipelineConfig
-from evaluation.src.labeling.pipeline import _load_voters, stage_consolidate
+from evaluation.src.labeling.pipeline import load_voters, stage_consolidate
 
 # 3-model panel; case0 majority-D, case1 unanimous-K, case2 deadlocked tie (one None).
 ENGINE_SCORES = {
@@ -88,6 +88,6 @@ def _load_voters_from(payload: dict):
         json.dump(payload, f)
         path = Path(f.name)
     try:
-        return _load_voters(path)
+        return load_voters(path)
     finally:
         path.unlink()

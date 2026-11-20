@@ -1,11 +1,19 @@
 # Extraction — Evaluation Apparatus Report
 
+> **Status 2026-10-23 (read this first).** A dated record of the nine-seat extractor (May–July 2026), not
+> current. What has changed: the judge defaults to Claude Haiku 5.5; the harness is
+> `evaluation/src/cli_runner/regen_replay/judge/extraction_judge.py` (`eval-extraction`) and the dataset
+> builder `evaluation/src/data/builders/extraction.py` (the `experiments/` paths below are gone); the
+> prompt's "eight" versus "five" dimensions contradiction below is still there; and ten-seat extraction
+> (per-role, offline batch) is not checked by this judge but by the de-halo pass and the decision tagger
+> ([report.md](report.md), case 5). The current account is [report.md](report.md).
+
 > **Scope: the apparatus, not the design.** Covers *how we measure* extraction quality (post-game mining of
 > obs/SP + v7 synthesis) and *how far to trust it* (L1 + L2). The extraction **design** (per-role fan-out,
 > v7 credit-aware synthesis) stays in [`../../extraction/post_game/`](../../extraction/post_game/) (destination
 > → `report.md`, journey → `experiment_log.md`),
 > [`../../extraction/situation_dimensions/`](../../extraction/situation_dimensions/),
-> [`../../v7_final/`](../../v7_final/). Lens + skeleton:
+> [`../../memory_system/v7/`](../../memory_system/v7/). Lens + skeleton:
 > [`../report.md`](../report.md); ledger: [`../source_map.md`](../source_map.md).
 >
 > **Verdict: 🟡 PARTIAL — DE-BUGGED, not calibrated** *(downgraded from ✅ VALIDATED — see corrections).*
@@ -33,7 +41,7 @@ and, for v7, *"is a credit-aware synthesised strategy-point any good?"*
   enforce all **8**, so output is unaffected (schema is the contract) — but the prompt disagrees with itself.
 - **v7 SYNTHESIS quality has NO judge.** Zero references to `ExtractionScores`/`run_extraction_judge` in
   `evaluation/src/loop/`. Synthesised SPs are measured only by (a) the loop's **outcome** slope
-  (`measure.py`) and (b) one **underpowered** offline lexical probe (`v7_final/sp_synthesis_quality_check.py`,
+  (`measure.py`) and (b) one **underpowered** offline lexical probe (`memory_system/v7/sp_synthesis_quality_check.py`,
   token-Jaccard, self-reports "UNDERPOWERED"). An in-pipeline `with_track_record` counter flags credit-blind
   (halo-only) synthesis — honesty hook, not a quality measure.
 
@@ -101,7 +109,7 @@ the strength is real.**
   now at a deterministic metric). The A/B's own verdict — **the binding lever is synthesis, not extraction or
   its model** — is exactly why the unjudged-synthesis gap below is the headline. Generated obs colocated at
   `../../extraction/post_game/model_comparison/v7_refresh/`; spec + tables
-  `../../v7_final/extraction_coverage_ab_spec.md`.
+  `../../memory_system/v7/extraction_coverage_ab_spec.md`.
 
 ## Verdict + cheapest upgrade
 
@@ -123,12 +131,12 @@ exists; it's simply never aimed at synthesis (which is currently outcome-only).
 - **Code:** `evaluation/src/judges/extraction.py`, `archive/per_role_extraction.py` (archived 2026-07-04, unwired),
   `judges/prompts/extraction.py`, `experiments/extraction_eval.py`, `experiments/extraction_builder.py`,
   `core/schemas.py::{ExtractionScores,PerRoleExtractionScores}`; v7 probes
-  `../../v7_final/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.
+  `../../memory_system/v7/{sp_synthesis_quality_check,extraction_model_ab_compare,recall_capture_metric}.py`.
 - **L2 artifacts (no golden — the gap; results pointed-at):** `../../extraction/post_game/eval_results/*.jsonl`
   (Runs 1-3), `../../extraction/post_game/model_comparison/` (May study) + `.../model_comparison/v7_refresh/`
-  (v7 model-A/B generated obs on v6_1) + `../../v7_final/extraction_coverage_ab_spec.md` (v7 spec/tables), the
+  (v7 model-A/B generated obs on v6_1) + `../../memory_system/v7/extraction_coverage_ab_spec.md` (v7 spec/tables), the
   player-ID verification txts;
-  `../../extraction/selection/experiment_log.md` (net_verdict halo);
+  `../../extraction/observation_quality/experiment_log.md` (net_verdict halo);
   `../../extraction/situation_dimensions/criticality_screen/experiment_log.md` and
   `../../memory_system/strategy_adoption/forced_schema_screen/experiment_log.md`. ⚠️ the evidence manifest's
   `dataset_path` is a stale absolute path; the report's `scripts/per_role_*` paths graduated to

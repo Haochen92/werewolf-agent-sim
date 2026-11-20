@@ -5,7 +5,7 @@
  * night blue and back, the end of the game its terminus. A small engine runs to the stop
  * picked; the stop's card is the site's walnut signboard, with the phase's own instrument
  * working in one fixed slot (so stepping along the line moves no edge), and your part on a cream
- * plate. Under the line, that a claim is not proof, and the clock's enamel sign.
+ * plate. Under the line, the clock's enamel sign.
  */
 import { useRef, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import { DiscGlyph } from '@/stage/instruments/TopStrip';
@@ -40,7 +40,7 @@ const STOPS: {
     name: 'Opening round',
     disc: 'sun',
     Demo: OpeningDemo,
-    text: 'Each day opens with opening statements: everyone still in the game writes one at the same time, then they are read out in seat order. On Day 1 that is the whole day, and night follows. Discussion and voting start on Day 2.',
+    text: 'Each day opens with opening statements: everyone still in the game writes one at the same time, then they are read out in an order drawn each day. On Day 1 that is the whole day, and night follows. Discussion and voting start on Day 2.',
     you: 'claim a role, share what you learned at night, challenge someone, or pass.',
   },
   {
@@ -64,8 +64,8 @@ const STOPS: {
     name: 'Vote',
     disc: 'sun',
     Demo: VoteDemo,
-    text: 'Everyone votes at the same time; when voting closes, every vote is shown. The player with the most votes is eliminated and their role revealed. A tie at the top, or most votes for Abstain, eliminates nobody. After two days in a row with nobody out (Day 1 counts), Abstain is off the ballot until someone is voted out.',
-    you: <>tap a player&rsquo;s chip, or the empty plate to abstain, then confirm.</>,
+    text: 'Everyone votes at the same time; when voting closes, every vote is shown. The player with the most votes is eliminated and their role revealed. A tie at the top, or most votes for Abstain, eliminates nobody. After two votes in a row with nobody out, Abstain is off the ballot until someone is voted out.',
+    you: <>tap a player&rsquo;s chip, or the blank chip to abstain, then confirm.</>,
   },
   {
     id: 'night',
@@ -194,15 +194,6 @@ export function DayLine() {
           );
         })}
       </div>
-
-      <aside className={classes.claims}>
-        <h3>A claim isn&rsquo;t proof</h3>
-        <p>
-          Anyone can lie about their role or what they saw at night. A claim is only what
-          someone says happened. Check it against other players&rsquo; accounts, the votes,
-          which are shown once voting closes, and the game master&rsquo;s announcements.
-        </p>
-      </aside>
 
       <ClockSign />
     </>

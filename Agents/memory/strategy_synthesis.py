@@ -7,8 +7,10 @@ the net_verdict pair-check, so each cluster spans MIXED outcomes; the outcome sp
 signal the synthesis LLM uses ("this move worked across N instances" vs "mostly backfired → corrective").
 
 This is the SP path that justifies SPs existing (generalization across games); the per_run path
-(reextract_cells --with-sp) is the cheap single-game baseline. Offline store-build tooling — the
-offline runner is evaluation/src/studies/synthesize_cell_sp.py.
+(reextract_cells --with-sp) is the cheap single-game baseline. The production caller is the
+consolidation tick (``Agents/memory/consolidation/store_ops.py``); the old offline runners
+(``reextract_cells``, ``synthesize_cell_sp``) were removed on 2026-11-18 and are kept in the git tag
+pre-test-cut-2026-11-18.
 """
 
 from __future__ import annotations

@@ -54,12 +54,14 @@ def test_engagement_rule_present_in_every_role_discuss_prompt():
 
 
 def test_opening_no_vote_rules_are_uniform_across_role_prompts():
+    # Round 1: the shared day-one rules text
     normalized_rules = " ".join(DAY_ONE_NO_VOTE_RULES.split())
     assert "little public information" in normalized_rules
     assert "no elimination vote will be held" in normalized_rules
     assert "not required to manufacture a read or commitment" in normalized_rules
     assert "passing is equally valid" in normalized_rules
 
+    # Round 2: each role's prompt, with and without a vote
     for role, tmpl in _ROLE_TEMPLATES:
         opening = "\n".join(
             message.content

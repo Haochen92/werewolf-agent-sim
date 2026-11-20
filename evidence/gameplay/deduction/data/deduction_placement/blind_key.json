@@ -1,0 +1,122 @@
+{
+ "S01": {
+  "case": "AC4",
+  "arm": "after_note",
+  "sample": 2
+ },
+ "S02": {
+  "case": "AC4",
+  "arm": "before_note",
+  "sample": 2
+ },
+ "S03": {
+  "case": "AC1",
+  "arm": "after_note",
+  "sample": 1
+ },
+ "S04": {
+  "case": "AC3",
+  "arm": "before_note",
+  "sample": 1
+ },
+ "S05": {
+  "case": "AC4",
+  "arm": "before_note",
+  "sample": 1
+ },
+ "S06": {
+  "case": "AC4",
+  "arm": "after_note",
+  "sample": 1
+ },
+ "S07": {
+  "case": "AC4",
+  "arm": "after_note",
+  "sample": 0
+ },
+ "S08": {
+  "case": "AC3",
+  "arm": "before_note",
+  "sample": 2
+ },
+ "S09": {
+  "case": "AC1",
+  "arm": "before_note",
+  "sample": 1
+ },
+ "S10": {
+  "case": "AC3",
+  "arm": "before_note",
+  "sample": 0
+ },
+ "S11": {
+  "case": "AC2",
+  "arm": "before_note",
+  "sample": 0
+ },
+ "S12": {
+  "case": "AC2",
+  "arm": "before_note",
+  "sample": 2
+ },
+ "S13": {
+  "case": "AC2",
+  "arm": "before_note",
+  "sample": 1
+ },
+ "S14": {
+  "case": "AC1",
+  "arm": "before_note",
+  "sample": 2
+ },
+ "S15": {
+  "case": "AC2",
+  "arm": "after_note",
+  "sample": 1
+ },
+ "S16": {
+  "case": "AC2",
+  "arm": "after_note",
+  "sample": 2
+ },
+ "S17": {
+  "case": "AC4",
+  "arm": "before_note",
+  "sample": 0
+ },
+ "S18": {
+  "case": "AC3",
+  "arm": "after_note",
+  "sample": 2
+ },
+ "S19": {
+  "case": "AC3",
+  "arm": "after_note",
+  "sample": 1
+ },
+ "S20": {
+  "case": "AC1",
+  "arm": "after_note",
+  "sample": 0
+ },
+ "S21": {
+  "case": "AC1",
+  "arm": "after_note",
+  "sample": 2
+ },
+ "S22": {
+  "case": "AC3",
+  "arm": "after_note",
+  "sample": 0
+ },
+ "S23": {
+  "case": "AC1",
+  "arm": "before_note",
+  "sample": 0
+ },
+ "S24": {
+  "case": "AC2",
+  "arm": "after_note",
+  "sample": 0
+ }
+}

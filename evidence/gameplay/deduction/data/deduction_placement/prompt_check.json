@@ -1,0 +1,103 @@
+[
+ {
+  "case": "AC1",
+  "case_id": "9b3219e5dc1eb831",
+  "same_system": true,
+  "same_seat_block": true,
+  "only_the_block_moves": true,
+  "block_before_note_in_A": true,
+  "block_after_note_in_B": true,
+  "seat_block_lines": 5,
+  "seat_block_chars": 654,
+  "human_chars": [
+   9615,
+   9615
+  ],
+  "diff_lines_besides_block": [
+   "-<SEAT BLOCK>",
+   "-",
+   "+",
+   "+<SEAT BLOCK>"
+  ],
+  "key_lines": {
+   "line 2": "seat block"
+  }
+ },
+ {
+  "case": "AC2",
+  "case_id": "9b827b695a61ece9",
+  "same_system": true,
+  "same_seat_block": true,
+  "only_the_block_moves": true,
+  "block_before_note_in_A": true,
+  "block_after_note_in_B": true,
+  "seat_block_lines": 7,
+  "seat_block_chars": 1018,
+  "human_chars": [
+   10657,
+   10657
+  ],
+  "diff_lines_besides_block": [
+   "-<SEAT BLOCK>",
+   "-",
+   "+",
+   "+<SEAT BLOCK>"
+  ],
+  "key_lines": {
+   "line 2": "seat block",
+   "lines 4-5 (vote form)": "seat block",
+   "line 6": "seat block"
+  }
+ },
+ {
+  "case": "AC3",
+  "case_id": "c52500274ffeccf0",
+  "same_system": true,
+  "same_seat_block": true,
+  "only_the_block_moves": true,
+  "block_before_note_in_A": true,
+  "block_after_note_in_B": true,
+  "seat_block_lines": 7,
+  "seat_block_chars": 1217,
+  "human_chars": [
+   10781,
+   10781
+  ],
+  "diff_lines_besides_block": [
+   "-<SEAT BLOCK>",
+   "-",
+   "+",
+   "+<SEAT BLOCK>"
+  ],
+  "key_lines": {
+   "line 1": "night record",
+   "line 2": "seat block"
+  }
+ },
+ {
+  "case": "AC4",
+  "case_id": "5b11c9fd2f6b9b0e",
+  "same_system": true,
+  "same_seat_block": true,
+  "only_the_block_moves": true,
+  "block_before_note_in_A": true,
+  "block_after_note_in_B": true,
+  "seat_block_lines": 7,
+  "seat_block_chars": 1010,
+  "human_chars": [
+   10190,
+   10190
+  ],
+  "diff_lines_besides_block": [
+   "-<SEAT BLOCK>",
+   "-",
+   "+",
+   "+<SEAT BLOCK>"
+  ],
+  "key_lines": {
+   "line 1": "seat block",
+   "line 2": "seat block",
+   "line 4": "seat block"
+  }
+ }
+]

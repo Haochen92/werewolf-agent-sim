@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" width="900" height="540" font-family="Helvetica, Arial, sans-serif">
+  <title>Which steps run one at a time, which run all at once, and where the rules take over</title>
+  <rect width="900" height="540" fill="#ffffff"/>
+
+  <!-- Legend -->
+  <rect x="20" y="16" width="22" height="16" rx="4" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="1.5"/>
+  <text x="50" y="29" font-size="13" fill="#333">All at once: each player decides blind</text>
+  <rect x="320" y="16" width="22" height="16" rx="4" fill="#fff4d6" stroke="#c99a2e" stroke-width="1.5"/>
+  <text x="350" y="29" font-size="13" fill="#333">One at a time: each sees the line before</text>
+  <rect x="630" y="16" width="22" height="16" rx="4" fill="#ede7f6" stroke="#6a4c93" stroke-width="1.5"/>
+  <text x="660" y="29" font-size="13" fill="#333">Rules only: no model call</text>
+
+  <!-- DAY -->
+  <text x="20" y="74" font-size="17" font-weight="bold" fill="#5c4410">Day</text>
+  <text x="20" y="92" font-size="11.5" fill="#777">Day 1: openings</text>
+  <text x="20" y="106" font-size="11.5" fill="#777">only</text>
+
+  <!-- Openings (parallel) -->
+  <rect x="120" y="56" width="140" height="150" rx="10" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
+  <text x="134" y="80" font-size="14" font-weight="bold" fill="#26325a">Openings</text>
+  <line x1="138" y1="100" x2="216" y2="100" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="138" y1="114" x2="216" y2="114" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="138" y1="128" x2="216" y2="128" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="138" y1="142" x2="216" y2="142" stroke="#4a5a8c" stroke-width="2"/>
+  <rect x="220" y="94" width="6" height="54" fill="#4a5a8c"/>
+  <text x="134" y="172" font-size="12.5" fill="#333">Every player</text>
+  <text x="134" y="190" font-size="12.5" fill="#333">at once</text>
+
+  <!-- Discussion (sequential) -->
+  <rect x="285" y="56" width="200" height="150" rx="10" fill="#fff4d6" stroke="#c99a2e" stroke-width="2"/>
+  <text x="299" y="80" font-size="14" font-weight="bold" fill="#5c4410">Discussion</text>
+  <circle cx="318" cy="120" r="15" fill="#ffffff" stroke="#c99a2e" stroke-width="2"/>
+  <text x="318" y="125" font-size="13" font-weight="bold" fill="#5c4410" text-anchor="middle">A</text>
+  <line x1="333" y1="120" x2="358" y2="120" stroke="#c99a2e" stroke-width="2"/>
+  <polygon points="366,120 356,115 356,125" fill="#c99a2e"/>
+  <circle cx="382" cy="120" r="15" fill="#ffffff" stroke="#c99a2e" stroke-width="2"/>
+  <text x="382" y="125" font-size="13" font-weight="bold" fill="#5c4410" text-anchor="middle">B</text>
+  <line x1="397" y1="120" x2="422" y2="120" stroke="#c99a2e" stroke-width="2"/>
+  <polygon points="430,120 420,115 420,125" fill="#c99a2e"/>
+  <circle cx="446" cy="120" r="15" fill="#ffffff" stroke="#c99a2e" stroke-width="2"/>
+  <text x="446" y="125" font-size="13" font-weight="bold" fill="#5c4410" text-anchor="middle">C</text>
+  <text x="299" y="172" font-size="12.5" fill="#333">One speaker at a time,</text>
+  <text x="299" y="190" font-size="12.5" fill="#333">chosen by the scheduler</text>
+
+  <!-- Closing defence (parallel) -->
+  <rect x="510" y="56" width="125" height="150" rx="10" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
+  <text x="524" y="80" font-size="14" font-weight="bold" fill="#26325a">Closing</text>
+  <text x="524" y="97" font-size="14" font-weight="bold" fill="#26325a">defence</text>
+  <line x1="528" y1="118" x2="590" y2="118" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="528" y1="132" x2="590" y2="132" stroke="#4a5a8c" stroke-width="2"/>
+  <rect x="594" y="112" width="6" height="26" fill="#4a5a8c"/>
+  <text x="524" y="164" font-size="12.5" fill="#333">Anyone with two</text>
+  <text x="524" y="181" font-size="12.5" fill="#333">accusers, at once</text>
+  <text x="524" y="198" font-size="11.5" fill="#777">only if needed</text>
+
+  <!-- Vote (parallel) -->
+  <rect x="660" y="56" width="110" height="150" rx="10" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
+  <text x="674" y="80" font-size="14" font-weight="bold" fill="#26325a">Vote</text>
+  <line x1="678" y1="100" x2="736" y2="100" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="678" y1="114" x2="736" y2="114" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="678" y1="128" x2="736" y2="128" stroke="#4a5a8c" stroke-width="2"/>
+  <line x1="678" y1="142" x2="736" y2="142" stroke="#4a5a8c" stroke-width="2"/>
+  <rect x="740" y="94" width="6" height="54" fill="#4a5a8c"/>
+  <text x="674" y="172" font-size="12.5" fill="#333">Every player,</text>
+  <text x="674" y="190" font-size="12.5" fill="#333">blind</text>
+
+  <!-- Count (rules) -->
+  <rect x="795" y="56" width="90" height="150" rx="10" fill="#ede7f6" stroke="#6a4c93" stroke-width="2"/>
+  <text x="809" y="80" font-size="14" font-weight="bold" fill="#3d2a5c">Count</text>
+  <text x="809" y="104" font-size="12.5" fill="#333">Remove</text>
+  <text x="809" y="121" font-size="12.5" fill="#333">anyone</text>
+  <text x="809" y="138" font-size="12.5" fill="#333">voted out</text>
+  <text x="809" y="172" font-size="12.5" font-weight="bold" fill="#3d2a5c">Game</text>
+  <text x="809" y="189" font-size="12.5" font-weight="bold" fill="#3d2a5c">over?</text>
+
+  <!-- Day arrows -->
+  <line x1="260" y1="131" x2="277" y2="131" stroke="#444" stroke-width="2"/>
+  <polygon points="285,131 275,126 275,136" fill="#444"/>
+  <line x1="485" y1="131" x2="502" y2="131" stroke="#444" stroke-width="2"/>
+  <polygon points="510,131 500,126 500,136" fill="#444"/>
+  <line x1="635" y1="131" x2="652" y2="131" stroke="#444" stroke-width="2"/>
+  <polygon points="660,131 650,126 650,136" fill="#444"/>
+  <line x1="770" y1="131" x2="787" y2="131" stroke="#444" stroke-width="2"/>
+  <polygon points="795,131 785,126 785,136" fill="#444"/>
+
+  <!-- Night falls -->
+  <polyline points="840,206 840,236 70,236 70,400 100,400" fill="none" stroke="#444" stroke-width="2"/>
+  <polygon points="110,400 98,394 98,406" fill="#444"/>
+  <line x1="70" y1="305" x2="100" y2="305" stroke="#444" stroke-width="2"/>
+  <polygon points="110,305 98,299 98,311" fill="#444"/>
+  <text x="455" y="229" font-size="12" fill="#555" text-anchor="middle">night falls</text>
+
+  <!-- NIGHT -->
+  <text x="20" y="274" font-size="17" font-weight="bold" fill="#26325a">Night</text>
+
+  <!-- Wolves (sequential chat inside, parallel with solo roles) -->
+  <rect x="110" y="258" width="250" height="94" rx="10" fill="#fff4d6" stroke="#c99a2e" stroke-width="2"/>
+  <text x="124" y="282" font-size="14" font-weight="bold" fill="#5c4410">The wolves</text>
+  <text x="124" y="303" font-size="12.5" fill="#333">Chat one at a time in private,</text>
+  <text x="124" y="321" font-size="12.5" fill="#333">then name the night's kill</text>
+  <text x="124" y="340" font-size="11.5" fill="#777">The exception: they agree first</text>
+
+  <!-- Solo roles (parallel) -->
+  <rect x="110" y="364" width="250" height="78" rx="10" fill="#e3e8f5" stroke="#4a5a8c" stroke-width="2"/>
+  <text x="124" y="388" font-size="14" font-weight="bold" fill="#26325a">Every other role that acts</text>
+  <text x="124" y="409" font-size="12.5" fill="#333">Chooses alone, all at the same</text>
+  <text x="124" y="427" font-size="12.5" fill="#333">time as the wolves, blind</text>
+
+  <!-- Barrier -->
+  <line x1="395" y1="252" x2="395" y2="448" stroke="#6a4c93" stroke-width="3" stroke-dasharray="7 5"/>
+  <text x="395" y="466" font-size="11.5" fill="#3d2a5c" text-anchor="middle">wait for</text>
+  <text x="395" y="480" font-size="11.5" fill="#3d2a5c" text-anchor="middle">every choice</text>
+  <line x1="360" y1="305" x2="388" y2="305" stroke="#444" stroke-width="2"/>
+  <line x1="360" y1="403" x2="388" y2="403" stroke="#444" stroke-width="2"/>
+  <line x1="402" y1="350" x2="422" y2="350" stroke="#444" stroke-width="2"/>
+  <polygon points="432,350 420,344 420,356" fill="#444"/>
+
+  <!-- Resolution (rules) -->
+  <rect x="432" y="270" width="210" height="160" rx="10" fill="#ede7f6" stroke="#6a4c93" stroke-width="2"/>
+  <text x="446" y="294" font-size="14" font-weight="bold" fill="#3d2a5c">Resolve the night</text>
+  <text x="446" y="316" font-size="12.5" fill="#333">Applies every choice in</text>
+  <text x="446" y="333" font-size="12.5" fill="#333">one pass: blocks stop</text>
+  <text x="446" y="350" font-size="12.5" fill="#333">actions, protections stop</text>
+  <text x="446" y="367" font-size="12.5" fill="#333">attacks. The order replies</text>
+  <text x="446" y="384" font-size="12.5" fill="#333">arrived in changes nothing.</text>
+  <text x="446" y="414" font-size="12.5" font-weight="bold" fill="#3d2a5c">Game over?</text>
+
+  <line x1="642" y1="350" x2="662" y2="350" stroke="#444" stroke-width="2"/>
+  <polygon points="672,350 660,344 660,356" fill="#444"/>
+
+  <!-- Morning -->
+  <rect x="672" y="270" width="213" height="160" rx="10" fill="#fdebd8" stroke="#c4732e" stroke-width="2"/>
+  <text x="686" y="294" font-size="14" font-weight="bold" fill="#5c3410">Morning</text>
+  <text x="686" y="316" font-size="12.5" fill="#333">A public report to everyone:</text>
+  <text x="686" y="333" font-size="12.5" fill="#333">who died overnight.</text>
+  <text x="686" y="359" font-size="12.5" fill="#333">A private result to each</text>
+  <text x="686" y="376" font-size="12.5" fill="#333">player who acted.</text>
+  <text x="686" y="414" font-size="12.5" fill="#555">Then the next day.</text>
+
+  <!-- Takeaway -->
+  <line x1="20" y1="500" x2="885" y2="500" stroke="#ddd" stroke-width="1"/>
+  <text x="20" y="524" font-size="13" fill="#333">One at a time where each answer depends on the last · all at once where choices must be blind · the rules once every choice is in.</text>
+</svg>

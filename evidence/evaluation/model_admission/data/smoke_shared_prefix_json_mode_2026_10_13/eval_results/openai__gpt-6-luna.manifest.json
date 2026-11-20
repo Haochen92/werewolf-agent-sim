@@ -1,0 +1,40 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/smoke_shared_prefix_json_mode_2026_10_13/eval_results/openai__gpt-6-luna.json",
+  "config": {
+    "caching": {
+      "cases": 8,
+      "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "floor_sizes": [
+        1024
+      ],
+      "real_prompt_mode": "json_mode",
+      "wait_s": 5
+    },
+    "label": "smoke_shared_prefix_json_mode_2026_10_13",
+    "models": [
+      "openai/gpt-6-luna",
+      "anthropic/claude-haiku-5-5"
+    ],
+    "modes": [
+      "json_mode"
+    ],
+    "notes": "Smoke check of the shared-prefix layout (run with WW_PROMPT_LAYOUT=shared_prefix): the 8 real Phase 3 discussion turns, 3 variants each (first, the same seat's next turn, another seat), in json_mode. Confirms both APIs accept the requests (Claude marks; OpenAI explicit breakpoints) and reads the same-seat and other-seat cached share, against the same turns in today's layout (unenforced_field_order_2026_10_13, haiku_field_order_*_2026_10_13).",
+    "samples_per_schema": 1,
+    "workers": 4
+  },
+  "config_sha256": "e16dcb4f1ed41890d769e439a0f79e79681567711056346890cd83a1416d1f87",
+  "config_source": "evaluation/config/model_admission/smoke_shared_prefix_json_mode_2026_10_13.json",
+  "created_at": "2026-10-23T01:56:38.023405",
+  "created_from": "eval-model-admission run 'smoke_shared_prefix_json_mode_2026_10_13' (record carries its own run_at + runtime_fingerprint)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/model_admission/smoke_shared_prefix_json_mode_2026_10_13/openai__gpt-6-luna.json",
+  "inputs": [
+    {
+      "count": 18,
+      "path": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "sha256": "4d9688fb54a34a7c5676d59ccee6d2261c09aa2a4afe114374a613e262a7c107"
+    }
+  ],
+  "models": []
+}

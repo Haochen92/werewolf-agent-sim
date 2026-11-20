@@ -1,0 +1,16 @@
+{
+  "human_labels_path": "evidence/evaluation/labeling/owner_checks/accusation_tags/human.json",
+  "model_label_paths": [
+    "evidence/evaluation/labeling/owner_checks/accusation_tags/speaker_tag_labels.json"
+  ],
+  "model_sources": [
+    "speaker_tag"
+  ],
+  "stratum_path": "evidence/evaluation/labeling/owner_checks/accusation_tags/strata.json",
+  "allowed_labels": null,
+  "positive_label": null,
+  "min_agreement": 0.8,
+  "min_ci_lower": 0.75,
+  "bias_alpha": 0.05,
+  "output_dir": "evidence/evaluation/labeling/owner_checks/accusation_tags/reports"
+}

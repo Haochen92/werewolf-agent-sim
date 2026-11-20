@@ -1,0 +1,406 @@
+{
+ "model": "openrouter/z-ai/glm-5.3-flash",
+ "run_at": "2026-10-04T10:06:09.587971+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "2d8bab5edce3c76fa20dc39efeb421596c42bd1c",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "forced_tool",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Tool Compatibility removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, baseten/fp8, atl"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.1
+   }
+  },
+  {
+   "mode": "json_schema",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "NotFoundError: Error code: 404 - {'error': {'message': 'No endpoints found for z-ai/glm-5.3-flash. Every candidate endpoint was removed during routing: Filter by Parameters removed relace, streamlake/fp8, novita/fp8, gmicloud/fp8, io-net/fp8, atlas-cloud/"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.1
+   }
+  },
+  {
+   "mode": "auto_tool",
+   "passed": "26/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "ValidationError: 1 validation error for DaySummaryOutput\nvillage_dynamics.information_landscape\n  Field required [type=missing, input_value={'consensus': \"No unified...ecorded contributions.'}, input_type=dict]\n    For further information visit https://erro"
+    }
+   ],
+   "mean_per_call": {
+    "input": 756.4,
+    "cached": 376.9,
+    "output": 275.7,
+    "reasoning": 26.3,
+    "seconds": 9.3
+   }
+  },
+  {
+   "mode": "json_mode",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 756.1,
+    "cached": 403.0,
+    "output": 192.4,
+    "reasoning": 11.1,
+    "seconds": 5.3
+   }
+  }
+ ],
+ "recommended_mode": "json_mode",
+ "recommended_mode_why": "passed every call and reasons (11.1 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": 256,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 270,
+    "cached_tokens": 256,
+    "sends": 2
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 494,
+    "cached_tokens": 448,
+    "sends": 2
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 940,
+    "cached_tokens": 896,
+    "sends": 2
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1807,
+    "cached_tokens": 1792,
+    "sends": 2
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3533,
+    "cached_tokens": 3520,
+    "sends": 2
+   },
+   {
+    "target_tokens": 8192,
+    "input_tokens": 7028,
+    "cached_tokens": 6976,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 4857,
+    "cached": 64,
+    "output": 480,
+    "reasoning": 0,
+    "seconds": 12.03,
+    "error": null
+   },
+   "next_turn": {
+    "input": 4877,
+    "cached": 64,
+    "output": 462,
+    "reasoning": 11,
+    "seconds": 11.92,
+    "error": null,
+    "shared_prefix_est": 4074
+   },
+   "other_seat": {
+    "input": 4767,
+    "cached": 64,
+    "output": 506,
+    "reasoning": 92,
+    "seconds": 13.31,
+    "error": null,
+    "shared_prefix_est": 1325
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 3800,
+    "cached": 64,
+    "output": 465,
+    "reasoning": 0,
+    "seconds": 11.54,
+    "error": null
+   },
+   "next_turn": {
+    "input": 3820,
+    "cached": 768,
+    "output": 622,
+    "reasoning": 48,
+    "seconds": 15.17,
+    "error": null,
+    "shared_prefix_est": 2995
+   },
+   "other_seat": {
+    "input": 3882,
+    "cached": 1088,
+    "output": 568,
+    "reasoning": 50,
+    "seconds": 12.75,
+    "error": null,
+    "shared_prefix_est": 976
+   }
+  }
+ ],
+ "real_prompt_failures": "0/6",
+ "cached_share": {
+  "next_turn": 0.096,
+  "other_seat": 0.133
+ }
+}

@@ -28,7 +28,7 @@ from scipy import ndimage
 
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / 'claude_artifacts/design/rasters/cast'
-SPRITES = ROOT / 'src/assets/sprites/day'
+SPRITES = ROOT / 'src/assets/sprites/characters'
 POSES = ('base', 'talking', 'thinking', 'out')
 BODY_PX = 1000
 AIR = 6

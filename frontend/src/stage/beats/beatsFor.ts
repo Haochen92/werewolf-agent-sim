@@ -216,8 +216,6 @@ export function beatsFor(
 
   // The structured summary of day N plays in Morning N, so it is held until then.
   const summaries = new Map<number, EventOf<'day_summary_structured'>>();
-  // Each day's night result: a game that ends at a morning shows that morning's roll again.
-  const reports = new Map<number, EventOf<'night_result'>>();
   let nightStart = -1;
   let over = false;
   // the seat's prompt sent just before the announcement it belongs to (see `input_request`)
@@ -520,12 +518,14 @@ export function beatsFor(
           pub('lynch.card-up', e, next, HOLD.card, who);
           pub('lynch.truth', e, next, HOLD.card, who);
           // A lynch that ends the game has no night after it: game_over comes before any phase change.
+          // Its hold is only the card's flight (no shutter falls on a night), 2026-10-21.
           const after = events
             .slice(next)
             .find((x) => x.type === 'phase_change' || x.type === 'game_over');
-          pub('lynch.card-to-wing', e, next, HOLD.shutter, {
+          const endsGame = after?.type === 'game_over';
+          pub('lynch.card-to-wing', e, next, endsGame ? HOLD.held : HOLD.shutter, {
             ...who,
-            ...(after?.type === 'game_over' ? { endsGame: true } : {}),
+            ...(endsGame ? { endsGame: true } : {}),
           });
         }
         break;
@@ -612,7 +612,6 @@ export function beatsFor(
           });
         }
         nightStart = -1;
-        reports.set(e.day, e);
         pub('morning.shutter-down', e, next, HOLD.shutter, {
           chapter: { kind: 'morning', n: e.day },
         });
@@ -676,8 +675,9 @@ export function beatsFor(
 
       case 'game_over': {
         over = true;
-        const report = reports.get(e.day);
-        pub('over.where-it-ended', e, next, report ? reportHold(report) : HOLD.held, {
+        // The ending's own mark: a morning's roll was read in full at `morning.roll` just before,
+        // so it stays up only as long as after a lynch (2026-10-21; it was read twice).
+        pub('over.where-it-ended', e, next, HOLD.held, {
           chapter: { kind: 'over', n: 0 },
         });
         pub('over.winners-hour', e, next, HOLD.shutter);

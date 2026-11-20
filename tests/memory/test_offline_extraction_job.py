@@ -36,7 +36,7 @@ def test_first_call_direct_rest_batched_lost_calls_retried(monkeypatch):
         return (Judgments(judgments=[]) if schema is Judgments else _answer(schema)), {}
 
     def fake_batch(requests, model, thinking_level=None, cache_prefix=None, poll_seconds=30, cache_ttl=None,
-                   schema_in_prompt=False):
+                   schema_in_prompt=False, **_resume):
         assert schema_in_prompt  # one cached prefix for every cell: the schema goes after it
         rounds.append(sorted(requests))
         batched.update(requests)
@@ -75,3 +75,33 @@ def test_the_dehalo_batch_rewrites_the_judged_verdicts(monkeypatch):
                         lambda requests, *a, **k: {key: Judgments(judgments=[verdict]) for key in requests})
     records = offline.dehalo_cases([case], extracted, DehaloConfig(enabled=True, model="claude-haiku-5-5"))
     assert obs.net_verdict == "unclear" and records["game-c"]["revised"] == 1
+
+
+def test_a_stopped_run_resumes_from_its_journal(tmp_path, monkeypatch):
+    """A batch is paid for once created: a rerun collects it by id and does not repeat the direct calls."""
+    from Agents.memory.extraction.run_journal import RunJournal
+
+    direct, sent = [], []
+
+    def fake_parse(prompt, schema, model, thinking_level=None, cache_prefix=None, cache_ttl=None,
+                   schema_in_prompt=False):
+        direct.append(prompt)
+        return _answer(schema), {}
+
+    def fake_batch(requests, model, thinking_level=None, cache_prefix=None, poll_seconds=30, cache_ttl=None,
+                   schema_in_prompt=False, batch_id=None, on_submit=None):
+        sent.append(batch_id)
+        if batch_id is None:
+            on_submit("msgbatch_1")
+        return {k: _answer(requests[k][1]) for k in requests}
+
+    monkeypatch.setattr(claude_structured, "parse_with_claude", fake_parse)
+    monkeypatch.setattr(claude_structured, "batch_parse", fake_batch)
+    path = tmp_path / "run" / "batches.json"
+    first = offline.extract_cases([_case("game-a")], "claude-haiku-5-5", "off", journal=RunJournal(path))
+    assert sent == [None] and len(direct) == 1
+
+    second = offline.extract_cases([_case("game-a")], "claude-haiku-5-5", "off", journal=RunJournal(path))
+    assert sent == [None, "msgbatch_1"]  # collected by id, not sent again
+    assert len(direct) == 1  # the lead call's saved answer is reused
+    assert len(second["game-a"]["observations"]) == len(first["game-a"]["observations"])

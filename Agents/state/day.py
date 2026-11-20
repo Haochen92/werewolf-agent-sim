@@ -20,6 +20,8 @@ from Agents.schemas.game_events import (
     DeathRecord,
     FiringReason,
     NightActionRecord,
+    NightAnnouncement,
+    ReadOutWill,
     RoundCandidate,
     WolfChannel,
 )
@@ -40,6 +42,10 @@ class DayGraphState(TypedDict, total=False):
     """Prior-day summaries, plus today's once written."""
     dead_roster: list[DeathRecord]
     """Public dead roster, read-only in the day graph."""
+    night_announcements: list[NightAnnouncement]
+    """Public: each night's morning announcement as data, read-only in the day graph."""
+    read_out_wills: list[ReadOutWill]
+    """Public: each read-out town record as data, read-only in the day graph."""
     wolf_channel: list[WolfChannel]
     """The pack's night chat, carried into the day for the wolves' payloads only."""
     roles: dict[str, str]
@@ -47,6 +53,9 @@ class DayGraphState(TypedDict, total=False):
     a payload."""
     lineup: list[str]
     """The dealt roles, public."""
+    game_id: str
+    """The game's id, copied from the run config by day_phase, so every turn payload carries it
+    for the node-cache key (turn_cache_key)."""
     human_players: list[str]
     """player_ids of the human seats."""
     night_actions: list[NightActionRecord]
@@ -73,10 +82,11 @@ class DayGraphState(TypedDict, total=False):
     entry node (start_opening / start_closing); fan_out_round and collect_round read it. The
     scheduler's sweep turns carry "proactive" on their entries but run no round."""
     round_players: list[str]
-    """Who is in the round now running, in the order their lines are played: every survivor in seat
-    order for the opening, the accused for the closing. Written by the round's entry node with
-    day_round; fan_out_round sends to exactly these players and collect_round plays their lines in
-    this order. The translator reads it off the entry node's chunk for the round_opened event."""
+    """Who is in the round now running: every survivor in seat order for the opening, the accused
+    as called for the closing. Written by the round's entry node with day_round; fan_out_round
+    sends to exactly these players. collect_round plays the closing's lines in this order and the
+    opening's in an order drawn that day (flow._round_order), so this list never says who spoke
+    first. The translator reads it off the entry node's chunk for the round_opened event."""
     round_candidates: Annotated[list[RoundCandidate], add]
     """The parallel round turns' lines, held until collect_round orders and numbers them into
     day_channel. The day graph's state is rebuilt every day and day_phase returns only four keys,
@@ -105,6 +115,12 @@ class DayActorState(TypedDict, total=False):
     """Prior-day summaries for context."""
     dead_roster: list[DeathRecord]
     """Public dead roster (dead player -> revealed role + when); shown to every role."""
+    night_announcements: list[NightAnnouncement]
+    """Public: each night's morning announcement as data, on every role's payload for the
+    deduction engine (Agents/deduction/seat_view.py); never rendered into the prompt."""
+    read_out_wills: list[ReadOutWill]
+    """Public: each read-out town record as data, on every role's payload for the deduction
+    engine; never rendered into the prompt (the moderator's prose is)."""
     cast_role_counts: dict[str, int]
     """Public fixed-cast census (role -> count; counts only, no identities) feeding the alive-roles line."""
     lineup: list[str]

@@ -19,8 +19,8 @@ game transcript
 ```
 
 Strategy points are **not** minted per game (v7 design): they are synthesized cross-game from
-observation clusters during loop consolidation — that policy currently lives in
-`evaluation/src/loop/consolidate.py` (planned to graduate here at loop go-live) with the offline
+observation clusters during consolidation — that policy lives in
+`consolidation/store_ops.py` (graduated from the research loop on 2026-07-21) with the offline
 primitive in `strategy_synthesis.py`.
 
 ## Read path (every agent turn)

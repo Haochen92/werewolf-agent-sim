@@ -19,6 +19,7 @@ from typing import Any
 from langgraph.config import get_stream_writer
 from langgraph.types import interrupt
 
+from Agents.llm_factory import GameModels
 from Agents.prompts.prompt_inputs import build_agent_prompt_input
 from Agents.schemas.game_events import AddressedTarget
 from Agents.schemas.human_player import HumanTurnRequest, HumanTurnResponse
@@ -53,7 +54,8 @@ def announce_human_turn(player_id: str, role: str, phase: str, day: int,
         pass
 
 
-def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn | None:
+def run_human_decision(payload: dict[str, Any], output_key: str, *,
+                       models: GameModels | None = None) -> ResolvedTurn | None:
     """The human seat's whole turn — the counterpart of ``run_agent``, taking the SAME
     ``resolve_decision`` path but none of the agent scaffolding. The pipeline routes here BEFORE the
     span / memory retrieval / adoption / EvalCase, so a human turn pays for none of them (they'd feed
@@ -64,15 +66,16 @@ def run_human_decision(payload: dict[str, Any], output_key: str) -> ResolvedTurn
     fallback — an invalid resumed action means the driver breached its contract, so raise rather than
     degrade. Returns None when the human DELEGATED the turn (the server's AFK default): the caller
     falls through to the agent path, which plays the seat with the full retry/rescue ladder.
+    ``models`` is the game's (the tagger of the human's line runs on it); None takes the accessors'.
     """
     valid_targets = valid_targets_for_action(payload, output_key)
-    result = _human_player_action(payload, output_key, valid_targets)
+    result = _human_player_action(payload, output_key, valid_targets, models=models)
     if result is None:
         # Delegate (the AFK default): None tells the pipeline to fall through to the
         # agent path, inheriting its retry/rescue/technical-pass ladder and billing.
         return None
     reasoning = extract_agent_reasoning(result)
-    outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets)
+    outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
     if outcome is RETRY:
         raise HumanTurnContractError(f"invalid resumed human action for {output_key}")
     return outcome
@@ -187,7 +190,7 @@ def _instruction_for(payload: dict[str, Any], output_key: str) -> str:
 
 
 def _human_player_action(
-    payload: dict[str, Any], output_key: str, valid_targets: list[str]
+    payload: dict[str, Any], output_key: str, valid_targets: list[str], *, models: GameModels | None = None
 ) -> SimpleNamespace | None:
     """The human seat's substitute for ``_generate``: pause the graph, collect the human's action,
     and return it shaped exactly like an LLM decision so the shared ``extract_agent_reasoning`` ->
@@ -201,7 +204,7 @@ def _human_player_action(
     response = validate_human_response(request, raw_action) # Defensive re-validation: the driver validates before resuming, so a failure here means the
     if response.delegate:
         return None
-    addressed = _human_addressed_targets(response, payload, output_key)
+    addressed = _human_addressed_targets(response, payload, output_key, models=models)
     return _human_result_shaped(response, output_key, addressed)
 
 
@@ -269,7 +272,7 @@ def _human_result_shaped(
 
 
 def _human_addressed_targets(
-    response: HumanTurnResponse, payload: dict[str, Any], output_key: str
+    response: HumanTurnResponse, payload: dict[str, Any], output_key: str, *, models: GameModels | None = None
 ) -> list[AddressedTarget]:
     """Whom the human's message addresses — day discussion only (the reactive scheduler runs there).
     The extractor tags the free text; the human's own reactive debts (``firing_reason.owes``) are
@@ -281,7 +284,7 @@ def _human_addressed_targets(
         or not (response.message and response.message.strip())
     ):
         return []
-    extracted = extract_addressed_targets(response.message, payload, payload.get("current_day", 1))
+    extracted = extract_addressed_targets(response.message, payload, payload.get("current_day", 1), models=models)
     firing_reason = payload.get("firing_reason")
     owes = firing_reason.owes if firing_reason is not None and firing_reason.tier == "reactive" else []
     discharge = [

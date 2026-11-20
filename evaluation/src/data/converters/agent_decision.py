@@ -2,9 +2,9 @@
 
 An ``EvalCase`` freezes one agent decision (day message / day vote / night
 action) — the richest case type. Live evaluation expects modern spans whose
-output carries an ``eval_case`` payload; older span formats remain in
-``evaluation/src/archive/legacy_cases.py`` for audit history but are no longer
-accepted by the active builder.
+output carries an ``eval_case`` payload; older span formats were handled by
+``evaluation/src/archive/legacy_cases.py`` (removed on 2026-11-18; kept in
+the git tag pre-test-cut-2026-11-18) and are not accepted by the active builder.
 """
 
 from __future__ import annotations

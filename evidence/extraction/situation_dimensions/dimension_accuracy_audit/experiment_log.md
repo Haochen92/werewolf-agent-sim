@@ -32,7 +32,7 @@ phase. (One paragraph by design; the full finding lives in the pass log.)
 **Data.** Query-side `situation_dimensions` are persisted **only** in the loop-era eval-case
 sidecars (`batch_results/{town_only_run1,town_only_run2,v2_full,legacy}/eval_cases/**`, span-wrapped
 at `output.eval_case.situation_dimensions`). The batch records that carry the true role map and the
-night/day resolutions live in `evidence/v7_final/<run>/gen*_{on,off}.jsonl`; each game is joined by
+night/day resolutions live in `evidence/memory_system/v7/<run>/gen*_{on,off}.jsonl`; each game is joined by
 `trace_id`. Only cases with a non-empty `situation_dimensions` participate; each of a case's 1–2
 situation objects is scored as its own row against the case's single board truth.
 
@@ -281,7 +281,7 @@ fallback). Suite 421 → 431 passed.
   `evaluation/src/loop/decision_scoring.py`; gate bucket reused from
   `Agents/memory/retrieval/dimension_gating.py::_alive_bucket`.
 - Data: loop-era sidecars under `batch_results/{town_only_run1,town_only_run2,v2_full,legacy}`;
-  batch records under `evidence/v7_final/{town_only_run1,town_only_run2,v2_full}` +
+  batch records under `evidence/memory_system/v7/{town_only_run1,town_only_run2,v2_full}` +
   `batch_results/legacy/*.jsonl`.
 - Motivating finding: `../../evaluation/hardening_pass/experiment_log.md` §2.1. Unit test:
   `tests/test_dimension_audit.py`.

@@ -20,8 +20,6 @@ from Agents.rules.night_record import PACK_ACTOR
 from Agents.schemas.roles import ROLE_SPECS
 
 NO_WOLF_MESSAGES = "No messages yet."
-NO_INVESTIGATIONS = "No investigations yet."
-NO_VIGILANTE_RESULTS = "Nothing learned from your shots yet."
 
 
 def _is_wolf(role: str) -> bool:
@@ -102,25 +100,6 @@ def check_wolf_channel_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
     return leaks
 
 
-def check_investigator_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
-    """Investigation results should only appear in investigator prompts. A nine-seat field: the
-    ten-seat game keeps every result in the night record (check_night_record_isolation)."""
-    leaks: list[str] = []
-    for entry in prompt_log:
-        if entry["player_role"] == "investigator":
-            continue
-
-        results = entry["prompt_input"].get("investigator_results", "")
-        if results and results != NO_INVESTIGATIONS:
-            _record_leak(
-                leaks,
-                f"LEAK: {entry['player_id']} ({entry['player_role']}) "
-                "received investigator_results",
-            )
-
-    return leaks
-
-
 def check_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
     """Healer target should never be included in prompt input."""
     leaks: list[str] = []
@@ -135,44 +114,31 @@ def check_healer_target_absent(prompt_log: list[dict[str, Any]]) -> list[str]:
     return leaks
 
 
-def check_vigilante_results_isolation(prompt_log: list[dict[str, Any]]) -> list[str]:
-    """Vigilante shot feedback (SK confirmations) should only appear in vigilante prompts. A
-    nine-seat field, like investigator_results (see check_night_record_isolation)."""
-    leaks: list[str] = []
-    for entry in prompt_log:
-        if entry["player_role"] == "vigilante":
-            continue
-
-        results = entry["prompt_input"].get("vigilante_results", "")
-        if results and results != NO_VIGILANTE_RESULTS:
-            _record_leak(
-                leaks,
-                f"LEAK: {entry['player_id']} ({entry['player_role']}) "
-                "received vigilante_results",
-            )
-
-    return leaks
-
-
 def check_night_record_isolation(
     prompt_log: list[dict[str, Any]], records: Iterable[Any], roles: dict[str, str]
 ) -> list[str]:
     """A night record's result is its actor's alone: its outcome text may reach only the actor's
     own prompts, and a pack record (actor "wolves") only the wolves'. ``records`` is the game's
-    night_actions (NightActionRecord objects or their dicts); the ten-seat successor of the
-    investigator_results / vigilante_results checks."""
+    night_actions (NightActionRecord objects or their dicts). It replaced the nine-seat
+    investigator_results / vigilante_results checks (removed 2026-11-18)."""
     leaks: list[str] = []
-    for record in records:
-        actor = record["actor"] if isinstance(record, dict) else record.actor
-        outcome = record["outcome"] if isinstance(record, dict) else record.outcome
+    pairs = [(r["actor"], r["outcome"]) if isinstance(r, dict) else (r.actor, r.outcome) for r in records]
+
+    def allowed(actor: str, entry: dict[str, Any]) -> bool:
+        if actor == PACK_ACTOR:
+            return _is_wolf(roles.get(entry["player_id"], entry["player_role"]))
+        return entry["player_id"] == actor
+
+    for actor, outcome in pairs:
         if not outcome or not outcome.strip():
             continue
         for entry in prompt_log:
-            if actor == PACK_ACTOR:
-                allowed = _is_wolf(roles.get(entry["player_id"], entry["player_role"]))
-            else:
-                allowed = entry["player_id"] == actor
-            if allowed:
+            if allowed(actor, entry):
+                continue
+            # The same words in a record the seat may see are no leak: two killers on one victim,
+            # two blocked seats and a Necromancer acting through a dead player's body ("Through
+            # player_9's body: ...") get the same sentence (persona voice games, 2026-10-18).
+            if any(outcome in own for other, own in pairs if own and allowed(other, entry)):
                 continue
             if outcome in entry["prompt_input"].get("night_actions", ""):
                 _record_leak(
@@ -193,7 +159,7 @@ def check_gated_candidate_isolation(
     leaks: list[str] = []
     needles = [c for c in gated_candidates if c and c.strip()]
     for entry in prompt_log:
-        blob = repr(entry.get("prompt_input", {}))
+        blob = _searchable(entry.get("prompt_input", {}))
         for needle in needles:
             if needle in blob:
                 _record_leak(
@@ -237,13 +203,13 @@ def check_reads_isolation(
          it, so a why a wolf also wrote there was shared with its packmate on purpose (2026-10-11, a
          ten-seat pilot game flagged the chanteuse's own chat line in the illusionist's prompt)."""
     leaks: list[str] = []
-    blobs = [(entry, repr(entry.get("prompt_input", {}))) for entry in prompt_log]
+    blobs = [(entry, _searchable(entry.get("prompt_input", {}))) for entry in prompt_log]
     # Recipient-authored-by-construction fields: excluded from the PROSE pass only (the structural
     # pass still sees the full prompt_input — a rendered read OBJECT anywhere stays a leak).
     _OWN_PROSE_FIELDS = ("previous_strategy", "wolf_channel")
     prose_blobs = [
-        (entry, repr({k: v for k, v in entry.get("prompt_input", {}).items()
-                      if k not in _OWN_PROSE_FIELDS}))
+        (entry, _searchable({k: v for k, v in entry.get("prompt_input", {}).items()
+                             if k not in _OWN_PROSE_FIELDS}))
         for entry in prompt_log
     ]
 
@@ -327,13 +293,21 @@ def check_held_lines_reach_only_their_author(
         for entry in prompt_log:
             if entry["player_id"] == author:
                 continue
-            if text in repr(entry.get("prompt_input", {})):
+            if text in _searchable(entry.get("prompt_input", {})):
                 _record_leak(
                     leaks,
                     f"LEAK: {entry['player_id']} ({entry['player_role']}) received "
                     f"{author}'s held line in prompt_input: {text!r}",
                 )
     return leaks
+
+
+def _searchable(prompt_input: dict[str, Any]) -> str:
+    """The prompt input as one string to search for leaked text: its repr, which the structural
+    tokens (a rendered ``'reads':`` key) are written against, then every value as plain text. The
+    repr alone misses a needle with an apostrophe once a value holds both quotation marks (the day
+    transcript quotes every player's words): repr then escapes the apostrophe as \\'."""
+    return repr(prompt_input) + "\n" + "\n".join(str(value) for value in prompt_input.values())
 
 
 def check_round_players_are_seat_ids(
@@ -382,8 +356,6 @@ def run_leak_tests(
     leaks = [
         *check_wolf_identity_isolation(prompt_log, roles),
         *check_wolf_channel_isolation(prompt_log),
-        *check_investigator_results_isolation(prompt_log),
-        *check_vigilante_results_isolation(prompt_log),
         *check_night_record_isolation(prompt_log, night_records, roles),
         *check_healer_target_absent(prompt_log),
         *check_eliminated_players_excluded(prompt_log, deaths),

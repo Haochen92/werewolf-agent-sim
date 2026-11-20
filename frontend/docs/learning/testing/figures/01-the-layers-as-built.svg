@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">The layers as built here, cheapest at the bottom</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Each layer pins something the one below cannot see; none of them meets the real server or an iPhone.</text>
+<text x="40" y="100" font-size="13" font-weight="bold" fill="#4b5563" text-anchor="start">layer and tool</text>
+<text x="330" y="100" font-size="13" font-weight="bold" fill="#4b5563" text-anchor="start">what it pins</text>
+<text x="660" y="100" font-size="13" font-weight="bold" fill="#4b5563" text-anchor="start">what it cannot see</text>
+<rect x="30" y="114" width="280" height="72" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="46" y="144" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">The owner&#x27;s iPhone</text>
+<text x="46" y="167" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="start">by hand, Web Inspector</text>
+<rect x="322" y="114" width="318" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="336" y="144" font-size="13.5" fill="#1f2937" text-anchor="start">memory crashes, frame rate,</text>
+<text x="336" y="165" font-size="13.5" fill="#1f2937" text-anchor="start">touch, sound</text>
+<rect x="652" y="114" width="300" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="144" font-size="13.5" fill="#9a3412" text-anchor="start">only what someone does</text>
+<text x="666" y="165" font-size="13.5" fill="#9a3412" text-anchor="start">on the day</text>
+<rect x="30" y="196" width="280" height="72" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="46" y="226" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Browser suite</text>
+<text x="46" y="249" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="start">Playwright, Chromium, ~16 min</text>
+<rect x="322" y="196" width="318" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="336" y="226" font-size="13.5" fill="#1f2937" text-anchor="start">pictures (0.5% of pixels) and</text>
+<text x="336" y="247" font-size="13.5" fill="#1f2937" text-anchor="start">behaviour; the phone gate</text>
+<rect x="652" y="196" width="300" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="226" font-size="13.5" fill="#9a3412" text-anchor="start">the real server (mocked),</text>
+<text x="666" y="247" font-size="13.5" fill="#9a3412" text-anchor="start">WebKit, iOS, sound</text>
+<rect x="30" y="278" width="280" height="72" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="46" y="308" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Types, lint, build</text>
+<text x="46" y="331" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="start">tsc, ESLint, next build</text>
+<rect x="322" y="278" width="318" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="336" y="308" font-size="13.5" fill="#1f2937" text-anchor="start">field names, hook deps; only the</text>
+<text x="336" y="329" font-size="13.5" fill="#1f2937" text-anchor="start">build: a server-side hook call</text>
+<rect x="652" y="278" width="300" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="308" font-size="13.5" fill="#9a3412" text-anchor="start">any wrong value of</text>
+<text x="666" y="329" font-size="13.5" fill="#9a3412" text-anchor="start">the right type</text>
+<rect x="30" y="360" width="280" height="72" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="46" y="390" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Server-rendered parts</text>
+<text x="46" y="413" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="start">renderToStaticMarkup</text>
+<rect x="322" y="360" width="318" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="336" y="390" font-size="13.5" fill="#1f2937" text-anchor="start">which reader a private</text>
+<text x="336" y="411" font-size="13.5" fill="#1f2937" text-anchor="start">line reaches</text>
+<rect x="652" y="360" width="300" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="390" font-size="13.5" fill="#9a3412" text-anchor="start">layout, motion,</text>
+<text x="666" y="411" font-size="13.5" fill="#9a3412" text-anchor="start">anything drawn</text>
+<rect x="30" y="442" width="280" height="72" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="46" y="472" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Text goldens</text>
+<text x="46" y="495" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="start">4 beat lists, toMatchFileSnapshot</text>
+<rect x="322" y="442" width="318" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="336" y="472" font-size="13.5" fill="#1f2937" text-anchor="start">the beat sheet on two</text>
+<text x="336" y="493" font-size="13.5" fill="#1f2937" text-anchor="start">real games, line by line</text>
+<rect x="652" y="442" width="300" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="472" font-size="13.5" fill="#9a3412" text-anchor="start">the ten-seat game</text>
+<text x="666" y="493" font-size="13.5" fill="#9a3412" text-anchor="start">(targeted tests instead)</text>
+<rect x="30" y="524" width="280" height="72" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="46" y="554" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Unit tests, pure functions</text>
+<text x="46" y="577" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#374151" text-anchor="start">Vitest in Node, ~20 s</text>
+<rect x="322" y="524" width="318" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="336" y="554" font-size="13.5" fill="#1f2937" text-anchor="start">the fold, the store, the beat</text>
+<text x="336" y="575" font-size="13.5" fill="#1f2937" text-anchor="start">cutter, the live reducer</text>
+<rect x="652" y="524" width="300" height="72" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="666" y="554" font-size="13.5" fill="#9a3412" text-anchor="start">the clock, the stream,</text>
+<text x="666" y="575" font-size="13.5" fill="#9a3412" text-anchor="start">the DOM</text>
+<text x="30" y="624" font-size="13.5" font-style="italic" fill="#4b5563" text-anchor="start">build_log §6: the further a check sat from the running system, the less it found; no CI runs any of these.</text>
+</svg>

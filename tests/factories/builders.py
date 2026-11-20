@@ -57,3 +57,46 @@ def day_vote_case(role, pid, votee, key=None, day=2, mem=True) -> dict:
         c["strategy_index_to_key"] = {"0": key}
         c["strategy_verdicts"] = [{"verdict": "follow", "strategy_index": 0}]
     return c
+
+
+def short_event_log(*, with_over: bool = True) -> list:
+    """A three-event game log (start, a game-master line, game over) for the replay storage
+    tests; ``with_over=False`` leaves the game unfinished."""
+    from server.schemas import events as ev
+
+    events = [
+        ev.GameStarted(seq=1, day=1, seats=["p1", "p2"],
+                       cast_role_counts={"wolf": 1, "villager": 1}),
+        ev.GmMessage(seq=2, day=2, channel_seq=0, text="dawn"),
+    ]
+    if with_over:
+        events.append(ev.GameOver(seq=3, day=3, winner="wolves"))
+    return events
+
+
+CREDIT_ROLES = {"player_1": "sentinel", "player_2": "chanteuse", "player_3": "trailseer",
+                "player_4": "investigator", "player_5": "serial_killer"}
+"""The five seats the consolidation (credit) tests grade."""
+
+NO_LYNCH = {"day": 2, "no_vote": True, "voted_player": None, "vote_counts": {}}
+"""A day resolution in which nobody was lynched."""
+
+
+def credit_game_record(tmp, name: str, cases: list, *, roles: dict = CREDIT_ROLES, day_res=None,
+                       night_res=None, human_player=None) -> str:
+    """Write one game record for the credit pass, and its eval cases beside it, under ``tmp``;
+    returns the record's path."""
+    import json
+
+    ecp = tmp / f"{name}_cases.jsonl"
+    ecp.write_text("\n".join(json.dumps(eval_case_part(c)) for c in cases))
+    rec = {"roles": roles, "eval_cases_path": str(ecp), "game_id": f"gid_{name}"}
+    if day_res is not None:
+        rec["day_resolutions"] = day_res
+    if night_res is not None:
+        rec["night_resolutions"] = night_res
+    if human_player is not None:
+        rec["human_player"] = human_player
+    gp = tmp / f"{name}.jsonl"
+    gp.write_text(json.dumps(rec))
+    return str(gp)

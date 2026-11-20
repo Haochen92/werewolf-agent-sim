@@ -464,7 +464,9 @@ class Translator:
             else:
                 out.append(self._emit(ev.Speech, day=day, channel_seq=cseq,
                                       player=player, message=entry["message"],
-                                      claim=entry.get("claim") or "none"))
+                                      claim=entry.get("claim") or "none",
+                                      claimed_night_actions=[ev.WireClaimedNightAction(**a) for a in
+                                                             entry.get("claimed_night_actions") or []]))
             firing = entry.get("firing_reason")
             if firing is not None:
                 out.append(self._emit(
@@ -563,6 +565,8 @@ class Translator:
 
     @node("DAY_RESOLUTION", writes={
         "day_channel", "dead_roster", "voted_player", "no_lynch_streak", "day_summaries",
+        # A lynched town player's will as data for the deduction engine; the wire has the GM message.
+        "read_out_wills",
         *_SURVIVORS,
     })
     def _day_resolution(self, delta):
@@ -653,6 +657,10 @@ class Translator:
         # The private night record: engine input for later turns, and each seat's own
         # night_record event below.
         "night_actions",
+        # The morning as data for the deduction engine; the wire has it already as night_result.
+        "night_announcements",
+        # The read-out wills as data for the deduction engine; the wire has them in the GM message.
+        "read_out_wills",
         *_NIGHT_BOOKKEEPING, *_RETIRED_KEYS, *_SURVIVORS,
     })
     def _night_resolution(self, delta):

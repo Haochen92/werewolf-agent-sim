@@ -7,13 +7,14 @@
  * a screenshot of the stage alone).
  */
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Layer, Stage } from '@/stage/Stage';
+import { SideSlot } from '@/stage/SideSlot';
+import { StageWing } from '@/stage/instruments/Wing';
 import type { SceneId } from '@/stage/beats/types';
 import { useDrawerFilters } from '@/stage/drawer/use-drawer-filters';
 import type { FileChoice } from '@/stage/film/case-file';
 import type { RecordPick } from '@/stage/film/record-model';
-import { useNoteEditing } from '@/stage/notebook';
 import type { ActMore, SlotInput, StopInput } from '@/stage/scenes/types';
 import { LeaveConfirm } from '@/stage/instruments/TopStrip';
 import { pressFile, pressTranscript, sideOpen } from '@/stage/slot';
@@ -93,10 +94,10 @@ function Placeholder({ title, detail }: { title: string; detail?: string }) {
   );
 }
 
-export function Workbench({ scene }: { scene: string }) {
+export function Workbench() {
   const params = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
+  const scene = pathname.split('/').at(-1) ?? '';
   const q = useMemo(() => parseQuery(params), [params]);
   const showStrip = params.get('strip') !== '0';
   // the GPU probe (styles/gpu-probe.css): `?gpu=nofilter noblend …` subtracts kinds of GPU work
@@ -113,14 +114,14 @@ export function Workbench({ scene }: { scene: string }) {
 
   // A change on the same scene is written with the browser's own history API, which Next's
   // router reads back into `useSearchParams` without a round trip to the server: a step then
-  // costs the render alone (the pace probe below depends on it). Another scene is a navigation.
+  // costs the render alone (the pace probe below depends on it). Scene changes use the same
+  // path: a router navigation replaces the dynamic page and destroys the persistent Stage.
   const go = useCallback(
     (next: Partial<WorkbenchQuery>, toScene?: string) => {
       const url = `${toScene ? `/workbench/${toScene}` : pathname}?${writeQuery({ ...q, ...next }, params)}`;
-      if (toScene) router.replace(url, { scroll: false });
-      else window.history.replaceState(null, '', url);
+      window.history.replaceState(null, '', url);
     },
-    [q, params, pathname, router],
+    [q, params, pathname],
   );
   const setParam = useCallback(
     (k: string, v: string) => {
@@ -167,8 +168,6 @@ export function Workbench({ scene }: { scene: string }) {
   const [filmTab, setFilmTab] = useState('notes');
   const [fileSeat, setFileSeat] = useState<FileChoice | null>(null);
   const [recordPick, setRecordPick] = useState<RecordPick | null>(null);
-  // a live cut's seat notebook: the open editor stays open as the beats are stepped
-  const noteEditing = useNoteEditing();
   // a live cut's door: "Leave the table?" is open (Leave is only logged: there is no lobby here)
   const [leaving, setLeaving] = useState(false);
   const slotInput = useMemo((): SlotInput | undefined => {
@@ -187,7 +186,6 @@ export function Workbench({ scene }: { scene: string }) {
       recordPick,
       onRecordPick: setRecordPick,
       onShowRecord: () => go({ slot: 'film' }),
-      notebook: noteEditing,
       // a live cut draws the closed file's link to the replay, as a live game would
       replayHref: q.live ? `/replays/${frame.gameId}` : undefined,
       ahead: frame.ahead,
@@ -211,7 +209,7 @@ export function Workbench({ scene }: { scene: string }) {
             }
           : {}),
     };
-  }, [frame, drawer, filmTab, fileSeat, recordPick, noteEditing, go, q.live, q.hud]);
+  }, [frame, drawer, filmTab, fileSeat, recordPick, go, q.live, q.hud]);
 
   // the replay's stops, as its container hands them down (the X-ray's cut in the replay's
   // frame): the rooms and the hub are this scene's beats; "End the night" leaves the scene, so
@@ -392,6 +390,17 @@ export function Workbench({ scene }: { scene: string }) {
     />
   );
 
+  const panel =
+    frame?.view && frame.beat && scene !== 'station' ? (
+      <SideSlot
+        view={frame.view}
+        beat={frame.beat}
+        me={frame.me}
+        presentation={frame.presentation}
+        slot={slotInput}
+        stop={stopInput}
+      />
+    ) : null;
   return (
     <main className={styles.main}>
       {showStrip ? (
@@ -405,10 +414,18 @@ export function Workbench({ scene }: { scene: string }) {
       <div className={styles.stageArea}>
         {q.frame ? (
           <PhoneFrame frame={q.frame}>
-            <Stage fit="contain">{stage}</Stage>
+            <Stage fit="contain">
+              {stage}
+              {panel}
+              {!known ? <StageWing width={0} tiles={[]} /> : null}
+            </Stage>
           </PhoneFrame>
         ) : (
-          <Stage fit="contain">{stage}</Stage>
+          <Stage fit="contain">
+            {stage}
+            {panel}
+            {!known ? <StageWing width={0} tiles={[]} /> : null}
+          </Stage>
         )}
       </div>
     </main>

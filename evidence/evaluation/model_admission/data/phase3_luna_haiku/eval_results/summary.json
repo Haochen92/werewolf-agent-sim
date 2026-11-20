@@ -1,0 +1,185 @@
+{
+  "label": "phase3_luna_haiku",
+  "run_at": "2026-10-11T15:33:16.761951+00:00",
+  "config": {
+    "label": "phase3_luna_haiku",
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule"
+    ],
+    "arms": [
+      {
+        "label": "flashlite_current",
+        "model": "gemini-3.5-flash-lite",
+        "env": {},
+        "memory": "none"
+      },
+      {
+        "label": "luna_low",
+        "model": "openai/gpt-6-luna",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "luna_medium",
+        "model": "openai/gpt-6-luna",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "haiku55_low",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.5-flash",
+    "note": "Side by side on today's code and the same judges: GPT-6 Luna at effort low (never benched before; Oct 4 tried medium and high) and medium, against Claude Haiku 5.5 at effort low (phase3_haiku_low: 10% bad, ~1.2k reasoning) and gemini-3.5-flash-lite, the live default."
+  },
+  "n_cases": 14,
+  "arms": {
+    "flashlite_current": {
+      "bad": {
+        "all": "24/70 (34%)",
+        "phase:day_discussion": "24/70 (34%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "9/15 (60%)",
+        "role:sigilist": "5/10 (50%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "4/20 (20%)",
+        "role:vigilante": "5/5 (100%)",
+        "slice:control": "5/10 (50%)",
+        "slice:f02_rule": "10/20 (50%)",
+        "slice:pinned": "9/40 (22%)",
+        "source:phase3_capture": "24/70 (34%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 7087.8,
+        "cached": 4330.1,
+        "output": 1915.4,
+        "reasoning": 1454.9,
+        "seconds": 8.3
+      },
+      "generation_samples_measured": 70
+    },
+    "luna_low": {
+      "bad": {
+        "all": "5/70 (7%)",
+        "phase:day_discussion": "5/70 (7%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "2/15 (13%)",
+        "role:sigilist": "2/10 (20%)",
+        "role:speculator": "0/5 (0%)",
+        "role:trailseer": "1/20 (5%)",
+        "role:vigilante": "0/5 (0%)",
+        "slice:control": "2/10 (20%)",
+        "slice:f02_rule": "3/20 (15%)",
+        "slice:pinned": "0/40 (0%)",
+        "source:phase3_capture": "5/70 (7%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6451.8,
+        "cached": 5284.0,
+        "output": 805.6,
+        "reasoning": 394.0,
+        "seconds": 8.1
+      },
+      "generation_samples_measured": 70
+    },
+    "luna_medium": {
+      "bad": {
+        "all": "3/70 (4%)",
+        "phase:day_discussion": "3/70 (4%)",
+        "role:fortune_teller": "1/5 (20%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "1/15 (7%)",
+        "role:sigilist": "0/10 (0%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "0/20 (0%)",
+        "role:vigilante": "0/5 (0%)",
+        "slice:control": "0/10 (0%)",
+        "slice:f02_rule": "1/20 (5%)",
+        "slice:pinned": "2/40 (5%)",
+        "source:phase3_capture": "3/70 (4%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 6451.8,
+        "cached": 5284.0,
+        "output": 1709.3,
+        "reasoning": 1256.3,
+        "seconds": 16.3
+      },
+      "generation_samples_measured": 70
+    },
+    "haiku55_low": {
+      "bad": {
+        "all": "11/70 (16%)",
+        "phase:day_discussion": "11/70 (16%)",
+        "role:fortune_teller": "0/5 (0%)",
+        "role:investigator": "0/10 (0%)",
+        "role:sentinel": "1/15 (7%)",
+        "role:sigilist": "3/10 (30%)",
+        "role:speculator": "1/5 (20%)",
+        "role:trailseer": "5/20 (25%)",
+        "role:vigilante": "1/5 (20%)",
+        "slice:control": "1/10 (10%)",
+        "slice:f02_rule": "4/20 (20%)",
+        "slice:pinned": "6/40 (15%)",
+        "source:phase3_capture": "11/70 (16%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10135.5,
+        "cached": 7614.3,
+        "output": 1837.0,
+        "reasoning": 1249.9,
+        "seconds": 9.5
+      },
+      "generation_samples_measured": 70
+    }
+  },
+  "paired_vs_first": {
+    "luna_low": {
+      "cases": 14,
+      "better": 8,
+      "worse": 1,
+      "two_sided_sign_p": 0.0391
+    },
+    "luna_medium": {
+      "cases": 14,
+      "better": 7,
+      "worse": 1,
+      "two_sided_sign_p": 0.0703
+    },
+    "haiku55_low": {
+      "cases": 14,
+      "better": 6,
+      "worse": 2,
+      "two_sided_sign_p": 0.2891
+    }
+  }
+}

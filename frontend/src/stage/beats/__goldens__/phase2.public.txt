@@ -114,7 +114,7 @@
 113  morning.chip-fell        d3 seq313 end313  public →player_7  2500ms
 114  morning.card-down        d3 seq313 end313  public →player_7  4000ms
 115  morning.roll             d3 seq313 end313  public  10000ms
-116  over.where-it-ended      d3 seq317 end317  public  10000ms  [over 0]
+116  over.where-it-ended      d3 seq317 end317  public  2000ms  [over 0]
 117  over.winners-hour        d3 seq317 end317  public  6000ms
 118  over.verdict             d3 seq317 end317  public  6000ms
 119  over.winners-stand       d3 seq317 end317  public  6000ms

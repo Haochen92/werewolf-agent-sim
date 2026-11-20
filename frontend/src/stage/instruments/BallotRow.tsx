@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The seated human's ballot: a row of the candidates' chips and, at its end, an empty plate
+ * The seated human's ballot: a row of the candidates' chips and, at its end, a blank chip
  * that means abstain. Tap one to choose it (it lights, the rest dim: nothing moves to say
  * chosen), then confirm on the brass plate below, which names the vote. While the send is on
  * its way the row is shut on the choice, "Sending…", with no plate; once the server has it, the
@@ -19,6 +19,7 @@ import { useMotionScale } from '../motion';
 import { seatNumber } from '../roles';
 import styles from './BallotRow.module.css';
 import { CountText } from './CountText';
+import { KitIcon } from './KitIcon';
 
 export interface BallotRowProps {
   /** The server's candidates: seats, and `abstain` if it is allowed. */
@@ -124,7 +125,7 @@ export function BallotRow({
             Sending…
           </span>
         ) : (
-          <span>Tap a chip{canAbstain ? ', or the empty plate to abstain' : ''}.</span>
+          <span>Tap a chip{canAbstain ? ', or the blank chip to abstain' : ''}.</span>
         )}
         {clock && !sending ? (
           <span className={styles.count}>
@@ -179,6 +180,7 @@ export function BallotRow({
           </button>
           {onAgent ? (
             <button type="button" className={styles.agent} onClick={onAgent}>
+              <KitIcon name="agent" />
               Let my agent vote
             </button>
           ) : null}

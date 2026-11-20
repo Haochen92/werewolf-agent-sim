@@ -8,6 +8,8 @@ both the injected path (mirroring main.run_game) and the bare-builder default (e
 """
 from __future__ import annotations
 
+import pytest
+
 from Agents.config import (
     DEFAULT_FILTERING_CONFIG,
     DEFAULT_MEMORY_CONFIG,
@@ -20,6 +22,7 @@ from Agents.config import (
 
 EXPECTED_TOP_KEYS = {"callbacks", "configurable", "metadata", "recursion_limit"}
 EXPECTED_CONFIGURABLE_KEYS = {
+    "deduction_by_side",
     "deduction_mode",
     "filtering_config",
     "game_config",
@@ -28,6 +31,7 @@ EXPECTED_CONFIGURABLE_KEYS = {
     "human_role",
     "memory_config",
     "memory_persistence_config",
+    "persona_voices",
     "reranking_config",
     "retrieval_types_config",
     "session_id",
@@ -49,7 +53,10 @@ def _config(callbacks=("CB",), metadata=None, **run_kwargs):
 
 
 def test_top_level_shape():
+    # Act
     cfg = _config()
+
+    # Assert
     assert set(cfg.keys()) == EXPECTED_TOP_KEYS
     assert cfg["recursion_limit"] == 100
     assert len(cfg["callbacks"]) == 1  # the injected Langfuse handler
@@ -59,14 +66,20 @@ def test_top_level_shape():
 def test_bare_builder_has_no_injected_observability():
     """Without injection the builder is framework/observability-free: empty callbacks + metadata.
     (The entry point is what attaches the handler + fingerprint.)"""
+    # Act
     cfg = build_runnable_config(RunConfig())
+
+    # Assert
     assert cfg["callbacks"] == []
     assert cfg["metadata"] == {}
     assert cfg["recursion_limit"] == 100
 
 
 def test_configurable_keys_and_value_types():
+    # Act
     conf = _config()["configurable"]
+
+    # Assert
     assert set(conf.keys()) == EXPECTED_CONFIGURABLE_KEYS
     # Graph readers expect DICTS here, not GameConfig / pydantic instances.
     assert isinstance(conf["game_config"], dict)
@@ -74,16 +87,28 @@ def test_configurable_keys_and_value_types():
 
 
 def test_defaults_applied_when_omitted():
+    # Act
     conf = _config()["configurable"]
+
+    # Assert
     assert conf["memory_config"] == DEFAULT_MEMORY_CONFIG
     assert conf["reranking_config"] == DEFAULT_RERANKING_CONFIG
     assert conf["filtering_config"] == DEFAULT_FILTERING_CONFIG
     assert conf["retrieval_types_config"] == DEFAULT_RETRIEVAL_TYPES_CONFIG
     assert conf["deduction_mode"] == "full"
+    assert conf["deduction_by_side"] == {}
+    assert conf["persona_voices"] is False
 
 
 def test_deduction_mode_rides_the_configurable():
     assert _config(deduction_mode="off")["configurable"]["deduction_mode"] == "off"
+
+
+def test_deduction_by_side_rides_the_configurable_and_names_only_real_sides():
+    by_side = {"town": "full", "wolves": "record"}
+    assert _config(deduction_by_side=by_side)["configurable"]["deduction_by_side"] == by_side
+    with pytest.raises(ValueError):
+        RunConfig(deduction_by_side={"wolf": "record"})
 
 
 def test_none_options_fall_back_to_defaults():
@@ -94,6 +119,7 @@ def test_none_options_fall_back_to_defaults():
 
 
 def test_normalize_run_config_accepts_none_model_and_dict():
+    # Act: normalize no config, a RunConfig and a dict
     defaulted = normalize_run_config(None)
     supplied = RunConfig(game_id="game-model")
     from_model = normalize_run_config(supplied)
@@ -101,6 +127,7 @@ def test_normalize_run_config_accepts_none_model_and_dict():
         {"game_id": "game-dict", "sp_proven_tiering": False}
     )
 
+    # Assert
     assert isinstance(defaulted, RunConfig)
     assert defaulted.game_id
     assert from_model is supplied
@@ -109,8 +136,13 @@ def test_normalize_run_config_accepts_none_model_and_dict():
 
 
 def test_supplied_overrides_win():
+    # Arrange
     mem = {"custom": True}
+
+    # Act
     conf = _config(memory_config=mem, session_id="sess-1")["configurable"]
+
+    # Assert
     assert conf["memory_config"] == mem
     assert conf["session_id"] == "sess-1"
 
@@ -136,8 +168,11 @@ def test_thread_id_is_derived_from_game_id():
 
 
 def test_game_id_generated_when_omitted_is_unique_nonempty():
+    # Act: build two configs without a game id
     a = _config()["configurable"]["game_id"]
     b = _config()["configurable"]["game_id"]
+
+    # Assert
     assert a and b and len(a) == 36  # uuid4
     assert a != b  # the replay seed anchor is freshly minted per RunConfig
 

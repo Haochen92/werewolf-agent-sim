@@ -63,6 +63,7 @@ def test_response_discharges_open_obligation():
 
 
 def test_reactive_generation_failure_discharges_without_fake_response():
+    # Arrange: a reactive turn that failed to generate
     failed_turn = DayChannel(
         day=1,
         seq=1,
@@ -72,11 +73,14 @@ def test_reactive_generation_failure_discharges_without_fake_response():
         pass_reason=DiscussionPassReason.GENERATION_FAILED,
         firing_reason=FiringReason(tier="reactive", owes=["A"]),
     )
+
+    # Act
     q = queue([
         msg(0, "A", [at("B", "question")]),
         failed_turn,
     ])
 
+    # Assert
     assert failed_turn.addressed_targets == []
     assert q == []
 
@@ -89,10 +93,13 @@ def test_bare_response_with_no_debt_is_inert():
 # --- freshness ----------------------------------------------------------------
 
 def test_restating_while_open_adds_no_second_obligation():
+    # Act
     q = queue([
         msg(0, "A", [at("B", "question", "accusation")]),
         msg(1, "A", [at("B", "mention", "accusation")]),  # freshness no-op
     ])
+
+    # Assert
     # one obligation, recency NOT bumped to seq 1 (anti-spam)
     assert len(q) == 1
     assert q[0].agent_id == "B"
@@ -125,6 +132,7 @@ def test_different_speaker_is_a_fresh_edge():
 
 
 def test_cooldown_resets_cap_after_untouched_gap():
+    # Arrange: two question-and-answer cycles, then a third question
     base = [
         msg(0, "A", [at("B", "question")]),
         msg(1, "B", [at("A", "response")]),
@@ -132,7 +140,11 @@ def test_cooldown_resets_cap_after_untouched_gap():
         msg(3, "B", [at("A", "response")]),    # cycles=2, last_touch=3
         msg(4, "A", [at("B", "question")]),    # blocked (gap 1 < 3)
     ]
+
+    # Round 1: the third question is blocked by the cap
     assert queue(base, per_pair_cap=2, cooldown=3) == []
+
+    # Round 2
     # gap of 7 (>= M=3) since last touch at seq3 -> cap resets -> reopens
     q = queue(base + [msg(10, "A", [at("B", "question")])], per_pair_cap=2, cooldown=3)
     assert [(i.agent_id, i.latest_sequence) for i in q] == [("B", 10)]
@@ -164,10 +176,13 @@ def test_counter_accusation_discharges_and_opens_reverse():
 # --- grouping: multi-accused answers everyone in one turn ---------------------
 
 def test_multiple_creditors_group_under_one_debtor():
+    # Act
     q = queue([
         msg(0, "A", [at("B", "question")]),
         msg(1, "C", [at("B", "mention", "accusation")]),
     ])
+
+    # Assert
     assert len(q) == 1
     item = q[0]
     assert item.agent_id == "B"
@@ -186,7 +201,10 @@ def test_queue_sorted_by_recency_desc():
 # --- select_next_speaker: full flow -------------------------------------------
 
 def test_open_obligation_fires_the_debtor():
+    # Act
     d = select_next_speaker([msg(0, "A", [at("B", "question")])], SURV, DEFAULT_GAME_CONFIG)
+
+    # Assert
     assert d.terminate is False
     assert d.speaker == "B"
     assert d.firing_reason.tier == "reactive"
@@ -194,10 +212,15 @@ def test_open_obligation_fires_the_debtor():
 
 
 def test_cap_counts_real_utterances_only():
+    # Arrange
     cfg = DEFAULT_GAME_CONFIG
     cap = cfg.utterance_cap(len(SURV))
+
+    # Round 1: a day of real lines at the cap ends
     at_cap = [msg(i, "A" if i % 2 else "B") for i in range(cap)]  # nothing owed: ends at once
     assert select_next_speaker(at_cap, SURV, cfg).terminate_reason == "cap"
+
+    # Round 2
     # cap-1 real utterances + a couple passes must NOT cap (passes don't count); with nothing
     # owed, the floor goes to the next survivor who has not spoken.
     below = [msg(i, "A") for i in range(cap - 1)] + [msg(98, "C", passed=True), msg(99, "D", passed=True)]
@@ -209,7 +232,11 @@ def test_cap_counts_real_utterances_only():
 
 def test_nothing_owed_starts_the_sweep():
     # An empty day: nobody is owed, so the sweep gives the floor to the first seat.
+
+    # Act
     d = select_next_speaker([], SURV, DEFAULT_GAME_CONFIG)
+
+    # Assert
     assert d.terminate is False
     assert d.speaker == "A"
     assert d.firing_reason.tier == "proactive"
@@ -217,8 +244,13 @@ def test_nothing_owed_starts_the_sweep():
 
 
 def test_discussion_ends_when_nobody_is_owed_and_everyone_has_spoken():
+    # Arrange
     everyone_spoke = [msg(i, player) for i, player in enumerate(SURV)]
+
+    # Act
     d = select_next_speaker(everyone_spoke, SURV, DEFAULT_GAME_CONFIG)
+
+    # Assert
     assert d.terminate is True
     assert d.terminate_reason == "no_obligations"
 
@@ -238,11 +270,15 @@ def test_select_next_never_picks_non_survivor_target():
     # An agent addressing "all" (not a real player) owes nobody an answer and nobody owes it one:
     # the sweep gives the floor to a real survivor rather than "all" being scheduled (no KeyError
     # upstream).
+
+    # Act
     d = select_next_speaker(
         [msg(0, "A", [at("all", "question", "accusation")])],
         ["A", "B", "C"],
         DEFAULT_GAME_CONFIG,
     )
+
+    # Assert
     assert d.terminate is False
     assert d.speaker == "B"
     assert d.firing_reason.tier == "proactive"

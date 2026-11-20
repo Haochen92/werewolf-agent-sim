@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 import traceback
 from datetime import datetime, timezone
@@ -60,15 +61,18 @@ from langgraph.types import Command, StateSnapshot
 from pydantic_core import to_jsonable_python
 
 from Agents.config import RunConfig, build_runnable_config, normalize_run_config
-from Agents.llm_factory import GAME_LLM, GameLLM
+from Agents.llm_factory import GameModels
 from Agents.llm_factory.embeddings import ProviderKeyRejected
 from Agents.nodes.day.actors import preview_discuss
+from Agents.llm_factory.outcomes import TurnOutcomes
 from Agents.observability import EvalCaseSink
+from Agents.observability.log_context import GAME_ID
+from Agents.run_fingerprint import runtime_fingerprint
 from Agents.graphs.parent import parent_graph_compiled
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.human_player import HumanTurnRequest
 from Agents.state import fresh_game_state
-from Agents.tracing import Metrics, create_langfuse_handler, flush, langfuse
+from Agents.tracing import Metrics, create_langfuse_handler, flush, get_langfuse
 from Agents.turn.drafting_agent import draft_from_notes, player_direction
 from Agents.turn.eval import TURN_CAPTURE, TurnCapture
 from Agents.turn.human_turn import validate_human_response
@@ -76,6 +80,7 @@ from Agents.turn.human_turn import validate_human_response
 from server.error_reporting import report_game_failure
 from server.game.cast import CastSeat, draw_cast
 from server.storage.game_repository import GameRepository
+from server.storage.eval_cases import RECORD_FORMAT, encode_cases
 from server.storage.prompt_captures import build_capture, encode_capture
 from server.game.model_catalog import game_model, menu_models
 from server.game.pacing import PacingTracker
@@ -114,6 +119,18 @@ def _paused_task(snapshot: StateSnapshot, interrupt_id: str, seat: str):
     return None
 
 
+def served_fingerprint(models: GameModels) -> dict:
+    """The runtime fingerprint of a served game: the same fields a command-line game stamps,
+    with the model this game was started on, plus its rescue model. The server image holds
+    no git repository, so the commit is the one the image was built with (LANGFUSE_RELEASE,
+    set from the build's GIT_COMMIT argument)."""
+    fingerprint = runtime_fingerprint(game_model=models.model or None)
+    if fingerprint["git_commit"] == "unknown":
+        fingerprint["git_commit"] = os.environ.get("LANGFUSE_RELEASE") or "unknown"
+    fingerprint["rescue_model"] = models.rescue_model
+    return fingerprint
+
+
 class GameSession:
     """One running game: the task that drives the engine, the log of what it produced,
     and the browsers watching it.
@@ -139,11 +156,15 @@ class GameSession:
     fingerprinted and recorded, and a key must never be written down.
       _api_key        the player's key, if a player paid. Session memory only; also the
                       string the error report scrubs.
-      _llm_selection  this game's model, its rescue model from the catalogue, and the key
-                      if any. A bare key with no model runs the catalogue's first row.
-                      Set on the GAME_LLM ContextVar as the task's first act, so the
-                      model factory uses it instead of the environment. None = nothing
-                      was chosen and the environment decides (CLI, batch).
+      _backup_key     the player's key for a second company, if they sent one: the rescue
+                      runs on that company's backup model with it. Held and scrubbed as
+                      the key is; gone after a restart (only the key is asked for again).
+      _models         this game's models object: its model, its rescue model from the
+                      catalogue, the key if any, the stall count and the clients built on
+                      the key. A bare key with no model runs the catalogue's first row.
+                      Carried to the engine in the graph context ("models"), so every turn
+                      asks this object for its model. No model and no key = the
+                      environment decides.
 
     Engine bootstrap: what one graph run needs, the same entry path as the CLI.
       config        the LangGraph runnable config: thread id, checkpointer wiring.
@@ -156,7 +177,7 @@ class GameSession:
       _context      runtime context handed to every node: metrics and the eval-case
                     sink.
       capture       every prompt this game's AI players were sent and every private read
-                    they made. Set on the TURN_CAPTURE ContextVar beside GAME_LLM, so two
+                    they made. Set on the TURN_CAPTURE ContextVar, so two
                     games running at once never write into each other's lists. Saved when
                     the game ends, for the offline leak audit (housekeeping/leak_audit.py).
       _capture_partial  True once the game has been resumed after a restart: what was
@@ -246,33 +267,49 @@ class GameSession:
     """
 
     def __init__(self, run_config: RunConfig | dict[str, Any], *,
-                 api_key: str = "", model: str = "",
+                 api_key: str = "", model: str = "", backup_model: str = "", backup_key: str = "",
                  seat_tokens: Sequence[str] = (), picks: Sequence[str | None] = (),
                  graph=None, repository: GameRepository | None = None) -> None:
 
         # Which model runs, and who pays.
         self._api_key = api_key
+        self._backup_key = backup_key
         if api_key and not model:
             model = menu_models()[0].model
         row = game_model(model)
-        self._llm_selection = GameLLM(
+        self._models = GameModels(
             api_key=api_key, model=model,
-            rescue_model=row.rescue_model if row else None,
-        ) if api_key or model else None
+            rescue_model=(backup_model if backup_key else None) or (row.rescue_model if row else None),
+            backup_key=backup_key,
+        )
 
         # Engine bootstrap.
         run = normalize_run_config(run_config)
-        self.config = build_runnable_config(run)
+        # The code version, prompt hash and models go on every span of the game's trace, as
+        # they do for a command-line game, and on the game's row with each run of its task.
+        self.fingerprint = served_fingerprint(self._models)
+        self.config = build_runnable_config(
+            run, metadata={"runtime_fingerprint": self.fingerprint})
         self.game_id: str = self.config["configurable"]["game_id"]
         self._session_id = run.session_id or self.game_id
         self._graph = graph if graph is not None else parent_graph_compiled
         self._repository = repository
-        self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
+        # seat_puppets: the cast as the engine reads it (a seat speaks in its puppet's voice when the
+        # game has voices on); filled at the deal or from the stored cast.
+        self._context = {"metrics": Metrics(), "eval_sink": EvalCaseSink(), "seat_puppets": {},
+                         "models": self._models}
         self.capture = TurnCapture()
         self._capture_partial = False
         # Tokens and call time per model, saved on the row as the game goes (server/game/usage.py).
         self.usage_meter = UsageMeter()
         self._usage_saved_at = 0.0
+        # Which turns were not the game's own model's: kept here and shared with whichever
+        # models object the game currently has, so swapping that object loses nothing.
+        self.turn_outcomes = TurnOutcomes()
+        self._models.outcomes = self.turn_outcomes
+        self.cached_steps = 0
+        self._outcomes_changed = False
+        self._outcomes_saved_at = 0.0
 
         # What travels to the browsers, and how much of it is already saved.
         self.translator = Translator()
@@ -321,9 +358,8 @@ class GameSession:
                     self.game_id, bool(self._api_key), self.model or "server-default")
 
     async def _run(self, graph_input: Any, waiting_on_humans: bool = False) -> None:
-        if self._llm_selection is not None:
-            GAME_LLM.set(self._llm_selection)
         TURN_CAPTURE.set(self.capture)
+        GAME_ID.set(self.game_id)  # every log line of this task and its worker threads
         recovered = graph_input is None
         self._capture_partial = self._capture_partial or recovered
         trace_input = {"game_id": self.game_id, "recovered": recovered}
@@ -332,7 +368,7 @@ class GameSession:
         # id from the game id was tried and made the SDK treat this span as a child of a
         # remote parent that does not exist, so the trace had no root and lost its name.)
         try:
-            with langfuse.start_as_current_observation(
+            with get_langfuse().start_as_current_observation(
                 as_type="span", name="werewolf-game", input=trace_input,
             ) as root:
                 # The LangGraph callback nests under this root through the active context,
@@ -345,12 +381,12 @@ class GameSession:
                     input=trace_input, output={"status": "running"},
                     metadata={
                         "game_id": self.game_id,
-                        "model": (self._llm_selection.model if self._llm_selection
-                                  else "server-default"),
+                        "model": self._models.model or "server-default",
                         "byok": bool(self._api_key),
                         "recovered": recovered,
                     },
                 )
+                await self._record_run(getattr(root, "trace_id", "") or "", recovered)
                 try:
                     await self._drive_graph(graph_input, waiting_on_humans)
                     final_output = {
@@ -370,20 +406,17 @@ class GameSession:
                 except Exception as exc:  # surface, don't vanish: report task death
                     # A refused key is told in plain words (the page shows them); the rest raw.
                     detail = str(exc) if isinstance(exc, ProviderKeyRejected) else repr(exc)
-                    if self._api_key:
-                        # Provider auth errors can echo the credential; viewers see error text.
-                        detail = detail.replace(self._api_key, "***")
+                    # Provider auth errors can echo the credential; viewers see error text.
+                    detail = self._redact(detail)
                     self.error = detail
                     error_output = {"status": "error", "error": detail}
                     root.update(output=error_output, level="ERROR", status_message=detail)
                     root.update_trace(output=error_output)
-                    trace = "".join(traceback.format_exception(exc))
-                    if self._api_key:
-                        trace = trace.replace(self._api_key, "***")
+                    trace = self._redact("".join(traceback.format_exception(exc)))
                     logger.error("game %s: task died: %s\n%s", self.game_id, detail, trace)
                     if not isinstance(exc, ProviderKeyRejected):  # the player's key, not a bug
                         report_game_failure(exc, game_id=self.game_id, model=self.model,
-                                            byok=bool(self._api_key), secret=self._api_key)
+                                            byok=bool(self._api_key), secrets=self._secrets)
                     if self._repository is not None:
                         await self._repository.update_game(
                             self.game_id, status="dropped", error=detail)
@@ -397,7 +430,19 @@ class GameSession:
             # Whatever way the task leaves, including a failure in the tracing setup
             # above: mark the game ended, then push the buffered spans out.
             self._end()
-            flush()
+            await self._send_spans()
+
+    async def _send_spans(self) -> None:
+        """Send the spans still buffered for this game, and wait until they are sent.
+
+        The send is a blocking call that waits on the trace store: 5 to 15 seconds were
+        measured with the store unreachable (2026-11-20). On the event loop it would stop
+        every viewer of every game for that long, so it runs on a worker thread. The task
+        still waits for it, so a game stopped at shutdown has its spans sent before the
+        stop returns."""
+        started = time.monotonic()
+        await asyncio.to_thread(flush)
+        logger.info("game %s: trace send took %.1f s", self.game_id, time.monotonic() - started)
 
     async def _drive_graph(self, graph_input: Any, waiting_on_humans: bool) -> None:
         """The streaming loop. Run the engine until the game ends, handling each chunk as
@@ -434,10 +479,11 @@ class GameSession:
             # The game was played to its end and only the post-game step failed: keep the
             # game (a replay without its extraction input) rather than drop it (2026-10-17: a
             # draw's empty winner broke the extraction input and lost a finished game).
-            logger.exception("game %s: failed after game over; archiving it anyway",
-                             self.game_id)
+            trace = self._redact("".join(traceback.format_exception(exc)))
+            logger.error("game %s: failed after game over; archiving it anyway\n%s",
+                         self.game_id, trace)
             report_game_failure(exc, game_id=self.game_id, model=self.model,
-                                byok=bool(self._api_key), secret=self._api_key,
+                                byok=bool(self._api_key), secrets=self._secrets,
                                 after_game_over=True)
         if self.game_over and self._repository is not None:
             # The final chunk may have failed to save, with no next chunk to retry it.
@@ -449,6 +495,7 @@ class GameSession:
                 self.game_id, self.log, len(self.human_players),
                 extraction_input=self.translator.extraction_input)
             await self._save_capture()
+            await self._save_eval_cases()
 
     async def _save_capture(self) -> None:
         """Write down what this game's AI players were sent, so the nightly leak audit can
@@ -468,6 +515,26 @@ class GameSession:
             await asyncio.wait_for(write(), timeout=_CAPTURE_SAVE_TIMEOUT_S)
         except Exception:
             logger.exception("game %s: prompt capture not saved (game unaffected)", self.game_id)
+
+    async def _save_eval_cases(self) -> None:
+        """Write down the evaluation cases this game built, so served play can be evaluated
+        later without reading the trace store. A batch game writes the same list to a file.
+        The cases built before a restart died with the old process, so a resumed game's row is
+        marked partial. The game is already over and saved; a failure here is logged, and
+        waiting on it is capped, so it never holds the game up."""
+        records = list(self._context["eval_sink"].records)
+
+        async def write() -> None:
+            if not records or not self._repository.configured:
+                return
+            blob = await asyncio.to_thread(encode_cases, records)
+            await self._repository.record_eval_cases(
+                self.game_id, blob, n_cases=len(records), partial=self._capture_partial,
+                record_format=RECORD_FORMAT)
+        try:
+            await asyncio.wait_for(write(), timeout=_CAPTURE_SAVE_TIMEOUT_S)
+        except Exception:
+            logger.exception("game %s: evaluation cases not saved (game unaffected)", self.game_id)
 
     async def _wait_for_absent_player(self) -> None:
         """If this is a solo game and its player is away, wait here until they are back.
@@ -531,6 +598,29 @@ class GameSession:
                 self._usage_saved_at = time.monotonic()
             else:
                 self.usage_meter.changed = True
+        # The record of rescued, defaulted and cached turns is saved on the same schedule.
+        if self._repository is not None and (
+                self.turn_outcomes.changed or self._outcomes_changed) and (
+                self.game_over
+                or time.monotonic() - self._outcomes_saved_at >= _USAGE_SAVE_EVERY_S):
+            snapshot = {**self.turn_outcomes.snapshot(), "cached_steps": self.cached_steps}
+            if await self._repository.update_game(self.game_id, turn_outcomes=snapshot):
+                self._outcomes_saved_at, self._outcomes_changed = time.monotonic(), False
+            else:
+                self._outcomes_changed = True
+
+    async def _record_run(self, trace_id: str, recovered: bool) -> None:
+        """Write this run of the task on the game's row: its trace id (empty when tracing is
+        off), when it started, whether it follows a restart, and the fingerprint of the code
+        running it. A failure is logged and never holds the game up."""
+        if self._repository is None:
+            return
+        await self._repository.record_run(self.game_id, {
+            "trace_id": trace_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "recovered": recovered,
+            "fingerprint": self.fingerprint,
+        })
 
     def _on_chunk(self, chunk) -> bool:
         """Handle one chunk from the engine's stream. Returns True when the chunk is an
@@ -552,6 +642,12 @@ class GameSession:
         chunk = to_jsonable_python(chunk)  # engine objects -> the JSON shape the handlers read
         data = chunk.get("data") or {}
         if is_cached(chunk):
+            # A step replayed from the turn cache built no prompt and called no model, so
+            # nothing else records it. Counted on the game's row, and logged with the step.
+            self.cached_steps += 1
+            self._outcomes_changed = True
+            logger.info("game %s: engine step replayed from the turn cache (%s)",
+                        self.game_id, ", ".join(k for k in data if not k.startswith("__")) or "?")
             self.translator.restore_cached_inputs(chunk)
             return False
 
@@ -585,6 +681,11 @@ class GameSession:
             return
         picks = {seat: pick for seat, pick in zip(self.human_players, self._picks) if pick}
         self.cast = draw_cast(seats, picks)
+        self._share_cast()
+
+    def _share_cast(self) -> None:
+        """Hand the cast to the engine's runtime context, where each seat's voice is looked up."""
+        self._context["seat_puppets"].update({c.seat: c.character for c in self.cast})
 
     async def drop(self, reason: str) -> None:
         """Give this game up for good: stop it and record why. Retention calls this on a
@@ -618,9 +719,31 @@ class GameSession:
         session ends itself through _end, and nothing outside sets it."""
         return self._finished.is_set()
 
+    @property
+    def _secrets(self) -> tuple[str, ...]:
+        """The player's keys this game holds: what every report of it scrubs."""
+        return tuple(key for key in (self._api_key, self._backup_key) if key)
+
+    def _redact(self, text: str) -> str:
+        """``text`` with the player's keys replaced."""
+        for key in self._secrets:
+            text = text.replace(key, "***")
+        return text
+
+    def _use_models(self, models: GameModels) -> None:
+        """Replace the game's models object, here and in the context the engine reads. The
+        new object carries on the game's record of rescued and defaulted turns."""
+        models.outcomes = self.turn_outcomes
+        self._models = models
+        self._context["models"] = models
+
     def _end(self) -> None:
         """Mark the game ended, wake anyone waiting on it, and let the registry know if
-        nobody is watching. The only place the ended flag is set."""
+        nobody is watching. The only place the ended flag is set. The player's key, and the
+        clients built on it, are let go here: an ended game makes no more calls."""
+        if self._secrets:
+            self._use_models(self._models.without_keys())
+        self._api_key = self._backup_key = ""
         self._finished.set()
         self._maybe_idle()
 
@@ -776,14 +899,12 @@ class GameSession:
         raise RuntimeError(f"no paused turn for {seat} in the checkpoint")
 
     def _preview_line(self, seat: str, payload: dict[str, Any], direction: str) -> str:
-        # Runs in a worker thread, so the game's model and key are set here, as in _draft.
+        # Runs in a worker thread; the game's models reach it in the context, as in a turn.
         # Traced as its own trace in the game's session, with the model calls under it.
         # The preview's prompt is recorded with the game's own, like any agent turn.
-        if self._llm_selection is not None:
-            GAME_LLM.set(self._llm_selection)
         TURN_CAPTURE.set(self.capture)
         runtime = Runtime(context=self._context, store=getattr(self._graph, "store", None))
-        with langfuse.start_as_current_observation(
+        with get_langfuse().start_as_current_observation(
             as_type="span", name=f"draft_preview_{seat}", input={"direction": direction},
         ) as span:
             span.update_trace(name="draft_preview", session_id=self._session_id)
@@ -793,12 +914,9 @@ class GameSession:
         return line
 
     def _draft(self, request: HumanTurnRequest, notes: str) -> str:
-        # Runs in a worker thread. The game's model and key travel on the same context
-        # variable the game task uses; a request handler has none, so it is set here.
-        if self._llm_selection is not None:
-            GAME_LLM.set(self._llm_selection)
+        # Runs in a worker thread, outside the graph, so the game's models are handed in.
         with set_config_context({"callbacks": [self.usage_meter]}) as ctx:
-            return ctx.run(draft_from_notes, request, notes)
+            return ctx.run(draft_from_notes, request, notes, models=self._models)
 
     async def _collect_answers(self) -> Any:
         """Wait until every seat that was asked has answered, then return the answers in
@@ -827,7 +945,8 @@ class GameSession:
     # -- after a restart: rebuilt by the live registry -------------------------------------
 
     def reload_history(self, log: list[ev.DurableEvent], human_players: list[str],
-                       cast: Sequence[CastSeat] = (), usage: dict | None = None) -> None:
+                       cast: Sequence[CastSeat] = (), usage: dict | None = None,
+                       turn_outcomes: dict | None = None) -> None:
         """Put back what the database holds for a game that had already started: the
         events the players were sent, which seats are human, and which puppet stands at
         each seat. The live registry reads them from the events table, the game row and
@@ -837,9 +956,13 @@ class GameSession:
         which the meter carries on from."""
         self.log = list(log)
         self.usage_meter = UsageMeter(usage)
+        self.turn_outcomes = TurnOutcomes(turn_outcomes)
+        self._models.outcomes = self.turn_outcomes
+        self.cached_steps = int((turn_outcomes or {}).get("cached_steps", 0))
         self.translator.hydrate(self.log)
         self.human_players = list(human_players)
         self.cast = list(cast)
+        self._share_cast()
         self.game_over = any(e.type == "game_over" for e in self.log)
         self._saved_event_count = len(self.log)
         self._saved_humans = list(self.human_players)
@@ -850,8 +973,8 @@ class GameSession:
         awaiting a key; the registry validates the key with the provider first."""
         row = game_model(self.model)
         self._api_key = api_key
-        self._llm_selection = GameLLM(
-            api_key=api_key, model=self.model, rescue_model=row.rescue_model if row else None)
+        self._use_models(GameModels(
+            api_key=api_key, model=self.model, rescue_model=row.rescue_model if row else None))
         self.awaiting_key = False
 
     def resume_game(self, *, waiting_on_humans: bool) -> None:
@@ -870,7 +993,7 @@ class GameSession:
     @property
     def model(self) -> str:
         """The model this game runs on; empty when the server default is in charge."""
-        return self._llm_selection.model if self._llm_selection else ""
+        return self._models.model
 
     # -- the streams' lifecycle: human player's presence -----------------------------------
 

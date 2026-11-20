@@ -1,0 +1,20 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "silent so far; no evidence yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "claims trailseer; the visit they report to me fits the night I was blocked, but a wolf could report the same, so unsettled", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_4", "why": "silent so far; no evidence yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claims investigator with a Suspicious read on player_9; one claim, not tested yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_6", "why": "pushing others to answer but has made no claim of their own", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me last night; I was blocked that night, so this is the likeliest Chanteuse visit", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "only player_5's Suspicious read says wolf; no other evidence", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "silent so far; no evidence yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so my protection of player_5 did nothing and I have no results. A visit did reach me that night, and player_7 says they were the one who went to me, so player_7 is my lead for the Chanteuse at low confidence. Stay quiet unless addressed, and keep the healer protection for a Town claimant who gets attacked. Do not reveal my role without need, and treat player_3's follow claim as a claim until something checks it.",
+  "pass_turn": true,
+  "message": "",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": []
+}

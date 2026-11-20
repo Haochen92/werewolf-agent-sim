@@ -1,0 +1,345 @@
+=== PILOT board 0 (both arms) ===
+[start] off g0[start] on g0
+
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 4.0s (attempt 3/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 4.0s (attempt 3/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 8.0s (attempt 4/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 4.0s (attempt 3/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 8.0s (attempt 4/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 16.0s (attempt 5/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Seed set: pinning 1 game_ids across 1 config(s) — paired (run_index i → game_ids[i-1]).
+Planned runs: 1
+- ep_off_g0_all_disabled_001: session=ep_off_g0_all_disabled {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Retrieval types: {'observations': False, 'strategy_points': True}
+Memory persistence override: {'seed_enabled': False, 'dump_enabled': False}
+Runtime fingerprint: {'git_commit': 'a010dc688cb6242c61520e1959ecdd336bb8b635', 'git_dirty': False, 'prompt_bundle_hash': 'fcb194406952618f', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-2', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Embedding canary: OK (no alias drift).
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/ep_off_g0.jsonl
+Experiment config: /home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/config.json
+Running ep_off_g0_all_disabled_001 in session ep_off_g0_all_disabled
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed ep_off_g0_all_disabled_001: winner=serial_killer day=3
+Batch complete: 1 succeeded, 0 failed
+[done ] off g0
+reads under-covered: player=player_2 phase=day_votes coverage=83% missing=['player_4']
+reads under-covered: player=player_2 phase=day_votes coverage=75% missing=['player_4']
+Seed set: pinning 1 game_ids across 1 config(s) — paired (run_index i → game_ids[i-1]).
+Planned runs: 1
+- ep_on_g0_town_only_001: session=ep_on_g0_town_only {'wolf': False, 'villager': True, 'healer': True, 'investigator': True, 'serial_killer': False, 'vigilante': True}
+Reranking config: {'observations': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}, 'strategy_points': {'wolf': False, 'villager': False, 'healer': False, 'investigator': False, 'serial_killer': False, 'vigilante': False}}
+Retrieval types: {'observations': False, 'strategy_points': True}
+Memory persistence override: {'seed_enabled': True, 'dump_enabled': False, 'seed_store_dir': '/home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/final_store_snapshot'}
+Runtime fingerprint: {'git_commit': 'a010dc688cb6242c61520e1959ecdd336bb8b635', 'git_dirty': False, 'prompt_bundle_hash': 'fcb194406952618f', 'llm_backend': 'vertex', 'game_model': 'gemini-3.1-flash-lite', 'temperature': 1.0, 'game_thinking_level': 'minimal', 'summary_thinking_level': 'medium', 'judge_thinking_level': 'minimal', 'pro_model': 'gemini-3.1-flash-lite', 'pro_backup_model': 'gemini-3.1-flash-lite', 'embedding_model': 'gemini-embedding-2', 'embedding_dims': 1536, 'vertex_location': 'global'}
+Embedding canary: OK (no alias drift).
+Writing JSONL results to: /home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/ep_on_g0.jsonl
+Experiment config: /home/ubuntu/projects/werewolf-agent-sim/batch_results/v7_endpoint_ab/config.json
+Running ep_on_g0_town_only_001 in session ep_on_g0_town_only
+=== Running Leak Tests ===
+=== Leak Tests Complete ===
+Completed ep_on_g0_town_only_001: winner=serial_killer day=5
+Batch complete: 1 succeeded, 0 failed
+[done ] on g0
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+=== PILOT GREEN — launching fleet (boards 1..29, concurrency 6, interleaved) ===
+[start] off g1[start] on g2[start] on g1
+
+
+[start] off g2
+[start] on g3
+[start] off g3
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+/home/ubuntu/projects/werewolf-agent-sim/.venv/lib/python3.11/site-packages/langgraph/checkpoint/base/__init__.py:18: LangChainPendingDeprecationWarning: The default value of `allowed_objects` will change in a future version. Pass an explicit value (e.g., allowed_objects='messages' or allowed_objects='core') to suppress this warning.
+  from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+embed_documents returned 1 vectors for 14 texts (batch collapse); re-embedding per text
+Embedding embed_documents[single] hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents[single] hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_documents[single] hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_query hit a transient error; retrying in 2.0s (attempt 2/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_query hit a transient error; retrying in 4.0s (attempt 3/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+Embedding embed_query hit a transient error; retrying in 8.0s (attempt 4/8): Error embedding content (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/global_embed_content_requests_per_minute_per_base_model with base model: gemini-embedding-2. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call failed for player_4: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call failed for player_3: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call failed for player_7: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call failed for player_4: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+LLM call failed for player_4: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+player_4 failed all retries, using random fallback
+Day discussion summary failed for day 2: Error calling model 'gemini-3.1-flash-lite' (RESOURCE_EXHAUSTED): 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}}
+=== PILOT board 0 (both arms, screened) ===
+[start] off g0[start] on g0
+
+[done ] off g0
+[done ] on g0
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+=== PILOT GREEN — fleet boards 1..29, cap 3, interleaved ON/OFF ===
+[start] on g1
+[start] off g1[start] on g2
+
+=== PILOT board 0 (both arms, screened) ===
+[skip] on g0 already complete[skip] off g0 already complete
+
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+=== PILOT GREEN — fleet boards 1..29, 2 boards x {ON+OFF together} = 4 games, paired ===
+[start] off g1[start] on g1
+
+[start] on g2
+[start] off g2
+[done ] on g2
+[done ] off g2
+[start] off g3
+[start] on g3
+[done ] off g1
+[done ] on g1
+[start] on g4[start] off g4
+
+[done ] off g3
+[done ] on g3
+[start] on g5[start] off g5
+
+[done ] on g5
+[done ] off g4
+[done ] on g4
+[start] on g6[start] off g6
+
+[done ] off g5
+[start] on g7[start] off g7
+
+[done ] on g6
+[done ] off g7
+[done ] on g7
+[start] on g8
+[start] off g8
+[done ] off g6
+[start] on g9
+[start] off g9
+[done ] off g8
+[done ] off g9
+[done ] on g9
+[start] on g10[start] off g10
+
+[done ] on g8
+[start] on g11[start] off g11
+
+[done ] off g10
+[done ] off g11
+[done ] on g11
+[start] off g12
+[start] on g12
+[done ] on g10
+[start] on g13[start] off g13
+
+=== PILOT board 0 (both arms, screened) ===
+[skip] off g0 already complete[skip] on g0 already complete
+
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+=== PILOT GREEN — fleet boards 1..29, 2 boards x {ON+OFF together} = 4 games, paired ===
+[skip] on g1 already complete
+[skip] off g1 already complete
+[skip] on g2 already complete
+[skip] off g2 already complete
+[skip] off g3 already complete[skip] on g3 already complete
+
+[skip] on g4 already complete
+[skip] off g4 already complete
+[skip] on g5 already complete
+[skip] off g5 already complete
+[skip] on g6 already complete
+[skip] off g6 already complete
+[skip] on g7 already complete
+[skip] on g8 already complete[skip] off g7 already complete
+[skip] off g8 already complete
+
+[skip] off g9 already complete[skip] on g9 already complete
+
+[skip] off g10 already complete
+[skip] on g10 already complete
+[skip] on g11 already complete[skip] off g11 already complete
+
+[start] on g12[start] off g12
+
+[start] off g13[start] on g13
+
+[done ] off g12
+[done ] on g13
+[done ] on g12
+[start] off g14[start] on g14
+
+[done ] off g13
+[start] on g15
+[start] off g15
+[done ] on g14
+[done ] off g15
+[done ] off g14
+[start] on g16
+[start] off g16
+[done ] on g15
+[start] on g17
+[start] off g17
+[done ] off g16
+[done ] on g16
+[start] on g18[start] off g18
+
+[done ] off g17
+[done ] on g17
+[start] on g19[start] off g19
+
+[done ] on g18
+[done ] off g18
+[start] off g20
+[start] on g20
+[done ] off g19
+[done ] off g20
+[done ] on g20
+[start] on g21
+[start] off g21
+[done ] off g21
+[done ] on g21
+[start] on g22
+[start] off g22
+[done ] on g19
+[start] on g23[start] off g23
+
+[done ] on g22
+[done ] off g22
+[start] on g24
+[start] off g24
+[done ] off g23
+[done ] on g23
+[start] off g25[start] on g25
+
+[done ] on g24
+GAME FAIL off g24: 1 random fallback(s) — DISQUALIFIED, will replay
+[start] on g26
+[start] off g26
+[done ] on g25
+[done ] off g25
+[start] on g27
+[start] off g27
+GAME FAIL on g26: 1 random fallback(s) — DISQUALIFIED, will replay
+[done ] off g26
+[start] on g28
+[start] off g28
+[done ] off g27
+GAME FAIL off g28: 1 random fallback(s) — DISQUALIFIED, will replay
+[done ] on g27
+[start] off g29
+[start] on g29
+[done ] on g28
+[done ] off g29
+[done ] on g29
+
+boards complete: 27/30; missing: [24, 26, 28]
+disqualified (breaker input): ['off_g24:fallback', 'on_g26:fallback', 'off_g28:fallback']
+soft-fallback games (reported, not disqualified): {}
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+INCOMPLETE. Re-run this script in a clean window to replay missing boards; completed-clean halves skip.
+=== PILOT board 0 (both arms, screened) ===
+[skip] on g0 already complete[skip] off g0 already complete
+
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+=== PILOT GREEN — fleet boards 1..29, 2 boards x {ON+OFF together} = 4 games, paired ===
+[skip] on g1 already complete
+[skip] off g1 already complete
+[skip] off g2 already complete[skip] on g2 already complete
+
+[skip] on g3 already complete[skip] off g3 already complete
+
+[skip] on g4 already complete[skip] off g4 already complete
+
+[skip] off g5 already complete[skip] on g5 already complete
+
+[skip] on g6 already complete
+[skip] off g6 already complete
+[skip] off g7 already complete[skip] on g7 already complete
+
+[skip] off g8 already complete[skip] on g8 already complete
+
+[skip] on g9 already complete
+[skip] off g9 already complete
+[skip] on g10 already complete
+[skip] off g10 already complete
+[skip] off g11 already complete[skip] on g11 already complete
+
+[skip] on g12 already complete
+[skip] off g12 already complete
+[skip] off g13 already complete[skip] on g13 already complete
+
+[skip] on g14 already complete[skip] off g14 already complete
+
+[skip] on g15 already complete[skip] off g15 already complete
+
+[skip] off g16 already complete[skip] on g16 already complete
+
+[skip] off g17 already complete
+[skip] on g17 already complete
+[skip] on g18 already complete[skip] off g18 already complete
+
+[skip] off g19 already complete[skip] on g19 already complete
+
+[skip] on g20 already complete[skip] off g20 already complete
+
+[skip] on g21 already complete
+[skip] off g21 already complete
+[skip] on g22 already complete[skip] off g22 already complete
+
+[skip] on g23 already complete
+[skip] off g23 already complete
+[start] on g24
+[start] off g24
+[done ] on g24
+[done ] off g24
+[skip] on g25 already complete[skip] off g25 already complete
+
+[start] off g26[start] on g26
+
+[done ] off g26
+[done ] on g26
+[skip] on g27 already complete
+[skip] off g27 already complete
+[start] on g28
+[start] off g28
+[done ] off g28
+[done ] on g28
+[skip] on g29 already complete[skip] off g29 already complete
+
+
+boards complete: 30/30; missing: []
+disqualified (breaker input): []
+soft-fallback games (reported, not disqualified): {}
+[guards] arm=['healer', 'investigator', 'vigilante', 'villager'] fingerprint commit=a010dc68 backend=vertex == loop reference OK
+
+ENDPOINT COMPLETE — 30 boards. score: {'on/overall': 0.039, 'on/town': 0.039, 'off/overall': 0.41, 'off/town': 0.247, 'off/serial_killer': 0.701, 'off/wolf': 0.5}

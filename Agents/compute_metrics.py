@@ -9,7 +9,7 @@ from Agents.schemas.metrics import (
     Metrics,
 )
 from Agents.ten_seat_metrics import has_night_records, ten_seat_metrics
-from Agents.tracing import langfuse
+from Agents.tracing import get_langfuse
 
 
 # Town-aligned roles (win when both the wolves and the lone killer are gone) and the roles that
@@ -722,9 +722,10 @@ DIAGNOSTIC_METRICS = frozenset({
 })
 
 
-# The basket above was validated on the nine-seat game; none of it is re-validated on the ten-seat
-# game yet (plan §8.4). The push runs at the end of a live game, and live games are ten-seat, so
-# the basket pushes as "diagnostic". Name a metric here once its ten-seat validation is recorded.
+# The basket above was validated on the nine-seat game (plan §8.4). The push runs at the end of a
+# live game, and live games are ten-seat, so the basket pushes as "diagnostic". A first ten-seat check
+# against win ran on 2026-10-24 (evidence/evaluation/metrics/report.md §4); no metric is named here,
+# since nothing reads the tier but the Langfuse tag.
 VALIDATED_ON_TEN_SEAT_METRICS: frozenset[str] = frozenset()
 
 
@@ -752,7 +753,7 @@ def push_scores_to_langfuse(
         # DO_NOT_USE fields are renamed with a `dnu_` prefix so they stand out and can't be
         # confused with a trusted proxy; the tier is also carried in metadata for filtering.
         score_name = f"dnu_{field_name}" if tier == "do_not_use" else field_name
-        langfuse.create_score(
+        get_langfuse().create_score(
             score_id=_score_id("game_metric", "trace", trace_id, field_name),
             trace_id=trace_id,
             name=score_name,
@@ -761,7 +762,7 @@ def push_scores_to_langfuse(
             metadata={"tier": tier},
         )
         if session_id:
-            langfuse.create_score(
+            get_langfuse().create_score(
                 score_id=_score_id(
                     "game_metric",
                     "session",

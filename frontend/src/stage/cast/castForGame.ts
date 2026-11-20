@@ -15,7 +15,16 @@
  * game passes its roster's size (`rosterSize`, or the view's `seats.length`).
  */
 import { CHARACTERS, type Character } from '@/assets/manifest';
-import type { DurableGameEvent } from '@/types/contracts';
+import type { DurableGameEvent, GameStatus } from '@/types/contracts';
+
+/** Running status clears max_seats before the stream necessarily supplies the roster. */
+export function liveCastSize(
+  rosterSeats: number,
+  status: Pick<GameStatus, 'max_seats' | 'cast'> | undefined,
+  roomPlaces?: number,
+): number {
+  return rosterSeats || status?.max_seats || roomPlaces || status?.cast?.length || 9;
+}
 
 /** The table's size from a game's own roster (`game_started.seats`); nine for a log without one. */
 export function rosterSize(events: readonly DurableGameEvent[]): number {

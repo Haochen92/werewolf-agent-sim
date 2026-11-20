@@ -16,6 +16,8 @@ from Agents.schemas.game_events import (
     DayVote,
     DeathRecord,
     NightActionRecord,
+    NightAnnouncement,
+    ReadOutWill,
     WolfChannel,
 )
 from Agents.schemas.night import NightChoice, NightReport
@@ -35,6 +37,14 @@ class OrchestratorGraph(TypedDict, total=False):
     dead_roster: Annotated[list[DeathRecord], add]
     """Ordered PUBLIC dead roster; a DeathRecord is appended at each death (night_resolution /
     day_resolution) so agents read who died + their revealed role from state, not GM prose."""
+    night_announcements: Annotated[list[NightAnnouncement], add]
+    """PUBLIC: each night's morning announcement as data (deaths, saves, the pick), appended by
+    night_resolution beside its prose. Rides every seat's payload for the deduction engine; never
+    rendered."""
+    read_out_wills: Annotated[list[ReadOutWill], add]
+    """PUBLIC: each revealed town player's record as data, appended at the reveal (night_resolution
+    for a night death, day_resolution for a lynch) beside its prose. Rides every seat's payload for
+    the deduction engine; never rendered."""
 
     # Cast & identity.
     agent_strategies: Annotated[dict[str, str], merge_strategies]

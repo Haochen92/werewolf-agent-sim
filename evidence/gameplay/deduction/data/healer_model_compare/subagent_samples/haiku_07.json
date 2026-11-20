@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "claims trailseer; the one follow on player_7 shows a visit to player_8 and is not yet checked", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claims investigator and a Suspicious read on player_9; either claimant could be the wolf", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_6", "why": "only asked player_7 to speak; no evidence yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "says they went to player_8 on night 1, which fits a Chanteuse block", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "named only by player_5's Suspicious read, which is unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results, and only a wolf visit can explain that. player_7 says they went to player_8, which fits the Chanteuse, but a carrier's kill visit is hidden, so player_7 is not yet proven. Stay low-key, do not reveal my role, and save protection for a Town claimant who gets attacked. I will vote player_7 unless a better read comes up.",
+  "pass_turn": false,
+  "message": "player_3's follow on player_7 shows one visit, but a carrier's kill visit to player_1 would be hidden by the illusionist, so one seen visit does not clear them. I'd vote player_7 for now, since their night is the one the follow can't clear.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "neutral"}
+  ]
+}

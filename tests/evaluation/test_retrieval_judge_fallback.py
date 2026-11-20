@@ -10,7 +10,7 @@ import unittest
 from contextlib import redirect_stdout
 
 from evaluation.src.cli_runner.regen_replay.both.retrieval import summarize_records
-from evaluation.src.judges.retrieval import minimal_retrieval_scores, run_retrieval_judge
+from evaluation.src.judges.retrieval import parse_retrieval_scores, run_retrieval_judge
 
 
 class MinimalScoresTests(unittest.TestCase):
@@ -28,9 +28,9 @@ class MinimalScoresTests(unittest.TestCase):
             self.assertEqual(scores.efficiency, 5)  # the placeholder that used to inflate averages
 
     def test_real_scores_default_not_fallback(self) -> None:
-        self.assertFalse(
-            minimal_retrieval_scores(1).model_copy(update={"is_fallback": False}).is_fallback
-        )
+        # A judge's reply never names the field, so a judged row relies on the default.
+        judge_reply = '{"clusters": [], "relevance": 4, "unique_lessons": 3, "efficiency": 2}'
+        self.assertFalse(parse_retrieval_scores(judge_reply).is_fallback)
 
 
 class SummarizeExclusionTests(unittest.TestCase):

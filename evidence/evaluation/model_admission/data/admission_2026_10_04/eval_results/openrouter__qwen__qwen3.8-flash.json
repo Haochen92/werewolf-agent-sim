@@ -1,0 +1,319 @@
+{
+ "model": "openrouter/qwen/qwen3.8-flash",
+ "run_at": "2026-10-04T09:58:05.229365+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "6d603f54b4d64c866fb5f9dfbbd6fb88fb2b5ccf",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "forced_tool",
+   "passed": "0/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DayVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "WolfNightVoteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    },
+    {
+     "schema": "DaySummaryOutput",
+     "problem": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter does not support being set to required o"
+    }
+   ],
+   "mean_per_call": {
+    "input": 0.0,
+    "cached": 0.0,
+    "output": 0.0,
+    "reasoning": 0.0,
+    "seconds": 0.2
+   }
+  },
+  {
+   "mode": "auto_tool",
+   "passed": "17/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "OutputParserException: the model answered without calling DayDiscussOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "WolfNightDiscussOutput",
+     "problem": "OutputParserException: the model answered without calling WolfNightDiscussOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "HealerOutput",
+     "problem": "OutputParserException: the model answered without calling HealerOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "OutputParserException: the model answered without calling InvestigatorOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "InvestigatorOutput",
+     "problem": "OutputParserException: the model answered without calling InvestigatorOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "OutputParserException: the model answered without calling SerialKillerOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "SerialKillerOutput",
+     "problem": "OutputParserException: the model answered without calling SerialKillerOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "OutputParserException: the model answered without calling VigilanteOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "OutputParserException: the model answered without calling VigilanteOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    },
+    {
+     "schema": "VigilanteOutput",
+     "problem": "OutputParserException: the model answered without calling VigilanteOutput\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langchain/errors/OUTPUT_PARSING_FAILURE "
+    }
+   ],
+   "mean_per_call": {
+    "input": 917.4,
+    "cached": 493.0,
+    "output": 1488.9,
+    "reasoning": 1239.2,
+    "seconds": 30.3
+   }
+  },
+  {
+   "mode": "json_mode",
+   "passed": "26/27",
+   "all_passed": false,
+   "failures": [
+    {
+     "schema": "DayDiscussOutput",
+     "problem": "OutputParserException: reply is not a valid DayDiscussOutput: 3 validation errors for DayDiscussOutput\nupdated_strategy\n  Field required [type=missing, input_value={'strategy_verdicts': [],... on Omar's first move?\"}, input_type=dict]\n    For further information "
+    }
+   ],
+   "mean_per_call": {
+    "input": 746.2,
+    "cached": 417.2,
+    "output": 1997.0,
+    "reasoning": 1758.9,
+    "seconds": 38.3
+   }
+  }
+ ],
+ "recommended_mode": null,
+ "recommended_mode_why": "no mode passed every call (best: json_mode at 26/27)",
+ "cache_floor": {
+  "floor_tokens": 256,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 280,
+    "cached_tokens": 256,
+    "sends": 2
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 507,
+    "cached_tokens": 256,
+    "sends": 2
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 970,
+    "cached_tokens": 768,
+    "sends": 2
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1861,
+    "cached_tokens": 1792,
+    "sends": 2
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3653,
+    "cached_tokens": 3584,
+    "sends": 2
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 0,
+    "cached": 0,
+    "output": 0,
+    "reasoning": 0,
+    "seconds": 0.08,
+    "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter "
+   },
+   "next_turn": {
+    "input": 0,
+    "cached": 0,
+    "output": 0,
+    "reasoning": 0,
+    "seconds": 0.11,
+    "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter ",
+    "shared_prefix_est": 0
+   },
+   "other_seat": {
+    "input": 0,
+    "cached": 0,
+    "output": 0,
+    "reasoning": 0,
+    "seconds": 0.1,
+    "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter ",
+    "shared_prefix_est": 0
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 0,
+    "cached": 0,
+    "output": 0,
+    "reasoning": 0,
+    "seconds": 0.08,
+    "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter "
+   },
+   "next_turn": {
+    "input": 0,
+    "cached": 0,
+    "output": 0,
+    "reasoning": 0,
+    "seconds": 0.24,
+    "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter ",
+    "shared_prefix_est": 0
+   },
+   "other_seat": {
+    "input": 0,
+    "cached": 0,
+    "output": 0,
+    "reasoning": 0,
+    "seconds": 0.28,
+    "error": "BadRequestError: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': 'data: {\"error\":{\"code\":\"invalid_parameter_error\",\"param\":null,\"message\":\"The tool_choice parameter ",
+    "shared_prefix_est": 0
+   }
+  }
+ ],
+ "real_prompt_failures": "6/6",
+ "cached_share": {
+  "next_turn": null,
+  "other_seat": null
+ }
+}

@@ -47,17 +47,25 @@ def _models_in(annotation, found: set) -> None:
 
 
 def test_every_model_in_graph_state_is_allowlisted():
+    # Act: collect every model the graph state's type hints reach
     found: set = set()
     for cls in _state_classes():
         for hint in typing.get_type_hints(cls, include_extras=True).values():
             _models_in(hint, found)
+
+    # Assert
     assert NightActionRecord in found  # the walk reaches the state's models
     missing = sorted(c.__name__ for c in found - set(_STATE_MODEL_ALLOWLIST))
     assert not missing, f"add to _STATE_MODEL_ALLOWLIST in Agents/memory/checkpointer.py: {missing}"
 
 
 def test_the_night_record_survives_a_checkpoint_round_trip():
+    # Arrange
     serde = durable_serde()
     record = NightActionRecord(day=1, actor="player_9", action="protect", target="player_3", outcome="no_attack")
+
+    # Act
     back = serde.loads_typed(serde.dumps_typed({"night_actions": [record]}))["night_actions"][0]
+
+    # Assert
     assert isinstance(back, NightActionRecord) and back.day == 1

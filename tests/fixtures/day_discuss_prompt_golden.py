@@ -124,10 +124,10 @@ def speaker_payload(role: str) -> dict:
     return send.arg
 
 
-def capturing_llm(sent: list) -> SimpleNamespace:
-    """A stand-in for get_llm(): records every prompt it is sent and answers with a line."""
+def capturing_model(sent: list) -> SimpleNamespace:
+    """A stand-in for the seat's model: records every prompt it is sent and answers with a line."""
     reply = day_discuss_output(ROLES)(
-        message="player_2, answer the question.", pass_turn=False, claim="none",
+        message="player_2, answer the question.", pass_turn=False, claim="none", claimed_night_actions=[],
         updated_strategy="", addressed_targets=[], strategy_verdicts=[],
         memory_applicability=[], reads=[])
 
@@ -138,33 +138,32 @@ def capturing_llm(sent: list) -> SimpleNamespace:
     return SimpleNamespace(with_structured_output=lambda _schema: RunnableLambda(answer))
 
 
-def runtime() -> SimpleNamespace:
-    """What a turn's runtime carries, with no memory store (so retrieval skips)."""
+def runtime(models=None) -> SimpleNamespace:
+    """What a turn's runtime carries, with no memory store (so retrieval skips). ``models`` (a
+    ``GameModels``) goes into the context, as the models the turn runs on."""
     from Agents.observability import EvalCaseSink
     from Agents.tracing import Metrics
 
-    return SimpleNamespace(context={"metrics": Metrics(), "eval_sink": EvalCaseSink()},
-                           store=None)
+    context = {"metrics": Metrics(), "eval_sink": EvalCaseSink()}
+    if models is not None:
+        context["models"] = models
+    return SimpleNamespace(context=context, store=None)
 
 
-def render(monkeypatch) -> dict[str, list[list[str]]]:
+def render() -> dict[str, list[list[str]]]:
     """Every role's discuss prompt, as the AI path sends it: {role: [[type, content], ...]}."""
     from Agents.nodes.day.actors import discuss
-    from Agents.turn import agent_player
+    from tests.factories.scripted_model import FakeModels
 
     rendered = {}
     for role in ROLES:
         sent: list = []
-        monkeypatch.setattr(agent_player, "get_llm", lambda sent=sent: capturing_llm(sent))
-        discuss(speaker_payload(role), {"configurable": {}}, runtime())
+        discuss(speaker_payload(role), {"configurable": {}}, runtime(FakeModels(seat=capturing_model(sent))))
         assert len(sent) == 1, role
         rendered[role] = [list(m) for m in sent[0]]
     return rendered
 
 
 if __name__ == "__main__":
-    import pytest
-
-    with pytest.MonkeyPatch.context() as mp:
-        GOLDEN.write_text(json.dumps(render(mp), indent=1, ensure_ascii=False) + "\n")
+    GOLDEN.write_text(json.dumps(render(), indent=1, ensure_ascii=False) + "\n")
     print(f"wrote {GOLDEN}")

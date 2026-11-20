@@ -1,10 +1,50 @@
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
-import { LEGACY_CHARACTERS, castForGame, castForRoom, resolveCast } from './castForGame';
+import { SPRITES } from '@/assets/manifest';
+import {
+  LEGACY_CHARACTERS,
+  castForGame,
+  castForRoom,
+  liveCastSize,
+  resolveCast,
+} from './castForGame';
 
 // The benches pass the full uuid (`DATA.game_id`), not the 8-char prefix.
 const FIXTURE_GAME_ID = '9369a5c1-3c28-42ce-86a1-9d594dfa4804';
+
+describe('live cast size during departure', () => {
+  it('keeps every platform seat drawable when running status beats the roster stream', () => {
+    const gameId = '2b29bfe8-714d-4aa8-a4c2-f92b08d02aa5';
+    for (const places of [9, 10]) {
+      for (const status of [
+        { max_seats: places, cast: [] },
+        { max_seats: 0, cast: [] },
+        { max_seats: 0, cast: castForGame(gameId, places) },
+      ]) {
+        const size = liveCastSize(0, status, places);
+        expect(size).toBe(places);
+        const cast = resolveCast(status.cast, gameId, size);
+        for (let i = 0; i < places; i++) {
+          expect(SPRITES.day[cast[i]].base.src).toBeTruthy();
+          expect(SPRITES.small.day[cast[i]].base.src).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it('uses the recorded cast before the roster arrives on a running game', () => {
+    expect(liveCastSize(0, { max_seats: 0, cast: castForGame(FIXTURE_GAME_ID, 10) })).toBe(
+      10,
+    );
+  });
+
+  it('prefers the dealt roster and keeps the legacy default when nothing is known', () => {
+    expect(liveCastSize(9, { max_seats: 10, cast: [] }, 10)).toBe(9);
+    expect(liveCastSize(0, undefined)).toBe(9);
+    expect(liveCastSize(0, { max_seats: 0, cast: [] })).toBe(9);
+  });
+});
 
 function kitCast(gameId: string): string[] {
   const kit = readFileSync(
@@ -46,7 +86,17 @@ describe('castForGame', () => {
 });
 
 describe('resolveCast', () => {
-  const stored = ['whale', 'cat', 'owl', 'hare', 'badger', 'onion', 'shade', 'dragon', 'cyclops'];
+  const stored = [
+    'whale',
+    'cat',
+    'owl',
+    'hare',
+    'badger',
+    'onion',
+    'shade',
+    'dragon',
+    'cyclops',
+  ];
 
   it('takes the cast the server recorded, in seat order', () => {
     expect(resolveCast(stored, FIXTURE_GAME_ID)).toEqual(stored);
@@ -58,7 +108,9 @@ describe('resolveCast', () => {
   });
 
   it('falls back when the record is short or names a character this build cannot show', () => {
-    expect(resolveCast(stored.slice(0, 8), FIXTURE_GAME_ID)).toEqual(castForGame(FIXTURE_GAME_ID));
+    expect(resolveCast(stored.slice(0, 8), FIXTURE_GAME_ID)).toEqual(
+      castForGame(FIXTURE_GAME_ID),
+    );
     expect(resolveCast([...stored.slice(0, 8), 'griffon'], FIXTURE_GAME_ID)).toEqual(
       castForGame(FIXTURE_GAME_ID),
     );

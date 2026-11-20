@@ -54,7 +54,7 @@ def _build_clusters(
 
 def _gate_partitions(items_by_key: dict[str, Any], memory_kind: str) -> list[dict[str, Any]]:
     """Group items by the dedup partition key for this memory kind (obs: gate+pair-checks; SP: the
-    direction/honesty/valence signature). Items with no v6 fields (partition None) fall into one
+    direction/honesty labels plus the stage facts). Items with no v6 fields (partition None) fall into one
     'ungated' group, clustered as before."""
     groups: dict[Any, dict[str, Any]] = defaultdict(dict)
     for key, item in items_by_key.items():

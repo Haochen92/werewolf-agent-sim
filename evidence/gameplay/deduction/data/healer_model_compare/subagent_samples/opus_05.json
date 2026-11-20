@@ -1,0 +1,25 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "nothing to go on yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "their follow of player_7 landing on me matches the roleblock I got, so the trailseer claim checks out", "suspected_role": "trailseer", "confidence": "high"},
+    {"player": "player_4", "why": "nothing to go on yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious read on player_9; unverified but nothing contradicts it", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked player_7 the right question; nothing suspicious", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me on night 1, the night a Chanteuse blocked me, and refuses to claim a role", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "player_5 claims a Suspicious read; would fit as the other wolf next to player_7", "suspected_role": "illusionist", "confidence": "low"},
+    {"player": "player_10", "why": "nothing to go on yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I (healer) was roleblocked, so the Chanteuse came to me; player_3's follow and player_7's own admission put player_7 at my door, so player_7 is very likely the Chanteuse. I said I hold a blocked town night action but have not named healer; keep it that way unless pressed hard. Vote player_7 today unless they claim a visiting town role (sentinel/sigilist) that holds up. Tonight protect player_3 or player_5, the claimed info roles most likely to be hit.",
+  "pass_turn": false,
+  "message": "I have a night action and last night it got roleblocked. Only the Chanteuse blocks, so a wolf came to me, and player_7 just admitted going to player_8. That lines up with player_3's follow. player_7, unless you name a town role that visits and say what you did at my door, you're my vote as the Chanteuse.",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

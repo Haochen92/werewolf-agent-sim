@@ -49,7 +49,8 @@ describe('the plate', () => {
     expect(plateLabel('sigil_target', 'player_3')).toBe('Mark seat 3');
     expect(plateLabel('block_target', 'player_3')).toBe('Block seat 3');
     expect(plateLabel('conceal', null)).toBe('Hide the victim’s role');
-    expect(plateLabel('speculator_pick', null)).toBe('Choose a side');
+    // the speculator's sides on the line are its ask: no act until one is chosen
+    expect(plateLabel('speculator_pick', null)).toBeNull();
     expect(plateLabel('speculator_pick', 'town')).toBe('Pick the Town');
     expect(plateLabel('speculator_pick', 'lone_killer')).toBe('Pick the lone killer');
     expect(plateLabel('speculator_pick', 'self')).toBe('Pick yourself');

@@ -1,0 +1,39 @@
+# The environment for fine-tuning and for evaluating a saved model on a CPU. It is separate from
+# the game's environment (the pyproject.toml at the repository root) because sentence-transformers
+# brings torch and, on x86 Linux, several GB of GPU packages that the game, the server and the
+# tests never import. Before 2026-11-18 it was a main dependency of the root project, which is why
+# `poetry install` there was unsafe.
+#
+# This folder is not installed as a package (package-mode = false): the commands are run from the
+# repository root, so `training` and the one module it reads from `evaluation` are found there.
+#
+#     poetry -P training install                      # once; creates training/.venv
+#     poetry -P training run python -m training.evaluate --adapter reranker --model <path>
+#     poetry -P training run modal run training/runner/modal_runner.py --adapter reranker ...
+#
+# Training itself runs on Modal, whose image lists its own packages (runner/modal_runner.py).
+
+[project]
+name = "werewolf-training"
+version = "0.1.0"
+description = "Fine-tuning of cross-encoders for the Werewolf project, and evaluation of saved models."
+requires-python = "==3.11.12"
+dependencies = [
+    # The three versions the root lock file held until 2026-11-18. Nothing here was ever
+    # installed from that lock on the development machine; they are pinned so that a first
+    # install does not silently take newer ones.
+    "sentence-transformers==5.5.1",
+    "torch==2.12.0",
+    "transformers==5.9.0",
+    "numpy==2.4.4",
+    "pydantic==2.13.4",
+    "python-dotenv==1.2.2",
+    "modal (>=1.4.3,<2.0.0)",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

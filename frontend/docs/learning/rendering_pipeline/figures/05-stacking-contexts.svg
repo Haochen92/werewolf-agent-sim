@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 520" width="980" height="520" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="520" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A z-index: -1 wall is ordered inside its stacking context</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Paint order inside one stacking context (bottom first). The site&#x27;s station wall, S13.</text>
+<text x="24" y="104" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">html and body both set a background</text>
+<rect x="24" y="340" width="420" height="40" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="38" y="366" font-size="13.5" fill="#1f2937" text-anchor="start">1  html&#x27;s background (the root context)</text>
+<rect x="24" y="288" width="420" height="40" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="38" y="314" font-size="13.5" fill="#1f2937" text-anchor="start">2  the wall: z-index -1 in the root context</text>
+<rect x="24" y="236" width="420" height="40" rx="4" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="38" y="262" font-size="13.5" fill="#1f2937" text-anchor="start">3  body&#x27;s background: an in-flow block</text>
+<rect x="24" y="184" width="420" height="40" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="38" y="210" font-size="13.5" fill="#1f2937" text-anchor="start">4  the page&#x27;s content</text>
+<text x="24" y="410" font-size="14" fill="#7f1d1d" text-anchor="start">Step 3 paints over step 2: the wall vanishes.</text>
+<text x="536" y="104" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">.page { isolation: isolate }</text>
+<rect x="536" y="340" width="420" height="40" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="550" y="366" font-size="13.5" fill="#1f2937" text-anchor="start">1  html&#x27;s background (the root context)</text>
+<rect x="536" y="288" width="420" height="40" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="550" y="314" font-size="13.5" fill="#1f2937" text-anchor="start">2  body&#x27;s background</text>
+<rect x="536" y="236" width="420" height="40" rx="4" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="550" y="262" font-size="13.5" fill="#1f2937" text-anchor="start">3  .page: a stacking context of its own</text>
+<rect x="560" y="184" width="396" height="40" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="574" y="210" font-size="13.5" fill="#1f2937" text-anchor="start">3a  the wall: z-index -1 inside .page</text>
+<rect x="560" y="132" width="396" height="40" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="574" y="158" font-size="13.5" fill="#1f2937" text-anchor="start">3b  the page&#x27;s content</text>
+<text x="536" y="410" font-size="14" fill="#14532d" text-anchor="start">The wall&#x27;s -1 now counts inside .page, above body.</text>
+<rect x="24" y="430" width="932" height="72" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="458" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">src/components/site/StationWall.module.css: .page</text>
+<text x="44" y="484" font-size="14.5" fill="#1f2937" text-anchor="start">&quot;the page&#x27;s own stacking context, so the wall under it paints above the body&#x27;s ground&quot;</text>
+</svg>

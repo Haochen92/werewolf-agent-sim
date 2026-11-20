@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A new view shares everything the event did not touch</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">vote_cast (seq 42, day 2) arrives. Green: new objects along its path. Grey: the very same objects as before.</text>
+<text x="135" y="100" font-size="13" fill="#4b5563" text-anchor="middle">view before (seq 41)</text>
+<text x="835" y="100" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">view after (seq 42)</text>
+<text x="485" y="100" font-size="13" fill="#4b5563" text-anchor="middle">shared, not copied</text>
+<rect x="60" y="112" width="150" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="135.0" y="137" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">view</text>
+<rect x="760" y="112" width="150" height="40" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="835.0" y="137" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">view</text>
+<rect x="400" y="170" width="170" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="485.0" y="195" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">seats · alive · me</text>
+<rect x="60" y="232" width="150" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="135.0" y="257" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">days</text>
+<rect x="760" y="232" width="150" height="40" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="835.0" y="257" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">days</text>
+<rect x="400" y="296" width="170" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="485.0" y="321" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">day 1</text>
+<rect x="60" y="360" width="150" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="135.0" y="385" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">day 2</text>
+<rect x="760" y="360" width="150" height="40" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="835.0" y="385" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">day 2</text>
+<rect x="400" y="424" width="170" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="485.0" y="449" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">day 2 · transcript</text>
+<rect x="60" y="488" width="150" height="40" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="135.0" y="513" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">day 2 · ballots</text>
+<rect x="760" y="488" width="150" height="40" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="835.0" y="513" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">day 2 · ballots</text>
+<text x="135" y="546" font-size="13" font-family="Menlo, Consolas, monospace" fill="#6b7280" text-anchor="middle">3→5</text>
+<text x="835" y="546" font-size="13" font-family="Menlo, Consolas, monospace" fill="#14532d" text-anchor="middle">3→5, 4→5</text>
+<path d="M135,152 L135,232" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M135,272 L135,360" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M135,400 L135,488" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M835,152 L835,232" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M835,272 L835,360" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M835,400 L835,488" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M210,132 L400,188" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M210,252 L400,314" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M210,380 L400,442" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M760,132 L570,188" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)" stroke-dasharray="6 4"/>
+<path d="M760,252 L570,314" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)" stroke-dasharray="6 4"/>
+<path d="M760,380 L570,442" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)" stroke-dasharray="6 4"/>
+<rect x="24" y="562" width="932" height="64" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="590" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Why it matters: memoised components and store selectors compare by identity (===), not content.</text>
+<text x="44" y="616" font-size="14.5" fill="#1f2937" text-anchor="start">Day 1&#x27;s panel gets the same object and skips its redraw; the ballots panel gets a new one and redraws.</text>
+</svg>

@@ -11,14 +11,17 @@
  *
  * States: loading (skeleton rows), the board could not be read (an alert with a retry), no
  * rooms open, and the rows; each row carries its own boarding, joining and refused states.
+ *
+ * The case is three pictures (owner's raster kit, 2026-10-18; `scripts/fit_hall.py`): the head
+ * with its brass plate, clock and plaque, a middle that repeats as far down as the rows go, the
+ * foot. The words on the plate and the plaque are live: the plaque says whether the board is
+ * being kept up to date (the count of rooms is the nav's).
  */
-import type { CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Skeleton } from '@mantine/core';
 import { listRooms } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useHydrated } from '@/hooks/useHydrated';
-import { SPRITES } from '@/assets/manifest';
 import { Button, Flapword, Icon } from '@/components/site';
 import { BoardRow } from './BoardRow';
 import classes from './Departures.module.css';
@@ -102,33 +105,29 @@ export function DeparturesBoard() {
     );
   }
 
+  // live while the list is read every ten seconds; dim while it is first read or cannot be
+  const live = Boolean(rows) && !rooms.isError;
+  const state = live ? 'Live' : rows ? 'Retrying' : pending ? 'Reading' : 'Offline';
+
   return (
-    <section
-      className={classes.board}
-      aria-labelledby="departures"
-      style={{ '--wood': `url(${SPRITES.wood.src})` } as CSSProperties}
-    >
-      <div className={classes.bezel}>
+    <section className={classes.board} aria-labelledby="departures">
+      <div className={classes.bhead}>
         <h2 className={classes.plate} id="departures">
           Departures
         </h2>
-        <span className={classes.count}>
-          Boarding <span className={classes.n}>{rows ? rows.length : '·'}</span>
+        <span className={classes.plaque} data-live={live || undefined} aria-live="polite">
+          {state}
         </span>
       </div>
-      <div className={classes.face} aria-busy={pending}>
-        {face}
-      </div>
-      <div className={classes.bfoot}>
-        <span>
+      <div className={classes.bbody}>
+        <div className={classes.face} aria-busy={pending}>
+          {face}
+        </div>
+        <p className={classes.note}>
           A locked room stays on the board, but admits nobody until its host unlocks it.
-        </span>
-        <span aria-live="polite">
-          {rows && rooms.isError
-            ? 'Could not refresh; trying again'
-            : 'Updated every 10 seconds'}
-        </span>
+        </p>
       </div>
+      <div className={classes.bfoot} aria-hidden="true" />
     </section>
   );
 }

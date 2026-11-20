@@ -60,7 +60,10 @@ def _state(wolf_channel=(), round_=1, wolves=("w1", "w2"), carrier="w2", humans=
 # ---- the chat: one wolf at a time, the carrier first ------------------------------------------
 
 def test_chat_round_sends_exactly_one_wolf_the_carrier_first():
+    # Act
     sends = route_pack_speaker(_state())
+
+    # Assert
     assert len(sends) == 1
     assert sends[0].node == "PACK_CHAT"
     assert sends[0].arg["player_id"] == "w2"  # the carrier, though w1 is first in the roster
@@ -89,8 +92,13 @@ def test_generation_failure_pass_advances_to_the_next_wolf():
 
 
 def test_a_chat_payload_carries_the_packs_rosters_and_chat():
+    # Arrange
     channel = [_entry("w2", 1, message="v1 tonight?")]
+
+    # Act
     payload = route_pack_speaker(_state(wolf_channel=channel))[0].arg
+
+    # Assert
     assert payload["surviving_wolves"] == ["w1", "w2"]
     assert payload["surviving_villagers"] == ["v1", "v2", "v3"]
     assert payload["wolf_channel"] == channel
@@ -116,7 +124,10 @@ def test_extinct_pack_subgraph_runs_end_to_end_without_a_kill():
     # Zero wolves -> zero Sends -> zero LLM calls: safe to invoke the real compiled subgraph.
     from Agents.graphs.night.pack import pack_night_graph_compiled
 
+    # Act
     result = pack_night_graph_compiled.invoke(_state(wolves=()))
+
+    # Assert
     assert result.get("wolves_target") is None
     assert result.get("night_choices", []) == []
 
@@ -151,9 +162,14 @@ def test_passes_in_different_rounds_do_not_end_the_chat():
 
 
 def test_the_chat_is_capped_at_three_rounds():
+    # Arrange: a chat that has used all three rounds
     assert WOLF_CHAT_ROUNDS == 3 and CARRIER_ROUND == 4
     channel = [_entry(w, r) for r in (1, 2, 3) for w in ("w2", "w1")]
+
+    # Act
     out = prepare_pack_night(_state(wolf_channel=channel, round_=WOLF_CHAT_ROUNDS))
+
+    # Assert
     assert out == {"current_round": CARRIER_ROUND}
 
 
@@ -180,13 +196,16 @@ def test_no_living_carrier_ends_the_subgraph():
 
 
 def test_the_carriers_kill_is_a_choice_and_a_channel_entry_with_the_target_as_vote(monkeypatch):
+    # Arrange
     kill = NightChoice("w2", "illusionist", "kill", "v1")
     monkeypatch.setattr(pack_nodes, "run_memory_informed_night_action",
                         lambda *args, **kwargs: ResolvedNightChoice(entry=kill))
     payload = route_carrier(_state(round_=CARRIER_ROUND))[0].arg
 
+    # Act
     update = carrier_kill(payload, None, None)
 
+    # Assert
     assert update["night_choices"] == [kill]
     assert update["wolves_target"] == "v1"
     assert update["wolf_channel"] == [
@@ -238,7 +257,10 @@ def test_human_wolf_chat_is_a_message_or_a_pass():
 
 
 def test_human_carrier_takes_a_valid_target_only():
+    # Arrange
     req = _request(phase="kill_target", valid_targets=["v1", "v2"])
+
+    # Act and assert
     assert validate_human_response(req, {"target": "v2"}).target == "v2"
     with pytest.raises(HumanTurnContractError):
         validate_human_response(req, {"target": "w2"})
@@ -247,8 +269,11 @@ def test_human_carrier_takes_a_valid_target_only():
 
 
 def test_a_human_necromancer_must_name_a_body_to_act():
+    # Arrange
     req = _request(player_id="n1", role="necromancer", phase="necromancer_target",
                    valid_targets=["v1", "v2", "stay_put"], bodies=["d1"])
+
+    # Act and assert
     assert validate_human_response(req, {"target": "v1", "body": "d1"}).body == "d1"
     with pytest.raises(HumanTurnContractError):
         validate_human_response(req, {"target": "v1"})

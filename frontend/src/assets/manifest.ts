@@ -3,101 +3,85 @@
  * ask this module for a typed handle, so swapping the asset set is files + this file, with
  * zero component edits.
  *
- * The v1 set is twelve compact pixel avatars, owner-ruled from Sample E on 2026-08-22.
- * `portraitFor()` still returns null when the list is empty, preserving the deterministic
- * initials fallback if an asset set is deliberately removed or replaced.
- *
  * Static imports (not `public/`) buy content-hashed URLs — regenerated art can never get
  * stuck behind a cached copy — plus inferred dimensions, so no layout shift.
  */
 import type { StaticImageData } from 'next/image';
-import p01 from './portraits/01.webp';
-import p02 from './portraits/02.webp';
-import p03 from './portraits/03.webp';
-import p04 from './portraits/04.webp';
-import p05 from './portraits/05.webp';
-import p06 from './portraits/06.webp';
-import p07 from './portraits/07.webp';
-import p08 from './portraits/08.webp';
-import p09 from './portraits/09.webp';
-import p10 from './portraits/10.webp';
-import p11 from './portraits/11.webp';
-import p12 from './portraits/12.webp';
-import owlBase from './sprites/day/owl/base.webp';
-import owlTalking from './sprites/day/owl/talking.webp';
-import owlThinking from './sprites/day/owl/thinking.webp';
-import owlOut from './sprites/day/owl/out.webp';
-import owlHead from './sprites/day/owl/head.webp';
-import hareBase from './sprites/day/hare/base.webp';
-import hareTalking from './sprites/day/hare/talking.webp';
-import hareThinking from './sprites/day/hare/thinking.webp';
-import hareOut from './sprites/day/hare/out.webp';
-import hareHead from './sprites/day/hare/head.webp';
-import catBase from './sprites/day/cat/base.webp';
-import catTalking from './sprites/day/cat/talking.webp';
-import catThinking from './sprites/day/cat/thinking.webp';
-import catOut from './sprites/day/cat/out.webp';
-import catHead from './sprites/day/cat/head.webp';
-import badgerBase from './sprites/day/badger/base.webp';
-import badgerTalking from './sprites/day/badger/talking.webp';
-import badgerThinking from './sprites/day/badger/thinking.webp';
-import badgerOut from './sprites/day/badger/out.webp';
-import badgerHead from './sprites/day/badger/head.webp';
-import cyclopsBase from './sprites/day/cyclops/base.webp';
-import cyclopsTalking from './sprites/day/cyclops/talking.webp';
-import cyclopsThinking from './sprites/day/cyclops/thinking.webp';
-import cyclopsOut from './sprites/day/cyclops/out.webp';
-import cyclopsHead from './sprites/day/cyclops/head.webp';
-import threeEyesBase from './sprites/day/threeEyes/base.webp';
-import threeEyesTalking from './sprites/day/threeEyes/talking.webp';
-import threeEyesThinking from './sprites/day/threeEyes/thinking.webp';
-import threeEyesOut from './sprites/day/threeEyes/out.webp';
-import threeEyesHead from './sprites/day/threeEyes/head.webp';
-import dragonBase from './sprites/day/dragon/base.webp';
-import dragonTalking from './sprites/day/dragon/talking.webp';
-import dragonThinking from './sprites/day/dragon/thinking.webp';
-import dragonOut from './sprites/day/dragon/out.webp';
-import dragonHead from './sprites/day/dragon/head.webp';
-import onionBase from './sprites/day/onion/base.webp';
-import onionTalking from './sprites/day/onion/talking.webp';
-import onionThinking from './sprites/day/onion/thinking.webp';
-import onionOut from './sprites/day/onion/out.webp';
-import onionHead from './sprites/day/onion/head.webp';
-import whaleBase from './sprites/day/whale/base.webp';
-import whaleTalking from './sprites/day/whale/talking.webp';
-import whaleThinking from './sprites/day/whale/thinking.webp';
-import whaleOut from './sprites/day/whale/out.webp';
-import whaleHead from './sprites/day/whale/head.webp';
-import polarBearBase from './sprites/day/polarBear/base.webp';
-import polarBearTalking from './sprites/day/polarBear/talking.webp';
-import polarBearThinking from './sprites/day/polarBear/thinking.webp';
-import polarBearOut from './sprites/day/polarBear/out.webp';
-import polarBearHead from './sprites/day/polarBear/head.webp';
-import shadeBase from './sprites/day/shade/base.webp';
-import shadeTalking from './sprites/day/shade/talking.webp';
-import shadeThinking from './sprites/day/shade/thinking.webp';
-import shadeOut from './sprites/day/shade/out.webp';
-import shadeHead from './sprites/day/shade/head.webp';
-import kitsuneBase from './sprites/day/kitsune/base.webp';
-import kitsuneTalking from './sprites/day/kitsune/talking.webp';
-import kitsuneThinking from './sprites/day/kitsune/thinking.webp';
-import kitsuneOut from './sprites/day/kitsune/out.webp';
-import kitsuneHead from './sprites/day/kitsune/head.webp';
-import mushroomBase from './sprites/day/mushroom/base.webp';
-import mushroomTalking from './sprites/day/mushroom/talking.webp';
-import mushroomThinking from './sprites/day/mushroom/thinking.webp';
-import mushroomOut from './sprites/day/mushroom/out.webp';
-import mushroomHead from './sprites/day/mushroom/head.webp';
-import lionCubBase from './sprites/day/lionCub/base.webp';
-import lionCubTalking from './sprites/day/lionCub/talking.webp';
-import lionCubThinking from './sprites/day/lionCub/thinking.webp';
-import lionCubOut from './sprites/day/lionCub/out.webp';
-import lionCubHead from './sprites/day/lionCub/head.webp';
-import automatonBase from './sprites/day/automaton/base.webp';
-import automatonTalking from './sprites/day/automaton/talking.webp';
-import automatonThinking from './sprites/day/automaton/thinking.webp';
-import automatonOut from './sprites/day/automaton/out.webp';
-import automatonHead from './sprites/day/automaton/head.webp';
+import owlBase from './sprites/characters/owl/base.webp';
+import owlTalking from './sprites/characters/owl/talking.webp';
+import owlThinking from './sprites/characters/owl/thinking.webp';
+import owlOut from './sprites/characters/owl/out.webp';
+import owlHead from './sprites/characters/owl/head.webp';
+import hareBase from './sprites/characters/hare/base.webp';
+import hareTalking from './sprites/characters/hare/talking.webp';
+import hareThinking from './sprites/characters/hare/thinking.webp';
+import hareOut from './sprites/characters/hare/out.webp';
+import hareHead from './sprites/characters/hare/head.webp';
+import catBase from './sprites/characters/cat/base.webp';
+import catTalking from './sprites/characters/cat/talking.webp';
+import catThinking from './sprites/characters/cat/thinking.webp';
+import catOut from './sprites/characters/cat/out.webp';
+import catHead from './sprites/characters/cat/head.webp';
+import badgerBase from './sprites/characters/badger/base.webp';
+import badgerTalking from './sprites/characters/badger/talking.webp';
+import badgerThinking from './sprites/characters/badger/thinking.webp';
+import badgerOut from './sprites/characters/badger/out.webp';
+import badgerHead from './sprites/characters/badger/head.webp';
+import cyclopsBase from './sprites/characters/cyclops/base.webp';
+import cyclopsTalking from './sprites/characters/cyclops/talking.webp';
+import cyclopsThinking from './sprites/characters/cyclops/thinking.webp';
+import cyclopsOut from './sprites/characters/cyclops/out.webp';
+import cyclopsHead from './sprites/characters/cyclops/head.webp';
+import threeEyesBase from './sprites/characters/threeEyes/base.webp';
+import threeEyesTalking from './sprites/characters/threeEyes/talking.webp';
+import threeEyesThinking from './sprites/characters/threeEyes/thinking.webp';
+import threeEyesOut from './sprites/characters/threeEyes/out.webp';
+import threeEyesHead from './sprites/characters/threeEyes/head.webp';
+import dragonBase from './sprites/characters/dragon/base.webp';
+import dragonTalking from './sprites/characters/dragon/talking.webp';
+import dragonThinking from './sprites/characters/dragon/thinking.webp';
+import dragonOut from './sprites/characters/dragon/out.webp';
+import dragonHead from './sprites/characters/dragon/head.webp';
+import onionBase from './sprites/characters/onion/base.webp';
+import onionTalking from './sprites/characters/onion/talking.webp';
+import onionThinking from './sprites/characters/onion/thinking.webp';
+import onionOut from './sprites/characters/onion/out.webp';
+import onionHead from './sprites/characters/onion/head.webp';
+import whaleBase from './sprites/characters/whale/base.webp';
+import whaleTalking from './sprites/characters/whale/talking.webp';
+import whaleThinking from './sprites/characters/whale/thinking.webp';
+import whaleOut from './sprites/characters/whale/out.webp';
+import whaleHead from './sprites/characters/whale/head.webp';
+import polarBearBase from './sprites/characters/polarBear/base.webp';
+import polarBearTalking from './sprites/characters/polarBear/talking.webp';
+import polarBearThinking from './sprites/characters/polarBear/thinking.webp';
+import polarBearOut from './sprites/characters/polarBear/out.webp';
+import polarBearHead from './sprites/characters/polarBear/head.webp';
+import shadeBase from './sprites/characters/shade/base.webp';
+import shadeTalking from './sprites/characters/shade/talking.webp';
+import shadeThinking from './sprites/characters/shade/thinking.webp';
+import shadeOut from './sprites/characters/shade/out.webp';
+import shadeHead from './sprites/characters/shade/head.webp';
+import kitsuneBase from './sprites/characters/kitsune/base.webp';
+import kitsuneTalking from './sprites/characters/kitsune/talking.webp';
+import kitsuneThinking from './sprites/characters/kitsune/thinking.webp';
+import kitsuneOut from './sprites/characters/kitsune/out.webp';
+import kitsuneHead from './sprites/characters/kitsune/head.webp';
+import mushroomBase from './sprites/characters/mushroom/base.webp';
+import mushroomTalking from './sprites/characters/mushroom/talking.webp';
+import mushroomThinking from './sprites/characters/mushroom/thinking.webp';
+import mushroomOut from './sprites/characters/mushroom/out.webp';
+import mushroomHead from './sprites/characters/mushroom/head.webp';
+import lionCubBase from './sprites/characters/lionCub/base.webp';
+import lionCubTalking from './sprites/characters/lionCub/talking.webp';
+import lionCubThinking from './sprites/characters/lionCub/thinking.webp';
+import lionCubOut from './sprites/characters/lionCub/out.webp';
+import lionCubHead from './sprites/characters/lionCub/head.webp';
+import automatonBase from './sprites/characters/automaton/base.webp';
+import automatonTalking from './sprites/characters/automaton/talking.webp';
+import automatonThinking from './sprites/characters/automaton/thinking.webp';
+import automatonOut from './sprites/characters/automaton/out.webp';
+import automatonHead from './sprites/characters/automaton/head.webp';
 import healerKit from './sprites/kits/healer.webp';
 import investigatorKit from './sprites/kits/investigator.webp';
 import vigilanteKit from './sprites/kits/vigilante.webp';
@@ -107,14 +91,12 @@ import villagerKit from './sprites/kits/villager.webp';
 import clockKit from './sprites/kits/clock.webp';
 import lampKit from './sprites/kits/lamp.webp';
 import walnut from './sprites/wood/walnut.webp';
-import stationSky from './sprites/station/sky.webp';
-import stationFloor from './sprites/station/floor.webp';
-import stationPost from './sprites/station/post.webp';
-import stationLampLit from './sprites/station/lamp-lit.webp';
+import stationPlatform from './sprites/station/platform.webp';
+import stationPlatformFront from './sprites/station/platform-front.webp';
 import stationTrain from './sprites/station/train.webp';
-import stationSky1x from './sprites/station/sky@1x.webp';
 import stationTrain1x from './sprites/station/train@1x.webp';
 import stationBlind from './sprites/station/blind.webp';
+import stationBeam from './sprites/station/beam.webp';
 import carriageRoof from './sprites/carriage/roof.webp';
 import carriageRail from './sprites/carriage/rail.webp';
 import carriageTeak from './sprites/carriage/teak.webp';
@@ -122,6 +104,8 @@ import carriageFrame from './sprites/carriage/frame.webp';
 import carriageBogie from './sprites/carriage/bogie.webp';
 import carriageSolebar from './sprites/carriage/solebar.webp';
 import carriageBellows from './sprites/carriage/bellows.webp';
+import carriageWhole from './sprites/carriage/whole.webp';
+import carriageWholePhone from './sprites/carriage/whole-phone.webp';
 import windowDayFar from './sprites/window/day-far.webp';
 import windowDayNear from './sprites/window/day-near.webp';
 import windowDuskFar from './sprites/window/dusk-far.webp';
@@ -131,6 +115,8 @@ import windowNightNear from './sprites/window/night-near.webp';
 import windowDawnFar from './sprites/window/dawn-far.webp';
 import windowDawnNear from './sprites/window/dawn-near.webp';
 import propJarGlass from './sprites/props/jar-glass.webp';
+import propChipHidden from './sprites/props/chip-hidden.webp';
+import propChipRing from './sprites/props/chip-ring.webp';
 import propJarLid from './sprites/props/jar-lid.webp';
 import propPlate from './sprites/props/plate.webp';
 import propShutter from './sprites/props/shutter.webp';
@@ -138,6 +124,8 @@ import propStand from './sprites/props/stand-front.webp';
 import propVoteTable from './sprites/props/vote-table.webp';
 import carDay from './sprites/car/day.webp';
 import carNight from './sprites/car/night.webp';
+import carDusk from './sprites/car/dusk.webp';
+import carDawn from './sprites/car/dawn.webp';
 import roomHealer from './sprites/rooms/healer.webp';
 import roomInvestigator from './sprites/rooms/investigator.webp';
 import roomVigilante from './sprites/rooms/vigilante.webp';
@@ -163,150 +151,160 @@ import roleIllusionist from './sprites/roles/illusionist.webp';
 import roleNecromancer from './sprites/roles/necromancer.webp';
 import roleSpeculator from './sprites/roles/speculator.webp';
 import roleFortuneTeller from './sprites/roles/fortune_teller.webp';
-import owlBaseShadow from './sprites/shadow/day/owl/base.webp';
-import owlTalkingShadow from './sprites/shadow/day/owl/talking.webp';
-import owlThinkingShadow from './sprites/shadow/day/owl/thinking.webp';
-import owlOutShadow from './sprites/shadow/day/owl/out.webp';
-import hareBaseShadow from './sprites/shadow/day/hare/base.webp';
-import hareTalkingShadow from './sprites/shadow/day/hare/talking.webp';
-import hareThinkingShadow from './sprites/shadow/day/hare/thinking.webp';
-import hareOutShadow from './sprites/shadow/day/hare/out.webp';
-import catBaseShadow from './sprites/shadow/day/cat/base.webp';
-import catTalkingShadow from './sprites/shadow/day/cat/talking.webp';
-import catThinkingShadow from './sprites/shadow/day/cat/thinking.webp';
-import catOutShadow from './sprites/shadow/day/cat/out.webp';
-import badgerBaseShadow from './sprites/shadow/day/badger/base.webp';
-import badgerTalkingShadow from './sprites/shadow/day/badger/talking.webp';
-import badgerThinkingShadow from './sprites/shadow/day/badger/thinking.webp';
-import badgerOutShadow from './sprites/shadow/day/badger/out.webp';
-import cyclopsBaseShadow from './sprites/shadow/day/cyclops/base.webp';
-import cyclopsTalkingShadow from './sprites/shadow/day/cyclops/talking.webp';
-import cyclopsThinkingShadow from './sprites/shadow/day/cyclops/thinking.webp';
-import cyclopsOutShadow from './sprites/shadow/day/cyclops/out.webp';
-import threeEyesBaseShadow from './sprites/shadow/day/threeEyes/base.webp';
-import threeEyesTalkingShadow from './sprites/shadow/day/threeEyes/talking.webp';
-import threeEyesThinkingShadow from './sprites/shadow/day/threeEyes/thinking.webp';
-import threeEyesOutShadow from './sprites/shadow/day/threeEyes/out.webp';
-import dragonBaseShadow from './sprites/shadow/day/dragon/base.webp';
-import dragonTalkingShadow from './sprites/shadow/day/dragon/talking.webp';
-import dragonThinkingShadow from './sprites/shadow/day/dragon/thinking.webp';
-import dragonOutShadow from './sprites/shadow/day/dragon/out.webp';
-import onionBaseShadow from './sprites/shadow/day/onion/base.webp';
-import onionTalkingShadow from './sprites/shadow/day/onion/talking.webp';
-import onionThinkingShadow from './sprites/shadow/day/onion/thinking.webp';
-import onionOutShadow from './sprites/shadow/day/onion/out.webp';
-import whaleBaseShadow from './sprites/shadow/day/whale/base.webp';
-import whaleTalkingShadow from './sprites/shadow/day/whale/talking.webp';
-import whaleThinkingShadow from './sprites/shadow/day/whale/thinking.webp';
-import whaleOutShadow from './sprites/shadow/day/whale/out.webp';
-import polarBearBaseShadow from './sprites/shadow/day/polarBear/base.webp';
-import polarBearTalkingShadow from './sprites/shadow/day/polarBear/talking.webp';
-import polarBearThinkingShadow from './sprites/shadow/day/polarBear/thinking.webp';
-import polarBearOutShadow from './sprites/shadow/day/polarBear/out.webp';
-import shadeBaseShadow from './sprites/shadow/day/shade/base.webp';
-import shadeTalkingShadow from './sprites/shadow/day/shade/talking.webp';
-import shadeThinkingShadow from './sprites/shadow/day/shade/thinking.webp';
-import shadeOutShadow from './sprites/shadow/day/shade/out.webp';
-import kitsuneBaseShadow from './sprites/shadow/day/kitsune/base.webp';
-import kitsuneTalkingShadow from './sprites/shadow/day/kitsune/talking.webp';
-import kitsuneThinkingShadow from './sprites/shadow/day/kitsune/thinking.webp';
-import kitsuneOutShadow from './sprites/shadow/day/kitsune/out.webp';
-import mushroomBaseShadow from './sprites/shadow/day/mushroom/base.webp';
-import mushroomTalkingShadow from './sprites/shadow/day/mushroom/talking.webp';
-import mushroomThinkingShadow from './sprites/shadow/day/mushroom/thinking.webp';
-import mushroomOutShadow from './sprites/shadow/day/mushroom/out.webp';
-import lionCubBaseShadow from './sprites/shadow/day/lionCub/base.webp';
-import lionCubTalkingShadow from './sprites/shadow/day/lionCub/talking.webp';
-import lionCubThinkingShadow from './sprites/shadow/day/lionCub/thinking.webp';
-import lionCubOutShadow from './sprites/shadow/day/lionCub/out.webp';
-import automatonBaseShadow from './sprites/shadow/day/automaton/base.webp';
-import automatonTalkingShadow from './sprites/shadow/day/automaton/talking.webp';
-import automatonThinkingShadow from './sprites/shadow/day/automaton/thinking.webp';
-import automatonOutShadow from './sprites/shadow/day/automaton/out.webp';
+import owlBaseShadow from './sprites/shadow/characters/owl/base.webp';
+import owlTalkingShadow from './sprites/shadow/characters/owl/talking.webp';
+import owlThinkingShadow from './sprites/shadow/characters/owl/thinking.webp';
+import owlOutShadow from './sprites/shadow/characters/owl/out.webp';
+import hareBaseShadow from './sprites/shadow/characters/hare/base.webp';
+import hareTalkingShadow from './sprites/shadow/characters/hare/talking.webp';
+import hareThinkingShadow from './sprites/shadow/characters/hare/thinking.webp';
+import hareOutShadow from './sprites/shadow/characters/hare/out.webp';
+import catBaseShadow from './sprites/shadow/characters/cat/base.webp';
+import catTalkingShadow from './sprites/shadow/characters/cat/talking.webp';
+import catThinkingShadow from './sprites/shadow/characters/cat/thinking.webp';
+import catOutShadow from './sprites/shadow/characters/cat/out.webp';
+import badgerBaseShadow from './sprites/shadow/characters/badger/base.webp';
+import badgerTalkingShadow from './sprites/shadow/characters/badger/talking.webp';
+import badgerThinkingShadow from './sprites/shadow/characters/badger/thinking.webp';
+import badgerOutShadow from './sprites/shadow/characters/badger/out.webp';
+import cyclopsBaseShadow from './sprites/shadow/characters/cyclops/base.webp';
+import cyclopsTalkingShadow from './sprites/shadow/characters/cyclops/talking.webp';
+import cyclopsThinkingShadow from './sprites/shadow/characters/cyclops/thinking.webp';
+import cyclopsOutShadow from './sprites/shadow/characters/cyclops/out.webp';
+import threeEyesBaseShadow from './sprites/shadow/characters/threeEyes/base.webp';
+import threeEyesTalkingShadow from './sprites/shadow/characters/threeEyes/talking.webp';
+import threeEyesThinkingShadow from './sprites/shadow/characters/threeEyes/thinking.webp';
+import threeEyesOutShadow from './sprites/shadow/characters/threeEyes/out.webp';
+import dragonBaseShadow from './sprites/shadow/characters/dragon/base.webp';
+import dragonTalkingShadow from './sprites/shadow/characters/dragon/talking.webp';
+import dragonThinkingShadow from './sprites/shadow/characters/dragon/thinking.webp';
+import dragonOutShadow from './sprites/shadow/characters/dragon/out.webp';
+import onionBaseShadow from './sprites/shadow/characters/onion/base.webp';
+import onionTalkingShadow from './sprites/shadow/characters/onion/talking.webp';
+import onionThinkingShadow from './sprites/shadow/characters/onion/thinking.webp';
+import onionOutShadow from './sprites/shadow/characters/onion/out.webp';
+import whaleBaseShadow from './sprites/shadow/characters/whale/base.webp';
+import whaleTalkingShadow from './sprites/shadow/characters/whale/talking.webp';
+import whaleThinkingShadow from './sprites/shadow/characters/whale/thinking.webp';
+import whaleOutShadow from './sprites/shadow/characters/whale/out.webp';
+import polarBearBaseShadow from './sprites/shadow/characters/polarBear/base.webp';
+import polarBearTalkingShadow from './sprites/shadow/characters/polarBear/talking.webp';
+import polarBearThinkingShadow from './sprites/shadow/characters/polarBear/thinking.webp';
+import polarBearOutShadow from './sprites/shadow/characters/polarBear/out.webp';
+import shadeBaseShadow from './sprites/shadow/characters/shade/base.webp';
+import shadeTalkingShadow from './sprites/shadow/characters/shade/talking.webp';
+import shadeThinkingShadow from './sprites/shadow/characters/shade/thinking.webp';
+import shadeOutShadow from './sprites/shadow/characters/shade/out.webp';
+import kitsuneBaseShadow from './sprites/shadow/characters/kitsune/base.webp';
+import kitsuneTalkingShadow from './sprites/shadow/characters/kitsune/talking.webp';
+import kitsuneThinkingShadow from './sprites/shadow/characters/kitsune/thinking.webp';
+import kitsuneOutShadow from './sprites/shadow/characters/kitsune/out.webp';
+import mushroomBaseShadow from './sprites/shadow/characters/mushroom/base.webp';
+import mushroomTalkingShadow from './sprites/shadow/characters/mushroom/talking.webp';
+import mushroomThinkingShadow from './sprites/shadow/characters/mushroom/thinking.webp';
+import mushroomOutShadow from './sprites/shadow/characters/mushroom/out.webp';
+import lionCubBaseShadow from './sprites/shadow/characters/lionCub/base.webp';
+import lionCubTalkingShadow from './sprites/shadow/characters/lionCub/talking.webp';
+import lionCubThinkingShadow from './sprites/shadow/characters/lionCub/thinking.webp';
+import lionCubOutShadow from './sprites/shadow/characters/lionCub/out.webp';
+import automatonBaseShadow from './sprites/shadow/characters/automaton/base.webp';
+import automatonTalkingShadow from './sprites/shadow/characters/automaton/talking.webp';
+import automatonThinkingShadow from './sprites/shadow/characters/automaton/thinking.webp';
+import automatonOutShadow from './sprites/shadow/characters/automaton/out.webp';
 import grain from './sprites/atmosphere/grain.webp';
 import textureWalnut from './sprites/textures/walnut.webp';
 import textureBoards from './sprites/textures/boards.webp';
-import textureVelvet from './sprites/textures/velvet.webp';
 import textureCork from './sprites/textures/cork.webp';
 import textureInk from './sprites/textures/ink.webp';
-import owlBaseSmall from './sprites/day/owl/base@small.webp';
-import owlTalkingSmall from './sprites/day/owl/talking@small.webp';
-import owlThinkingSmall from './sprites/day/owl/thinking@small.webp';
-import owlOutSmall from './sprites/day/owl/out@small.webp';
-import hareBaseSmall from './sprites/day/hare/base@small.webp';
-import hareTalkingSmall from './sprites/day/hare/talking@small.webp';
-import hareThinkingSmall from './sprites/day/hare/thinking@small.webp';
-import hareOutSmall from './sprites/day/hare/out@small.webp';
-import catBaseSmall from './sprites/day/cat/base@small.webp';
-import catTalkingSmall from './sprites/day/cat/talking@small.webp';
-import catThinkingSmall from './sprites/day/cat/thinking@small.webp';
-import catOutSmall from './sprites/day/cat/out@small.webp';
-import badgerBaseSmall from './sprites/day/badger/base@small.webp';
-import badgerTalkingSmall from './sprites/day/badger/talking@small.webp';
-import badgerThinkingSmall from './sprites/day/badger/thinking@small.webp';
-import badgerOutSmall from './sprites/day/badger/out@small.webp';
-import cyclopsBaseSmall from './sprites/day/cyclops/base@small.webp';
-import cyclopsTalkingSmall from './sprites/day/cyclops/talking@small.webp';
-import cyclopsThinkingSmall from './sprites/day/cyclops/thinking@small.webp';
-import cyclopsOutSmall from './sprites/day/cyclops/out@small.webp';
-import threeEyesBaseSmall from './sprites/day/threeEyes/base@small.webp';
-import threeEyesTalkingSmall from './sprites/day/threeEyes/talking@small.webp';
-import threeEyesThinkingSmall from './sprites/day/threeEyes/thinking@small.webp';
-import threeEyesOutSmall from './sprites/day/threeEyes/out@small.webp';
-import dragonBaseSmall from './sprites/day/dragon/base@small.webp';
-import dragonTalkingSmall from './sprites/day/dragon/talking@small.webp';
-import dragonThinkingSmall from './sprites/day/dragon/thinking@small.webp';
-import dragonOutSmall from './sprites/day/dragon/out@small.webp';
-import onionBaseSmall from './sprites/day/onion/base@small.webp';
-import onionTalkingSmall from './sprites/day/onion/talking@small.webp';
-import onionThinkingSmall from './sprites/day/onion/thinking@small.webp';
-import onionOutSmall from './sprites/day/onion/out@small.webp';
-import whaleBaseSmall from './sprites/day/whale/base@small.webp';
-import whaleTalkingSmall from './sprites/day/whale/talking@small.webp';
-import whaleThinkingSmall from './sprites/day/whale/thinking@small.webp';
-import whaleOutSmall from './sprites/day/whale/out@small.webp';
-import polarBearBaseSmall from './sprites/day/polarBear/base@small.webp';
-import polarBearTalkingSmall from './sprites/day/polarBear/talking@small.webp';
-import polarBearThinkingSmall from './sprites/day/polarBear/thinking@small.webp';
-import polarBearOutSmall from './sprites/day/polarBear/out@small.webp';
-import shadeBaseSmall from './sprites/day/shade/base@small.webp';
-import shadeTalkingSmall from './sprites/day/shade/talking@small.webp';
-import shadeThinkingSmall from './sprites/day/shade/thinking@small.webp';
-import shadeOutSmall from './sprites/day/shade/out@small.webp';
-import kitsuneBaseSmall from './sprites/day/kitsune/base@small.webp';
-import kitsuneTalkingSmall from './sprites/day/kitsune/talking@small.webp';
-import kitsuneThinkingSmall from './sprites/day/kitsune/thinking@small.webp';
-import kitsuneOutSmall from './sprites/day/kitsune/out@small.webp';
-import mushroomBaseSmall from './sprites/day/mushroom/base@small.webp';
-import mushroomTalkingSmall from './sprites/day/mushroom/talking@small.webp';
-import mushroomThinkingSmall from './sprites/day/mushroom/thinking@small.webp';
-import mushroomOutSmall from './sprites/day/mushroom/out@small.webp';
-import lionCubBaseSmall from './sprites/day/lionCub/base@small.webp';
-import lionCubTalkingSmall from './sprites/day/lionCub/talking@small.webp';
-import lionCubThinkingSmall from './sprites/day/lionCub/thinking@small.webp';
-import lionCubOutSmall from './sprites/day/lionCub/out@small.webp';
-import automatonBaseSmall from './sprites/day/automaton/base@small.webp';
-import automatonTalkingSmall from './sprites/day/automaton/talking@small.webp';
-import automatonThinkingSmall from './sprites/day/automaton/thinking@small.webp';
-import automatonOutSmall from './sprites/day/automaton/out@small.webp';
-import owlHeadSmall from './sprites/day/owl/head@small.webp';
-import hareHeadSmall from './sprites/day/hare/head@small.webp';
-import catHeadSmall from './sprites/day/cat/head@small.webp';
-import badgerHeadSmall from './sprites/day/badger/head@small.webp';
-import cyclopsHeadSmall from './sprites/day/cyclops/head@small.webp';
-import threeEyesHeadSmall from './sprites/day/threeEyes/head@small.webp';
-import dragonHeadSmall from './sprites/day/dragon/head@small.webp';
-import onionHeadSmall from './sprites/day/onion/head@small.webp';
-import whaleHeadSmall from './sprites/day/whale/head@small.webp';
-import polarBearHeadSmall from './sprites/day/polarBear/head@small.webp';
-import shadeHeadSmall from './sprites/day/shade/head@small.webp';
-import kitsuneHeadSmall from './sprites/day/kitsune/head@small.webp';
-import mushroomHeadSmall from './sprites/day/mushroom/head@small.webp';
-import lionCubHeadSmall from './sprites/day/lionCub/head@small.webp';
-import automatonHeadSmall from './sprites/day/automaton/head@small.webp';
+import railFrame from './sprites/rail/frame.webp';
+import railPaper from './sprites/rail/paper.webp';
+import railShadow from './sprites/rail/shadow.webp';
+import railPlate from './sprites/rail/plate.webp';
+import hudFrame from './sprites/hud/frame.webp';
+import hudBronzeDark from './sprites/hud/bronze-dark.webp';
+import hudBronzeLight from './sprites/hud/bronze-light.webp';
+import hudPaper from './sprites/hud/paper.webp';
+import owlBaseSmall from './sprites/characters/owl/base@small.webp';
+import owlTalkingSmall from './sprites/characters/owl/talking@small.webp';
+import owlThinkingSmall from './sprites/characters/owl/thinking@small.webp';
+import owlOutSmall from './sprites/characters/owl/out@small.webp';
+import hareBaseSmall from './sprites/characters/hare/base@small.webp';
+import hareTalkingSmall from './sprites/characters/hare/talking@small.webp';
+import hareThinkingSmall from './sprites/characters/hare/thinking@small.webp';
+import hareOutSmall from './sprites/characters/hare/out@small.webp';
+import catBaseSmall from './sprites/characters/cat/base@small.webp';
+import catTalkingSmall from './sprites/characters/cat/talking@small.webp';
+import catThinkingSmall from './sprites/characters/cat/thinking@small.webp';
+import catOutSmall from './sprites/characters/cat/out@small.webp';
+import badgerBaseSmall from './sprites/characters/badger/base@small.webp';
+import badgerTalkingSmall from './sprites/characters/badger/talking@small.webp';
+import badgerThinkingSmall from './sprites/characters/badger/thinking@small.webp';
+import badgerOutSmall from './sprites/characters/badger/out@small.webp';
+import cyclopsBaseSmall from './sprites/characters/cyclops/base@small.webp';
+import cyclopsTalkingSmall from './sprites/characters/cyclops/talking@small.webp';
+import cyclopsThinkingSmall from './sprites/characters/cyclops/thinking@small.webp';
+import cyclopsOutSmall from './sprites/characters/cyclops/out@small.webp';
+import threeEyesBaseSmall from './sprites/characters/threeEyes/base@small.webp';
+import threeEyesTalkingSmall from './sprites/characters/threeEyes/talking@small.webp';
+import threeEyesThinkingSmall from './sprites/characters/threeEyes/thinking@small.webp';
+import threeEyesOutSmall from './sprites/characters/threeEyes/out@small.webp';
+import dragonBaseSmall from './sprites/characters/dragon/base@small.webp';
+import dragonTalkingSmall from './sprites/characters/dragon/talking@small.webp';
+import dragonThinkingSmall from './sprites/characters/dragon/thinking@small.webp';
+import dragonOutSmall from './sprites/characters/dragon/out@small.webp';
+import onionBaseSmall from './sprites/characters/onion/base@small.webp';
+import onionTalkingSmall from './sprites/characters/onion/talking@small.webp';
+import onionThinkingSmall from './sprites/characters/onion/thinking@small.webp';
+import onionOutSmall from './sprites/characters/onion/out@small.webp';
+import whaleBaseSmall from './sprites/characters/whale/base@small.webp';
+import whaleTalkingSmall from './sprites/characters/whale/talking@small.webp';
+import whaleThinkingSmall from './sprites/characters/whale/thinking@small.webp';
+import whaleOutSmall from './sprites/characters/whale/out@small.webp';
+import polarBearBaseSmall from './sprites/characters/polarBear/base@small.webp';
+import polarBearTalkingSmall from './sprites/characters/polarBear/talking@small.webp';
+import polarBearThinkingSmall from './sprites/characters/polarBear/thinking@small.webp';
+import polarBearOutSmall from './sprites/characters/polarBear/out@small.webp';
+import shadeBaseSmall from './sprites/characters/shade/base@small.webp';
+import shadeTalkingSmall from './sprites/characters/shade/talking@small.webp';
+import shadeThinkingSmall from './sprites/characters/shade/thinking@small.webp';
+import shadeOutSmall from './sprites/characters/shade/out@small.webp';
+import kitsuneBaseSmall from './sprites/characters/kitsune/base@small.webp';
+import kitsuneTalkingSmall from './sprites/characters/kitsune/talking@small.webp';
+import kitsuneThinkingSmall from './sprites/characters/kitsune/thinking@small.webp';
+import kitsuneOutSmall from './sprites/characters/kitsune/out@small.webp';
+import mushroomBaseSmall from './sprites/characters/mushroom/base@small.webp';
+import mushroomTalkingSmall from './sprites/characters/mushroom/talking@small.webp';
+import mushroomThinkingSmall from './sprites/characters/mushroom/thinking@small.webp';
+import mushroomOutSmall from './sprites/characters/mushroom/out@small.webp';
+import lionCubBaseSmall from './sprites/characters/lionCub/base@small.webp';
+import lionCubTalkingSmall from './sprites/characters/lionCub/talking@small.webp';
+import lionCubThinkingSmall from './sprites/characters/lionCub/thinking@small.webp';
+import lionCubOutSmall from './sprites/characters/lionCub/out@small.webp';
+import automatonBaseSmall from './sprites/characters/automaton/base@small.webp';
+import automatonTalkingSmall from './sprites/characters/automaton/talking@small.webp';
+import automatonThinkingSmall from './sprites/characters/automaton/thinking@small.webp';
+import automatonOutSmall from './sprites/characters/automaton/out@small.webp';
+import owlHeadSmall from './sprites/characters/owl/head@small.webp';
+import hareHeadSmall from './sprites/characters/hare/head@small.webp';
+import catHeadSmall from './sprites/characters/cat/head@small.webp';
+import badgerHeadSmall from './sprites/characters/badger/head@small.webp';
+import cyclopsHeadSmall from './sprites/characters/cyclops/head@small.webp';
+import threeEyesHeadSmall from './sprites/characters/threeEyes/head@small.webp';
+import dragonHeadSmall from './sprites/characters/dragon/head@small.webp';
+import onionHeadSmall from './sprites/characters/onion/head@small.webp';
+import whaleHeadSmall from './sprites/characters/whale/head@small.webp';
+import polarBearHeadSmall from './sprites/characters/polarBear/head@small.webp';
+import shadeHeadSmall from './sprites/characters/shade/head@small.webp';
+import kitsuneHeadSmall from './sprites/characters/kitsune/head@small.webp';
+import mushroomHeadSmall from './sprites/characters/mushroom/head@small.webp';
+import lionCubHeadSmall from './sprites/characters/lionCub/head@small.webp';
+import automatonHeadSmall from './sprites/characters/automaton/head@small.webp';
 import propJarGlassSmall from './sprites/props/jar-glass@small.webp';
+import propChipHiddenSmall from './sprites/props/chip-hidden@small.webp';
+import propChipRingSmall from './sprites/props/chip-ring@small.webp';
 import propJarLidSmall from './sprites/props/jar-lid@small.webp';
 import propPlateSmall from './sprites/props/plate@small.webp';
+import propStandSmall from './sprites/props/stand-front@small.webp';
 import roleVillagerTile from './sprites/roles/villager@small.webp';
 import roleWolfTile from './sprites/roles/wolf@small.webp';
 import roleInvestigatorTile from './sprites/roles/investigator@small.webp';
@@ -323,41 +321,6 @@ import roleSpeculatorTile from './sprites/roles/speculator@small.webp';
 import roleFortuneTellerTile from './sprites/roles/fortune_teller@small.webp';
 import windowNightFarSmall from './sprites/window/night-far@small.webp';
 import windowNightNearSmall from './sprites/window/night-near@small.webp';
-
-export const PORTRAITS: StaticImageData[] = [
-  p01,
-  p02,
-  p03,
-  p04,
-  p05,
-  p06,
-  p07,
-  p08,
-  p09,
-  p10,
-  p11,
-  p12,
-];
-
-/** Deterministic per-seat pick, so a seat wears the same face in every view and every session. */
-export function hashSeat(seat: string): number {
-  let hash = 0;
-  for (let i = 0; i < seat.length; i += 1) {
-    hash = (hash << 5) - hash + seat.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-export function portraitFor(seat: string): StaticImageData | null {
-  if (PORTRAITS.length === 0) return null;
-  return PORTRAITS[hashSeat(seat) % PORTRAITS.length];
-}
-
-/** The initials fallback's hue — same hash, so face and fallback are the same identity. */
-export function hueFor(seat: string): number {
-  return hashSeat(seat) % 360;
-}
 
 export function initialsFor(seat: string): string {
   const parts = seat.split(/[_\s-]+/).filter(Boolean);
@@ -406,18 +369,31 @@ export type KitName =
   | 'lamp';
 
 /**
- * The waiting room's pictures (the platform, the train, its lamps), extracted once from the
- * waiting-room mockup (scripts/extract-station-sprites.mjs; no masters exist in the bundle).
+ * The waiting room's pictures: the platform is the owner's one picture, whole and with its arches
+ * clear for the front (2026-10-19, scripts/fit_platform.py); the train and `beam` (the ledge's
+ * walnut) are the owner's since 2026-10-17 (scripts/fit_felt_station.py); the blind is from the
+ * waiting-room mockup (scripts/extract-station-sprites.mjs).
  */
-export type StationPicture = 'sky' | 'floor' | 'post' | 'lamp' | 'train' | 'blind';
+export type StationPicture = 'platform' | 'platformFront' | 'train' | 'blind' | 'beam';
 
 /**
  * The landing carriage's pieces, cut from the waiting room's train (scripts/cut-carriage.mjs),
  * each at the painting's own pixels and shown at half size: the roof's bay, the brass rail, a
- * seamless teak tile, the window's brass rim (a 9-slice), a bogie, the solebar and the bellows.
+ * seamless teak tile, the window's brass rim (a 9-slice), a bogie, the solebar and the bellows;
+ * and `whole`, the whole carriage in one picture drawn round the window (a wooden toy, owner
+ * 2026-10-18; scripts/fit_felt_props.py `carriage_frame`), with `wholePhone`, its phone-shaped
+ * twin (thin posts, the window near the screen's width).
  */
 export type CarriagePicture =
-  'roof' | 'rail' | 'teak' | 'frame' | 'bogie' | 'solebar' | 'bellows';
+  | 'roof'
+  | 'rail'
+  | 'teak'
+  | 'frame'
+  | 'bogie'
+  | 'solebar'
+  | 'bellows'
+  | 'whole'
+  | 'wholePhone';
 
 /**
  * The country behind the dining car's window (FeltWindow): per hour, the far sky and hills, and
@@ -432,14 +408,21 @@ export type WindowPicture = 'far' | 'near';
  * perspective, ry = 0.3 rx) and the window's three-leaf shutter. Recipe: stage_architecture §4.
  */
 export type PropPicture =
-  'jarGlass' | 'jarLid' | 'stand' | 'voteTable' | 'plate' | 'shutter';
+  | 'jarGlass'
+  | 'jarLid'
+  | 'stand'
+  | 'voteTable'
+  | 'plate'
+  | 'shutter'
+  | 'chipHidden'
+  | 'chipRing';
 
 /**
- * The dining car (opaque but for the window's glass): its walls, window frame, lamps and floor,
- * painted once by day and relit for the night, both fitted to the stage. Recipe:
+ * The dining car at each hour (opaque, the country painted in its glass): its walls, window,
+ * lamps and floor, the owner's one room relit four times, fitted to the stage. Recipe:
  * stage_architecture §4 "The dining car".
  */
-export type CarPicture = 'day' | 'night';
+export type CarPicture = 'day' | 'dusk' | 'night' | 'dawn';
 
 /**
  * The night rooms (opaque but for the window's glass): the acting seat's sleeping compartment by
@@ -485,12 +468,20 @@ export type RoleSprite =
  */
 
 /**
- * The room's surfaces (seamless tiles, opaque): the walls' walnut veneer, the floor's boards and
- * the replay valance's velvet, each tinted to the flat colour it fills. Recipe: stage_architecture §4.
+ * The room's surfaces (seamless tiles, opaque): the walls' walnut veneer, the floor's boards,
+ * each tinted to the flat colour it fills. Recipe: stage_architecture §4.
  * Also the case file's stamp ink (`ink`, scripts/make-stamp-ink.mjs): a white tile whose alpha is
  * the ink's coverage, a mask for the stamps.
  */
-export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
+export type TexturePicture = 'walnut' | 'boards' | 'cork' | 'ink';
+/** The seat rail's pictures (scripts/fit_rail.py): its frame and lettered plate, the cards' paper and shadow. */
+export type RailPicture = 'frame' | 'plate' | 'paper' | 'shadow';
+/**
+ * The HUD's kit (scripts/fit_hud_kit.py, owner 2026-10-19): the riveted bronze frame round a panel
+ * (a 9-slice, 50 px corners), the dark bronze a panel is (and the rail's and the transcript's
+ * ground), the light bronze a button is, and the cream paper of the act, the chosen and the written.
+ */
+export type HudPicture = 'frame' | 'bronzeDark' | 'bronzeLight' | 'paper';
 
 /**
  * The phone's copies (scripts/small-sprites.mjs, each beside its source) of the pictures a small
@@ -500,7 +491,10 @@ export type TexturePicture = 'walnut' | 'boards' | 'velvet' | 'cork' | 'ink';
  */
 export interface SmallSprites {
   day: Record<Character, Record<DayState | 'head', StaticImageData>>;
-  props: Record<'jarGlass' | 'jarLid' | 'plate', StaticImageData>;
+  props: Record<
+    'jarGlass' | 'jarLid' | 'plate' | 'stand' | 'chipHidden' | 'chipRing',
+    StaticImageData
+  >;
   roleTiles: Record<RoleSprite, StaticImageData>;
   window: { night: Record<WindowPicture, StaticImageData> };
 }
@@ -510,8 +504,8 @@ export const SPRITES: {
   kits: Record<KitName, StaticImageData>;
   wood: StaticImageData;
   station: Record<StationPicture, StaticImageData>;
-  /** The train and the country at one pixel per unit; `station`'s are about 1.5 (scenes/station-pictures.ts). */
-  stationAt1x: Record<'sky' | 'train', StaticImageData>;
+  /** The train at one pixel per unit; `station`'s is about 1.5 (scenes/station-pictures.ts). */
+  stationAt1x: Record<'train', StaticImageData>;
   carriage: Record<CarriagePicture, StaticImageData>;
   window: Record<WindowHour, Record<WindowPicture, StaticImageData>>;
   props: Record<PropPicture, StaticImageData>;
@@ -523,6 +517,8 @@ export const SPRITES: {
   };
   grain: StaticImageData;
   textures: Record<TexturePicture, StaticImageData>;
+  rail: Record<RailPicture, StaticImageData>;
+  hud: Record<HudPicture, StaticImageData>;
   small: SmallSprites;
 } = {
   day: {
@@ -644,14 +640,13 @@ export const SPRITES: {
   },
   wood: walnut,
   station: {
-    sky: stationSky,
-    floor: stationFloor,
-    post: stationPost,
-    lamp: stationLampLit,
+    platform: stationPlatform,
+    platformFront: stationPlatformFront,
     train: stationTrain,
     blind: stationBlind,
+    beam: stationBeam,
   },
-  stationAt1x: { sky: stationSky1x, train: stationTrain1x },
+  stationAt1x: { train: stationTrain1x },
   carriage: {
     roof: carriageRoof,
     rail: carriageRail,
@@ -660,6 +655,8 @@ export const SPRITES: {
     bogie: carriageBogie,
     solebar: carriageSolebar,
     bellows: carriageBellows,
+    whole: carriageWhole,
+    wholePhone: carriageWholePhone,
   },
   window: {
     day: { far: windowDayFar, near: windowDayNear },
@@ -674,8 +671,10 @@ export const SPRITES: {
     voteTable: propVoteTable,
     plate: propPlate,
     shutter: propShutter,
+    chipHidden: propChipHidden,
+    chipRing: propChipRing,
   },
-  car: { day: carDay, night: carNight },
+  car: { day: carDay, dusk: carDusk, night: carNight, dawn: carDawn },
   rooms: {
     healer: roomHealer,
     investigator: roomInvestigator,
@@ -803,9 +802,20 @@ export const SPRITES: {
   textures: {
     walnut: textureWalnut,
     boards: textureBoards,
-    velvet: textureVelvet,
     cork: textureCork,
     ink: textureInk,
+  },
+  rail: {
+    frame: railFrame,
+    plate: railPlate,
+    paper: railPaper,
+    shadow: railShadow,
+  },
+  hud: {
+    frame: hudFrame,
+    bronzeDark: hudBronzeDark,
+    bronzeLight: hudBronzeLight,
+    paper: hudPaper,
   },
   small: {
     day: {
@@ -915,7 +925,14 @@ export const SPRITES: {
         head: automatonHeadSmall,
       },
     },
-    props: { jarGlass: propJarGlassSmall, jarLid: propJarLidSmall, plate: propPlateSmall },
+    props: {
+      jarGlass: propJarGlassSmall,
+      jarLid: propJarLidSmall,
+      plate: propPlateSmall,
+      stand: propStandSmall,
+      chipHidden: propChipHiddenSmall,
+      chipRing: propChipRingSmall,
+    },
     roleTiles: {
       villager: roleVillagerTile,
       wolf: roleWolfTile,

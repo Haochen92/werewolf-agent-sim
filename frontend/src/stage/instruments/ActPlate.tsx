@@ -1,7 +1,8 @@
 /**
  * The brass plate at the foot of the night room: it names the act ("Protect seat 1", "Check
  * seat 4", "Shoot seat 2", "Kill seat 5") once a photo is chosen, and pressing it confirms.
- * Before a choice it asks ("Choose a seat to protect") and cannot be pressed. A request that
+ * Before a choice it asks ("Choose a seat to protect") and cannot be pressed; without a `label`
+ * (the speculator's, whose sides hang on the line) it has no act until one is chosen. A request that
  * lists a no-action word has a second button in its words ("Hold fire", "Keep your checks",
  * "Stay put"), because not acting is an act too. A live turn ends the row with the hand-over,
  * in the same dress: "Let my agent choose".
@@ -22,11 +23,12 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useTimeLeft } from '@/hooks/useCountdown';
 import { countLeft, countText, URGENT_MS, type TurnClock } from '../countdown';
+import { KitIcon } from './KitIcon';
 import styles from './NightRoom.module.css';
 
 export interface ActPlateProps {
-  /** What the plate says: the act and its seat, or the ask before a choice. */
-  label: string;
+  /** What the plate says: the act and its seat, or the ask before a choice; null = no act yet. */
+  label: string | null;
   onConfirm?: () => void;
   /** Nothing chosen yet, or already sent. */
   disabled?: boolean;
@@ -52,6 +54,11 @@ export interface ActPlateProps {
   sealed?: { label: string; colour: string } | null;
   /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
   hidden?: boolean;
+  /**
+   * A row to choose from over the plate (`ChoicePlates`), hung from the plate's top so a plate
+   * wrapped onto two rows (a phone beside the open transcript) lifts it rather than covers it.
+   */
+  over?: ReactNode;
 }
 
 export function ActPlate({
@@ -69,6 +76,7 @@ export function ActPlate({
   error,
   sealed,
   hidden = false,
+  over,
 }: ActPlateProps) {
   const place = inline ? styles.inline : left == null ? '' : styles.left;
   const x = left ?? centre;
@@ -100,8 +108,9 @@ export function ActPlate({
     <div
       className={place ? `${styles.plate} ${place}` : styles.plate}
       style={style}
-      data-plate={label}
+      data-plate={label ?? undefined}
     >
+      {over}
       {error ? (
         <p className={`${styles.note} ${styles.noteError}`} role="alert">
           {error}
@@ -110,16 +119,25 @@ export function ActPlate({
         <p className={styles.note}>{note}</p>
       ) : null}
       {clock ? <PlateCount clock={clock} /> : null}
-      <button type="button" className={styles.pri} disabled={disabled} onClick={onConfirm}>
-        {label}
-      </button>
+      {label !== null ? (
+        <button
+          type="button"
+          className={styles.pri}
+          disabled={disabled}
+          onClick={onConfirm}
+        >
+          {label}
+        </button>
+      ) : null}
       {secondary ? (
         <button type="button" disabled={secondary.disabled} onClick={secondary.onClick}>
+          <KitIcon name="pass" />
           {secondary.label}
         </button>
       ) : null}
       {agent ? (
         <button type="button" disabled={agent.disabled} onClick={agent.onClick}>
+          <KitIcon name="agent" />
           {agent.label}
         </button>
       ) : null}
@@ -137,39 +155,28 @@ export interface PlateChoice {
 }
 
 /**
- * A row of plates to choose from, over the plate (ten-seat pass §2): the speculator's sides,
- * the fortune teller's roles (as sigils, `sigils`). Tapping one lights it, tapping it again
- * puts it out; the gold plate under it still commits. A small sibling of the plate, in its
- * style, placed over it at the same x.
+ * A row of plates to choose from, over the plate (ten-seat pass §2): the fortune teller's roles
+ * (as sigils, `sigils`). Tapping one lights it, tapping it again puts it out; the gold plate
+ * under it still commits. A small sibling of the plate, in its style, handed to the plate as
+ * its `over` and hung from its top edge.
  */
 export function ChoicePlates({
   choices,
   onToggle,
   caption,
-  centre,
   sigils,
   disabled,
-  hidden = false,
 }: {
   choices: readonly PlateChoice[];
   onToggle: (id: string) => void;
   /** A quiet line over the row ("name a role for two points"). */
   caption?: string;
-  /** Centred on this x in units (the plate's). */
-  centre?: number;
   /** The labels are pictures: square plates. */
   sigils?: boolean;
   disabled?: boolean;
-  /** Not drawn, and still mounted (`Presentation.footHidden`: the "You're back" notice stands here). */
-  hidden?: boolean;
 }) {
   return (
-    <div
-      className={styles.choices}
-      style={{ left: centre, visibility: hidden ? 'hidden' : undefined }}
-      role="group"
-      aria-label={caption}
-    >
+    <div className={styles.choices} role="group" aria-label={caption}>
       {caption ? <p className={styles.choicesCaption}>{caption}</p> : null}
       <div className={styles.choicesRow}>
         {choices.map((c) => (

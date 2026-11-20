@@ -1,0 +1,36 @@
+langgraph 1.1.10
+--- root parallel step: kill while P2 runs
+  runs before kill: {'A': 1, 'P1': 1, 'P2': 1}
+  runs after restart: {'P2': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1, 'Q1': 1, 'Z': 1}
+  chunks tagged cached on restart: [((), ['P1', '__metadata__'])]
+  final log: ['A', 'P1', 'P2', 'WRAP:SEQ1,SEQ2,Q1', 'Z']
+--- nested subgraph, parallel step: kill while Q2 runs
+  runs before kill: {'A': 1, 'P1': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1, 'Q1': 1, 'Q2': 1}
+  runs after restart: {'WRAP': 1, 'Q1': 1, 'Q2': 1, 'Z': 1}
+  chunks tagged cached on restart: []
+  final log: ['A', 'P1', 'WRAP:SEQ1,SEQ2,Q1,Q2', 'Z']
+--- nested subgraph, sequential step: kill while SEQ2 runs
+  runs before kill: {'A': 1, 'P1': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1}
+  runs after restart: {'WRAP': 1, 'SEQ2': 1, 'Q1': 1, 'Z': 1}
+  chunks tagged cached on restart: []
+  final log: ['A', 'P1', 'WRAP:SEQ1,SEQ2,Q1', 'Z']
+--- root parallel step with a human: interrupt then resume (same process)
+  runs to the interrupt: {'A': 1, 'P1': 1, 'H': 1}
+  runs on resume: {'H': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1, 'Q1': 1, 'Z': 1}
+  chunks tagged cached on resume: [((), ['P1', '__metadata__'])]
+  final log: ['A', 'P1', 'H=yes', 'WRAP:SEQ1,SEQ2,Q1', 'Z']
+--- nested subgraph parallel step with a human: interrupt then resume (same process)
+  runs to the interrupt: {'A': 1, 'P1': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1, 'Q1': 1, 'H': 1}
+  runs on resume: {'WRAP': 1, 'Q1': 1, 'H': 1, 'Z': 1}
+  chunks tagged cached on resume: []
+  final log: ['A', 'P1', 'WRAP:SEQ1,SEQ2,Q1,H=yes', 'Z']
+--- CACHED nested Q1, with a human: interrupt then resume (same process)
+  runs to the interrupt: {'A': 1, 'P1': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1, 'Q1': 1, 'H': 1}
+  runs on resume: {'WRAP': 1, 'H': 1, 'Z': 1}
+  chunks tagged cached on resume: [(('WRAP:4e003daa-0473-882d-c5aa-575c93a45c75',), ['Q1', '__metadata__'])]
+  final log: ['A', 'P1', 'WRAP:SEQ1,SEQ2,Q1,H=yes', 'Z']
+--- CACHED nested Q1, kill (fresh cache in the new process): kill while Q2 runs
+  runs before kill: {'A': 1, 'P1': 1, 'WRAP': 1, 'SEQ1': 1, 'SEQ2': 1, 'Q1': 1, 'Q2': 1}
+  runs after restart: {'WRAP': 1, 'Q1': 1, 'Q2': 1, 'Z': 1}
+  chunks tagged cached on restart: []
+  final log: ['A', 'P1', 'WRAP:SEQ1,SEQ2,Q1,Q2', 'Z']

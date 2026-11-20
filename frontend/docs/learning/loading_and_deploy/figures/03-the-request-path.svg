@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 624" width="980" height="624" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="624" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">The path a response travels: browser, Cloudflare, Caddy, then a server</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Every hop can hold, keep or change a response. Headers set at one hop speak to the hops after it.</text>
+<rect x="24" y="90" width="180" height="92" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="38" y="116" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Browser</text>
+<text x="38" y="142" font-size="13" fill="#374151" text-anchor="start">its own cache</text>
+<text x="38" y="162" font-size="13" fill="#374151" text-anchor="start">the page&#x27;s code</text>
+<rect x="234" y="90" width="180" height="92" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="248" y="116" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Cloudflare edge</text>
+<text x="248" y="142" font-size="13" fill="#374151" text-anchor="start">one location near</text>
+<text x="248" y="162" font-size="13" fill="#374151" text-anchor="start">the visitor (cf-ray SIN)</text>
+<rect x="444" y="90" width="170" height="92" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="458" y="116" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Caddy</text>
+<text x="458" y="142" font-size="13" fill="#374151" text-anchor="start">on the server</text>
+<text x="458" y="162" font-size="13" fill="#374151" text-anchor="start">routes by path</text>
+<path d="M206,136 L232,136" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M416,136 L442,136" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<rect x="660" y="84" width="296" height="50" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="674" y="106" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">Next server</text>
+<text x="674" y="125" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">pages, /_next/static, /_next/image</text>
+<rect x="660" y="142" width="296" height="50" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="674" y="164" font-size="14" font-weight="bold" fill="#111827" text-anchor="start">game server (FastAPI)</text>
+<text x="674" y="183" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">/api/* (Caddy strips /api)</text>
+<path d="M616,126 L658,110" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M616,146 L658,166" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="24" y="226" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">What each kind of response meets on the way</text>
+<rect x="24" y="244" width="932" height="44" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="40" y="271" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#111827" text-anchor="start">/_next/static/... (named by content)</text>
+<text x="370" y="271" font-size="13.5" fill="#1f2937" text-anchor="start">kept per location after its first request: MISS, then HIT with an age header</text>
+<rect x="24" y="298" width="932" height="44" rx="6" fill="#e5e7eb" stroke="#6b7280" stroke-width="1.2"/>
+<text x="40" y="325" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#111827" text-anchor="start">pages, /api, /_next/image</text>
+<text x="370" y="325" font-size="13.5" fill="#1f2937" text-anchor="start">never kept at the edge: cf-cache-status DYNAMIC</text>
+<rect x="24" y="352" width="932" height="44" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="40" y="379" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#111827" text-anchor="start">/api JSON (the replay)</text>
+<text x="370" y="379" font-size="13.5" fill="#1f2937" text-anchor="start">compressed since 2026-10-15: 20.9 KB on the wire, not 142 KB</text>
+<rect x="24" y="406" width="932" height="44" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="40" y="433" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#111827" text-anchor="start">/api/games/{id}/events (the stream)</text>
+<text x="370" y="433" font-size="13.5" fill="#1f2937" text-anchor="start">Cache-Control: no-cache, no-transform, on this route only</text>
+<rect x="24" y="470" width="932" height="136" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="498" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">The header and its block (lesson 31; story in build_log 1.4)</text>
+<text x="44" y="524" font-size="14.5" fill="#1f2937" text-anchor="start">2026-08-21: through Cloudflare the stream sent not even its headers within 25 s; through Caddy alone, 20 ms.</text>
+<text x="44" y="547" font-size="14.5" fill="#1f2937" text-anchor="start">no-transform (&quot;deliver this exactly as sent&quot;) on the whole /api block made it flow,</text>
+<text x="44" y="570" font-size="14.5" fill="#1f2937" text-anchor="start">and also stopped every JSON response in that block from being compressed.</text>
+<text x="44" y="593" font-size="14.5" fill="#1f2937" text-anchor="start">2026-10-15: the header moved to the stream&#x27;s route; why Cloudflare held the stream is not proven.</text>
+</svg>

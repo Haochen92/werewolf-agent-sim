@@ -119,6 +119,14 @@ class GameRow(SQLModel, table=True):
     """The tokens the game spent and its model calls' time, per model and UTC hour
     (server/game/usage.py). Saved as the game runs; the replay's cost is worked out from it.
     Null for games recorded before the column existed."""
+    runs: list | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    """One entry per run of the game's task, oldest first; a game resumed after a restart has
+    several. Each holds ``trace_id``, ``started_at``, ``recovered`` and ``fingerprint`` (the code
+    version, prompt hash and models that ran it). Null for games before the column existed."""
+    turn_outcomes: dict | None = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    """The turns not decided by the game's own model (Agents/llm_factory/outcomes.py): counts
+    and the turns themselves for rescues and engine defaults, and ``cached_steps``, the engine
+    steps replayed from the turn cache. Saved as the game runs."""
     extraction_input: dict | None = Field(
         default=None,
         sa_column=Column(JSONB, nullable=True),
@@ -146,3 +154,9 @@ class EventRow(SQLModel, table=True):
     ))
     seq: int = Field(primary_key=True)
     payload: dict = Field(sa_column=Column(JSONB, nullable=False))
+    saved_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(TIMESTAMP(timezone=True), nullable=True, server_default=func.now()),
+    )
+    """When the row was written, which is at most one engine step after the event was sent.
+    Null for events saved before the column existed."""

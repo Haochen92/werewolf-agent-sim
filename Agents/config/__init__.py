@@ -21,6 +21,7 @@ from Agents.config.langgraph import (
     child_runnable_config,
     discussion_recursion_limit,
     game_config_from_runnable,
+    game_id_from_runnable,
 )
 from Agents.config.run import (
     DEFAULT_FILTERING_CONFIG,
@@ -49,6 +50,7 @@ __all__ = [
     "build_runnable_config",
     "child_runnable_config",
     "game_config_from_runnable",
+    "game_id_from_runnable",
     "discussion_recursion_limit",
     "DEFAULT_RECURSION_LIMIT",
 ]

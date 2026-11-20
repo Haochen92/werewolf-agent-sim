@@ -100,7 +100,7 @@ export function SpeechBox({
         } as CSSProperties
       }
     >
-      {/* data-speech: the replay holds the beat while a pointer rests on the line */}
+      {/* data-speech: the board, which the stand's plate sits against (Stand.tsx) */}
       <motion.div
         data-speech
         data-page={pages.length > 1 ? `${at + 1}/${pages.length}` : undefined}

@@ -12,10 +12,13 @@ embedder that built it, so a process on another embedder refuses vectors that me
 from __future__ import annotations
 
 import logging
+import threading
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from typing import Any
 
-from langgraph.store.base import BaseStore, PutOp
+from langchain_core.embeddings import Embeddings
+from langgraph.store.base import BaseStore, Op, PutOp, Result, SearchOp
 from langgraph.store.postgres import PostgresStore
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
@@ -46,7 +49,60 @@ def index_config() -> dict[str, Any]:
     return {"dims": DEFAULT_EMBEDDING_DIMS, "embed": embeddings, "fields": ["situation"]}
 
 
-def open_store(dsn: str, *, min_size: int = 1, max_size: int = 4) -> tuple[PostgresStore, ConnectionPool]:
+class LessonStore(PostgresStore):
+    """The lesson store, with a search's query embedded before the store's lock is taken.
+
+    The library embeds the query inside ``batch``, while it holds the store's lock and a
+    connection (``PostgresStore._cursor``). The embedding is a network call of about a second,
+    so the seats of one game, which look lessons up in the same step, searched one after
+    another. Here the embedding is fetched first, with nothing held, and handed to the
+    library's own embedding step when it asks for the same texts. A search then holds the
+    lock only for the database query.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self._fetched = threading.local()  # the vectors this thread fetched for its batch
+        if self.embeddings is not None:
+            self.embeddings = _FetchedFirst(self.embeddings, self._fetched)
+
+    def batch(self, ops: Iterable[Op]) -> list[Result]:
+        ops = list(ops)
+        queries = [op.query for op in ops if isinstance(op, SearchOp) and op.query]
+        if not queries or self.embeddings is None:
+            return super().batch(ops)
+        self._fetched.texts = queries
+        self._fetched.vectors = self.embeddings.inner.embed_documents(queries)
+        try:
+            return super().batch(ops)
+        finally:
+            self._fetched.texts = self._fetched.vectors = None
+
+
+class _FetchedFirst(Embeddings):
+    """The store's embedder: returns the vectors ``LessonStore.batch`` fetched for exactly
+    these texts, and asks the real embedder for anything else (a write, or a batch whose
+    texts the library ordered differently)."""
+
+    def __init__(self, inner: Embeddings, fetched: threading.local) -> None:
+        self.inner, self._fetched = inner, fetched
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        if getattr(self._fetched, "texts", None) == list(texts):
+            return self._fetched.vectors
+        return self.inner.embed_documents(texts)
+
+    def embed_query(self, text: str) -> list[float]:
+        return self.inner.embed_query(text)
+
+    async def aembed_documents(self, texts: list[str]) -> list[list[float]]:
+        return await self.inner.aembed_documents(texts)
+
+    async def aembed_query(self, text: str) -> list[float]:
+        return await self.inner.aembed_query(text)
+
+
+def open_store(dsn: str, *, min_size: int = 1, max_size: int = 4) -> tuple[LessonStore, ConnectionPool]:
     """Open the store on a connection pool (graph nodes are sync and run on worker threads, so
     the pool is what lets several seats search at once) and create its tables if missing. The
     caller closes the pool."""
@@ -54,7 +110,7 @@ def open_store(dsn: str, *, min_size: int = 1, max_size: int = 4) -> tuple[Postg
         dsn, open=True, min_size=min_size, max_size=max_size,
         kwargs={"autocommit": True, "prepare_threshold": 0, "row_factory": dict_row},
     )
-    store = PostgresStore(pool, index=index_config())  # type: ignore[arg-type]
+    store = LessonStore(pool, index=index_config())  # type: ignore[arg-type]
     store.setup()
     return store, pool
 

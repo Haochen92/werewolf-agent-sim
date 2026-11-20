@@ -95,7 +95,19 @@ $PY scripts/run_batch.py --configs all_enabled \
 - ⏭ **Deferred:** wolf-night-discussion eval adapter; `round` schema/wolf-night-round removal at the
   v5 cut.
 
+> *Note 2026-10-26.* Both deferrals are overtaken. Every turn of the pack's night (the chat, the
+> carrier's kill, each wolf's skill) now goes through `run_memory_informed_night_action` and writes a
+> turn case; a `kind` field on the night action (since 2026-10-11) tells them apart. A chat case does
+> not hold the chat line it produced. `round` was kept: it numbers the pack's chat rounds and marks
+> the kill and skill turns, and it is 0 on every day turn. No record dates when the pack's turns first
+> wrote cases. A sidecar written five days after this entry (`sidecar_smoke_001`, 2026-06-11, 148
+> cases) already holds nine wolf night cases, each with the wolf's chosen target; whether wolf turns
+> gained cases in those five days, or the gap meant the talk rather than the turn, is not recorded.
+> Today's account: [`../report.md`](../report.md).
+
 Artifacts: `evidence/tracing/smoke_*.log`, `batch_results/nighteval_*.jsonl`.
+
+> *Note 2026-10-26.* The smoke logs are now in this folder (`implementation_notes/smoke_*.log`).
 
 ---
 
@@ -116,6 +128,11 @@ reranker/agent-dialogue fine-tuning; `ExtractionCase` (`postgame_extraction_*`) 
 `DedupCase` (`dedup_*`) → dedup judge + dedup-classifier FT. So sufficiency = *is the case a consumer
 needs actually emitted, and does it carry every field?*
 
+> *Note 2026-10-26.* "Langfuse-as-truth" was superseded on 2026-06-11: each case is also written to a
+> local per-game file, which the builders read first, and Langfuse became the secondary archive
+> ([`ISSUE_frozen_set_fetch.md`](ISSUE_frozen_set_fetch.md)). Served games are the exception today:
+> their cases exist only in Langfuse ([`../report.md`](../report.md)).
+
 ## Gaps found (consumer → missing emission)
 
 | # | Gap | Consumer | Class | Verdict |
@@ -128,6 +145,10 @@ needs actually emitted, and does it carry every field?*
 
 Well-covered (no change): day discuss/vote cases, single-target night actions (just shipped),
 extraction, per-extraction dedup, agent-dialogue distillation context (reconstructable from `EvalCase`).
+
+> *Note 2026-10-26.* Gap #1: see the note under Phase A #3 above. Gap #5 landed: each batch record now
+> carries the computed metrics and the per-day and per-night resolutions (`scripts/run_batch.py`), and
+> the 2026-06-27 report counted it closed.
 
 ## Implementation (#2–#4, pure plumbing, freeze-safe — no agent-facing prompt change)
 
@@ -170,3 +191,8 @@ re-embed (the JSON path's embedding storm). Queried the live trace:
 Durable evidence: Langfuse session `tracing_audit_smoke2_all_enabled` (the trace is the source of
 truth; the numbers above were queried from it). The local smoke `.jsonl`/`.log` were transient
 verification scratch and were not retained.
+
+> *Note 2026-10-26.* That session no longer exists: on 2026-07-21 the Langfuse trace data (the object
+> store and ClickHouse volumes) was deleted to free the host's disk. The numbers above survive only
+> in this entry. The day-summary builder named in #3 now lives in
+> `evaluation/src/data/converters/day_summary.py` and `evaluation/src/data/frozen_sets.py`.

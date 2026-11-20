@@ -1,5 +1,9 @@
 # v5 Store Seeding + A/B Validation — Plan (2026-06-10)
 
+> **Status (2026-10-26):** historical plan, written 2026-06-10. The seeding it describes built `v5_0` (20
+> memory-off games, frozen); the A/B it planned ran on 2026-06-11 and is reported in [`report.md`](report.md).
+> Served games today start with memory off and retrieve strategy points only.
+
 Forward plan for building the v5 memory store and running the "does memory work" A/B
 on the rebuilt foundation (sequential discussion, 9-player / 3-faction casting, per-role
 extraction). Extends `report.md` (the prior 8-player concurrent-system result); the
@@ -257,6 +261,6 @@ validate + freeze before labelling.
    yields a per-game cost + cache-saving estimate.
 3. **30-game seeding batch** → `v5.0` store + memory-off baseline.
 4. (Phase B) labelling on v5 — reranker NDCG cases (~40) + panel-validation human judgments
-   (~96); see `retrieval/context_eval/`.
+   (~96); see `evaluation/labeling/context_eval/`.
 5. (Phase C) paired A/B sized from the seeding baseline; headline win-rate, power on dense
    proxies.

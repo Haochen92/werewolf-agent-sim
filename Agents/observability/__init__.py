@@ -1,8 +1,8 @@
 """Observability plumbing shared by the game runtime and the eval read side.
 
-Pure modules only — importing this package must NOT initialize the Langfuse
-client (that side effect lives in ``Agents.tracing``), so evaluation code can
-import span names and the case sink without touching tracing globals.
+Pure modules only — importing this package must NOT build the Langfuse client
+(``Agents.tracing`` builds it, by a call), so evaluation code can import span
+names and the case sink without touching tracing globals.
 """
 
 from Agents.observability.case_sink import EvalCaseSink, freeze_case

@@ -1,0 +1,179 @@
+{
+  "scored_at": "2026-10-26T10:45:17.088961",
+  "dataset_path": "evaluation/eval_results/dedup_haiku_2026_10_26/dedup_v2_replay_haiku_low_json_mode.jsonl",
+  "golden_path": "evaluation/frozen_eval_sets/dedup_v2_golden_labels.json",
+  "scheme": "current",
+  "total": 65,
+  "strict_correct": 52,
+  "lenient_correct": 52,
+  "strict_accuracy": 0.8,
+  "lenient_accuracy": 0.8,
+  "per_type_accuracy": {
+    "observation": {
+      "total": 40,
+      "strict_correct": 31,
+      "lenient_correct": 31
+    },
+    "strategy_point": {
+      "total": 25,
+      "strict_correct": 21,
+      "lenient_correct": 21
+    }
+  },
+  "per_label": {
+    "D": {
+      "precision": 0.8148,
+      "recall": 0.7333,
+      "f1": 0.7719,
+      "support": 30
+    },
+    "M": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "K": {
+      "precision": 0.7838,
+      "recall": 0.8529,
+      "f1": 0.8169,
+      "support": 34
+    }
+  },
+  "confusion_matrix": {
+    "D": {
+      "D": 22,
+      "M": 0,
+      "K": 8
+    },
+    "M": {
+      "D": 0,
+      "M": 0,
+      "K": 0
+    },
+    "K": {
+      "D": 5,
+      "M": 0,
+      "K": 29
+    }
+  },
+  "mismatches": [
+    {
+      "case_index": 1,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Same lesson as C2 and C3: persist protecting same target. 2 vs 3 saves is degree, not kind. All three fields express the same idea."
+    },
+    {
+      "case_index": 2,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": null
+    },
+    {
+      "case_index": 4,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": null
+    },
+    {
+      "case_index": 9,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Same as C2: own the mistake, pivot to analysis."
+    },
+    {
+      "case_index": 20,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "[was M, relabeled K for v11 no-merge] Same credibility-destroyed Investigator pattern as C5."
+    },
+    {
+      "case_index": 21,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Late bussing detection \u2014 distinct heuristic from C2's partner-protection detection. LLM mislabeled as merge."
+    },
+    {
+      "case_index": 30,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Same as C1: use wolf targeting as credibility evidence."
+    },
+    {
+      "case_index": 31,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "C2 already mentions deadlock scenario. Same reveal-under-pressure advice."
+    },
+    {
+      "case_index": 33,
+      "item_type": "strategy_point",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Covers both emotional framing and evidence. Discard with rewrite of C1."
+    },
+    {
+      "case_index": 50,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "[was M, relabeled K for v11 no-merge] Same situation/outcome as C2 (investigate vocal player early game, confirm villager). One-off vs persistent (two-night systematic) crosses qualitative threshold \u2014 tactic variant worth merging."
+    },
+    {
+      "case_index": 51,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Different evidence quality in situation: confirmed-wolf-anchor (voted with eliminated wolf) vs suspicious-pattern (dissenting vote). Different retrieval profile."
+    },
+    {
+      "case_index": 54,
+      "item_type": "observation",
+      "golden_label": "K",
+      "predicted_label": "D",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Different detection method from C1: indirect deduction (cleared villager + process of elimination) vs direct investigation result."
+    },
+    {
+      "case_index": 63,
+      "item_type": "observation",
+      "golden_label": "D",
+      "predicted_label": "K",
+      "also_acceptable": null,
+      "lenient_correct": false,
+      "notes": "Same approach/outcome as C1 (use voting record to find wolf). Different trigger (wolf eliminated vs Investigator posthumous) but high retrieval overlap."
+    }
+  ]
+}

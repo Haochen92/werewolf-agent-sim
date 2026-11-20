@@ -1,0 +1,15 @@
+{
+  "label": "shared_prefix_luna_2026_10_13",
+  "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "slices": ["pinned", "control", "f02_rule", "sentinel_rule"],
+  "arms": [
+    {"label": "luna_today", "model": "openai/gpt-6-luna", "env": {}, "memory": "none"},
+    {"label": "luna_shared_enforced", "model": "openai/gpt-6-luna",
+     "env": {"WW_PROMPT_LAYOUT": "shared_prefix"}, "memory": "none"},
+    {"label": "luna_shared_unenforced", "model": "openai/gpt-6-luna",
+     "env": {"WW_PROMPT_LAYOUT": "shared_prefix", "LLM_STRUCTURED_MODE": "json_mode"}, "memory": "none"}
+  ],
+  "note": "Does the shared-prefix prompt layout, and an unenforced schema on top of it, change how often GPT-6 Luna misstates the game? All 18 ten-seat Phase 3 discussion turns (pinned, control, f02_rule and sentinel_rule slices, each with a written golden), 5 samples per arm, reads-first schemas. Arm 1 is today's layout with the enforced schema (json_schema, the catalogue mode); arm 2 changes only the layout; arm 3 also removes enforcement. Judges are the defaults, Claude Haiku 5.5 (the golden judge as a Message Batch), so these numbers compare within this run only, not with the earlier Gemini-judged bench runs. evidence/caching/experiment_log.md §12-13."
+}

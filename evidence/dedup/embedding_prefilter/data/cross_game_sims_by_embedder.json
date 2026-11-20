@@ -1,0 +1,1947 @@
+{
+ "what": "max prefilter similarity per cross-game dedup case, on the May embedder (cached) and the current one (recomputed); labels from the gemini-3.5-flash labeler",
+ "cases": "evaluation/frozen_eval_sets/auto_dedup_v1_cross_game.jsonl",
+ "labels": "evidence/dedup/embedding_prefilter/data/cross_game_golden_labels.json",
+ "signal": {
+  "observation": "cosine of situation+approach+outcome, max over candidates",
+  "strategy_point": "cosine of the action, max over candidates"
+ },
+ "embedders": {
+  "old": {
+   "model": "gemini-embedding-001",
+   "dims": 1536,
+   "source": "evidence/dedup/embedding_prefilter/data/cross_game_embedding_cache.json",
+   "thresholds": {
+    "observation": {
+     "keep": 0.935,
+     "discard": 0.96
+    },
+    "strategy_point": {
+     "keep": 0.81,
+     "discard": 0.93
+    }
+   }
+  },
+  "new": {
+   "model": "qwen/qwen3-embedding-8b",
+   "dims": 1536,
+   "thresholds": {
+    "observation": {
+     "keep": 0.72,
+     "discard": 0.94
+    },
+    "strategy_point": {
+     "keep": 0.61,
+     "discard": 0.88
+    }
+   }
+  }
+ },
+ "annotated_case": 155,
+ "generated_at": "2026-10-14T03:40:13+00:00",
+ "git_commit": "9f556721",
+ "points": [
+  {
+   "case_index": 0,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9601,
+   "sim_new": 0.8535,
+   "candidates": 5
+  },
+  {
+   "case_index": 1,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9359,
+   "sim_new": 0.8963,
+   "candidates": 5
+  },
+  {
+   "case_index": 2,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9616,
+   "sim_new": 0.9108,
+   "candidates": 5
+  },
+  {
+   "case_index": 3,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9452,
+   "sim_new": 0.8603,
+   "candidates": 5
+  },
+  {
+   "case_index": 4,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9457,
+   "sim_new": 0.885,
+   "candidates": 5
+  },
+  {
+   "case_index": 5,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9436,
+   "sim_new": 0.9027,
+   "candidates": 5
+  },
+  {
+   "case_index": 6,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9783,
+   "sim_new": 0.9195,
+   "candidates": 5
+  },
+  {
+   "case_index": 7,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.951,
+   "sim_new": 0.8704,
+   "candidates": 5
+  },
+  {
+   "case_index": 8,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9505,
+   "sim_new": 0.8678,
+   "candidates": 5
+  },
+  {
+   "case_index": 9,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.941,
+   "sim_new": 0.8326,
+   "candidates": 5
+  },
+  {
+   "case_index": 10,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9457,
+   "sim_new": 0.9252,
+   "candidates": 5
+  },
+  {
+   "case_index": 11,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.969,
+   "sim_new": 0.9165,
+   "candidates": 5
+  },
+  {
+   "case_index": 12,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8731,
+   "sim_new": 0.8401,
+   "candidates": 5
+  },
+  {
+   "case_index": 13,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8656,
+   "sim_new": 0.8117,
+   "candidates": 5
+  },
+  {
+   "case_index": 14,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8987,
+   "sim_new": 0.8621,
+   "candidates": 5
+  },
+  {
+   "case_index": 15,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8607,
+   "sim_new": 0.792,
+   "candidates": 5
+  },
+  {
+   "case_index": 16,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9023,
+   "sim_new": 0.8457,
+   "candidates": 5
+  },
+  {
+   "case_index": 17,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8949,
+   "sim_new": 0.8406,
+   "candidates": 5
+  },
+  {
+   "case_index": 18,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9073,
+   "sim_new": 0.7809,
+   "candidates": 5
+  },
+  {
+   "case_index": 19,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9609,
+   "sim_new": 0.913,
+   "candidates": 5
+  },
+  {
+   "case_index": 20,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8672,
+   "sim_new": 0.7367,
+   "candidates": 5
+  },
+  {
+   "case_index": 21,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8948,
+   "sim_new": 0.8073,
+   "candidates": 5
+  },
+  {
+   "case_index": 22,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9283,
+   "sim_new": 0.8612,
+   "candidates": 5
+  },
+  {
+   "case_index": 23,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9236,
+   "sim_new": 0.8927,
+   "candidates": 5
+  },
+  {
+   "case_index": 24,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9623,
+   "sim_new": 0.8816,
+   "candidates": 5
+  },
+  {
+   "case_index": 25,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9503,
+   "sim_new": 0.8616,
+   "candidates": 5
+  },
+  {
+   "case_index": 26,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9504,
+   "sim_new": 0.8686,
+   "candidates": 5
+  },
+  {
+   "case_index": 27,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9595,
+   "sim_new": 0.9051,
+   "candidates": 5
+  },
+  {
+   "case_index": 28,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.944,
+   "sim_new": 0.9036,
+   "candidates": 4
+  },
+  {
+   "case_index": 29,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9638,
+   "sim_new": 0.9017,
+   "candidates": 5
+  },
+  {
+   "case_index": 30,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9554,
+   "sim_new": 0.8348,
+   "candidates": 5
+  },
+  {
+   "case_index": 31,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9595,
+   "sim_new": 0.9025,
+   "candidates": 5
+  },
+  {
+   "case_index": 32,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9401,
+   "sim_new": 0.8132,
+   "candidates": 5
+  },
+  {
+   "case_index": 33,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9524,
+   "sim_new": 0.8857,
+   "candidates": 5
+  },
+  {
+   "case_index": 34,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9327,
+   "sim_new": 0.8693,
+   "candidates": 5
+  },
+  {
+   "case_index": 35,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.885,
+   "sim_new": 0.8057,
+   "candidates": 5
+  },
+  {
+   "case_index": 36,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8772,
+   "sim_new": 0.8036,
+   "candidates": 5
+  },
+  {
+   "case_index": 37,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9217,
+   "sim_new": 0.8049,
+   "candidates": 5
+  },
+  {
+   "case_index": 38,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8907,
+   "sim_new": 0.8626,
+   "candidates": 5
+  },
+  {
+   "case_index": 39,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9351,
+   "sim_new": 0.8777,
+   "candidates": 5
+  },
+  {
+   "case_index": 40,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9037,
+   "sim_new": 0.825,
+   "candidates": 5
+  },
+  {
+   "case_index": 41,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9481,
+   "sim_new": 0.9154,
+   "candidates": 5
+  },
+  {
+   "case_index": 42,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8564,
+   "sim_new": 0.7699,
+   "candidates": 5
+  },
+  {
+   "case_index": 43,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9093,
+   "sim_new": 0.8328,
+   "candidates": 5
+  },
+  {
+   "case_index": 44,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9018,
+   "sim_new": 0.8875,
+   "candidates": 5
+  },
+  {
+   "case_index": 45,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8952,
+   "sim_new": 0.8412,
+   "candidates": 5
+  },
+  {
+   "case_index": 46,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9546,
+   "sim_new": 0.8876,
+   "candidates": 5
+  },
+  {
+   "case_index": 47,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.937,
+   "sim_new": 0.8702,
+   "candidates": 5
+  },
+  {
+   "case_index": 48,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9642,
+   "sim_new": 0.9085,
+   "candidates": 5
+  },
+  {
+   "case_index": 49,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9546,
+   "sim_new": 0.8999,
+   "candidates": 5
+  },
+  {
+   "case_index": 50,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9523,
+   "sim_new": 0.8855,
+   "candidates": 4
+  },
+  {
+   "case_index": 51,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9451,
+   "sim_new": 0.8657,
+   "candidates": 5
+  },
+  {
+   "case_index": 52,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.953,
+   "sim_new": 0.8882,
+   "candidates": 5
+  },
+  {
+   "case_index": 53,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9714,
+   "sim_new": 0.9011,
+   "candidates": 5
+  },
+  {
+   "case_index": 54,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8861,
+   "sim_new": 0.8442,
+   "candidates": 5
+  },
+  {
+   "case_index": 55,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9263,
+   "sim_new": 0.8963,
+   "candidates": 5
+  },
+  {
+   "case_index": 56,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8965,
+   "sim_new": 0.8164,
+   "candidates": 5
+  },
+  {
+   "case_index": 57,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9293,
+   "sim_new": 0.8395,
+   "candidates": 5
+  },
+  {
+   "case_index": 58,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.942,
+   "sim_new": 0.8782,
+   "candidates": 5
+  },
+  {
+   "case_index": 59,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.908,
+   "sim_new": 0.8588,
+   "candidates": 5
+  },
+  {
+   "case_index": 60,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.839,
+   "sim_new": 0.747,
+   "candidates": 5
+  },
+  {
+   "case_index": 61,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9466,
+   "sim_new": 0.8491,
+   "candidates": 5
+  },
+  {
+   "case_index": 62,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9221,
+   "sim_new": 0.8709,
+   "candidates": 5
+  },
+  {
+   "case_index": 63,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9442,
+   "sim_new": 0.9041,
+   "candidates": 5
+  },
+  {
+   "case_index": 64,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9503,
+   "sim_new": 0.9132,
+   "candidates": 5
+  },
+  {
+   "case_index": 65,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9432,
+   "sim_new": 0.9183,
+   "candidates": 5
+  },
+  {
+   "case_index": 66,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9212,
+   "sim_new": 0.8702,
+   "candidates": 5
+  },
+  {
+   "case_index": 67,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9639,
+   "sim_new": 0.9334,
+   "candidates": 5
+  },
+  {
+   "case_index": 68,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9595,
+   "sim_new": 0.8957,
+   "candidates": 5
+  },
+  {
+   "case_index": 69,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9456,
+   "sim_new": 0.8693,
+   "candidates": 5
+  },
+  {
+   "case_index": 70,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9279,
+   "sim_new": 0.8427,
+   "candidates": 5
+  },
+  {
+   "case_index": 71,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9707,
+   "sim_new": 0.9162,
+   "candidates": 5
+  },
+  {
+   "case_index": 72,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9391,
+   "sim_new": 0.8564,
+   "candidates": 5
+  },
+  {
+   "case_index": 73,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9368,
+   "sim_new": 0.8713,
+   "candidates": 5
+  },
+  {
+   "case_index": 74,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9559,
+   "sim_new": 0.8939,
+   "candidates": 5
+  },
+  {
+   "case_index": 75,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.91,
+   "sim_new": 0.857,
+   "candidates": 5
+  },
+  {
+   "case_index": 76,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9084,
+   "sim_new": 0.7536,
+   "candidates": 5
+  },
+  {
+   "case_index": 77,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.904,
+   "sim_new": 0.8542,
+   "candidates": 5
+  },
+  {
+   "case_index": 78,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9008,
+   "sim_new": 0.8234,
+   "candidates": 5
+  },
+  {
+   "case_index": 79,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8564,
+   "sim_new": 0.8286,
+   "candidates": 5
+  },
+  {
+   "case_index": 80,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9034,
+   "sim_new": 0.8636,
+   "candidates": 5
+  },
+  {
+   "case_index": 81,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8945,
+   "sim_new": 0.8281,
+   "candidates": 5
+  },
+  {
+   "case_index": 82,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9222,
+   "sim_new": 0.8433,
+   "candidates": 5
+  },
+  {
+   "case_index": 83,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8413,
+   "sim_new": 0.7592,
+   "candidates": 5
+  },
+  {
+   "case_index": 84,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9011,
+   "sim_new": 0.8463,
+   "candidates": 5
+  },
+  {
+   "case_index": 85,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9213,
+   "sim_new": 0.8854,
+   "candidates": 5
+  },
+  {
+   "case_index": 86,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9279,
+   "sim_new": 0.8232,
+   "candidates": 5
+  },
+  {
+   "case_index": 87,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.898,
+   "sim_new": 0.8175,
+   "candidates": 5
+  },
+  {
+   "case_index": 88,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9529,
+   "sim_new": 0.8766,
+   "candidates": 5
+  },
+  {
+   "case_index": 89,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9561,
+   "sim_new": 0.888,
+   "candidates": 5
+  },
+  {
+   "case_index": 90,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9509,
+   "sim_new": 0.9126,
+   "candidates": 5
+  },
+  {
+   "case_index": 91,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.8954,
+   "sim_new": 0.8311,
+   "candidates": 5
+  },
+  {
+   "case_index": 92,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9286,
+   "sim_new": 0.8528,
+   "candidates": 5
+  },
+  {
+   "case_index": 93,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9358,
+   "sim_new": 0.8483,
+   "candidates": 5
+  },
+  {
+   "case_index": 94,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9441,
+   "sim_new": 0.882,
+   "candidates": 5
+  },
+  {
+   "case_index": 95,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9505,
+   "sim_new": 0.8737,
+   "candidates": 5
+  },
+  {
+   "case_index": 96,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9472,
+   "sim_new": 0.9082,
+   "candidates": 5
+  },
+  {
+   "case_index": 97,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8813,
+   "sim_new": 0.8612,
+   "candidates": 5
+  },
+  {
+   "case_index": 98,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9128,
+   "sim_new": 0.8901,
+   "candidates": 5
+  },
+  {
+   "case_index": 99,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9238,
+   "sim_new": 0.8234,
+   "candidates": 5
+  },
+  {
+   "case_index": 100,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8682,
+   "sim_new": 0.7703,
+   "candidates": 5
+  },
+  {
+   "case_index": 101,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.854,
+   "sim_new": 0.7453,
+   "candidates": 5
+  },
+  {
+   "case_index": 102,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8724,
+   "sim_new": 0.7349,
+   "candidates": 5
+  },
+  {
+   "case_index": 103,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8826,
+   "sim_new": 0.7261,
+   "candidates": 5
+  },
+  {
+   "case_index": 104,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9019,
+   "sim_new": 0.8514,
+   "candidates": 5
+  },
+  {
+   "case_index": 105,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8868,
+   "sim_new": 0.7644,
+   "candidates": 5
+  },
+  {
+   "case_index": 106,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.8904,
+   "sim_new": 0.7902,
+   "candidates": 5
+  },
+  {
+   "case_index": 107,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9638,
+   "sim_new": 0.9112,
+   "candidates": 5
+  },
+  {
+   "case_index": 108,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9261,
+   "sim_new": 0.8815,
+   "candidates": 5
+  },
+  {
+   "case_index": 109,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9133,
+   "sim_new": 0.8352,
+   "candidates": 5
+  },
+  {
+   "case_index": 110,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9349,
+   "sim_new": 0.8162,
+   "candidates": 5
+  },
+  {
+   "case_index": 111,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9269,
+   "sim_new": 0.8606,
+   "candidates": 5
+  },
+  {
+   "case_index": 112,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9195,
+   "sim_new": 0.8199,
+   "candidates": 5
+  },
+  {
+   "case_index": 113,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9137,
+   "sim_new": 0.8285,
+   "candidates": 5
+  },
+  {
+   "case_index": 114,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9651,
+   "sim_new": 0.8825,
+   "candidates": 5
+  },
+  {
+   "case_index": 115,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9494,
+   "sim_new": 0.9092,
+   "candidates": 5
+  },
+  {
+   "case_index": 116,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9349,
+   "sim_new": 0.7871,
+   "candidates": 5
+  },
+  {
+   "case_index": 117,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9396,
+   "sim_new": 0.884,
+   "candidates": 5
+  },
+  {
+   "case_index": 118,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9057,
+   "sim_new": 0.8253,
+   "candidates": 5
+  },
+  {
+   "case_index": 119,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8136,
+   "sim_new": 0.6975,
+   "candidates": 5
+  },
+  {
+   "case_index": 120,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9277,
+   "sim_new": 0.8234,
+   "candidates": 5
+  },
+  {
+   "case_index": 121,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8481,
+   "sim_new": 0.7531,
+   "candidates": 5
+  },
+  {
+   "case_index": 122,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8949,
+   "sim_new": 0.8295,
+   "candidates": 5
+  },
+  {
+   "case_index": 123,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9402,
+   "sim_new": 0.8574,
+   "candidates": 5
+  },
+  {
+   "case_index": 124,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9213,
+   "sim_new": 0.8741,
+   "candidates": 5
+  },
+  {
+   "case_index": 125,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.877,
+   "sim_new": 0.7518,
+   "candidates": 5
+  },
+  {
+   "case_index": 126,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8703,
+   "sim_new": 0.7476,
+   "candidates": 5
+  },
+  {
+   "case_index": 127,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9587,
+   "sim_new": 0.8924,
+   "candidates": 5
+  },
+  {
+   "case_index": 128,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8992,
+   "sim_new": 0.8114,
+   "candidates": 5
+  },
+  {
+   "case_index": 129,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9021,
+   "sim_new": 0.8362,
+   "candidates": 5
+  },
+  {
+   "case_index": 130,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9247,
+   "sim_new": 0.8557,
+   "candidates": 5
+  },
+  {
+   "case_index": 131,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8926,
+   "sim_new": 0.8223,
+   "candidates": 5
+  },
+  {
+   "case_index": 132,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9661,
+   "sim_new": 0.9413,
+   "candidates": 5
+  },
+  {
+   "case_index": 133,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9186,
+   "sim_new": 0.8909,
+   "candidates": 5
+  },
+  {
+   "case_index": 134,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9229,
+   "sim_new": 0.8365,
+   "candidates": 5
+  },
+  {
+   "case_index": 135,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9003,
+   "sim_new": 0.8124,
+   "candidates": 4
+  },
+  {
+   "case_index": 136,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.8893,
+   "sim_new": 0.7392,
+   "candidates": 5
+  },
+  {
+   "case_index": 137,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.8977,
+   "sim_new": 0.79,
+   "candidates": 5
+  },
+  {
+   "case_index": 138,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9083,
+   "sim_new": 0.8066,
+   "candidates": 5
+  },
+  {
+   "case_index": 139,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9295,
+   "sim_new": 0.7847,
+   "candidates": 5
+  },
+  {
+   "case_index": 140,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9103,
+   "sim_new": 0.8151,
+   "candidates": 5
+  },
+  {
+   "case_index": 141,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9512,
+   "sim_new": 0.87,
+   "candidates": 5
+  },
+  {
+   "case_index": 142,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.942,
+   "sim_new": 0.8553,
+   "candidates": 5
+  },
+  {
+   "case_index": 143,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.922,
+   "sim_new": 0.8386,
+   "candidates": 5
+  },
+  {
+   "case_index": 144,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9184,
+   "sim_new": 0.7801,
+   "candidates": 3
+  },
+  {
+   "case_index": 145,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8941,
+   "sim_new": 0.8527,
+   "candidates": 5
+  },
+  {
+   "case_index": 146,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8788,
+   "sim_new": 0.7787,
+   "candidates": 5
+  },
+  {
+   "case_index": 147,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8513,
+   "sim_new": 0.67,
+   "candidates": 5
+  },
+  {
+   "case_index": 148,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8711,
+   "sim_new": 0.8222,
+   "candidates": 5
+  },
+  {
+   "case_index": 149,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8702,
+   "sim_new": 0.802,
+   "candidates": 5
+  },
+  {
+   "case_index": 150,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8652,
+   "sim_new": 0.7301,
+   "candidates": 5
+  },
+  {
+   "case_index": 151,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8884,
+   "sim_new": 0.7549,
+   "candidates": 5
+  },
+  {
+   "case_index": 152,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.7807,
+   "sim_new": 0.6711,
+   "candidates": 5
+  },
+  {
+   "case_index": 153,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8847,
+   "sim_new": 0.7609,
+   "candidates": 5
+  },
+  {
+   "case_index": 154,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9452,
+   "sim_new": 0.8501,
+   "candidates": 5
+  },
+  {
+   "case_index": 155,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9127,
+   "sim_new": 0.8806,
+   "candidates": 5
+  },
+  {
+   "case_index": 156,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8899,
+   "sim_new": 0.8665,
+   "candidates": 5
+  },
+  {
+   "case_index": 157,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8637,
+   "sim_new": 0.7317,
+   "candidates": 2
+  },
+  {
+   "case_index": 158,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.941,
+   "sim_new": 0.8753,
+   "candidates": 5
+  },
+  {
+   "case_index": 159,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9141,
+   "sim_new": 0.8672,
+   "candidates": 5
+  },
+  {
+   "case_index": 160,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9527,
+   "sim_new": 0.8777,
+   "candidates": 5
+  },
+  {
+   "case_index": 161,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9498,
+   "sim_new": 0.874,
+   "candidates": 4
+  },
+  {
+   "case_index": 162,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.957,
+   "sim_new": 0.8653,
+   "candidates": 5
+  },
+  {
+   "case_index": 163,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.8892,
+   "sim_new": 0.8101,
+   "candidates": 5
+  },
+  {
+   "case_index": 164,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.872,
+   "sim_new": 0.7668,
+   "candidates": 5
+  },
+  {
+   "case_index": 165,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9115,
+   "sim_new": 0.8379,
+   "candidates": 5
+  },
+  {
+   "case_index": 166,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9313,
+   "sim_new": 0.8801,
+   "candidates": 5
+  },
+  {
+   "case_index": 167,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9277,
+   "sim_new": 0.8281,
+   "candidates": 5
+  },
+  {
+   "case_index": 168,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.937,
+   "sim_new": 0.8139,
+   "candidates": 5
+  },
+  {
+   "case_index": 169,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9151,
+   "sim_new": 0.8236,
+   "candidates": 5
+  },
+  {
+   "case_index": 170,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9412,
+   "sim_new": 0.8665,
+   "candidates": 5
+  },
+  {
+   "case_index": 171,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8897,
+   "sim_new": 0.7633,
+   "candidates": 5
+  },
+  {
+   "case_index": 172,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.919,
+   "sim_new": 0.8645,
+   "candidates": 5
+  },
+  {
+   "case_index": 173,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8599,
+   "sim_new": 0.754,
+   "candidates": 5
+  },
+  {
+   "case_index": 174,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9361,
+   "sim_new": 0.8763,
+   "candidates": 5
+  },
+  {
+   "case_index": 175,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8734,
+   "sim_new": 0.7972,
+   "candidates": 5
+  },
+  {
+   "case_index": 176,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8967,
+   "sim_new": 0.7465,
+   "candidates": 5
+  },
+  {
+   "case_index": 177,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8692,
+   "sim_new": 0.7704,
+   "candidates": 5
+  },
+  {
+   "case_index": 178,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8745,
+   "sim_new": 0.7297,
+   "candidates": 5
+  },
+  {
+   "case_index": 179,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8464,
+   "sim_new": 0.8005,
+   "candidates": 5
+  },
+  {
+   "case_index": 180,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8383,
+   "sim_new": 0.7005,
+   "candidates": 5
+  },
+  {
+   "case_index": 181,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.891,
+   "sim_new": 0.8089,
+   "candidates": 5
+  },
+  {
+   "case_index": 182,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9174,
+   "sim_new": 0.86,
+   "candidates": 5
+  },
+  {
+   "case_index": 183,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9143,
+   "sim_new": 0.8378,
+   "candidates": 5
+  },
+  {
+   "case_index": 184,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9772,
+   "sim_new": 0.9356,
+   "candidates": 5
+  },
+  {
+   "case_index": 185,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9517,
+   "sim_new": 0.8231,
+   "candidates": 5
+  },
+  {
+   "case_index": 186,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.959,
+   "sim_new": 0.8832,
+   "candidates": 5
+  },
+  {
+   "case_index": 187,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.935,
+   "sim_new": 0.8428,
+   "candidates": 5
+  },
+  {
+   "case_index": 188,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9243,
+   "sim_new": 0.835,
+   "candidates": 5
+  },
+  {
+   "case_index": 189,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9122,
+   "sim_new": 0.8454,
+   "candidates": 4
+  },
+  {
+   "case_index": 190,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9137,
+   "sim_new": 0.8318,
+   "candidates": 5
+  },
+  {
+   "case_index": 191,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9246,
+   "sim_new": 0.9008,
+   "candidates": 5
+  },
+  {
+   "case_index": 192,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9529,
+   "sim_new": 0.8767,
+   "candidates": 5
+  },
+  {
+   "case_index": 193,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9217,
+   "sim_new": 0.8531,
+   "candidates": 5
+  },
+  {
+   "case_index": 194,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9235,
+   "sim_new": 0.8573,
+   "candidates": 5
+  },
+  {
+   "case_index": 195,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.956,
+   "sim_new": 0.9155,
+   "candidates": 5
+  },
+  {
+   "case_index": 196,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8906,
+   "sim_new": 0.7922,
+   "candidates": 5
+  },
+  {
+   "case_index": 197,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.837,
+   "sim_new": 0.7452,
+   "candidates": 5
+  },
+  {
+   "case_index": 198,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8776,
+   "sim_new": 0.7668,
+   "candidates": 5
+  },
+  {
+   "case_index": 199,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9148,
+   "sim_new": 0.8182,
+   "candidates": 5
+  },
+  {
+   "case_index": 200,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8663,
+   "sim_new": 0.7374,
+   "candidates": 5
+  },
+  {
+   "case_index": 201,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8867,
+   "sim_new": 0.8036,
+   "candidates": 5
+  },
+  {
+   "case_index": 202,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.792,
+   "sim_new": 0.7592,
+   "candidates": 5
+  },
+  {
+   "case_index": 203,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8576,
+   "sim_new": 0.8121,
+   "candidates": 5
+  },
+  {
+   "case_index": 204,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9144,
+   "sim_new": 0.8323,
+   "candidates": 5
+  },
+  {
+   "case_index": 205,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9419,
+   "sim_new": 0.8791,
+   "candidates": 5
+  },
+  {
+   "case_index": 206,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9169,
+   "sim_new": 0.8121,
+   "candidates": 5
+  },
+  {
+   "case_index": 207,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9409,
+   "sim_new": 0.87,
+   "candidates": 5
+  },
+  {
+   "case_index": 208,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9622,
+   "sim_new": 0.9259,
+   "candidates": 5
+  },
+  {
+   "case_index": 209,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9251,
+   "sim_new": 0.884,
+   "candidates": 5
+  },
+  {
+   "case_index": 210,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9495,
+   "sim_new": 0.8938,
+   "candidates": 4
+  },
+  {
+   "case_index": 211,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9399,
+   "sim_new": 0.8752,
+   "candidates": 5
+  },
+  {
+   "case_index": 212,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9629,
+   "sim_new": 0.8864,
+   "candidates": 5
+  },
+  {
+   "case_index": 213,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.959,
+   "sim_new": 0.9052,
+   "candidates": 5
+  },
+  {
+   "case_index": 214,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9518,
+   "sim_new": 0.9075,
+   "candidates": 5
+  },
+  {
+   "case_index": 215,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9308,
+   "sim_new": 0.797,
+   "candidates": 5
+  },
+  {
+   "case_index": 216,
+   "item_type": "observation",
+   "label": "D",
+   "sim_old": 0.9524,
+   "sim_new": 0.9409,
+   "candidates": 5
+  },
+  {
+   "case_index": 217,
+   "item_type": "observation",
+   "label": "K",
+   "sim_old": 0.9355,
+   "sim_new": 0.8494,
+   "candidates": 5
+  },
+  {
+   "case_index": 218,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8847,
+   "sim_new": 0.8154,
+   "candidates": 5
+  },
+  {
+   "case_index": 219,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.805,
+   "sim_new": 0.6888,
+   "candidates": 5
+  },
+  {
+   "case_index": 220,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8929,
+   "sim_new": 0.8235,
+   "candidates": 5
+  },
+  {
+   "case_index": 221,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8495,
+   "sim_new": 0.7785,
+   "candidates": 5
+  },
+  {
+   "case_index": 222,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.9081,
+   "sim_new": 0.8202,
+   "candidates": 5
+  },
+  {
+   "case_index": 223,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8734,
+   "sim_new": 0.8062,
+   "candidates": 5
+  },
+  {
+   "case_index": 224,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9364,
+   "sim_new": 0.855,
+   "candidates": 5
+  },
+  {
+   "case_index": 225,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.7999,
+   "sim_new": 0.7604,
+   "candidates": 5
+  },
+  {
+   "case_index": 226,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8825,
+   "sim_new": 0.8092,
+   "candidates": 5
+  },
+  {
+   "case_index": 227,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9509,
+   "sim_new": 0.8442,
+   "candidates": 5
+  },
+  {
+   "case_index": 228,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.8312,
+   "sim_new": 0.7834,
+   "candidates": 5
+  },
+  {
+   "case_index": 229,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8845,
+   "sim_new": 0.8144,
+   "candidates": 5
+  },
+  {
+   "case_index": 230,
+   "item_type": "strategy_point",
+   "label": "D",
+   "sim_old": 0.9251,
+   "sim_new": 0.8772,
+   "candidates": 5
+  },
+  {
+   "case_index": 231,
+   "item_type": "strategy_point",
+   "label": "K",
+   "sim_old": 0.8838,
+   "sim_new": 0.7883,
+   "candidates": 5
+  }
+ ],
+ "summary": {
+  "old": {
+   "observation": {
+    "n": 116,
+    "keep_below": 0.935,
+    "discard_at": 0.96,
+    "auto_keep": 41,
+    "auto_discard": 16,
+    "auto_rate": 0.491,
+    "duplicates_auto_kept": 2,
+    "keepers_auto_discarded": 1
+   },
+   "strategy_point": {
+    "n": 116,
+    "keep_below": 0.81,
+    "discard_at": 0.93,
+    "auto_keep": 4,
+    "auto_discard": 12,
+    "auto_rate": 0.138,
+    "duplicates_auto_kept": 0,
+    "keepers_auto_discarded": 0
+   }
+  },
+  "new": {
+   "observation": {
+    "n": 116,
+    "keep_below": 0.72,
+    "discard_at": 0.94,
+    "auto_keep": 0,
+    "auto_discard": 2,
+    "auto_rate": 0.017,
+    "duplicates_auto_kept": 0,
+    "keepers_auto_discarded": 0
+   },
+   "strategy_point": {
+    "n": 116,
+    "keep_below": 0.61,
+    "discard_at": 0.88,
+    "auto_keep": 0,
+    "auto_discard": 10,
+    "auto_rate": 0.086,
+    "duplicates_auto_kept": 0,
+    "keepers_auto_discarded": 2
+   }
+  }
+ }
+}

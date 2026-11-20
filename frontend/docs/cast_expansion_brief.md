@@ -1,5 +1,18 @@
 # Cast expansion brief (2026-10-03)
 
+Status (2026-10-26): shipped 2026-10-03, four characters (kitsune, mushroom, lionCub, automaton).
+The template at the head is the method; "Process" and Prompts 1 to 4 are the first method it
+replaced. The file runs newest method first, then the first method, then the rounds that led from
+one to the other.
+
+| Section | Content |
+|---|---|
+| Final template (ruled 2026-10-03) | What the rounds taught; the shared blocks, the steps, the gate and the state prompt. The method |
+| After the template, unheaded | The candidates ruled; the costume rule; the free colour slots |
+| Process; Prompts 1 to 4 | The first method: one pose per call, six generations per character. Replaced by the template |
+| Rounds 2 to 4 (2026-10-03) | The design journey with the owner's words: four chosen, the cuteness and costume pass, the costume rethink, the kitsune geisha and lion soldier |
+| The cast record | A game's cast stored in tables: the `characters` and `game_cast` tables, the picker, `resolveCast`, the deploy note |
+
 ## Final template (ruled 2026-10-03, after four bases were approved)
 
 What the rounds taught: the model under-delivers on proportions, so the spec aims past the goal
@@ -268,6 +281,10 @@ threeEyes is cyan).
 Free colour slots: rust orange, gold/ochre, pink/coral, warm metal (copper, brass).
 
 ## Process
+
+[2026-10-26: this is the first method, and the final template at the head replaced it on
+2026-10-03 (the states from one call returning four images, not one pose per call). Kept as the
+record of how the rounds began.]
 
 1. One lineup sheet (prompt 1) with the whale base attached as the style anchor and placed at the
    left end. Judge colour clashes and silhouette overlap here, pick the five.

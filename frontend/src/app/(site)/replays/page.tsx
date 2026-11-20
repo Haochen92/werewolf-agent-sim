@@ -1,4 +1,4 @@
-import { StationWall, wallPage } from '@/components/site';
+import { PageGate, StationWall, wallPage } from '@/components/site';
 import { listReplaysWithTotal, type ReplayPage } from '@/lib/api';
 import { SERVER_API_URL } from '@/lib/config';
 import { ARCHIVE_LIMIT } from '@/lib/replay-filters';
@@ -34,6 +34,7 @@ export default async function ReplaysPage() {
   const initial = await firstList();
   return (
     <main className={`${classes.archive} ${wallPage}`}>
+      <PageGate />
       <StationWall kind="records" />
       <PageMusic bed="lobby" />
       <header className={classes.head}>

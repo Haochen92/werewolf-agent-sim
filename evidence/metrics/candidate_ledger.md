@@ -40,14 +40,14 @@ correlation to report. It is unbuildable until a post-A4 batch is itself win-val
 ## Validated basket (11)
 
 The trusted core — the `VALIDATED_BASKET_METRICS` frozenset, the proxies that powered the
-static-memory proof. Read for independence the eleven collapse to ~six constructs; ★ marks the
+June static-memory result. Read for independence the eleven collapse to ~six constructs; ★ marks the
 pre-registered primary endpoint of each construct (see [`report.md`](report.md) §2).
 
 ### Town (8)
 
 - **★ `correct_elimination_rate`** — *day vote* · de-luck: total eliminations. Lynches of a threat
   (wolf+SK) over all lynches. v5 +0.65 (both views); **N=180 +0.65**. The pre-registered primary for
-  threat identification and the form the static-memory proof anchored on; the strongest, most stable
+  threat identification and the form the June static-memory result anchored on; the strongest, most stable
   town signal (holds in both pooled and treatment-free OFF views).
 - **`town_mislynch_rate`** — *day vote* · de-luck: total eliminations. Lynches of a townmate over all
   lynches. v5 −0.65 (both); **N=180 −0.65**. The **exact complement** of `correct_elimination_rate`

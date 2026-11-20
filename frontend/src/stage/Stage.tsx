@@ -39,12 +39,16 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { BackdropSheet } from './instruments/Backdrop';
+import { Wing } from './instruments/Wing';
 import {
   BackdropContext,
   SmallContext,
   StageWidthContext,
+  WingContext,
   useSmall,
   type BackdropSpec,
+  type WingHost,
+  type WingSpec,
 } from './set';
 import { STAGE_W } from './units';
 import { vars } from './paint/materials';
@@ -129,6 +133,11 @@ export function Stage({
   const [measured, setMeasured] = useState(false);
   // the scene's backdrop, drawn here so it outlives the scene's beats (set.ts)
   const [backdrop, setBackdrop] = useState<BackdropSpec | null>(null);
+  // the scene's wing, drawn here so it outlives the scenes (set.ts `WingHost`)
+  const [wing, setWing] = useState<WingSpec | null>(null);
+  // A scene handoff may span commits (or wait for a suspended scene). Keep the last
+  // description until its successor arrives; only the Stage's unmount ends its lifetime.
+  const wingHost = useMemo<WingHost>(() => ({ show: setWing }), []);
   // The layer divs, once mounted, so `<Layer>` can portal into them. Set during the commit,
   // so the filled layers are drawn before the first paint.
   const [nodes, setNodes] = useState<LayerNodes>({});
@@ -222,6 +231,13 @@ export function Stage({
           {backdrop ? <BackdropSheet {...backdrop} /> : null}
         </div>
       ) : null}
+      {/* the HUD's foot holds the kept wing, present from the first render so the scenes'
+          portalled HUD (the strip, a notice, the speech box) lands above it; no box of its own */}
+      {name === 'hud' ? (
+        <div data-wing-host="" style={{ display: 'contents' }}>
+          {wing ? <Wing {...wing} /> : null}
+        </div>
+      ) : null}
       {layers[name]}
     </div>
   );
@@ -243,7 +259,9 @@ export function Stage({
               <BoxContext.Provider value={boxNode}>
                 <CameraContext.Provider value={setShot}>
                   <BackdropContext.Provider value={setBackdrop}>
-                    {measured ? children : null}
+                    <WingContext.Provider value={wingHost}>
+                      {measured ? children : null}
+                    </WingContext.Provider>
                   </BackdropContext.Provider>
                 </CameraContext.Provider>
               </BoxContext.Provider>

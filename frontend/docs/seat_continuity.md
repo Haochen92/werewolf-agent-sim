@@ -1,5 +1,11 @@
 # Seat continuity — absence, disconnection, and recovery (design record)
 
+Status (2026-10-26): Design record, the one home for absence and recovery. Ruled 2026-09-09
+(owner) and built; amended 2026-09-11 to 2026-10-15: a solo table suspends while its player is
+away (§5b, 2026-10-11), a seat gone two turns is taken to have left (§4, 2026-10-15), and rooms
+expire (§7, 2026-09-27). Open rulings are in §9. The status in the box below was true on
+2026-09-09.
+
 > **What this is:** the one place that tells the whole story of a human seat that stops
 > answering — from a network blip to a closed tab to a table everyone has left — and what
 > the system does about it at each layer. The individual rulings were made on different
@@ -18,6 +24,14 @@
 | 3 | The server process dies (crash, container rebuild, deploy) | process: continuous persistence + boot recovery | built 2026-08-20 (§6) |
 | 4 | A game hangs (provider outage; nothing fails, nothing moves) | — | **undetected**; needs a stall watchdog (§9) |
 | 5 | A human stops answering | table: the two clocks + presence (§4–§5) | **ruled here**, replacing "policy undecided" |
+
+[2026-10-26: the statuses as of 2026-10-26. Mode 2: a player's key is now tried with the provider
+before a game opens on it, and a failure after `game_over` archives the game instead of dropping
+it (both 2026-10-17, design notes §5c); resumption is still unwired. Mode 4: still undetected; the
+request budget and rescue model of 2026-09-30 narrow it for a slow provider
+(`docs/agentic_ai_encountered_issues.md` §1), and the page's reopen of a silent stream (§3) is a
+client check, not this watchdog. Mode 5: extended by the solo suspension (§5b, 2026-10-11) and the
+gone-after-two-turns rule (§4, 2026-10-15).]
 
 The layering is the write-up's one-liner: the client heals by replay, the game by
 checkpoint, the process by persistence — and the two liveness gaps (stall, absence) are
@@ -49,6 +63,11 @@ Every viewer holds one long-lived SSE connection per game tab. The server sees i
 subscribe when the tab opens and an unsubscribe when the socket closes, and it notices a
 silently dead socket within one heartbeat (15 s) because the heartbeat write fails; behind
 the proxy it is usually faster.
+[2026-10-26: since 2026-10-15 the heartbeat is a named `ping` event, sent as the stream opens and
+then each quiet 15 s, rather than an SSE comment no script could hear; the page reopens a stream
+that has been silent for 40 s (`server/routes/games.py::_sse`;
+`frontend/src/hooks/catch-up-boundary.ts::streamStalled`; multiplayer audit, finding 7). The
+server's 15 s detection bound is unchanged.]
 
 A network blip and a closed tab are **identical at the instant the socket dies.** The tab
 sends no other signal. The difference is what follows: an open tab's `EventSource` retries
@@ -66,7 +85,8 @@ the seat per event; the session's set was previously seat-blind).
 The AFK fail-safe (design notes §7) hands a silent human's turn to the seat's own AI —
 "delegate" is a legal answer for every kind of turn, so no scripted defaults and no canned
 words in an absent wolf's mouth. It arms in rooms with two or more human seats; a solo game
-may wait forever. What it never asked was *why* the seat was silent. Now it does:
+may wait forever. [2026-10-26: at the player's own turn, yes; between turns, since 2026-10-11 a
+solo game suspends while its player is away (§5b).] What it never asked was *why* the seat was silent. Now it does:
 
 - **Thinking time, 120 s** — the seat is connected and simply has not answered. Unchanged.
 - **Absence grace, ~30 s** — the seat has no open stream. Measured from the ask, or from the
@@ -89,7 +109,20 @@ may wait forever. What it never asked was *why* the seat was silent. Now it does
   later by exactly the time the model took, never more, and the absence rule still applies
   on top. A cap of three drafts per question is what keeps a turn from stretching; the
   credit alone would let a seat that keeps redrafting hold the table. The response carries
-  the moved deadline so the countdown stays honest.
+  the moved deadline so the countdown stays honest. [2026-10-26: since 2026-09-30 the credit for
+  one draft is capped at 20 s (`server/game/game_session.py::DRAFT_CREDIT_CAP_S`), so a draft
+  that stalls on the model is not the table's wait. Since 2026-10-15 a draft is counted before
+  the model is asked and given back if the call fails, and a seat drafts one at a time, so drafts
+  sent together cannot get past the cap of three (`GameSession.draft_line`; multiplayer audit,
+  finding 4).]
+- **A seat gone two turns is taken to have left** (2026-10-15, multiplayer audit finding 5).
+  When a seat's agent has played two of its turns in a row while the seat had no stream open,
+  its next questions go to the agent at once, with no 30 s grace, until the seat connects again
+  (`server/game/seat_clocks.py::GONE_AFTER_TURNS`, `SeatClocks.reschedule`; reconnecting clears
+  the count, `SeatClocks.on_seat_returned`). Before, a friend who had gone held the table 30 s on
+  every one of their turns for the rest of the game. A dropped connection and a departed player
+  needed different rules: the grace is for the first, and it was costing the table on the second.
+  A connected seat is untouched and always has its 120 s.
 
 Two existing details keep the stopwatch honest and are unchanged: it is tied to the *exact
 question* it started for (answer at 119 s, get asked again at 119.5 s → the old clock dies
@@ -120,6 +153,42 @@ play *now*. In practice a park can only ever come from the grace path, because a
 120 s thinking clock fires is itself a connected human; the rule is still written as "either
 clock" so there is one expiry handler with one test, not two that can drift apart.
 
+## 5b. A solo table suspends while its player is away (ruled 2026-10-11)
+
+The clocks of §4 arm only when two or more humans share a table, and a solo game was left to
+"wait forever" (design notes §7). That was true only at the player's own turn. Between their
+turns the agents played on, so a solo player who stepped away came back to whatever the table
+had done without them. Live testing found the cost: a player was killed while their phone slept
+for two minutes (commit `9f4c21a7`).
+
+**The ruling.** A solo game does not play on while its player is away. After each chunk the
+game asks whether its one human seat has been dealt, is alive, and has no stream open; if so, it
+stops reading the engine's stream and waits until that player's browser connects again
+(`server/game/game_session.py::GameSession._wait_for_absent_player`, `::_absent_solo_seat`).
+For a table of one, "nobody connected" and "the player is away" are the same fact, so this is
+§5's park, moved from the player's turn to the end of whatever step is running.
+
+**What stops, exactly.** With nothing read, the engine stops within the step it is running, not
+mid-call: node calls the step already started finish in their worker threads and their output
+waits, and the next step does not begin. So a step that had not started when the game noticed,
+such as the night's resolution, waits for the player. A day's talk is one engine step up to the
+player's next turn, so it runs on to that turn; the vote always waits for their ballot.
+
+Four boundaries:
+
+- **No grace period.** A drop of a second or two suspends and resumes at no cost, since the step
+  in flight keeps running either way. §4's 30 s grace exists because a timer there decides
+  between waiting and delegating; here nothing is decided, the engine only pauses.
+- **Only the player wakes it.** Each human stream that opens wakes the wait, and it ends only
+  when one resolves to the player's seat; a spectator's tab does not count (§5's rule).
+- **A dead player is not waited for.** The game runs to its end and its replay is saved (owner
+  confirmed).
+- **Suspended counts as parked.** The sweeper gives a suspended game up after the solo shelf
+  life, an hour, with the epitaph `abandoned: suspended with its player away for N min` (§7). A
+  solo game restarted with no viewer suspends at its first chunk.
+
+Rooms with several humans keep the clocks of §4 and §5 and never suspend here.
+
 ## 6. Restart recovery — a park is restart-shaped
 
 Persistence is continuous, not save-on-crash: each graph superstep commits to the Postgres
@@ -148,7 +217,8 @@ reason in the row's error field:
 |---|---|
 | solo game parked on a human question, nobody connected | parked longer than **1 hour** |
 | multi-human game parked, nobody connected | parked longer than **1 day** |
-| waiting room | no row: it dies with the process; within one uptime the 2 h listing filter hides it and the direct URL still resolves |
+| solo game suspended with its player away (since 2026-10-11, §5b) | suspended longer than **1 hour**, counted from the moment it suspended (a restart starts the count again) |
+| waiting room | no row: it dies with the process; within one uptime the 2 h listing filter hides it and the direct URL still resolves [2026-10-26: since 2026-09-27 the sweeper closes a room nobody departed within the 2 h, and its URL then answers 410 with the reason (`server/game/live_game_registry.py::LiveGameRegistry.expire_rooms`)] |
 
 "Parked" is measured from the ask (`parked_since`, restored from the row's `updated_at`
 across a restart so a reboot does not make an old park newborn), and "nobody connected" is
@@ -191,6 +261,7 @@ their checkpoints is a separate, later ruling.
    list serves well. Searching by the raw uuid was rejected as no easier than the URL.
    Both are short codes with one input field and the same mechanics (minted, stored on
    the row for restart, recycled once the game ends), so they share a design session.
+   [2026-10-26: still open; neither the strip nor the join code exists in `frontend/src`.]
 3. **Identity mechanics** (parked 2026-09-09): cookie lifetime, the local-storage copy,
    cross-device — currently "same browser or nothing", by ruling.
 4. **Waiting-room retention** — mostly dissolved 2026-09-12: rooms are no longer persisted, so
@@ -212,3 +283,14 @@ their checkpoints is a separate, later ruling.
 - Client bugs on the recovery path — `build_log.md` §3.1, §3.11 (2026-08-21)
 - The cookie-path-behind-a-proxy bug — `server_encountered_challenges.md` §7 (2026-08-24)
 - Persistence and recovery on boot — `server_design_notes.md` §5c mode 3, §8 (2026-08-22)
+- Rooms leave, close and expire — `server_design_notes.md` §12, dated note (2026-09-27; commit
+  `9b8d4f74`)
+- The solo suspension — commit `9f4c21a7` (2026-10-11); `server/game/game_session.py` module
+  docstring; this document §5b
+- Drafts counted before the call, one at a time — `multiplayer-audit-2026-10-15.md` finding 4
+- A seat gone two turns — `multiplayer-audit-2026-10-15.md` finding 5; `server/game/seat_clocks.py`
+  module docstring
+- The named heartbeat and the page's reopen of a silent stream — `multiplayer-audit-2026-10-15.md`
+  finding 7
+- The stored token cleared only on a definite refusal — `multiplayer-audit-2026-10-15.md`
+  finding 11

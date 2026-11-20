@@ -9,25 +9,35 @@ Write or revise an evidence document for: $ARGUMENTS
 
 Read `evidence/experiment_report_style_guide.md` §Document Types and decide which of the five shapes fits — experiment report · build-journey log (`experiment_log.md`) · decision/design record · negative/non-feasibility finding · reference/how-it-works doc. The type determines the skeleton, the discipline rules, AND which exemplar you must read. Do not default to the experiment-report skeleton.
 
-## Step 1 — Read the guide's discipline section for that type
+## Step 1 — Read the core rules, then the guide's discipline section for that type
+
+First read `docs/writing/core_rules.md` in full. It is one page, it applies to every document, and where it disagrees with the long guide or with this skill, it wins. If `docs/writing/report_guide.md` exists, read it next and treat the long guide as reference.
 
 The full guide always; then re-read the type's discipline block ("Discipline for reference docs" / "Discipline for journey logs" / the per-type skeletons). These are the rules that erode first under a fill-in-the-blanks pass.
 
-## Step 2 — Read the matching exemplar IN FULL (mandatory, not optional)
+## Step 2 — Decide which record this is, then look at an existing one for content and depth only
 
-Writers imitate the prose they see more reliably than the prose they are told to write (the guide says this itself). Exemplars:
-- Reference doc → `evidence/agent_boundaries/report.md`
-- Build-journey log → `evidence/sequential_discussion/experiment_log.md`
-- Experiment report (single-experiment reference pairing) → `evidence/sequential_discussion/report.md`
+First decide, using `docs/writing/report_guide.md` sections 1 to 3: is this a new log entry, a revision of an existing topic report, or a new experiment report? Check whether the work continues an existing investigation before creating a folder.
+
+Then read an existing record of the same kind for **what it contains and how deep it goes**: which decisions it records, what evidence sits beside each one, how history is kept apart from the current design.
+
+**Do not imitate the prose of the existing records.** The owner's ruling (2026-11-17): they are the minimum acceptable standard after four or five rounds of manual revision. They hold the right substance, and they still have compressed explanations, unnatural phrasing and dense paragraphs. A writer imitates what it reads, so read them for substance and write to `docs/writing/core_rules.md`. The aim is a first draft that is easier to read than they are and keeps their technical substance.
+
+Records to consult for content and depth:
+- Topic report (several experiments and decisions explaining a current design) → `evidence/gameplay/discussion/report.md`
+- Log of a long investigation → `evidence/gameplay/discussion/experiment_log.md`
+- Experiment report (one question, one defined comparison) and its log, written to the core rules → `evidence/agent_boundaries/forged_speaker/report.md`, `experiment_log.md`
+- Reference document → `evidence/agent_boundaries/report.md`
 - Decision record → `evidence/refactor/eval_architecture_convention.md` (tension → principle → rejected alternatives → decision + named tradeoff), with `evidence/refactor/provenance_lineage_rationale.md` as a second design-rationale example.
-- Negative finding → the guide's skeleton (§Document Types) — no single canonical file; imitate the reference-doc exemplar's honesty devices.
+- A decision not to pursue an approach → written as a decision record; no single example file.
 
 ## Step 3 — Author the judgment layer BEFORE drafting
 
 If the invoker supplied an outline/argument brief, follow it exactly. If not, produce one and get it confirmed before drafting. The brief must state:
 - The one-paragraph argument (what the reader should believe after reading, and on what evidence).
 - Selection: which results/artifacts carry each claim — and what is deliberately EXCLUDED (with a one-line why). Altitude drift and fact-dumping are selection failures, not prose failures; they are decided here.
-- The reader: busy interviewer/auditor by default.
+- The reader: the guide's *The Reader* by default — an engineer who knows the technique but has never seen this project. Apply its goal ranking (accuracy → first-read clarity → no repetition → length).
+- For a REVISION: the plan for the structural edit — what moves, what merges, what is cut, and which old passages get rewritten whole. A revision is not a patch: the project's small-edit default for code does not apply to a doc the owner asked to rewrite.
 
 ## Step 4 — Draft, under these accuracy rules
 
@@ -95,7 +105,7 @@ functionally a deletion for a busy reader.
   much to trust things they cannot picture.
 
 ### Explanation-completeness rules (added 2026-07-06, from the exemplar comparison — the owner's
-### hand-revised `evidence/sequential_discussion/experiment_log.md` vs the situation-dimensions log)
+### hand-revised `evidence/gameplay/discussion/experiment_log.md` vs the situation-dimensions log)
 
 The exemplar doesn't just narrate the journey; it TEACHES the system while narrating. Imitate these
 moves specifically:
@@ -131,11 +141,13 @@ moves specifically:
   discipline remarks are process residue addressed to maintainers; replace with a compact orientation
   blockquote (what this is · companion docs · guiding principle), like the exemplar's header.
 
-## Step 5 — Two self-review passes (in order)
+## Step 5 — Self-review passes, then one fresh-reader pass (in order)
 
 1. **Argument pass** — the guide's full checklist, including the type-specific items. Explicitly check: does any section list facts without interpretation (the fact-dump smell)? Did anything drift from the Step-3 brief's selection? Then scan every verdict sentence for scope: does its strength exceed what the cited store/epoch/N/instrument can carry (the Claim-calibration rules above)?
-2. **Prose-legibility pass** — a separate read applying the guide's §Prose legibility rules mechanically: one main idea per sentence; unpack stacked modifiers; ≤ ~1 em-dash per paragraph; define shorthand before use; plain sentence over aphorism.
+2. **Prose-legibility pass** — a separate read applying the guide's §Prose legibility rules mechanically: one main idea per sentence, one reasoning step per paragraph; unpack stacked modifiers; ≤ ~1 em-dash per paragraph; say what a component does before naming it; define shorthand before use; replace vague evaluations ("cleanly", "robust", "direction-grade") with the observation; plain sentence over aphorism. Grep the draft for the project's internal names and check each is introduced before use.
+3. **Outsider-and-history pass** — read as the outside engineer: mark every passage that needs unstated context or makes several jumps, and rewrite it. Then check that no historical finding reads as a current or universal claim.
+4. **Fresh-reader pass (added 2026-11-17; do not skip, and do not do it yourself).** You wrote the draft, so you already know what each sentence means and cannot see where it is dense. Give the finished text, and nothing else, to a reader with no context: a subagent started fresh, with no brief, no sources and no explanation. Ask it to identify four things, quoting each passage: sentences likely to need a second read, unusual or unnecessarily figurative word choices, explanations that are missing, and concepts introduced before the reader has enough context to understand them. Tell it that it is a strong reader and must report effort, not only failures. Then reword every listed sentence as a plain statement of who does what and what follows, even if it becomes longer, and change no fact, number or caveat while doing so. The rule and its worked examples are in the guide's opening section, "Read this first". When clear and short conflict, clear wins.
 
 ## Step 6 — Deliver
 
-Present the draft plus a 5-line review note: type chosen, exemplar read, what was excluded and why, checklist items that needed a fix in pass 1, and any claim you could not verify against evidence (flag, don't smooth over).
+Present the draft plus a short review note: type chosen, exemplar read, the main structural changes (for a revision), what was excluded and why, checklist items that needed a fix, and the factual ambiguities that still need the owner's judgment (flag, don't smooth over).

@@ -37,11 +37,23 @@ def installed(monkeypatch):
     return install
 
 
-def test_the_migration_writes_exactly_the_seed():
+def test_the_seed_is_the_migration_plus_the_live_edits_since():
+    """The seed starts as the migration's rows; it differs only by the listed later edits of the
+    live table (and their notes), so a process on the seed runs each model as a live game does."""
+    # Arrange: the migration's rows, with the listed live edits applied
     m = _migration()
-    assert [tuple(row) for row in m.MODELS] == [
-        (r.model, r.display_name, r.listed, r.menu_order, r.house_funded, r.rescue_model,
-         r.turn_thinking, r.summary_thinking, r.structured_mode, r.notes) for r in catalog.SEED_MODELS]
+    fields = ("model", "display_name", "listed", "menu_order", "house_funded", "rescue_model",
+              "turn_thinking", "summary_thinking", "structured_mode")
+    migrated = {row[0]: dict(zip(fields, row[:9])) for row in m.MODELS}
+    for model, edits in catalog.LIVE_EDITS_SINCE_MIGRATION.items():
+        migrated[model].update(edits)
+
+    # Act
+    seeded = {r.model: {f: getattr(r, f) for f in fields} for r in catalog.SEED_MODELS}
+
+    # Assert
+    assert seeded == migrated
+    assert [row[0] for row in m.MODELS] == [r.model for r in catalog.SEED_MODELS]
     assert sorted((row[0], row[1], row[2], row[3], row[4], row[5]) for row in m.PRICES) == sorted(
         (name, p.since.isoformat(), p.input, p.cached, p.output, p.peak)
         for name, rows in PRICES.items() for p in rows)
@@ -49,7 +61,10 @@ def test_the_migration_writes_exactly_the_seed():
 
 
 def test_the_seed_holds_together():
+    # Act
     cat = catalog.seed()
+
+    # Assert
     names = {m.model for m in cat.models}
     levels = {"minimal", "low", "medium", "high"}
     for m in cat.models:
@@ -73,6 +88,7 @@ def test_the_test_suite_runs_on_the_seed():
 def test_a_database_edit_reaches_every_reader(installed, monkeypatch):
     from server.game.model_catalog import game_model, house_models, menu_models
 
+    # Arrange: a database catalogue that edits Haiku's settings and price, and unlists a model
     cat = catalog.seed()
     rows = tuple(replace(m, turn_thinking="high", structured_mode="auto_tool", house_funded=False)
                  if m.model == HAIKU else
@@ -83,6 +99,7 @@ def test_a_database_edit_reaches_every_reader(installed, monkeypatch):
     monkeypatch.delenv("GOOGLE_GENAI_THINKING_LEVEL", raising=False)
     monkeypatch.setenv("CLAUDE_API_KEY", "k")
 
+    # Act and assert
     assert accessors.game_thinking_level(HAIKU) == "high"
     assert _build_chat_model(HAIKU).structured_mode == "auto_tool"
     assert price_at("claude-haiku-5-5", datetime(2026, 10, 12, tzinfo=timezone.utc))[0].input == 9.0
@@ -92,6 +109,7 @@ def test_a_database_edit_reaches_every_reader(installed, monkeypatch):
 
 
 def test_an_unreadable_database_falls_back_to_the_seed(monkeypatch, caplog):
+    # Arrange: a database that cannot be reached
     def broken(dsn):
         raise OSError("connection refused")
 
@@ -99,6 +117,8 @@ def test_an_unreadable_database_falls_back_to_the_seed(monkeypatch, caplog):
     monkeypatch.setattr(catalog, "load_from_database", broken)
     monkeypatch.setenv("WW_MODEL_CATALOG", "")
     monkeypatch.setenv("WW_POSTGRES_DSN", "postgresql://nowhere/db")
+
+    # Act and assert
     with caplog.at_level(logging.WARNING):
         assert catalog.current().source == "seed"
     assert "using the seed" in caplog.text
@@ -107,13 +127,17 @@ def test_an_unreadable_database_falls_back_to_the_seed(monkeypatch, caplog):
 def test_the_servers_refresh_installs_a_change_and_survives_an_outage(monkeypatch, installed):
     from server.housekeeping.catalog_refresh import catalog_dsn, refresh_catalog
 
+    # Arrange
     seed = catalog.seed()
     fresh = replace(seed, source="database")
     installed(seed)
+
+    # Round 1: the database returns a new catalogue
     monkeypatch.setattr(catalog, "load_from_database", lambda dsn: fresh)
     assert asyncio.run(refresh_catalog("postgresql://db")) is True
     assert catalog.current() is fresh
 
+    # Round 2: the database is down
     def broken(dsn):
         raise OSError("down")
 
@@ -126,9 +150,32 @@ def test_the_servers_refresh_installs_a_change_and_survives_an_outage(monkeypatc
 def test_a_game_on_an_unpriced_model_is_reported(caplog):
     from server.game.usage import UsageMeter
 
+    # Arrange
     meter = UsageMeter()
+
+    # Act
     with caplog.at_level(logging.WARNING):
         meter._add("some-new-model", 1.0, {"input_tokens": 10, "output_tokens": 5}, failed=False)
         meter._add("claude-haiku-5-5", 1.0, {"input_tokens": 10, "output_tokens": 5}, failed=False)
+
+    # Assert
     assert "some-new-model has no price" in caplog.text
     assert "claude-haiku-5-5" not in caplog.text
+
+
+def test_the_seed_funds_what_the_live_table_funds(monkeypatch):
+    """Without WW_HOUSE_MODELS the seed's house list mirrors the live table: Claude Haiku 5.5 only
+    since the Gemini credits ran out (2026-10-15)."""
+    monkeypatch.delenv("WW_HOUSE_MODELS", raising=False)
+    assert [m.model for m in catalog.seed().models if m.house_funded] == ["anthropic/claude-haiku-5-5"]
+
+
+def test_ww_house_models_sets_the_seed_house_list(monkeypatch):
+    # Round 1: two models listed
+    monkeypatch.setenv("WW_HOUSE_MODELS", " gemini-3.6-flash , openai/gpt-6-luna ")
+    assert [m.model for m in catalog.seed().models if m.house_funded] == ["gemini-3.6-flash",
+                                                                          "openai/gpt-6-luna"]
+
+    # Round 2: an empty list
+    monkeypatch.setenv("WW_HOUSE_MODELS", "")
+    assert not any(m.house_funded for m in catalog.seed().models)

@@ -42,10 +42,8 @@ import {
 } from 'react';
 import { Atmosphere } from '../Atmosphere';
 import { Layer } from '../Stage';
-import { SideSlot } from '../SideSlot';
 import type { SceneId } from '../beats/types';
 import { Backdrop } from '../instruments/Backdrop';
-import { Trap, type TrapState } from '../instruments/Floor';
 import { Shutter } from '../instruments/Shutter';
 import { TopStrip, type TopStripProps } from '../instruments/TopStrip';
 import { StageMotion } from '../motion';
@@ -64,10 +62,8 @@ export interface CarSet {
   /** The car's hour: the backdrop's sheet, the grade and the house light's warmth. */
   phase: Phase;
   /** The hour the car was at before this beat, to fade from (instruments/Backdrop.tsx). */
-  backdrop?: { from?: Phase | null; fadeDelay?: number };
+  backdrop?: { from?: Phase | null; fadeDelay?: number; ahead?: Phase | null };
   shutter: { state: ShutterState; animate?: boolean; delay?: number };
-  /** The trap in the floor, where the scene has one; absent, the painted floor is shut. */
-  trap?: { state: TrapState; animate?: boolean; phase?: Phase } | null;
   light: { pool: Pool; specials?: Special[]; quiet?: Special[]; dark: number };
   wing: WingSeatOptions;
   strip: Pick<TopStripProps, 'title' | 'sub' | 'disc' | 'count' | 'side' | 'unlocked'>;
@@ -113,6 +109,7 @@ const CarSetSheet = memo(function CarSetSheet({
           phase={spec.phase}
           from={spec.backdrop?.from}
           fadeDelay={spec.backdrop?.fadeDelay}
+          ahead={spec.backdrop?.ahead}
           hud={hud}
           side={side}
         />
@@ -123,16 +120,6 @@ const CarSetSheet = memo(function CarSetSheet({
           delay={spec.shutter.delay}
         />
       </Layer>
-      {spec.trap ? (
-        <Layer name="floor">
-          <Trap
-            g={g}
-            phase={spec.trap.phase ?? spec.phase}
-            state={spec.trap.state}
-            animate={spec.trap.animate}
-          />
-        </Layer>
-      ) : null}
       <Layer name="light">
         <HouseLights
           phase={spec.phase}
@@ -151,7 +138,7 @@ const CarSetSheet = memo(function CarSetSheet({
           me={me}
           width={g.wingN}
           notes={notebookGame(presentation, me)}
-          edit={slotInput?.notebook}
+          onOpenFile={slotInput?.onOpenFile}
           opts={spec.wing}
         />
         <TopStrip hud={hud} {...spec.strip} {...stripButtons(presentation, slotInput)} />
@@ -186,14 +173,6 @@ export function carScene(bodies: Partial<Record<SceneId, ComponentType<SceneProp
             <Body key={epoch} {...props} />
           </BodyProps.Provider>
         </CarSetContext.Provider>
-        <SideSlot
-          view={props.view}
-          beat={props.beat}
-          me={props.me}
-          presentation={props.presentation}
-          slot={props.slot}
-          stop={props.stop}
-        />
       </StageMotion>
     );
   });

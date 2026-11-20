@@ -91,6 +91,23 @@ export interface NoticeProps {
   delay?: number;
   /** The ways on, under the words: `NoticeButton`s. */
   actions?: ReactNode;
+  /** The title is a seat put out of the game (the vote's result): in the board's burgundy. */
+  out?: boolean;
+  /**
+   * The vote's tally, a line per plate under the outcome (each seat's face, or abstain's empty
+   * ring); given, the paper is the result board, about twice the box's width.
+   */
+  tally?: TallyRow[] | null;
+}
+
+/** A line of the result board's tally: "Seat 2 · 2 votes", "Abstained · 1". */
+export interface TallyRow {
+  key: string;
+  chip: Character | null;
+  label: string;
+  count: string;
+  /** Its plate is lit at the result: the line in the brass. */
+  lit?: boolean;
 }
 
 export function Notice({
@@ -107,6 +124,8 @@ export function Notice({
   arrive = false,
   delay = 0,
   actions,
+  out = false,
+  tally,
 }: NoticeProps) {
   const k = useMotionScale();
   const f = factionOf(sigil);
@@ -116,6 +135,7 @@ export function Notice({
     paper ? styles.paper : styles.placard,
     paper && stamp ? styles.stamped : '',
     wide ? styles.wide : '',
+    paper && tally?.length ? styles.board : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -135,11 +155,25 @@ export function Notice({
             className={`${styles.sigil} ${f ? styles[`c-${f}`] : ''}`}
           />
         ) : null}
-        <strong>{title}</strong>
+        <strong className={out ? styles.out : undefined}>{title}</strong>
         {aside ? <span>{aside}</span> : null}
         {aqua ? <span className={styles.aqua}>{aqua}</span> : null}
       </header>
       {children ? <div className={styles.body}>{children}</div> : null}
+      {paper && tally?.length ? (
+        <ul className={styles.tally}>
+          {tally.map((t) => (
+            <li key={t.key} className={t.lit ? styles.lit : undefined}>
+              <span className={t.chip ? styles.tface : `${styles.tface} ${styles.tnone}`}>
+                {t.chip ? <ChipSprite character={t.chip} /> : null}
+              </span>
+              <b>{t.label}</b>
+              <span aria-hidden="true">·</span>
+              <em>{t.count}</em>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {actions ? <div className={styles.actions}>{actions}</div> : null}
       {paper && stamp ? <span className={styles.stamp}>{stamp}</span> : null}
     </>

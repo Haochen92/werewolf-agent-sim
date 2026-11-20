@@ -30,6 +30,9 @@ export const TRACKS = {
     wolves: track('win-wolves'),
     serial_killer: track('win-lone-killer'),
     necromancer: track('win-lone-killer'),
+    // a neutral's game no side won has no music of its own: the draw's
+    speculator: track('win-draw'),
+    fortune_teller: track('win-draw'),
     draw: track('win-draw'),
   } satisfies Record<WinnerKey, string>,
 } as const;

@@ -17,6 +17,7 @@ from Agents.turn.addressing_agent import _sanitize_against_roster
 from Agents.turn.human_turn import HumanTurnContractError, validate_human_response
 from Agents.schemas.roles import lineup
 from tests.factories.builders import human_turn_request as _request
+from tests.factories.scripted_model import FakeModels
 
 LINEUP = lineup("serial_killer", "speculator")
 
@@ -58,8 +59,11 @@ def test_human_role_preference_lands_on_the_human_seat(role):
 
 
 def test_multi_human_deals_distinct_seats():
+    # Act
     state = _state(human_player=3)
     seats = state["human_players"]
+
+    # Assert
     assert len(seats) == len(set(seats)) == 3
     assert all(seat in state["roles"] for seat in seats)
 
@@ -89,22 +93,32 @@ def test_human_seat_count_caps_at_the_cast():
 # ---- pipeline gating (no span / retrieval / adoption / EvalCase for a human) ----------------------
 
 def test_day_pipeline_routes_human_before_retrieval(monkeypatch):
-    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key: {"routed": output_key})
+    # Arrange: the human path returns its output key, and retrieval fails the test
+    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key, models=None: {"routed": output_key})
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: pytest.fail("retrieval ran for a human seat"))
+
+    # Act
     out = pl.run_memory_informed_action(
         _human_payload(), None, None, "day_vote", None, None, "day_votes"
     )
+
+    # Assert
     assert out == {"routed": "day_votes"}
 
 
 def test_night_pipeline_routes_human_before_retrieval(monkeypatch):
-    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key: {"routed": output_key})
+    # Arrange: the human path returns its output key, and retrieval fails the test
+    monkeypatch.setattr(pl, "run_human_decision", lambda payload, output_key, models=None: {"routed": output_key})
     monkeypatch.setattr(pl, "enrich_payload_with_memory",
                         lambda *a, **k: pytest.fail("retrieval ran for a human seat"))
+
+    # Act
     out = pl.run_memory_informed_night_action(
         _human_payload(human_player=True), None, None, None, None, "healer_target"
     )
+
+    # Assert
     assert out == {"routed": "healer_target"}
 
 
@@ -144,10 +158,15 @@ def test_extra_field_rejected():
 
 
 def test_a_line_longer_than_the_cap_is_refused():
+    # Arrange
     req = _request(phase="day_channel", can_pass=True, valid_targets=[])
+
+    # Round 1: a day line at the cap, and one a character over it
     assert validate_human_response(req, {"message": "x" * h.MAX_LINE_CHARS}).message
     with pytest.raises(HumanTurnContractError, match="500 characters"):
         validate_human_response(req, {"message": "x" * (h.MAX_LINE_CHARS + 1)})
+
+    # Round 2: a pack line a character over the cap
     pack = _request(phase="wolf_channel", can_pass=False, valid_targets=[])
     with pytest.raises(HumanTurnContractError, match="500 characters"):
         validate_human_response(pack, {"message": "y" * (h.MAX_LINE_CHARS + 1)})
@@ -156,8 +175,12 @@ def test_a_line_longer_than_the_cap_is_refused():
 def test_pass_honored_when_offered_rejected_when_not():
     # Every human discussion turn now offers a pass (reactive included — a mention isn't a
     # demand); the validator still hard-rejects a pass against a request that didn't offer one.
+
+    # Round 1: a request that offers a pass
     offered = _request(phase="day_channel", can_pass=True, valid_targets=[])
     assert validate_human_response(offered, {"pass_turn": True}).pass_turn is True
+
+    # Round 2: a request that does not offer one
     not_offered = _request(phase="day_channel", can_pass=False, valid_targets=[])
     with pytest.raises(HumanTurnContractError):
         validate_human_response(not_offered, {"pass_turn": True})
@@ -174,14 +197,18 @@ def test_human_reactive_pass_discharges_the_obligation(monkeypatch):
     # neutral responses to everyone owed, or the scheduler would re-fire the turn forever.
     from Agents.turn.scheduler import build_reactive_queue
 
+    # Arrange: a human who passes a reactive turn owed to p2
     monkeypatch.setattr(h, "interrupt", lambda req: {"pass_turn": True})
     ask = DayChannel(day=1, seq=0, player="p2", message="p1, thoughts?",
                        addressed_targets=[AddressedTarget(
                            target="p1", addressed_form="question", stance="neutral")])
     payload = _human_payload(day_channel=[ask],
                              firing_reason=FiringReason(tier="reactive", owes=["p2"]))
+
+    # Act
     out = h.run_human_decision(payload, "day_channel")
 
+    # Assert
     entry = out.entry
     assert entry is not None
     assert entry.passed and entry.message == ""
@@ -252,19 +279,28 @@ def test_sanitize_drops_offroster_and_dedups():
     assert [(t.target, t.addressed_form) for t in out] == [("p2", "question")]
 
 
-def test_extractor_failure_permits_the_human_action(monkeypatch):
+def test_extractor_failure_permits_the_human_action():
     # The extractor fails open: an LLM error yields no addressees, never an exception up the turn.
     from Agents.turn import addressing_agent as aa
 
-    monkeypatch.setattr(aa, "get_llm_extractor", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
-    assert aa.extract_addressed_targets("p2 is lying", _human_payload(), 1) == []
+    class _UnbuildableExtractor(FakeModels):
+        def extractor(self):
+            raise RuntimeError("boom")
+
+    assert aa.extract_addressed_targets("p2 is lying", _human_payload(), 1, models=_UnbuildableExtractor()) == []
 
 
 def test_reactive_debt_discharged_from_owes(monkeypatch):
     # A reactive human who speaks clears their obligation even if the extractor tags nothing.
-    monkeypatch.setattr(h, "extract_addressed_targets", lambda msg, payload, day: [])
+
+    # Arrange: an extractor that tags no one
+    monkeypatch.setattr(h, "extract_addressed_targets", lambda msg, payload, day, models=None: [])
     payload = _human_payload(firing_reason=FiringReason(tier="reactive", owes=["p2"]))
+
+    # Act
     out = h._human_addressed_targets(HumanTurnResponse(message="not me"), payload, "day_channel")
+
+    # Assert
     assert [(t.target, t.addressed_form) for t in out] == [("p2", "response")]
 
 
@@ -292,6 +328,7 @@ def test_pack_skill_fanout_routes_human_wolves_to_the_uncached_twin():
     # The pack's skill turns are its one parallel superstep (the nine-seat pack vote's place).
     from Agents.nodes.night.pack import CARRIER_ROUND, pack_fan_out_skills
 
+    # Arrange
     state = {
         "surviving_wolves": ["p3", "p4"], "surviving_villagers": ["p1"],
         "roles": {"p1": "healer", "p3": "chanteuse", "p4": "illusionist"}, "lineup": LINEUP,
@@ -300,13 +337,17 @@ def test_pack_skill_fanout_routes_human_wolves_to_the_uncached_twin():
         "day_channel": [], "day_summaries": [], "wolf_channel": [],
         "current_day": 1, "current_round": CARRIER_ROUND, "carrier": "p3", "wolves_target": "p1",
     }
+
+    # Act
     sends = pack_fan_out_skills(state)
+
+    # Assert
     assert {(s.node, s.arg["player_id"]) for s in sends} == {
         ("PACK_SKILL", "p3"), ("PACK_SKILL_HUMAN", "p4")}
 
 
 @pytest.mark.parametrize("notes, free", [("4 dodging", False), ("  ", True), ("", True)])
-def test_drafting_phrases_notes_or_writes_freely_without_them(monkeypatch, notes, free):
+def test_drafting_phrases_notes_or_writes_freely_without_them(notes, free):
     """The pack-talk helper: with notes it only phrases them; blank notes leave the line to
     it. (The day's speech is drafted by the seat's own agent: test_draft_preview.py.)"""
     from langchain_core.messages import AIMessage
@@ -314,14 +355,20 @@ def test_drafting_phrases_notes_or_writes_freely_without_them(monkeypatch, notes
 
     from Agents.turn import drafting_agent as da
 
+    # Arrange: a model that records its prompt and returns a quoted line
     seen = []
 
     def fake_model(prompt):
         seen.append(prompt.to_messages())
         return AIMessage(content='"why did 4 abstain?"')
 
-    monkeypatch.setattr(da, "get_llm", lambda: RunnableLambda(fake_model))
-    line = da.draft_from_notes(_request(player_id="p1", phase="wolf_channel", valid_targets=[]), notes)
+    models = FakeModels(seat=RunnableLambda(fake_model))
+
+    # Act
+    line = da.draft_from_notes(_request(player_id="p1", phase="wolf_channel", valid_targets=[]), notes,
+                               models=models)
+
+    # Assert
     assert line == "why did 4 abstain?"
     system, human = seen[0]
     assert ("left it to you" in system.content) is free

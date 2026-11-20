@@ -22,20 +22,20 @@ describe('the guide’s sample drafts', () => {
   });
 
   it('reads the shared notes: a guess first, else the note, cut short', () => {
-    const book = { notes: { 2: 'Defended seat 5 too fast' }, guesses: {} };
+    const book = { lines: { 2: { 1: 'Defended seat 5 too fast' } }, guesses: {} };
     expect(sampleDraft({ ...ask, book })).toContain(
       'My note on them: "Defended seat 5 too fast".',
     );
-    const guessed = { notes: { 2: 'quiet' }, guesses: { 2: 'serial_killer' } };
+    const guessed = { lines: { 2: { 1: 'quiet' } }, guesses: { 2: 'serial_killer' } };
     expect(sampleDraft({ ...ask, book: guessed })).toMatch(
       /^I think seat 2 could be the serial killer/,
     );
-    const long = { notes: { 2: 'x'.repeat(90) } };
+    const long = { lines: { 2: { 1: 'x'.repeat(90) } } };
     expect(sampleDraft({ ...ask, book: long })).toContain(`"${'x'.repeat(57)}…"`);
   });
 
   it('a redraft revises about the noted seat', () => {
-    const book = { notes: { 2: 'quiet' } };
+    const book = { lines: { 2: { 1: 'quiet' } } };
     expect(sampleDraft({ ...ask, current: 'Hello.', book })).toMatch(
       /^Put another way: seat 2/,
     );

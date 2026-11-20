@@ -22,8 +22,8 @@ equally: the game engine, and the evaluation methodology used to judge it.
 - **Whether the loop compounds is still open.** The "v7" self-consolidating loop
   is built and has been run, but the question of whether it produces *compounding*
   gains is not yet settled — the first paid runs were invalidated by the harness's
-  own checks. See [`evidence/v7_final/report.md`](evidence/v7_final/report.md) and
-  the measurement plan in [`evidence/execution_plan/`](evidence/execution_plan/).
+  own checks. See [`evidence/memory_system/v7/report.md`](evidence/memory_system/v7/report.md) and
+  the measurement plan in [`evidence/memory_system/v7/execution_plan/`](evidence/memory_system/v7/execution_plan/).
 
 (All quantitative claims and their caveats live in the evidence reports, not here.)
 

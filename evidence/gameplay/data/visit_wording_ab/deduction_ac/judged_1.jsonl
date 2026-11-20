@@ -1,0 +1,48 @@
+{"id": "v001", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v005", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v009", "mech": 1, "chew": 0, "clear": null, "note": "Says p3 watch and p4 follow can't both be right; Sentinel isn't in its own result, follow fits."}
+{"id": "v013", "mech": 0, "chew": 0, "clear": 0, "note": "Never says it is its own follow; 'the one who visited' reads like a watch result."}
+{"id": "v017", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v021", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v025", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v029", "mech": 1, "chew": 0, "clear": null, "note": "Treats 'player_3 visited me' as incompatible with a follow; follow showing X went to speaker is valid."}
+{"id": "v033", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v037", "mech": 1, "chew": 0, "clear": null, "note": "Calls p3 empty watch the opposite of p4 follow; they are consistent (watcher not listed)."}
+{"id": "v041", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v045", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v049", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v053", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v057", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v061", "mech": 1, "chew": 0, "clear": null, "note": "Says a Sentinel watch and Trailseer follow cannot both be right; they fit together."}
+{"id": "v065", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v069", "mech": 1, "chew": 0, "clear": null, "note": "Puts the disputed visit at player_3's door; the follow said player_3 went to player_4."}
+{"id": "v073", "mech": 0, "chew": 0, "clear": 0, "note": "(passed)"}
+{"id": "v077", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v081", "mech": 1, "chew": 0, "clear": null, "note": "Claims only a fake follow reconciles; true watch and true follow are consistent."}
+{"id": "v085", "mech": 1, "chew": 0, "clear": null, "note": "Asks trailseer whether anyone else visited them; a visited player can't see visitors."}
+{"id": "v089", "mech": 1, "chew": 0, "clear": null, "note": "Sets p3 'no one came' against p4 follow and votes p4; watcher isn't in own result."}
+{"id": "v093", "mech": 1, "chew": 0, "clear": null, "note": "Says one of p3/p4 is wrong about direction; both results are consistent."}
+{"id": "v097", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v101", "mech": 1, "chew": 0, "clear": null, "note": "Asks Sentinel who came to itself; a watch shows visitors to the watched player."}
+{"id": "v105", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v109", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v113", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v117", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v121", "mech": 1, "chew": 0, "clear": null, "note": "Says p10 follow and p3 watch can't both be true; p10's follow visit is what p3 saw."}
+{"id": "v125", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v129", "mech": 1, "chew": 0, "clear": null, "note": "Says p3/p4 cannot both be right and garbles the rule ('never told of its own watch')."}
+{"id": "v133", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v137", "mech": 0, "chew": 0, "clear": 0, "note": "Admits the visit but never states its watch result."}
+{"id": "v141", "mech": 1, "chew": 1, "clear": null, "note": "Implies p4 should have seen visitors at own door; line is mostly about what a follow shows."}
+{"id": "v145", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v149", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v153", "mech": 1, "chew": 0, "clear": null, "note": "Says watching means not the visitor p4 saw; a watch is a visit, exactly what the follow showed."}
+{"id": "v157", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v161", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v165", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v169", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v173", "mech": 0, "chew": 0, "clear": 0, "note": "Only hints at a reason; never states its own watch result."}
+{"id": "v177", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v181", "mech": 1, "chew": 0, "clear": null, "note": "Says empty watch and p4's visit can't coexist; Sentinel isn't listed in own watch."}
+{"id": "v185", "mech": 0, "chew": 0, "clear": 0, "note": "(passed)"}
+{"id": "v189", "mech": 0, "chew": 0, "clear": null, "note": ""}

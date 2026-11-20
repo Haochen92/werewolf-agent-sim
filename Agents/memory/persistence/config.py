@@ -82,11 +82,12 @@ class DehaloConfig(BaseModel):
 class ExtractionConfig(BaseModel):
     """How post-game extraction runs.
 
-    The LIVE graph now runs the v6 per-CELL fan-out (``extract_postgame_per_cell``): one dual
+    Extraction runs offline, never inside a game (``scripts/extract_batch.py``). Its Gemini path runs
+    the v6 per-CELL fan-out (``extract_postgame_per_cell``): one dual
     {observations, strategy_points} call per (role, phase) cell over a byte-identical cell prefix.
     ``cache_prefix`` creates a Vertex context cache from that shared prefix so the concurrent cell
     calls hit it instead of re-sending it (best-effort; falls back to the full uncached prompt);
-    ``max_workers`` caps the cell concurrency. ``per_role`` is no longer read by the live graph —
+    ``max_workers`` caps the cell concurrency. ``per_role`` is no longer read by the extraction job —
     it (and the v5 single-shot path) survive only for the offline store-builders / experiments that
     still extract the v5 GameStrategyOutput schema.
     """

@@ -59,28 +59,38 @@ def test_the_rendered_prefix_is_the_same_for_every_seat_and_call_type():
     from Agents.schemas import FiringReason
     from tests.fixtures.day_discuss_prompt_golden import board
 
+    # Arrange
     state = board("healer")
     living = [r for r in ROLES if _seat(r) not in {d.player for d in state["dead_roster"]}]
+
+    # Act: render every call type's template for every living seat
     prefixes = set()
     for role in living:
         payload = build_speaker_send(state, _seat(role), role, FiringReason(tier="proactive", owes=[])).arg
         inputs = build_agent_prompt_input(payload)
         for template in _templates().values():
             prefixes.add(_prefix(_render(template, inputs)))
+
+    # Assert
     assert len(living) >= 6 and len(prefixes) == 1
-    assert "player_4: player_2, why abstain?" in prefixes.pop()  # the real transcript, not a placeholder
+    assert 'player_4: "player_2, why abstain?"' in prefixes.pop()  # the real transcript, not a placeholder
 
 
 def test_a_held_back_draft_reaches_no_prompt_not_even_its_authors():
     from Agents.prompts.day_discuss import day_discuss_template
     from Agents.prompts.prompt_inputs import build_agent_prompt_input
 
+    # Arrange: a speaker payload that holds the speaker's own held-back draft
     role = ROLES[0]
     payload = speaker_payload(role)
     payload["day_channel"] = [*payload["day_channel"], DayChannel(
         day=payload["current_day"], seq=99, player=_seat(role), message="", passed=True, gated=True,
         gated_candidate="my secret draft")]
+
+    # Act
     rendered = _render(day_discuss_template(role), build_agent_prompt_input(payload))
+
+    # Assert
     assert "my secret draft" not in rendered[1][1]
 
 
@@ -88,20 +98,25 @@ def test_a_round_turns_note_is_kept_only_for_a_line_the_filter_let_through(monke
     from Agents.nodes.day import flow
     from Agents.schemas import RoundCandidate
 
+    # Arrange: two lines with a note each, and a filter that holds player_2's line
     said = DayChannel(day=2, seq=0, player="player_1", message="I am the sentinel.")
     held = DayChannel(day=2, seq=0, player="player_2", message="Same point again.")
     candidates = [RoundCandidate(day=2, day_round="opening", entry=said, strategy="note 1"),
                   RoundCandidate(day=2, day_round="opening", entry=held, strategy="note 2")]
 
-    def hold_player_2(ordered):
+    def hold_player_2(ordered, models=None):
         return [e.model_copy(update={"passed": True, "gated": True, "gated_candidate": e.message, "message": ""})
                 if e.player == "player_2" else e for e in ordered]
 
     monkeypatch.setattr(flow, "filter_openings", hold_player_2)
-    monkeypatch.setattr(flow, "_round_order", lambda state: ["player_1", "player_2"])
+    monkeypatch.setattr(flow, "_round_order", lambda state, config: ["player_1", "player_2"])
     state = {"current_day": 2, "day_round": "opening", "round_candidates": candidates,
              "day_channel": [], "human_players": []}
+
+    # Act
     out = flow.collect_round(state, {"configurable": {}})
+
+    # Assert
     assert out["agent_strategies"] == {"player_1": "note 1"}
 
 
@@ -114,7 +129,10 @@ def _openai_payload(model: str) -> dict:
 
 
 def test_openai_gets_explicit_breakpoints_on_the_rules_and_the_public_record():
+    # Act
     payload = _openai_payload("gpt-6-luna")
+
+    # Assert
     assert payload["extra_body"]["prompt_cache_options"] == {"mode": "explicit"}
     system, user = payload["messages"]
     assert system["content"][0]["prompt_cache_breakpoint"] == {"mode": "explicit"}

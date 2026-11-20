@@ -64,9 +64,10 @@ def test_with_the_filter_on_the_whole_cell_is_searched_and_the_cap_refills_with_
         yield SimpleNamespace(update=lambda **_: None)
 
     lookup_cache.clear()
-    monkeypatch.setattr(pipeline, "_generate_situations_for_agent", lambda p, a: (["s"], [{"players_alive": 9}]))
+    monkeypatch.setattr(pipeline, "_generate_situations_for_agent",
+                        lambda p, a, models=None: (["s"], [{"players_alive": 9}]))
     monkeypatch.setattr(pipeline, "_retrieve", fake_retrieve)
-    monkeypatch.setattr(tracing.langfuse, "start_as_current_observation", span)
+    monkeypatch.setattr(tracing.get_langfuse(), "start_as_current_observation", span)
     config = build_runnable_config(RunConfig(stage_filter=True, memory_config={"chanteuse": True},
                                              retrieval_types_config={"observations": False, "strategy_points": True}))
     payload = {"current_day": 2, "current_round": 1, "day_round": "opening", "player_id": "p1",

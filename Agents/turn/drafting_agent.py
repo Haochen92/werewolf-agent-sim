@@ -16,7 +16,7 @@ from logging import getLogger
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import get_llm
+from Agents.llm_factory import GameModels, env_models
 from Agents.schemas.human_player import HumanTurnRequest
 
 logger = getLogger(__name__)
@@ -109,19 +109,21 @@ def player_direction(
     return "\n".join(lines)
 
 
-def draft_from_notes(request: HumanTurnRequest, notes: str) -> str:
+def draft_from_notes(request: HumanTurnRequest, notes: str, *, models: GameModels | None = None) -> str:
     """One line saying what ``notes`` say, in the player's voice, for the wolves' night talk
     turn ``request`` asks about. Blank ``notes`` leave the line to the model: one of its
     own, grounded in the talk so far.
 
     Raises RuntimeError, with the cause, when the model call fails or returns nothing; the
-    caller tells the player to type the line instead. Never returns an empty string.
+    caller tells the player to type the line instead. Never returns an empty string. A server
+    request runs outside the graph, so the model comes from ``models``; None takes the environment's.
     """
     roster = [p for p in request.surviving_players if p != request.player_id]
     notes = notes.strip()
     prompt = DRAFTING_PROMPT if notes else FREE_DRAFTING_PROMPT
+    models = models or env_models()
     try:
-        reply = (prompt | get_llm()).invoke(
+        reply = (prompt | models.seat()).invoke(
             {
                 "player_id": request.player_id,
                 "audience": "your fellow wolves, in private",
@@ -134,8 +136,9 @@ def draft_from_notes(request: HumanTurnRequest, notes: str) -> str:
         )
         line = _one_line(reply.content)
     except Exception as exc:
-        logger.warning("drafting a line for %s failed: %s", request.player_id, exc)
-        raise RuntimeError(f"drafting failed: {exc}") from exc
+        said = models.redact(str(exc))
+        logger.warning("drafting a line for %s failed: %s", request.player_id, said)
+        raise RuntimeError(f"drafting failed: {said}") from exc
     if not line:
         raise RuntimeError("drafting returned an empty line")
     return line

@@ -131,7 +131,10 @@ def test_a_pack_payload_carries_the_pack_to_a_wolf_and_the_pack_record_only():
 
 
 def test_the_night_payloads_pass_the_standing_leak_checks():
+    # Act
     log = night_log()
+
+    # Assert
     assert len(log) == len(ROLES)
     assert check_wolf_identity_isolation(log, ROLES) == []
     assert check_wolf_channel_isolation(log) == []
@@ -139,12 +142,15 @@ def test_the_night_payloads_pass_the_standing_leak_checks():
 
 
 def test_the_night_record_check_flags_a_record_planted_in_another_players_payload():
+    # Arrange: a night record of player_2 planted in player_1's payload
     log = night_log()
     town = next(e for e in log if e["player_id"] == "player_1")
     town["prompt_input"]["night_actions"] += "\nplayer_7 reads Suspicious."
 
+    # Act
     leaks = check_night_record_isolation(log, NIGHT_RECORDS, ROLES)
 
+    # Assert
     assert len(leaks) == 1
     assert "player_1" in leaks[0] and "player_2's night record" in leaks[0]
 
@@ -171,8 +177,10 @@ def finished_game() -> dict:
 
 
 def test_leak_inputs_lift_the_dead_roster_the_held_lines_and_the_night_records():
+    # Act
     inputs = leak_inputs(finished_game())
 
+    # Assert
     assert [d.player for d in inputs["deaths"]] == ["player_2", "player_9"]
     assert inputs["gated_candidates"] == [HELD_TEXT]
     assert inputs["night_records"] == NIGHT_RECORDS
@@ -188,10 +196,15 @@ def test_a_full_run_over_the_night_log_with_the_lifted_inputs_is_clean():
 
 
 def test_a_full_run_flags_a_dead_player_who_was_still_prompted():
+    # Arrange: a finished game's log plus a night turn for the dead player_2
     result = finished_game()
     log = night_log(result) + [entry(night_turn_payload(result, "player_2", "investigator"),
                                      "investigator_target")]
+
+    # Act
     leaks = run_leak_tests(log, ROLES, **leak_inputs(result))
+
+    # Assert
     assert len(leaks) == 1 and "dead player player_2" in leaks[0]
 
 
@@ -203,20 +216,28 @@ def _prompt(player: str, day: int, output_key: str) -> dict:
 
 
 def test_a_player_killed_at_night_may_act_that_night_but_not_the_next_day():
+    # Arrange: player_2 died on night 1
     deaths = [DeathRecord(player="player_2", role="investigator", day=1, phase="night")]
+
+    # Round 1: prompts on day 1 and night 1 are no leak
     log = [_prompt("player_2", 1, "day_channel"), _prompt("player_2", 1, "investigator_target")]
     assert check_eliminated_players_excluded(log, deaths) == []
 
+    # Round 2: a day-2 prompt for player_2 is flagged
     log.append(_prompt("player_2", 2, "day_channel"))
     leaks = check_eliminated_players_excluded(log, deaths)
     assert len(leaks) == 1 and "player_2" in leaks[0]
 
 
 def test_a_player_lynched_by_day_gets_no_night_turn_that_day():
+    # Arrange: player_9 was lynched on day 2
     deaths = [DeathRecord(player="player_9", role="speculator", day=2, phase="day")]
+
+    # Round 1: the day-2 discussion and vote prompts are no leak
     log = [_prompt("player_9", 2, "day_channel"), _prompt("player_9", 2, "day_votes")]
     assert check_eliminated_players_excluded(log, deaths) == []
 
+    # Round 2: a night-2 prompt for player_9 is flagged
     log.append(_prompt("player_9", 2, "speculator_pick"))
     leaks = check_eliminated_players_excluded(log, deaths)
     assert len(leaks) == 1 and "player_9" in leaks[0]
@@ -226,3 +247,27 @@ def test_the_eliminated_check_takes_death_dicts_as_well():
     deaths = [{"player": "player_2", "role": "investigator", "day": 1, "phase": "night"}]
     log = [_prompt("player_2", 3, "day_channel")]
     assert len(check_eliminated_players_excluded(log, deaths)) == 1
+
+
+def test_the_same_words_in_the_seats_own_record_are_no_leak():
+    # Two killers on one victim, and a Necromancer's block through the dead Chanteuse's body: the
+    # receiving seat's own record carries the sentence (persona voice games, 2026-10-18).
+
+    # Arrange
+    records = [
+        NightActionRecord(day=1, actor="wolves", action="kill", target="player_3",
+                          outcome="player_3 survived: the healer saved them."),
+        NightActionRecord(day=1, actor="player_6", action="kill", target="player_3",
+                          outcome="player_3 survived: the healer saved them."),
+        NightActionRecord(day=2, actor="player_4", action="block", target="player_5",
+                          outcome="player_5 was roleblocked tonight."),
+        NightActionRecord(day=3, actor="player_8", action="block", target="player_5",
+                          outcome="Through player_4's body: player_5 was roleblocked tonight."),
+    ]
+    killer = {"player_id": "player_6", "player_role": "serial_killer",
+              "prompt_input": {"night_actions": "Night 1: player_3 survived: the healer saved them."}}
+    necro = {"player_id": "player_8", "player_role": "necromancer",
+             "prompt_input": {"night_actions": "Night 3: Through player_4's body: player_5 was roleblocked tonight."}}
+
+    # Act and assert
+    assert check_night_record_isolation([killer, necro], records, ROLES) == []

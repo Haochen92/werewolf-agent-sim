@@ -5,7 +5,8 @@ the result) and each memory-on decision with the verdicts its seat gave the less
 batch run writes both (the game record and its eval-case sidecar). A served game keeps neither: its
 record is rebuilt from the wire events (``record_from_event_log``) and its decisions from the
 ``memory_consulted`` events (``eval_cases_from_events``), in the same shapes, so the credit code reads
-either. Only AI-only games teach (the poisoning rule); a served game with a human seat is never loaded.
+either. A served game with a human seat is loaded with its human seats named, and credit grades only
+its AI seats' decisions (``credit_rules.iter_eval_cases``; owner, 2026-10-26).
 """
 
 from __future__ import annotations
@@ -202,13 +203,15 @@ def eval_cases_from_events(events: list[dict], record: dict) -> list[dict]:
 
 
 def games_from_db(dsn: str | None = None, *, memory: bool | None = True, since: str | None = None) -> list[dict]:
-    """Completed AI-only ten-seat served games (memory on by default; None = either), each as a record
-    with its decisions inline (``eval_cases``). Read only. ``since``: an ISO time, games finished after it."""
+    """Completed ten-seat served games, with or without human seats (memory on by default; None =
+    either), each as a record with its decisions inline (``eval_cases``) and its human seats named
+    (``human_players``). Read only. ``since``: an ISO time, games finished after it."""
     import psycopg
     from psycopg.rows import dict_row
 
     dsn = dsn or os.environ.get("WW_POSTGRES_DSN")
-    query = ("select game_id from games where status = 'completed' and n_humans = 0 "
+    query = ("select game_id, n_humans, human_players from games "
+             "where status = 'completed' and n_humans is not null "
              "and jsonb_array_length(coalesce((select payload->'lineup' from events e "
              "where e.game_id = games.game_id and e.seq = 1), '[]')) = 10")
     params: list = []
@@ -226,6 +229,9 @@ def games_from_db(dsn: str | None = None, *, memory: bool | None = True, since: 
                 "select payload from events where game_id = %s order by seq", (row["game_id"],)).fetchall()]
             record = record_from_event_log(row["game_id"], events)
             record["eval_cases"] = eval_cases_from_events(events, record)
+            record["human_players"] = list(row["human_players"] or [])
+            if row["n_humans"] and not record["human_players"]:
+                record["human_player"] = True  # humans counted but not named: credit drops the game
             record["source"] = "server"
             games.append(record)
     return games

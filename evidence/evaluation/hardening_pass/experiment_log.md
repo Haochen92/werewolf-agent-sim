@@ -18,7 +18,7 @@
 
 ## §1 · Motivation — why harden now
 
-The store-progression conclusions (`../../memory_system/store_progression.md`) — static memory
+The store-progression conclusions (`../../memory_system/report.md`) — static memory
 helps town (the v5_0 anchor), retrieval precision is not the lever (v6_1), compounding is open
 (v7) — rest on four measurement methodologies. The consolidation review (`../source_map.md`,
 verify-in-code pass 2026-06-28) had already tagged several instruments as unverified or
@@ -80,7 +80,7 @@ The v7 credit signal rides the discussion tagger, and three failure modes are si
 degrades role_claims/private_reads; and the tag cache is keyed `(game_id, version)` only, which
 already caused one cross-arm cache hit ("scored OFF with ON tags"). Separately, the tagger's
 validation — the partial r ≈ +0.56 wolf / +0.60 SK vs win, the number that makes it a trustworthy
-deceiver metric — exists only as stdout from `evidence/v7_final/v2_full/tagger_skill_retest.py`
+deceiver metric — exists only as stdout from `evidence/memory_system/v7/v2_full/tagger_skill_retest.py`
 plus one experiment-log section; the load-bearing scripts write no artifact.
 
 ### §2.4 Known-but-unfixed instrument bugs, and wrong-sign proxies pushed co-equal
@@ -101,7 +101,7 @@ Wolf day-offense being unmeasured by a deterministic proxy is a *finding*, not a
 clean lead-vs-blend build was run and was null, with a strong datum (109/169 mislynch days had no
 wolf among the accusers — town mislynches itself), and the tagger is the validated instrument for
 wolf discussion skill. The sampled-human-review gap was confirmed exactly as documented in
-[`../sampled_human_review/report.md`](../sampled_human_review/report.md); its existing plan is
+[`../labeling/sampled_reads/report.md`](../labeling/sampled_reads/report.md); its existing plan is
 sound and is executed in this pass rather than redesigned.
 
 ### §2.6 The resulting plan
@@ -178,7 +178,7 @@ slug already partitions them. *Catches:* same test file — cross-arm non-collis
 match → hit.
 
 **4.4 The tagger's validation numbers had no artifact (§2.3).** `tagger_skill_retest.py` and
-`tagger_deleak_ablation.py` (frozen evidence scripts in `evidence/v7_final/v2_full/`) now
+`tagger_deleak_ablation.py` (frozen evidence scripts in `evidence/memory_system/v7/v2_full/`) now
 additionally write `*_results.json` next to themselves; statistics logic untouched, and they were
 not re-run (paid) — the artifacts appear on next execution.
 
@@ -312,7 +312,7 @@ second LLM call per turn; flagged in code.
 ## §7 · Phase 3 (build half) — the diagnosis sampler exists (done 2026-07-02)
 
 Rung ② of the modality ladder gets its apparatus (§2.5; spec = the pre-existing
-[`../sampled_human_review/plan.md`](../sampled_human_review/plan.md)). Built at $0; suite
+[`../labeling/sampled_reads/plan.md`](../labeling/sampled_reads/plan.md)). Built at $0; suite
 431 → 445 passed (14 new tests). The spot-check that *uses* it (the enum-kappa half of the §5
 decision rule) needs ~2h of human labeling and stays pending.
 
@@ -331,7 +331,7 @@ review packet.
 
 **Smoke result (real data, read-only).** A 9-case cohort from `ab_nh_town`: 3 outlier / 3
 leverage / 4 stratified; roles and phases mixed; byte-identical strata across two same-seed runs.
-Artifacts under [`../sampled_human_review/sampler_smoke/`](../sampled_human_review/sampler_smoke/).
+Artifacts under [`../labeling/sampled_reads/sampler_smoke/`](../labeling/sampled_reads/sampler_smoke/).
 
 **One deviation from the spec, disclosed.** The plan's "flag every `is_swing` case" anchor
 selected 126/143 cases on real data — late game is structurally pivotal, so an all-swing anchor
@@ -346,8 +346,8 @@ refinement forced by data, not a scope change.
 ## Sources
 
 - Review inputs: [`../source_map.md`](../source_map.md) (reliability ledger + 06-28 verify-pass),
-  [`../report.md`](../report.md), [`../../memory_system/store_progression.md`](../../memory_system/store_progression.md),
-  the per-modality spokes under `../llm_judge/` · `../labeling/` · `../sampled_human_review/`.
+  [`../report.md`](../report.md), [`../../memory_system/report.md`](../../memory_system/report.md),
+  the per-modality spokes under `../llm_judge/` · `../labeling/` · `../labeling/sampled_reads/`.
 - Code read at `4b1449e`: `evaluation/src/experiments/decision_replay.py`,
   `evaluation/src/replay/*`, `evaluation/src/loop/{decision_scoring,discussion_tagger,credit,measure}.py`,
   `evaluation/src/judges/retrieval.py`, `Agents/compute_metrics.py`, `Agents/schemas/memory.py`,

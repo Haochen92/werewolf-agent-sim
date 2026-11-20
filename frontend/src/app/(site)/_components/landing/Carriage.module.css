@@ -11,6 +11,9 @@
 
 /* ---------- the depot: the figure spans the screen, past the column ---------- */
 .depot {
+  /* the track under the wheels: its height, and how far down it the wheels stand */
+  --rail-h: 64px;
+  --rail-top: 12px;
   /* the whole carriage on a desktop: end · door · the game's window · door · end */
   --end: 24px;
   --dw: 88px;
@@ -38,6 +41,200 @@
   width: var(--cw);
   margin: 0 auto;
 }
+/* the night behind it, across the screen (owner, 2026-10-18: a gradient, not a second picture
+   after the hero's): the page's black for the top half, then down to a dark blue at the wheels,
+   and snow falling through the black, gone by two thirds of the way down (owner). The flakes are
+   sheets drawn once and repeated, and only the sheets move (a transform each, two layers, behind
+   the carriage and never over the game's window); they start when the painted carriage is up and
+   are still for reduced motion. */
+.night {
+  position: absolute;
+  top: -90px;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--bg) 0 46%,
+    #0b1128 64%,
+    #121c44 86%,
+    #172453 100%
+  );
+}
+/* where the snow falls: faded out between half and two thirds of the way down (one mask, still,
+   over the two moving sheets) */
+.fall {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 0 50%, transparent 67%);
+  mask-image: linear-gradient(#000 0 50%, transparent 67%);
+}
+/* two depths, each a sheet of flakes repeated on its own spacing (so no grid shows) and
+   falling at its own pace: the near one larger and quicker, the far one fainter and slower */
+.flakes,
+.fall::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--tile)) 0 0;
+  background-size: var(--tile) var(--tile);
+  animation: snowfall var(--fall) linear infinite paused;
+}
+.flakes {
+  --tile: 310px;
+  --fall: 16s;
+  background-image:
+    radial-gradient(
+      circle at 241px 195px,
+      rgba(240, 244, 255, 0.66) 0 1.6px,
+      transparent 2.3px
+    ),
+    radial-gradient(
+      circle at 7px 177px,
+      rgba(240, 244, 255, 0.87) 0 1.8px,
+      transparent 2.5px
+    ),
+    radial-gradient(
+      circle at 45px 175px,
+      rgba(240, 244, 255, 0.78) 0 1.9px,
+      transparent 2.6px
+    ),
+    radial-gradient(
+      circle at 24px 198px,
+      rgba(240, 244, 255, 0.88) 0 1.5px,
+      transparent 2.2px
+    ),
+    radial-gradient(
+      circle at 220px 84px,
+      rgba(240, 244, 255, 0.62) 0 1.5px,
+      transparent 2.2px
+    ),
+    radial-gradient(
+      circle at 71px 263px,
+      rgba(240, 244, 255, 0.9) 0 2.2px,
+      transparent 2.9px
+    ),
+    radial-gradient(
+      circle at 36px 200px,
+      rgba(240, 244, 255, 0.87) 0 2.1px,
+      transparent 2.8px
+    ),
+    radial-gradient(
+      circle at 153px 108px,
+      rgba(240, 244, 255, 0.82) 0 2px,
+      transparent 2.7px
+    ),
+    radial-gradient(
+      circle at 219px 48px,
+      rgba(240, 244, 255, 0.87) 0 2.1px,
+      transparent 2.8px
+    );
+}
+.fall::before {
+  --tile: 430px;
+  --fall: 38s;
+  background-image:
+    radial-gradient(
+      circle at 207px 147px,
+      rgba(240, 244, 255, 0.31) 0 0.9px,
+      transparent 1.6px
+    ),
+    radial-gradient(
+      circle at 366px 6px,
+      rgba(240, 244, 255, 0.31) 0 1.1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 197px 255px,
+      rgba(240, 244, 255, 0.36) 0 0.8px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 380px 61px,
+      rgba(240, 244, 255, 0.3) 0 1.2px,
+      transparent 1.9px
+    ),
+    radial-gradient(
+      circle at 395px 300px,
+      rgba(240, 244, 255, 0.51) 0 0.8px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 173px 8px,
+      rgba(240, 244, 255, 0.33) 0 1.1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 12px 260px,
+      rgba(240, 244, 255, 0.42) 0 0.7px,
+      transparent 1.4px
+    ),
+    radial-gradient(
+      circle at 105px 219px,
+      rgba(240, 244, 255, 0.35) 0 0.7px,
+      transparent 1.4px
+    ),
+    radial-gradient(
+      circle at 395px 51px,
+      rgba(240, 244, 255, 0.34) 0 1.1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 315px 372px,
+      rgba(240, 244, 255, 0.31) 0 1.2px,
+      transparent 1.9px
+    ),
+    radial-gradient(
+      circle at 288px 353px,
+      rgba(240, 244, 255, 0.34) 0 1px,
+      transparent 1.7px
+    ),
+    radial-gradient(
+      circle at 141px 381px,
+      rgba(240, 244, 255, 0.55) 0 1.2px,
+      transparent 1.9px
+    );
+}
+.depot[data-art] .flakes,
+.depot[data-art] .fall::before {
+  animation-play-state: running;
+}
+@keyframes snowfall {
+  to {
+    transform: translateY(var(--tile));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flakes,
+  .fall::before {
+    animation: none;
+  }
+}
+
+/* ---------- the scene comes up whole (FeaturedReplay, `data-ready`) ----------
+   Until the carriage's picture is in and the game is painted in its window, the section is the
+   house's loading picture, from the night's top to the details under the platform; then the
+   scene fades in at once, one opacity a box, and the loader fades off. */
+.gate {
+  position: absolute;
+  top: -90px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+}
+.depot[data-ready] .gate {
+  pointer-events: none;
+}
+.depot > :not(.gate) {
+  transition: opacity 0.4s ease-out;
+}
+.depot:not([data-ready]) > :not(.gate) {
+  opacity: 0;
+}
 
 /* ---------- the roof board: in the flow, so it stays on the roof at any height ---------- */
 .rbwrap {
@@ -48,22 +245,27 @@
   padding: 0 12px 16px;
 }
 .rboard {
-  composes: board from '../../../../components/site/Board.module.css';
   position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 26px;
   max-width: 100%;
-  padding: 12px 30px 13px;
-  border-radius: 8px;
+  padding: 0 12px;
+  /* the owner's walnut sign in its brass frame (scripts/fit_kit.py): a 9-slice, the frame and its
+     four rivets kept, the walnut stretched to the board */
+  border-style: solid;
+  border-width: 18px 20px;
+  border-image: url('../../../../assets/site/kit/train-sign.webp') 44 48 fill / 18px 20px
+    stretch;
 }
 /* brackets running down into the roof's deck, with foot plates */
 .rboard::before,
 .rboard::after {
   content: '';
   position: absolute;
-  top: 100%;
+  /* from under the frame's foot */
+  top: calc(100% + 18px);
   width: 7px;
   height: 17px;
   background: linear-gradient(90deg, #22180b, #a87a38 50%, #22180b);
@@ -739,6 +941,8 @@
     --pier: 12px;
     --top: 34px;
     --cw: 100vw;
+    /* a quarter less dark between the hero and the carriage than a desktop's (owner, 2026-10-18) */
+    margin-top: 64px;
   }
   .car {
     overflow: hidden;
@@ -794,7 +998,7 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    padding: 10px 20px 12px;
+    padding: 0 8px;
   }
   .field {
     align-items: center;
@@ -828,8 +1032,9 @@
 }
 
 /* ---------- the painted carriage (scripts/cut-carriage.mjs) ----------
-   FeaturedReplay sets `data-art` and the pieces' URLs (`--art-*`) as the carriage comes near
-   (the moment the theatre itself loads), so a visitor who never scrolls fetches none of them.
+   FeaturedReplay sets `data-art` and the pieces' URLs (`--art-*`) once the carriage has come
+   near (the moment the theatre itself loads) and its picture is decoded, so a visitor who never
+   scrolls fetches none of them, and the drawn carriage stays up until the picture can replace it.
    Every piece shows at half its painted size, sharp on a 2× screen; the stand-in stays under
    it until the pictures arrive. The doors keep their drawing, over the teak. */
 .depot[data-art] .roof {
@@ -888,4 +1093,129 @@
 }
 .depot[data-art] .gang {
   background: var(--art-bellows) center 0 / 24px 100px repeat-y;
+}
+
+/* ---------- the whole carriage (owner 2026-10-18): one picture, a 9-slice ----------
+   The whole carriage (a wooden toy: walnut, cream panels, brass, a snowy roof, wheels) is one
+   painted picture, its window cut out, laid round the game's window from
+   outside and under the glass, so it never paints over the moving stage. `--k` is one picture
+   pixel on screen: the corners and the strips above and below keep their painted proportions,
+   and only the window's sides stretch, to the game's 16:9. A desktop draws SPRITES.carriage.whole
+   (window 226–1312 across, 258–660 down, of 1536×1024); a phone its own twin, `wholePhone`, whose
+   posts are thin so the window keeps nearly the screen's width (window 135–1402 across, 261–687
+   down; the body's rails, 44–1492 across, fill the screen). The CSS carriage stays in the flow, hidden,
+   to hold the room above and below the window. Only the picture a screen uses is fetched. */
+.paint {
+  display: none;
+}
+@media (min-width: 861px) {
+  .depot[data-art] {
+    /* the picture's width on screen; the window is its hole, 1086 of its 1536 px */
+    --pw: min(1300px, 100vw - 24px);
+    --k: calc(var(--pw) / 1536);
+    --gw: calc(var(--k) * 1086);
+    --gh: calc(var(--gw) * 9 / 16);
+    --whole: var(--art-whole);
+    --st: 258;
+    --sr: 224;
+    --sb: 364;
+    --sl: 226;
+    /* the roof's clear top, and the wheels' last row (they stand on the track there) */
+    --clear: 33;
+    --cross: 991;
+  }
+}
+@media (max-width: 860px) {
+  .depot[data-art] {
+    /* the carriage's body, 1448 picture px, fills the screen */
+    --k: calc(100vw / 1448);
+    --gw: calc(var(--k) * 1267);
+    --gh: calc(var(--gw) * 9 / 16);
+    --whole: var(--art-wholePhone);
+    --st: 261;
+    --sr: 134;
+    --sb: 337;
+    --sl: 135;
+    --clear: 60;
+    --cross: 974;
+    --rail-h: 40px;
+    --rail-top: 8px;
+  }
+}
+.depot[data-art] .paint {
+  display: block;
+  position: absolute;
+  /* under the glass, which follows it in the window's own layer (not -1: a picture behind its
+     layer made Chromium's full-page capture think the signboard had scrolled away) */
+  z-index: 0;
+  top: calc(var(--k) * var(--st) * -1);
+  right: calc(var(--k) * var(--sr) * -1);
+  bottom: calc(var(--k) * var(--sb) * -1);
+  left: calc(var(--k) * var(--sl) * -1);
+  border-style: solid;
+  border-width: calc(var(--k) * var(--st)) calc(var(--k) * var(--sr))
+    calc(var(--k) * var(--sb)) calc(var(--k) * var(--sl));
+  border-image-source: var(--whole);
+  border-image-slice: var(--st) var(--sr) var(--sb) var(--sl);
+  border-image-repeat: stretch;
+  pointer-events: none;
+}
+/* the CSS carriage gives way: its room above the window (the roof, under the board) and below
+   (the lower panel and the wheels) is the picture's, its drawing hidden */
+.depot[data-art] .roof,
+.depot[data-art] .cantrail,
+.depot[data-art] .lights,
+.depot[data-art] .gang,
+.depot[data-art] .under,
+.depot[data-art] .door,
+.depot[data-art] .grab,
+.depot[data-art] .body::after {
+  visibility: hidden;
+}
+.depot[data-art] .roof,
+.depot[data-art] .cantrail,
+.depot[data-art] .under {
+  height: 0;
+}
+.depot[data-art] .band {
+  /* the picture's roof above the window, less its clear top */
+  padding: calc(var(--k) * (var(--st) - var(--clear))) 0 0;
+  background: none;
+}
+.depot[data-art] .lower {
+  /* the picture below the window, down to the wheels' feet, on the track */
+  height: calc(var(--k) * (var(--cross) - (1024 - var(--sb))));
+  background: none;
+}
+.depot[data-art] .lower::before {
+  display: none;
+}
+.depot[data-art] .platform {
+  z-index: 4;
+  /* the platform's edge below the track, not across the wheels (owner, 2026-10-18) */
+  margin-top: calc(var(--rail-h) - var(--rail-top));
+}
+/* the track (the owner's railway, scripts/fit_kit.py): across the screen under the painted
+   carriage, its wheels standing `--rail-top` into it; under the carriage in the paint order (it
+   comes first in the car), a still strip repeated along */
+.rail {
+  display: none;
+}
+.depot[data-art] .rail {
+  display: block;
+  position: absolute;
+  left: calc(50% - 50vw);
+  top: calc(100% - var(--rail-top));
+  width: 100vw;
+  height: var(--rail-h);
+  background: url('../../../../assets/site/kit/rail.webp') 50% 0 / auto 100% repeat-x;
+  pointer-events: none;
+}
+.depot[data-art] .below,
+.depot[data-art] .mui {
+  z-index: 5;
+}
+.depot[data-art] .glass {
+  border-image: none;
+  box-shadow: none;
 }

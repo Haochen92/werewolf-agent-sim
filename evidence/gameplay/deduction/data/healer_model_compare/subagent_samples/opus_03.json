@@ -1,0 +1,25 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no claims or statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "follow of player_7 to me matches my private roleblock, so the trailseer claim fits the facts", "suspected_role": "trailseer", "confidence": "high"},
+    {"player": "player_4", "why": "no claims or statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim with a Suspicious read on player_9; untested, and tried to wave off player_3's follow", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked player_7 the right question; nothing suspicious", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits visiting me on night 1, the night the Chanteuse blocked me, and refuses to name a role", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "only player_5's Suspicious claim against them; unconfirmed", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no claims or statements yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so the Chanteuse visited me; player_7 admits going to me and player_3's follow saw it, so player_7 is my top Chanteuse suspect and my vote. I revealed being blocked but not my role; keep healer hidden unless pushed to a lynch. player_3's follow matches my facts, so player_3 is likely the real trailseer and a good protect target tonight. Treat player_5's read on player_9 as untested until something backs it.",
+  "pass_turn": false,
+  "message": "player_7, you admit you came to me last night, and that same night I got roleblocked. Only the Chanteuse can block, and a block is a visit, so a wolf came to me. player_3's follow matches what I know, and you won't name a role that explains the visit. My vote right now is player_7.",
+  "claim": "none",
+  "claimed_night_actions": [
+    {"night": 1, "action": "visit", "target": "", "result": "roleblocked", "seen": []}
+  ],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

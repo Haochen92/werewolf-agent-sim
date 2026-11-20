@@ -1,214 +1,190 @@
-# Memory Effectiveness: Does Episodic Memory Improve Gameplay?
+# Memory effectiveness: what each version established
 
-**Scope:** the one question that justifies the whole memory pipeline — does giving agents episodic
-memory produce measurably better game outcomes? This is the current-truth hub for that answer. The
-deciding experiment — a paired, seeded A/B on the frozen `v5_0` store — establishes that *static* memory
-improves **town decision quality**: the pre-registered proxy basket moves significantly on the clean
-interleaved raw arm, while the win-rate direction is consistent but underpowered at N=30, so it
-corroborates the direction rather than proving the magnitude. **Companion docs:** the store's
-version-by-version arc is
-[`../store_progression.md`](../store_progression.md); the full A/B statistics and design are in
-[`paired_ab/`](paired_ab/report.md); the open *compounding* question lives in
-[`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md).
+**Memory has not shown a reliable benefit across versions.** An early fixed store improved selected town
+measures in one June test, with important statistical and baseline limitations. The next store showed no
+clear benefit. The July learning loop's final memory also showed no benefit, with an estimate leaning
+toward harm. Today's ten-seat system has not had a memory-on versus memory-off test.
 
-**Provenance.** The A/B arms ran 2026-06-11 on `gemini-3.1-flash-lite` / Vertex, prompt_bundle
-`16f7f700`, store `memory_stores/v5_0` (consumption mode, `--no-memory-dump`). Every win-rate and proxy
-below was independently re-verified from `batch_results/ab_*.jsonl` on 2026-07-02 (own pairing + a
-separate stats path).
+This report is the reference for **effectiveness across the recorded versions and campaigns**: what was
+compared, what happened and what can be concluded. The [memory hub](../report.md) explains the pipeline
+and its evolution. [Detailed results](detailed_results.md) preserve the June statistics, replay tables,
+baseline investigations and source index; the v7 and v8 reports own their respective investigations.
+You do not need those details to follow the account below.
 
-## The verdict
+## The experiments at a glance
 
-- ✅ **Static memory measurably improves *town* decision quality.** On the frozen `v5_0` store, the
-  pre-registered decision-quality basket moves significantly on the clean interleaved raw arm (N=30).
-  Win-rate direction is consistent across every town arm, though win rate alone is underpowered at this N.
-- ⚪ **No detectable wolf or serial-killer (SK) benefit in this A/B.** At N=30 the wolf and SK arms are
-  null on win rate and proxies. Not the final word: a later v7 loop run gave a tentative wolf-side
-  positive for *compounding* memory (from a run invalidated for its own primary question, so tentative
-  only), and a dedicated wolf arm is planned in the compounding measurement plan (linked above).
-- ⚠️ **The benefit is epoch-sensitive, not store-fragile.** A later run on the v6 store did not
-  replicate the town lift; the cause is a risen no-memory baseline between epochs, not a broken store
-  (a same-epoch control exonerates the store).
-- ❓ **Whether memory *compounds* across games is open.** Owned by the compounding measurement plan
-  (linked above), not this report.
+An **observation** describes a move and its effects in a past game. A **lesson**—called a *strategy point*
+in code—recommends an action for a situation. A **paired board** starts both conditions with the same
+role deal and seed; later play still differs through model sampling and the decisions made.
 
-## The instruments — how we measure "outcome"
+| Version or campaign | What was tested | Main result | What it establishes |
+|---|---|---|---|
+| Early `v3_deduped` and `v4` stores | Memory off, wolves only, or everyone; about 30 unpaired games per condition | Town wins rose 70% → 96.7% with everyone's memory in one batch; the next batch showed 74.2% → 73.3% | An unstable early result, not a repeatable benefit |
+| `v5_1` pilot | A growing store, unpaired games and an older baseline | Town wins fell by 32 percentage points | Confounded; not evidence that memory alone caused the fall |
+| **June `v5_0` static A/B** | Frozen observations; 30 paired boards per condition, with memory assigned to different factions and retrieval settings | Selected town decision measures improved; raw-town win change was inconclusive; no wolf or lone-killer benefit detected | A limited positive result for this store and configuration |
+| **v6 A/B (`v6_1` store)** | Observations or lessons for town; observations, lessons or both for the lone killer; 30 paired boards per condition | No outcome comparison reached significance; lessons alone tended negative | No clear benefit; not a replication of v5 because prompts, store and run period changed |
+| v7 June learning runs | Memory updated between generations | Two runs invalid for their intended questions: a distorted credit baseline, then the wrong factions receiving memory | Engineering lessons, not valid estimates of learning benefit |
+| **v7 July endpoint** | Final learned memory against none, 30 paired boards after four learning generations | Town decision score lower with memory; neither paired test significant | No benefit detected from the finished memory; not a direct comparison between generations |
+| **v8 ten-seat system** | Component checks and one credit-pass demonstration | No memory-on versus memory-off comparison | Effect on play remains unknown |
 
-Two rulers measure whether memory helped; the report leans on the second.
+The early game, the rebuilt nine-seat game and the current ten-seat game differ. These rows are not a
+leaderboard: changing rules, prompts, stores and models prevents direct ranking of versions by their
+win rates. Version names also label stores or pipeline generations, not uniform experimental conditions.
 
-**Win rate** is the obvious ruler and the weak one: one binary win/loss per game, dominated by setup
-luck (a wolf-favored draw can decide a game before anyone reasons well). At N=30 the minimum detectable
-effect is ≈36pp, so a flat win rate means "underpowered to detect," not "no effect." It corroborates
-direction but rarely reaches significance.
+## 1. Early stores: why a controlled test was needed
 
-**The town decision-quality basket** is the primary endpoint. Each proxy is graded mechanically against
-the true hidden roles — correct-elimination, mislynch, healer save of the real night target, vote
-accuracy — so it measures *decisions, not luck* by construction, and yields several graded events per
-game rather than one bit. It was validated separately: each proxy tracks its faction's win at
-|r|≈0.55–0.65, p<0.01, in both pooled and treatment-free views
-([`../../metrics/proxy_win_monotonicity.md`](../../metrics/proxy_win_monotonicity.md)). That is why the
-basket is the endpoint and win rate the directional co-read.
+The strongest early result was town winning 29 of 30 games with memory for everyone, against 21 of 30
+without it (`v3_deduped`, Fisher p = 0.012). But it was the best of six comparisons. On the next store
+and role/phase organisation (`v4`), the apparent benefit disappeared. Both store content and its
+organisation changed, so the batches do not explain why.
 
-## The deciding experiment — the `v5_0` paired A/B
+The `v5_1` pilot then suggested harm, but its store grew during testing and its memory-off baseline came
+from an earlier run period. Neither comparison kept enough fixed to isolate memory. This motivated the
+June test's frozen store, fresh baseline and paired starting boards.
 
-The earlier evidence (below) showed memory *can* move outcomes but left the current configuration
-unresolved. To remove the setup-luck confound, we ran a paired, seeded, same-epoch A/B. Each of 30
-boards is played twice under identical initial conditions, differing only in whether memory is on.
+The [early-batch tables](detailed_results.md#before-the-rebuild-two-unstable-batches) and
+[pilot account](detailed_results.md#the-v5_1-pilot) preserve the figures and qualifications.
 
-Pairing on `game_id` pins the board setup — the role draw and the scheduler's turn-order tie-breaks,
-both seeded from `game_id`. It does *not* pin the LLM's sampling
-nondeterminism, which stays as within-pair noise; the paired tests average over it across the 30 pairs
-(**McNemar** on discordant win/loss pairs, a paired **Wilcoxon** on per-pair proxy differences). Setup
-luck is the noise source we argue dominates in werewolf, so holding it fixed is what isolates the
-treatment. The store is the frozen `v5_0` in consumption mode (it cannot grow, so the treatment is
-constant); arms cross raw / reranked / all-on retrieval with the town / wolf / SK factions. Full design
-and the wolf/SK arm tables are in [`paired_ab/`](paired_ab/report.md).
+## 2. v5: selected town measures improved, with limits
 
-**Town win rate rises on every arm** (N=30 each; off = the same-epoch fresh baseline, 27% town win):
+The June 11 test used `v5_0`: observations extracted from 20 memory-off games, then frozen. Each
+condition played the same 30 boards. The raw town condition used plain retrieval and ran interleaved
+with its memory-off baseline.
 
+Two kinds of measure matter. **Win rate** measures the whole-game outcome but is noisy at this sample
+size. **Decision measures** score particular choices against the hidden roles, such as whether an
+elimination hit an enemy. They provide more observations but remain proxies: scoring a decision does
+not remove every effect of luck or prove that the move was strategically best.
 
-| Arm (memory on for) | Town win off→on | Δ    | McNemar p |
-| ------------------- | ---------------- | ----- | --------- |
-| raw town            | 27% → 43%       | +17pp | 0.267     |
-| reranked town       | 27% → 60%       | +33pp | **0.013** |
-| all-on (all roles)  | 27% → 50%       | +23pp | 0.167     |
+| Raw town condition | Memory off → on | Reading |
+|---|---|---|
+| Healer protected the actual target | 37.0% → 59.8% | Positive result, p = 0.005 |
+| Town eliminations hit an enemy | 47.0% → 63.8% | Positive result, reported p = 0.028 |
+| Town votes targeted an enemy | 56.0% → 71.0% | Favourable estimate, p = 0.053 |
+| Town won the game | 27% → 43% | Inconclusive, p = 0.267 |
 
-The direction is unanimous, but only the reranked arm reaches significance, and win rate is underpowered
-at N=30 (see *The instruments*). So this table reads as *consistent direction*, not three independent
-proofs. The primary endpoint is the pre-registered decision-quality basket on the **interleaved raw
-arm** (N=30, paired Wilcoxon):
+These are **selected favourable results**, not an established general memory benefit:
 
+- The raw arms ran before the written pre-registration. None of their results clears a correction
+  across all 24 raw-arm tests. Healer saves do clear the narrower three-measure correction.
+- The baseline may have drawn low. Town also improved when only an opposing faction received memory;
+  next-day memory-off runs scored near the memory-on town. Opponent effects, sampling and possible
+  provider drift are not separated by these observations.
+- The measures overlap. Correct elimination and mislynch count the same events in opposite ways;
+  they are not two independent confirmations.
 
-| Proxy                    | off → on      | Δ      | p         |
-| ------------------------ | -------------- | ------- | --------- |
-| healer town-save rate    | 0.370 → 0.598 | +0.228  | **0.005** |
-| correct-elimination rate | 0.470 → 0.638 | +0.168  | **0.028** |
-| town mislynch rate       | 0.530 → 0.362 | −0.168 | **0.036** |
-| town vote accuracy       | 0.560 → 0.710 | +0.149  | 0.053     |
+No benefit was detected for wolves or the lone killer. A reranked town arm had a larger win increase
+(27% → 60%, p = 0.013), but ran after the baseline, leaving a timing confound. Its vote accuracy did
+not show an advantage over plain retrieval. That made reranking a lower priority, without ruling out
+smaller benefits.
 
-Bold marks p<0.05 uncorrected; the Bonferroni line over the ≤3 pre-registered primaries is 0.017. Three of four move
-significantly and all four move the same way. Counted honestly, though, the four rows are not four
-independent witnesses: correct-elimination and mislynch rate are exact complements (they divide the same
-lynches two ways, so they are one test with two signs), and vote accuracy is the per-vote grain of that
-same threat-identification construct. The basket's independent constructs are **two — threat
-identification and healer protection — and both move in memory's favor**, with healer-save clearing even
-the Bonferroni line. Town memory is improving the town's *decisions*, not just its luck. (The basket is the powered primary; the single significant win rate — reranked town — carries a drift caveat, so we anchor on the raw arm; see *Confounds and rejected readings*.)
+The [June detail](detailed_results.md#the-june-ab-on-the-v5_0-store) includes all town tables,
+[pre-registration timing](detailed_results.md#which-measures-were-fixed-in-advance), and the
+[baseline investigation](detailed_results.md#was-the-baseline-a-low-draw). The reference also records the rounding-sensitive elimination p-values and their recheck.
 
-## Side-findings that shaped later work
+## 3. v6: no clear benefit from observations or lessons
 
-**No detectable deceiver benefit — with a mechanistic hypothesis, not a proven law.** In this A/B the
-wolf arm is flat (win 33%→30%, p=1.000) and the SK arm trends down (win 40%→20%, p=0.146); neither
-faction's proxies improve at N=30. One plausible reading is that town plays an inference game where
-cross-game patterns compound, while wolf and SK play in-the-moment deception that static memory does not
-sharpen. That is a hypothesis, not a finding: the arms are underpowered, we entertained iteration-
-specific theories at the time (retrieval precision, myopic framing, an adherence gap; see
-[`paired_ab/`](paired_ab/report.md)), and the tentative wolf-side positive from the later v7 loop run
-argues for holding the door open. What *is* firm is the design consequence: outcome and decision quality
-diverge most in the deceiver cells (a win can hide bad play, a loss good play), so v7's credit design
-de-lucks by decision quality rather than win/loss.
+The June 17 campaign used the undeduplicated `v6_1` store, rebuilt around structured situation fields,
+with plain retrieval and a fresh baseline. It tested five memory conditions plus that baseline, each
+on 30 paired boards. The lone killer was the only deceiver tested; there was no wolf-memory arm.
 
-**Reranking showed no measured advantage over raw — so it was deprioritized, not disproven.** Town
-memory helps whether retrieval is raw or reranked, and the reranked-vs-raw contrast on town vote
-accuracy is null (0.710→0.686, Wilcoxon p=0.518). At N=30 that is underpowered to exclude a small
-effect, and the reranked arm also carries the drift caveat below, so sharper *ranking* is a
-deprioritized lever, not a refuted one. This pointed v6 toward *structured* criticality gating — exact
-numeric gating rather than embedding similarity — where v6 later found no gain either.
+| Who received memory | Memory supplied | Outcome against memory off |
+|---|---|---|
+| Town | Observations | Win difference +6 percentage points, p = 0.77; no clear decision-quality gain |
+| Town | Lessons | Win difference −7 points, p = 0.75; decision measures also tended negative |
+| Lone killer | Observations | Win rate unchanged at 47%, p = 1.00 |
+| Lone killer | Lessons | Win rate 47% → 30%, p = 0.33 |
+| Lone killer | Both | Win rate 47% → 53%, p = 0.75 |
 
-## The pre-rebuild batches — historical ceiling, not a citable anchor
+None established an outcome improvement. The combined lone-killer condition looked better than lessons
+alone, but that direct contrast was also inconclusive (p = 0.118). It does not establish that combining
+memory types repairs harmful advice. Town never received a combined condition.
 
-Before the `v5` rebuild, two unpaired 30-game batches on the old game established that memory *can* move
-outcomes dramatically. They remain useful as a ceiling-and-sensitivity record, never as a current
-number.
+This was **not a replication of v5**: the store and play prompts changed, and the tests ran in different
+periods. The later no-memory town already scored near the earlier memory-on town. A replay comparing
+both stores in one sitting also found similar scores. Those observations make a stronger baseline a
+plausible explanation, but do not identify why the earlier benefit failed to recur.
 
+The [v6 experiment log](v6_sp_ab/experiment_log.md) owns all six arms, behaviour changes and their
+limitations. Its directional interpretations are hypotheses; the outcome comparisons remain
+inconclusive. The [cross-version detail](detailed_results.md#why-the-v6-ab-found-no-town-effect)
+explains the baseline and prompt changes.
 
-| Condition   | Batch A (v3_deduped) | Batch B (v4 + action_phase) |
-| ----------- | -------------------- | --------------------------- |
-| No memory   | 70.0% (21/30)        | 74.2% (23/31)               |
-| Wolf only   | 87.1% (27/31)        | 83.3% (25/30)               |
-| All enabled | **96.7%** (29/30)    | 73.3% (22/30)               |
+## 4. v7: the finished learning memory did not show a benefit
 
-Batch A's all-enabled lift (96.7% vs 70%, Fisher **p=0.012**) is the strongest single-batch signal in
-the set — villagers went from losing one game in three to one in thirty. But it is the best cell of six
-comparisons (Bonferroni-borderline, not decisive), and the *same* condition collapsed to baseline in
-Batch B (73.3%, p=1.0) while two variables changed at once (store version and namespace granularity).
-So these show the ceiling memory can reach and that configuration can lose the entire benefit, nothing
-tighter.
+v7 tried to improve the store automatically: play games, grade decisions associated with followed
+lessons, write new lessons and remove poor ones. Two June runs were invalid for their intended
+questions, prompting stronger baseline and configuration checks.
 
-**A hard boundary applies:** the `v4→v5` rebuild changed the game itself (9 players, 3 factions, a
-sequential scheduler), so comparing any Batch A/B figure to a `v5` figure is a category error. They are
-context, never a comparator.
+The July experiment completed four learning generations, then played 30 boards with the finished
+memory and without it. The town's average decision score was lower by the reported 0.147, and worse
+on 19 of the 30 boards. The paired t-test gave p = 0.065; Wilcoxon gave p = 0.105. Neither established
+harm at the stated significance threshold, and the experiment did not establish a benefit.
 
-## Why the v6 store did not replicate the town lift
+The recorded verdict was **“no compounding detected.”** Its precise meaning matters: the amended
+endpoint compared final memory with none, not final memory with an earlier generation. The treatment
+also included behavioural hints called *tells*, so their effect was not separated from the lessons'.
 
-A later paired A/B on the v6 dimension store (2026-06-17, N=30, its *own* fresh same-epoch baseline)
-found town-obs **flat** (villager win +6pp, p=0.77; decision-quality basket Δ≈0), which reads at first
-like the store broke the benefit. It did not: the v5 (06-11) and v6 (06-17) runs sit in **different
-epochs**, and the confound is a risen baseline, not a degraded store.
+Investigation found a credit blind spot that let cautious abstention advice survive pruning. Revised
+scoring removed the example lesson when applied to recorded games, but the corrected loop was never
+played. That is evidence of a scoring fix, not evidence that the fixed memory improves play.
 
-**The dominant cause — the no-memory baseline rose to memory's old ceiling.** Between the two runs the
-prompt bundle changed (`16f7f700`→`1cb76993`, Phase-B prompt fixes), on top of the backend drift the
-06-11 epoch-shift finding already demonstrated. The no-memory town proxies jumped accordingly: vote
-accuracy 0.560→0.674, correct-elimination 0.470→0.622, mislynch rate 0.530→0.378, win 27%→37%
-(06-17 values recompute from `batch_results/v6ab_*.jsonl` `all_disabled`, N=30, re-verified 2026-07-05).
-The 06-17 *no-memory* baseline already plays at roughly the level `v5` memory had lifted town *to*, so
-there was no headroom left to show — flat, not harmful.
+The owner closed this research campaign on July 21. The [v7 report](../v7/report.md) owns its design,
+amendment, power analysis and result; this report retains its place in the effectiveness record.
 
-**A same-epoch control exonerates the store.** An off-policy replay screen
-([`../strategy_adoption/forced_schema_screen/`](../strategy_adoption/forced_schema_screen/experiment_log.md)) scores
-both stores in *one* epoch: v5-store 0.625 ≈ v6-store 0.604, both below the no-memory floor 0.667
-(McNemar p=1.0). Even the `v5_0` store that "worked" reads flat in the later epoch — the flatness is the
-epoch, not the schema.
+## 5. v8: component checks, no effectiveness result yet
 
-**One real but mild bug.** v6 applies net-first outcome framing to *town* as well as the deceivers
-(`_compose_outcome`, `Agents/schemas/memory.py:41-49`), and v5 evidence shows that hurts town. But
-town-obs came out flat, not below baseline, so it is a minor contributor, not the cause. Full analysis
-in [`v6_sp_ab/experiment_log.md`](v6_sp_ab/experiment_log.md); store arc in
-[`../store_progression.md`](../store_progression.md).
+v8 changed the game to ten seats and rebuilt much of the memory pipeline. Its checks cover retrieval
+fit, incorrect rule claims, outcome-verdict bias, decision tags and execution of a credit pass. These
+help assess individual stages; none compares play with memory against play without it.
 
-## Confounds and rejected readings
+The [v8 report](../v8/report.md) therefore supplies **no whole-game effectiveness verdict**. Earlier
+nine-seat results cannot be transferred to it. Its proposed experiment size is a planning estimate
+from earlier data, not a completed validation on ten seats.
 
-Three investigation threads sit behind the results; they set method rules but do not change the verdict.
+## Supporting studies: what they answer
 
-**The discarded historical-epoch baseline (a standing rule).** The original memory-off baseline
-(villagers 67% / SK 27% / wolves 7%) came from an earlier epoch, and a fresh 10-game re-run of it
-shifted systematically (Fisher **p=0.0028**) despite byte-identical play prompts — most likely silent
-Vertex-side model drift. We discarded it and re-ran the baseline fresh inside the A/B's own epoch
-(villagers 27% / SK 40% / wolves 33%), which is the off-control every table above uses. The rule this
-set: never pair against a historical-epoch baseline.
+These studies help explain or choose a design. Keep them separate from whole-game effectiveness.
 
-**The reranked arm's drift caveat (why we anchor on raw).** The one significant win rate (reranked town,
-+33pp) carries a risk the raw arm does not: the raw arm interleaved with the baseline in time, but the
-reranked and all-on arms ran later the same day, after the baseline finished, with no intraday drift
-canary (that arrived 06-12). Pairing cancels role-draw luck but not intraday drift, so anchoring the
-town verdict on the interleaved raw arm's basket sidesteps the risk.
+| Study | Finding and limit | Detailed home |
+|---|---|---|
+| May memory-type ablation | Observations, lessons and both scored similarly on 120 replayed turns from three games; largest judge-score gap 0.17/5. No significance test or no-memory condition; not proof of equivalence or benefit | [Ablation](../ablation/report.md) |
+| June decision replays | Tested reasoning order, forced applicability verdicts and outcome framing. No tested prompt change gave a clear general improvement; results varied by situation | [Replay screens](#screening-layer-per-decision-replays) |
+| Retrieval and capacity studies | Assess relevance, repetition and how many memories to show. Better retrieval scores do not themselves establish better play | [Retrieval](../../retrieval/report.md) |
+| Adoption checks | Assess whether agents' reports of using lessons match their actions. Reported use is not evidence that the advice helped | [Strategy adoption](../strategy_adoption/report.md) |
 
-**The confounded v5_1 pilot (refuted).** An early v5_1 pilot (unpaired, growing store, raw retrieval)
-suggested memory *hurt* town by −32pp (p=0.043). The paired A/B refuted it: the collapse was the
-confound, a moving store and an old-epoch baseline, not memory. See
-[`v5_baseline_proxy_analysis.md`](v5_baseline_proxy_analysis.md).
+### Screening layer: per-decision replays
 
-## What remains open
+The June screens froze recorded decisions and changed the memory input or how the agent used it. Their
+store was a re-extracted `v5_0` variant, not the June A/B store itself. Writing reasoning first improved
+agreement between reasoning and votes without clearly increasing memory use. Forced applicability
+judgements worsened votes in a small screen. Outcome framing gave different results in different game
+situations.
 
-Whether memory that *compounds* across generations helps *more over time* is a different, unresolved
-question. Two paid loop runs meant to answer it were both invalidated (a biased de-lucked baseline in
-one, a config slip that ran the wrong arm in the other), so the magnitude is open, not negative. The
-plan of record (claim ladder, power/MDE calc, and the readout redesign that gates any further paid runs)
-is [`../../execution_plan/compounding_measurement_plan.md`](../../execution_plan/compounding_measurement_plan.md).
+These screens helped prioritise more conditional lesson content. They did not establish that content
+was the only remaining problem or that prompt changes generally cannot help. The
+[replay detail](detailed_results.md#screening-layer-per-decision-replays) preserves the tables,
+sample sizes and costs; the [log](decision_replay/experiment_log.md) records the investigation.
 
-## Artifacts
+## What you need to be able to explain
 
-The A/B statistics live in [`paired_ab/`](paired_ab/report.md); the pre-rebuild JSONLs and the stats
-regenerator are co-located here.
+The defensible account has four parts:
 
+1. **Why the tests became controlled:** early results moved with the store and baseline, so later
+   comparisons froze the treatment and paired the starting boards.
+2. **What the positive result actually was:** selected town decision measures on one v5 store, with
+   multiple-comparison and baseline caveats—not a repeatable win-rate improvement.
+3. **What later versions showed:** no clear benefit in v6 or the v7 endpoint; the corrected v7 loop
+   was not tested, and v8 has no whole-game comparison.
+4. **Why the engineering work still matters:** the experiments exposed problems in experimental
+   controls, advice quality and credit. Fixing those mechanisms is distinct from demonstrating that
+   memory improves the agents.
 
-| File                                                           | Description                                                                                                                              |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `paired_ab/report.md`                                          | Full`v5_0` A/B stats — all arms (town/wolf/SK × raw/reranked/all-on), pre-registered called shots                                      |
-| `paired_ab/experiment_log.md`                                  | A/B design, epoch-drift finding, seed set, wolf/SK diagnostics                                                                           |
-| `batch_results/ab_*.jsonl` (repo root)                         | Paired A/B raw results:`ab_baseline`, `ab_arms_{town,wolf,sk}`, `ab_rr_*`, `ab_allon`                                                    |
-| `v6_sp_ab/experiment_log.md`                                   | v6 non-replication A/B (6 arms) + cross-epoch analysis                                                                                   |
-| `regenerate_stats.py`                                          | Recomputes every p-value/CI for the pre-rebuild batches from the JSONLs (uses`evaluation/src/core/stats.py`) — no hand-typed statistics |
-| `batch_results/werewolf_flashlite_3_v1.jsonl`                  | Batch A: no_memory (30) + wolf_only (31), v3_deduped store                                                                               |
-| `batch_results/werewolf_flashlite_3_v1_deduped.jsonl`          | Batch A: all_enabled (30), v3_deduped store                                                                                              |
-| `batch_results/v4_action_phase_v2.jsonl`                       | Batch B: no_memory, v4 store with action_phase                                                                                           |
-| `batch_results/v4_action_phase_v2_wolf_only_all_enabled.jsonl` | Batch B: wolf_only (30), v4 store                                                                                                        |
-| `batch_results/v4_action_phase_v2_all_enabled_remainder.jsonl` | Batch B: all_enabled remainder (18), v4 store                                                                                            |
+The June v5, v6 and v7 comparisons used the player model at its minimal thinking setting. A later probe
+reported zero reasoning tokens for that configuration; it does not establish an absence of internal
+reasoning. The conclusions do not establish results at higher thinking settings or on today's game.
+Exact arm tables, test choices and artifacts are reference material in
+[detailed results](detailed_results.md), rather than facts you need to memorise.
+
+*Scope: editorial consolidation of the existing reports and the v6 experiment log, 2026-10-26. No code,
+deployment state or raw experimental data was independently checked, and no statistics were rerun.*

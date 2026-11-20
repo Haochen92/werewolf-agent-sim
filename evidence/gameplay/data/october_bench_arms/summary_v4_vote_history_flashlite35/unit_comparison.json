@@ -1,0 +1,75 @@
+{
+  "arms": {
+    "v3": {
+      "all": "83/267 (31%)",
+      "control": "3/120 (2%)",
+      "units": {
+        "message": {
+          "bad": 22,
+          "checkable": 127
+        },
+        "updated_strategy": {
+          "bad": 66,
+          "checkable": 151
+        }
+      },
+      "read_errors": 0
+    },
+    "v4": {
+      "all": "87/267 (33%)",
+      "control": "6/120 (5%)",
+      "units": {
+        "message": {
+          "bad": 33,
+          "checkable": 128
+        },
+        "updated_strategy": {
+          "bad": 64,
+          "checkable": 154
+        }
+      },
+      "read_errors": 0
+    },
+    "v4_votes": {
+      "all": "80/267 (30%)",
+      "control": "4/120 (3%)",
+      "units": {
+        "message": {
+          "bad": 26,
+          "checkable": 125
+        },
+        "updated_strategy": {
+          "bad": 59,
+          "checkable": 153
+        }
+      },
+      "read_errors": 0
+    }
+  },
+  "message_pairs": {
+    "v4_votes_vs_v3": {
+      "better": 11,
+      "worse": 13,
+      "p": 0.8388197422027588
+    },
+    "v4_votes_vs_v4": {
+      "better": 14,
+      "worse": 11,
+      "p": 0.6900379657745361
+    }
+  },
+  "all_pairs": {
+    "v4": {
+      "cases": 89,
+      "better": 11,
+      "worse": 12,
+      "two_sided_sign_p": 1.0
+    },
+    "v4_votes": {
+      "cases": 89,
+      "better": 17,
+      "worse": 16,
+      "two_sided_sign_p": 1.0
+    }
+  }
+}

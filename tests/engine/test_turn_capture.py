@@ -33,10 +33,14 @@ async def _game(capture: TurnCapture, game: str, turns: int) -> None:
 
 
 async def test_two_games_running_at_once_never_write_into_each_others_capture():
+    # Arrange
     before = (len(prompt_log), len(reads_log))
     a, b = TurnCapture(), TurnCapture()
+
+    # Act: run two games at once
     await asyncio.gather(_game(a, "alpha", 60), _game(b, "beta", 45))
 
+    # Assert
     assert [e["prompt_input"]["dialogue"] for e in a.prompts] == [f"alpha turn {i}" for i in range(60)]
     assert [e["prompt_input"]["dialogue"] for e in b.prompts] == [f"beta turn {i}" for i in range(45)]
     assert [r["reads"][0]["why"] for r in a.reads] == [f"alpha read {i}" for i in range(60)]

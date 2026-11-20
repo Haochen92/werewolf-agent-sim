@@ -8,7 +8,10 @@
 > and the agent decision itself (gradeable by deterministic / behavioral proxy, not content coverage). See
 > *Where it applies*.
 >
-> **Status: planned, not built.** No golden set exists yet, and labeling is parked (see the ship roadmap).
+> **Status: planned, not built.** No reference-point golden set exists yet. *(2026-10-23: the labelling
+> pipeline's check against people is now built, `evaluation/src/labeling/calibration.py`, but coverage
+> scoring is not; for the day summary, v4's structured fields let code check the points instead. The
+> scales and scores are in [scoring](../scoring/report.md).)*
 > This doc is the method we would build to, grounded in the summarization-eval literature, so the plan is
 > legible even while execution is deferred.
 

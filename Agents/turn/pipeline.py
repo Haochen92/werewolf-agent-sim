@@ -16,7 +16,11 @@ from langgraph.runtime import Runtime
 from pydantic import BaseModel
 
 
-from Agents.tracing import GraphContext, langfuse
+from Agents.tracing import GraphContext, get_langfuse
+from Agents.llm_factory import GameModels, game_models
+from Agents.config.langgraph import game_config_from_runnable
+from Agents.deduction.verified import limits_verified
+from Agents.schemas.roles import ROLE_SPECS
 
 from Agents.prompts.prompt_formatters import (
     format_day_channel,
@@ -59,12 +63,31 @@ def _with_game_id(enriched_payload: dict[str, Any], config: RunnableConfig) -> d
     return enriched_payload
 
 def _with_deduction_mode(enriched_payload: dict[str, Any], config: RunnableConfig) -> dict[str, Any]:
-    """The game's deduction mode on the prompt payload (RunConfig.deduction_mode), read where the
-    prompt is built (Agents/deduction/seat_view.py). A bare test with no config gets the default."""
+    """The game's deduction mode on the prompt payload (RunConfig.deduction_mode, or the seat's side's
+    from RunConfig.deduction_by_side), read where the prompt is built (Agents/deduction/seat_view.py).
+    A bare test with no config gets the default."""
     configurable = config.get("configurable", {}) if config else {}
-    mode = configurable.get("deduction_mode")
+    by_side = configurable.get("deduction_by_side") or {}
+    role = enriched_payload.get("player_role")
+    mode = by_side.get(ROLE_SPECS[role].side) if role in ROLE_SPECS else None
+    mode = mode or configurable.get("deduction_mode")
     if mode:
         enriched_payload["deduction_mode"] = mode
+    # Use limits other than the standard ones break the count rows: no deduction in such a game.
+    if config and not limits_verified(game_config_from_runnable(config)):
+        enriched_payload["deduction_mode"] = "off"
+    return enriched_payload
+
+
+def _with_persona_voices(enriched_payload: dict[str, Any], config: RunnableConfig,
+                         runtime: Runtime[GraphContext] | None) -> dict[str, Any]:
+    """Whether the game gives its AI seats speaking voices (RunConfig.persona_voices), and the puppet
+    at the seat when the server dealt one (GraphContext.seat_puppets), read where the prompt is built
+    (Agents/prompts/voices.py); off when a bare test has no config."""
+    configurable = config.get("configurable", {}) if config else {}
+    enriched_payload["persona_voices"] = bool(configurable.get("persona_voices"))
+    context = getattr(runtime, "context", None) or {}
+    enriched_payload["seat_puppet"] = (context.get("seat_puppets") or {}).get(enriched_payload.get("player_id"))
     return enriched_payload
 
 
@@ -152,11 +175,12 @@ def run_memory_informed_action(
     Retrieval, generation, validation, adoption, and EvalCase recording live here. The registered
     day actor node owns the final conversion from this result into a LangGraph state delta.
     """
+    models = game_models(getattr(runtime, "context", None))
     # Human seat: take the human decision path BEFORE any span / retrieval / adoption / EvalCase — a
     # human uses no memory and produces no reads/verdicts, so none of that agent scaffolding applies.
     # None = the human delegated (AFK): fall through and play the seat as an agent.
     if payload.get("human_player"):
-        outcome = run_human_decision(payload, output_key)
+        outcome = run_human_decision(payload, output_key, models=models)
         if outcome is not None:
             return outcome
         logger.info("%s delegated %s to the agent (AFK)", payload.get("player_id"), output_key)
@@ -175,7 +199,7 @@ def run_memory_informed_action(
     )
 
     span_name = action_eval_span_name(player_id, day, round_num, action_phase)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={
@@ -211,11 +235,13 @@ def run_memory_informed_action(
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
+        enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
         result = run_agent(
             enriched_payload,
             prompt_template,
             output_schema,
             output_key,
+            models=models,
         )
 
         effects = result.effects if result else None
@@ -324,6 +350,8 @@ def preview_agent_action(
     output_schema: type[BaseModel],
     output_key: str,
     direction: str = "",
+    *,
+    models: GameModels | None = None,
 ) -> ResolvedTurn | None:
     """The turn this seat's agent would take on ``payload``, taken for show only.
 
@@ -334,14 +362,18 @@ def preview_agent_action(
     updated strategy note and reads are dropped with the result.
 
     ``direction`` is one extra message after the prompt (a human player's steer for the line);
-    empty, the model is sent exactly what the real turn would send.
+    empty, the model is sent exactly what the real turn would send. ``models`` given wins over
+    the runtime's context: the server calls this outside the graph.
     """
     enriched_payload, _ = enrich_payload_with_memory(dict(payload), config, runtime, action_phase)
     enriched_payload = _with_game_id(enriched_payload, config)
     enriched_payload = _with_deduction_mode(enriched_payload, config)
+    enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
     if direction:
         prompt_template = prompt_template + HumanMessage(content=direction)
-    return run_agent(enriched_payload, prompt_template, output_schema, output_key)
+    if models is None:
+        models = game_models(getattr(runtime, "context", None))
+    return run_agent(enriched_payload, prompt_template, output_schema, output_key, models=models)
 
 
 def run_memory_informed_night_action(
@@ -359,10 +391,11 @@ def run_memory_informed_night_action(
     ``agent_vote``. Retrieval, adoption bookkeeping, and the eval span are
     otherwise identical to the day path (and gated by the same ``memory_config``).
     """
+    models = game_models(getattr(runtime, "context", None))
     # Human seat: same early exit as the day path — skip span / retrieval / adoption / EvalCase.
     # None = the human delegated (AFK): fall through and play the seat as an agent.
     if payload.get("human_player"):
-        outcome = run_human_decision(payload, output_key)
+        outcome = run_human_decision(payload, output_key, models=models)
         if outcome is not None:
             return outcome
         logger.info("%s delegated %s to the agent (AFK)", payload.get("player_id"), output_key)
@@ -374,7 +407,7 @@ def run_memory_informed_night_action(
     action_phase = "night_action"
 
     span_name = action_eval_span_name(player_id, day, round_num, action_phase)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={
@@ -410,11 +443,13 @@ def run_memory_informed_night_action(
         )
         enriched_payload = _with_game_id(enriched_payload, config)
         enriched_payload = _with_deduction_mode(enriched_payload, config)
+        enriched_payload = _with_persona_voices(enriched_payload, config, runtime)
         result = run_agent(
             enriched_payload,
             prompt_template,
             output_schema,
             output_key,
+            models=models,
         )
 
         effects = result.effects if result else None

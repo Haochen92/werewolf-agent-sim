@@ -80,8 +80,11 @@ def test_speaker_send_wolf_carries_channel_others_do_not():
 
 
 def test_fan_out_vote_wolf_carries_channel_others_do_not():
+    # Act
     sends = fan_out_day(_day_state(), "vote")
     by_player = {s.arg["player_id"]: s.arg for s in sends}
+
+    # Assert
     assert by_player["w0"]["wolf_channel"] == [NOTE]
     assert by_player["w1"]["wolf_channel"] == [NOTE]
     assert "wolf_channel" not in by_player["t0"]
@@ -89,8 +92,11 @@ def test_fan_out_vote_wolf_carries_channel_others_do_not():
 
 
 def test_fan_out_discuss_wolf_carries_channel_others_do_not():
+    # Act
     sends = fan_out_day(_day_state(), "discuss")
     by_player = {s.arg["player_id"]: s.arg for s in sends}
+
+    # Assert
     assert by_player["w0"]["wolf_channel"] == [NOTE]
     assert "wolf_channel" not in by_player["t0"]
 
@@ -98,6 +104,7 @@ def test_fan_out_discuss_wolf_carries_channel_others_do_not():
 # --- (2) prompt render: wolf sees it, town never does -----------------------
 
 def test_wolf_day_prompts_render_channel_town_does_not():
+    # Act and assert, once for each wolf
     for pid, role in (("w0", "chanteuse"), ("w1", "illusionist")):
         wolf_input = build_agent_prompt_input(
             build_speaker_send(_day_state(), pid, role, _fr()).arg
@@ -110,16 +117,20 @@ def test_wolf_day_prompts_render_channel_town_does_not():
         assert "never quote" in discuss.lower(), role
         assert "never quote" in vote.lower(), role
 
+    # Act: the town player's discussion prompt
     town_input = build_agent_prompt_input(
         build_speaker_send(_day_state(), "t0", "sentinel", _fr()).arg
     )
     town = "\n".join(m.content for m in day_discuss_template("sentinel").format_messages(**town_input))
+
+    # Assert
     assert "sk must be the serial killer" not in town
 
 
 # --- (3) end-to-end-ish: the pack's night-N whiff reaches a wolf's day-(N+1) payload ---
 
 def test_night_whiff_reaches_wolf_next_day_payload():
+    # Arrange: the wolves attack the serial killer on night 1
     roles_ = {"w0": "chanteuse", "w1": "illusionist", "sk": "serial_killer", "h": "healer", "t0": "sentinel"}
     night_state = {
         "current_day": 1,
@@ -131,11 +142,14 @@ def test_night_whiff_reaches_wolf_next_day_payload():
         "wolf_channel": [],
         "night_choices": [NightChoice("w0", "chanteuse", "kill", "sk")],
     }
+
+    # Round 1: the pack's night record of the failed attack
     update = night_resolution(night_state, _runtime())
     assert "wolf_channel" not in update  # the engine writes no note into the channel
     record = next(r for r in update["night_actions"] if r.actor == "wolves")
     assert record.result == "immune"
 
+    # Round 2
     # Day N+1: the night record is seeded into the day state; each wolf speaker's payload carries
     # the pack's record of the failed attack, and the town's does not.
     day_state = _day_state(
@@ -156,12 +170,15 @@ def test_night_whiff_reaches_wolf_next_day_payload():
 # --- (4) formatter: conditional vote suffix ---------------------------------
 
 def test_format_wolf_channel_conditional_vote_suffix():
+    # Arrange
     with_vote = WolfChannel(day=1, round=2, wolf="w0", message="target t0", vote="t0")
     empty_vote = NOTE  # a chat line, vote=""
 
+    # Round 1: a line with a vote
     rendered_vote = format_wolf_channel([with_vote])
     assert "vote: t0" in rendered_vote
 
+    # Round 2: a chat line with no vote
     rendered_empty = format_wolf_channel([empty_vote])
     assert "vote:" not in rendered_empty
     # no dangling suffix, but the message itself still renders
@@ -185,8 +202,12 @@ def test_format_wolf_channel_hides_generation_failure_pass():
 
 def test_format_wolf_channel_shows_a_chosen_pass_to_the_pack():
     # With passes hidden the AI wolf restated its proposal every round (owner, 2026-10-17).
+
+    # Arrange
     chosen_pass = WolfChannel(day=1, round=2, wolf="w0", message="", vote="", passed=True,
                               pass_reason=DiscussionPassReason.VOLUNTARY)
+
+    # Act and assert
     assert format_wolf_channel([chosen_pass], "w1") == (
         "[Day 1, Round 2] Your wolf partner w0 has nothing else to add.")
     assert format_wolf_channel([chosen_pass], "w0") == "[Day 1, Round 2] You had nothing else to add."
@@ -235,8 +256,13 @@ def test_leak_check_still_flags_town_entry():
 # --- (6) the pack knows each other's roles (owner, 2026-10-17) ----------------
 
 def test_a_wolf_day_payload_carries_the_pack_roles_and_a_town_payload_does_not():
+    # Arrange
     state = _day_state()
+
+    # Act
     wolf_payload = build_speaker_send(state, "w1", "illusionist", _fr()).arg
+
+    # Assert
     assert wolf_payload["pack_roles"] == {"w0": "chanteuse", "w1": "illusionist"}
     assert "pack_roles" not in build_speaker_send(state, "t0", "sentinel", _fr()).arg
     assert build_agent_prompt_input(wolf_payload)["pack_roster"] == (

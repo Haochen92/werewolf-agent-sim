@@ -1,8 +1,9 @@
-"""The shared LangGraph checkpointer singleton (in-memory for now).
+"""The shared in-memory LangGraph checkpointer singleton, for batch, bench and CLI games.
 
 Instantiated at import as a module-level singleton so the compiled parent graph shares one
-checkpointer across the process. In-memory = per-process, non-durable: fine for local/dev HITL
-runs; swap for PostgresSaver(WW_POSTGRES_DSN) when checkpoints must survive a restart.
+checkpointer across the process. In-memory = per-process, non-durable. The server, whose paused
+games must survive a restart, uses a PostgreSQL saver with the same serializer instead
+(server/graph_runtime.py::GraphRuntime, durable_serde below).
 
 The serializer allowlists the Pydantic models that ride graph state (every HITL resume
 deserializes them from the checkpoint): LangGraph's default permissive msgpack warns on each
@@ -25,6 +26,7 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.FiringReason,
     game_events.DiscussionPassReason,  # str-Enum inside DayChannel (pass markers)
     game_events.DayChannel,
+    game_events.SpokenNightAction,  # a speaker's claimed night action inside DayChannel (slice 9a, 2026-10-17)
     game_events.DaySummary,
     game_events.WolfChannel,
     game_events.InvestigatorResult,
@@ -32,6 +34,11 @@ _STATE_MODEL_ALLOWLIST = [
     game_events.DeathRecord,
     game_events.NightActionRecord,  # the private night record (2026-10-03); missing until 2026-10-04
     game_events.RoundCandidate,  # a round turn's held line (Phase 2, 2026-10-07); wraps a DayChannel
+    game_events.NightAnnouncement,  # each morning as data, for the deduction engine (2026-10-17)
+    game_events.AnnouncedDeath,
+    game_events.AnnouncedSave,
+    game_events.ReadOutWill,  # each read-out town record as data, for the deduction engine (2026-10-17)
+    game_events.WillClause,
     night.NightChoice,  # tonight's choices (Phase 3, 2026-10-09): a dataclass, like the next
     night.NightReport,  # the night's public outcome, read by the wire
 ]

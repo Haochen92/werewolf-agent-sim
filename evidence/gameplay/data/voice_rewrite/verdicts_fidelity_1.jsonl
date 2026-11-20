@@ -1,0 +1,45 @@
+{"pair": "p00", "verdict": "same", "what": ""}
+{"pair": "p02", "verdict": "minor", "what": "'use this to test it' -> 'this is worth chewing on': the ask to test the read is softened"}
+{"pair": "p04", "verdict": "minor", "what": "'doesn't tell us whether anyone came to player_3' -> adds 'so that doesn't clear anybody'; 'just a claim' -> 'just a read'"}
+{"pair": "p06", "verdict": "minor", "what": "'I'd like to know who visited them' -> 'tell me who visited them': ask made a direct demand"}
+{"pair": "p08", "verdict": "minor", "what": "'I can confirm' dropped; 'the one thing we know is real' -> 'the only thing we can actually pin down'"}
+{"pair": "p10", "verdict": "changed", "what": "'I did act on player_10 and nothing more' -> 'I acted on player_10 and that's all I'm sharing': 'nothing more' (no other action) becomes withholding (may have done more)"}
+{"pair": "p12", "verdict": "same", "what": ""}
+{"pair": "p14", "verdict": "same", "what": ""}
+{"pair": "p16", "verdict": "same", "what": ""}
+{"pair": "p18", "verdict": "minor", "what": "'on any night' dropped from 'I didn't check player_8 on any night'; 'Let's vote' -> 'Vote'"}
+{"pair": "p20", "verdict": "minor", "what": "'you say no one came to you' -> 'nobody coming to you isn't the point' (attribution dropped); adds 'don't bother asking about player_8'"}
+{"pair": "p22", "verdict": "same", "what": ""}
+{"pair": "p24", "verdict": "same", "what": ""}
+{"pair": "p26", "verdict": "minor", "what": "'New from me' dropped; 'if anyone has a read' -> 'If you've got a read'"}
+{"pair": "p28", "verdict": "minor", "what": "'so the town could act' -> 'so we could act'; 'lock a lynch' -> 'so one of you could lock a lynch'"}
+{"pair": "p30", "verdict": "minor", "what": "'Let's vote player_6 today' -> 'I think we vote player_6 today' (softened); 'didn't check on any night' -> 'never got around to checking' (adds a reason)"}
+{"pair": "p32", "verdict": "same", "what": ""}
+{"pair": "p34", "verdict": "changed", "what": "'I'd vote player_7 unless you give a better answer' -> 'Vote player_7 unless you give me a better answer': personal conditional becomes an instruction to the table"}
+{"pair": "p36", "verdict": "changed", "what": "'your watch showing me at their door fits' -> 'Your watch has you at their door': puts player_9 (not the speaker) at the door; also 'player_6 is the one to vote' -> 'player_6 is my vote'"}
+{"pair": "p38", "verdict": "minor", "what": "'aren't something I can share without making a claim' -> 'stay with me until I claim': reason becomes a promise to claim later"}
+{"pair": "p40", "verdict": "same", "what": ""}
+{"pair": "p42", "verdict": "changed", "what": "'I'd vote you today unless...' -> 'I'm voting you today' (with unless-clause): 'd vote' becomes 'I'm voting', firmer commitment"}
+{"pair": "p44", "verdict": "changed", "what": "'ask player_1 which night it came from and whether a Sentinel or Trailseer can confirm' -> 'player_1, which night was it, and can a Sentinel or Trailseer confirm?': addressee changes from player_8 to player_1; 'I won't claim' -> 'I'm not claiming'"}
+{"pair": "p46", "verdict": "minor", "what": "'I'd rather we look at' -> 'let's look at' plus 'I don't want to pile on anyone'"}
+{"pair": "p48", "verdict": "minor", "what": "'I'll keep my second check for tonight's test' -> 'My second check is saved for tonight': 'test' dropped"}
+{"pair": "p50", "verdict": "changed", "what": "'I'm not voting anyone today yet' -> 'No vote today': 'yet' dropped, tentative becomes flat"}
+{"pair": "p52", "verdict": "same", "what": ""}
+{"pair": "p54", "verdict": "same", "what": ""}
+{"pair": "p56", "verdict": "minor", "what": "'just a claim' -> 'just a read'; adds concession 'fair enough'"}
+{"pair": "p58", "verdict": "minor", "what": "'Let's vote player_6 today' -> 'I'd vote player_6 today'; 'on any night' dropped"}
+{"pair": "p60", "verdict": "minor", "what": "'Your denial doesn't clear you' -> 'Saying you're clean doesn't really settle it for me'; 'I want a vote' -> 'I'd really like us to vote' (softened)"}
+{"pair": "p62", "verdict": "minor", "what": "'I'm revealing this so we can vote on it' -> 'Vote them.': stated aim becomes a direct command"}
+{"pair": "p64", "verdict": "changed", "what": "'whoever gets accused or defends player_3' -> 'whoever accuses or defends player_3': 'gets accused' becomes 'accuses', a different target set"}
+{"pair": "p66", "verdict": "same", "what": ""}
+{"pair": "p68", "verdict": "minor", "what": "'I'd vote player_6 today' -> 'I'm leaning towards voting player_6 today' (softened)"}
+{"pair": "p70", "verdict": "changed", "what": "'I'd vote player_6 today' -> 'I'm voting player_6 today': firmer commitment"}
+{"pair": "p72", "verdict": "same", "what": ""}
+{"pair": "p74", "verdict": "same", "what": ""}
+{"pair": "p76", "verdict": "same", "what": ""}
+{"pair": "p78", "verdict": "same", "what": ""}
+{"pair": "p80", "verdict": "changed", "what": "'I'd vote player_7 unless you give a better answer' -> 'Unless you've got a better answer than that, I'm voting you': 'd vote' becomes 'I'm voting'"}
+{"pair": "p82", "verdict": "minor", "what": "'without a reason' -> 'without a good reason'; adds 'promise'"}
+{"pair": "p84", "verdict": "minor", "what": "'you say no one came to you, but that is not the question' -> 'That's not what I asked': reframes as the speaker's earlier question"}
+{"pair": "p86", "verdict": "same", "what": ""}
+{"pair": "p88", "verdict": "minor", "what": "'that's the one claim I'd test first' -> 'test that one first': personal preference becomes a directive"}
