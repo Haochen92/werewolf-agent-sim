@@ -139,7 +139,7 @@ def test_database_metadata_has_one_game_table_and_normalized_events():
     # Assert
     assert set(SQLModel.metadata.tables) == {
         "games", "events", "settings", "characters", "game_cast", "models", "model_prices",
-        "prompt_captures", "game_lessons"}
+        "prompt_captures", "game_lessons", "game_eval_cases"}
     assert "replays" not in SQLModel.metadata.tables
     event_fk = next(iter(SQLModel.metadata.tables["events"].foreign_keys))
     assert event_fk.target_fullname == "games.game_id"
@@ -154,6 +154,9 @@ def test_database_metadata_has_one_game_table_and_normalized_events():
     # And the lessons the offline job wrote from it.
     lessons_fk = next(iter(SQLModel.metadata.tables["game_lessons"].foreign_keys))
     assert (lessons_fk.target_fullname, lessons_fk.ondelete) == ("games.game_id", "CASCADE")
+    # And the evaluation cases it built.
+    cases_fk = next(iter(SQLModel.metadata.tables["game_eval_cases"].foreign_keys))
+    assert (cases_fk.target_fullname, cases_fk.ondelete) == ("games.game_id", "CASCADE")
 
 
 def test_event_union_reaches_openapi():

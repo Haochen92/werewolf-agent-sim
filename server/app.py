@@ -29,6 +29,7 @@ from server.routes.games import router as games_router
 from server.routes.replays import TOTAL_COUNT_HEADER, router as replays_router
 from server.routes.rooms import router as rooms_router
 from server.routes.system import router as system_router
+from server.storage.eval_cases import EvalCaseArchive
 from server.housekeeping.sweeper import run_sweeper
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,9 @@ async def lifespan(app: FastAPI):
     async with app_resources() as resources:
         app.state.resources = resources
         await recover_registry(resources.games, resources.game_repository)
-        sweeper = asyncio.create_task(run_sweeper(resources.games), name="park-sweeper")
+        sweeper = asyncio.create_task(
+            run_sweeper(resources.games, eval_cases=EvalCaseArchive(resources.database)),
+            name="park-sweeper")
         refresher = (asyncio.create_task(run_catalog_refresh(dsn), name="catalog-refresh")
                      if dsn else None)
         try:

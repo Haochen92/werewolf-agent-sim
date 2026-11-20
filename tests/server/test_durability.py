@@ -196,6 +196,7 @@ class RecordingGameRepository:
         self.updates = []
         self.update_calls = []
         self.captures = {}
+        self.eval_cases = {}
 
     async def record_events(self, game_id, events):
         self.events.extend(events)
@@ -211,6 +212,10 @@ class RecordingGameRepository:
 
     async def record_capture(self, game_id, capture, *, n_prompts, partial):
         self.captures[game_id] = (capture, n_prompts, partial)
+        return True
+
+    async def record_eval_cases(self, game_id, cases, *, n_cases, partial, record_format):
+        self.eval_cases[game_id] = (cases, n_cases, partial, record_format)
         return True
 
     async def load_recoverable_games(self):

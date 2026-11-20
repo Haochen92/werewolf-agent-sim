@@ -51,7 +51,8 @@ GZIP_MAGIC = b"\x1f\x8b"
 async def test_a_players_keys_are_written_nowhere_in_the_database_after_a_whole_game(
         server_tables_dsn, scripted_model, refuse_real_models):
     """The keys live in the session's memory only. A game played to its end writes its row, its
-    events, its cast, its checkpoints and its prompt capture; none of them may hold either key."""
+    events, its cast, its checkpoints, its prompt capture and its evaluation cases; none of them may
+    hold either key."""
     # Arrange: a server on the test database, and a game paid for with the player's two keys
     server = await open_server(server_tables_dsn, check_key=accept_any_key)
     try:
@@ -76,10 +77,10 @@ async def test_a_players_keys_are_written_nowhere_in_the_database_after_a_whole_
             "public.checkpoints.thread_id"} <= set(searched.hits[session.game_id])
     # A seat name inside the msgpack checkpoint blobs and inside the gzip prompt capture: the
     # search reads both kinds of byte column.
-    assert {"public.checkpoint_blobs.blob", "public.prompt_captures.capture (gzip)"} <= set(
-        searched.hits["player_1"])
+    assert {"public.checkpoint_blobs.blob", "public.prompt_captures.capture (gzip)",
+            "public.game_eval_cases.cases (gzip)"} <= set(searched.hits["player_1"])
     assert {"checkpoints", "checkpoint_blobs", "checkpoint_writes", "games", "events",
-            "game_cast", "prompt_captures", "store"} <= {t.split(".")[1] for t in searched.tables}
+            "game_cast", "prompt_captures", "game_eval_cases", "store"} <= {t.split(".")[1] for t in searched.tables}
 
 
 async def test_a_players_key_in_a_providers_error_is_written_nowhere_in_the_database(

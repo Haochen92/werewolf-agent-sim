@@ -76,6 +76,7 @@ from Agents.turn.human_turn import validate_human_response
 from server.error_reporting import report_game_failure
 from server.game.cast import CastSeat, draw_cast
 from server.storage.game_repository import GameRepository
+from server.storage.eval_cases import RECORD_FORMAT, encode_cases
 from server.storage.prompt_captures import build_capture, encode_capture
 from server.game.model_catalog import game_model, menu_models
 from server.game.pacing import PacingTracker
@@ -465,6 +466,7 @@ class GameSession:
                 self.game_id, self.log, len(self.human_players),
                 extraction_input=self.translator.extraction_input)
             await self._save_capture()
+            await self._save_eval_cases()
 
     async def _save_capture(self) -> None:
         """Write down what this game's AI players were sent, so the nightly leak audit can
@@ -484,6 +486,26 @@ class GameSession:
             await asyncio.wait_for(write(), timeout=_CAPTURE_SAVE_TIMEOUT_S)
         except Exception:
             logger.exception("game %s: prompt capture not saved (game unaffected)", self.game_id)
+
+    async def _save_eval_cases(self) -> None:
+        """Write down the evaluation cases this game built, so served play can be evaluated
+        later without reading the trace store. A batch game writes the same list to a file.
+        The cases built before a restart died with the old process, so a resumed game's row is
+        marked partial. The game is already over and saved; a failure here is logged, and
+        waiting on it is capped, so it never holds the game up."""
+        records = list(self._context["eval_sink"].records)
+
+        async def write() -> None:
+            if not records or not self._repository.configured:
+                return
+            blob = await asyncio.to_thread(encode_cases, records)
+            await self._repository.record_eval_cases(
+                self.game_id, blob, n_cases=len(records), partial=self._capture_partial,
+                record_format=RECORD_FORMAT)
+        try:
+            await asyncio.wait_for(write(), timeout=_CAPTURE_SAVE_TIMEOUT_S)
+        except Exception:
+            logger.exception("game %s: evaluation cases not saved (game unaffected)", self.game_id)
 
     async def _wait_for_absent_player(self) -> None:
         """If this is a solo game and its player is away, wait here until they are back.
