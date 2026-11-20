@@ -115,6 +115,9 @@ class _FakeGameRepository:
     async def record_events(self, game_id, events):
         return True
 
+    async def record_run(self, game_id, run):
+        return True
+
     async def update_game(self, game_id, **fields):
         self.updates.append(fields)
         return True

@@ -214,6 +214,10 @@ class RecordingGameRepository:
         self.captures[game_id] = (capture, n_prompts, partial)
         return True
 
+    async def record_run(self, game_id, run):
+        self.runs = [*getattr(self, "runs", []), run]
+        return True
+
     async def record_eval_cases(self, game_id, cases, *, n_cases, partial, record_format):
         self.eval_cases[game_id] = (cases, n_cases, partial, record_format)
         return True

@@ -9,6 +9,7 @@ from typing import Any
 from . import accessors
 from .chat import cached_chat_model, create_chat_model, provider_family, provider_name
 from .health import ModelHealth
+from .outcomes import TurnOutcomes
 
 
 class GameModels:
@@ -40,6 +41,8 @@ class GameModels:
         # Shared by the game's threads: the stall count that sends a turn straight to the rescue
         # model (health.py).
         self.health = ModelHealth()
+        # Which turns were not decided by the game's own model (outcomes.py).
+        self.outcomes = TurnOutcomes()
         # The clients built on the player's key. Kept with the game, not in the process-wide
         # cache, so the key goes when the game's object is dropped.
         self._clients: dict[Any, Any] = {}

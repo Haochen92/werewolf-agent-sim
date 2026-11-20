@@ -755,3 +755,93 @@ def test_a_stalled_echo_gate_keeps_the_line_and_counts_the_stall():
     # Act and assert
     assert echo_gate.line_echo_of("player_5 claimed healer late.", "player_3", _EARLIER, models=models) == ""
     assert judge.calls == 1 and models.health.stalls == 1
+
+
+# ---- the game's record of turns its own model did not decide ----------------------------------
+#
+# In the game's events a rescued or defaulted move looks like any other. The record on the game's
+# models object (Agents/llm_factory/outcomes.py) is what says which turns they were.
+
+
+def test_a_turn_the_primary_decides_leaves_no_entry_in_the_outcome_record():
+    # Arrange
+    models = _game(seat=_WorkingModel(_result()), seat_rescue=_WorkingModel(_result()))
+
+    # Act
+    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
+
+    # Assert
+    assert models.outcomes.snapshot() == {
+        "counts": {"rescue": 0, "failed_pass": 0, "random_default": 0, "no_action_default": 0},
+        "turns": []}
+
+
+def test_a_turn_the_rescue_model_decides_is_recorded_with_its_seat_day_and_kind():
+    # Arrange: a primary model that always fails, and a working rescue model
+    models = _game(seat=_BrokenModel(), seat_rescue=_WorkingModel(_result()))
+
+    # Act
+    agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
+
+    # Assert
+    record = models.outcomes.snapshot()
+    assert record["counts"]["rescue"] == 1
+    assert record["turns"] == [
+        {"player": "player_1", "day": 2, "turn": "healer_target", "path": "rescue"}]
+
+
+def test_turns_that_start_on_the_rescue_after_repeated_stalls_are_recorded_too():
+    # Arrange: a primary that stalls on every turn, and a working rescue
+    models = _game(seat=_StalledModel(_bounce_429()), seat_rescue=_WorkingModel(_result()))
+
+    # Act: two stalled turns make the pattern; the third starts on the rescue
+    for _ in range(3):
+        agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
+
+    # Assert: the rescue decided all three
+    assert models.outcomes.count("rescue") == 3
+
+
+def test_a_night_action_chosen_at_random_by_the_engine_is_recorded_as_a_default():
+    # Arrange: a primary and a rescue model that both fail
+    models = _game(seat=_BrokenModel(), seat_rescue=_BrokenModel())
+
+    # Act
+    out = agent_mod.run_agent(_payload(), HEALER_NIGHT, HealerOutput, "healer_target", models=models)
+
+    # Assert: the move is a legal protection like any other; only the record says it was random
+    assert out.entry.kind == "protect"
+    record = models.outcomes.snapshot()
+    # The healer has no no-action word, so its default is a random legal target.
+    assert record["counts"] == {"rescue": 0, "failed_pass": 0, "random_default": 1,
+                                "no_action_default": 0}
+    assert record["turns"][0]["path"] == "random_default"
+
+
+def test_a_discussion_turn_that_fails_every_attempt_is_recorded_as_a_failed_pass():
+    # Arrange: a day turn whose primary and rescue models both fail
+    payload = {**_payload(), "day_channel": [], "day_summaries": [],
+               "firing_reason": FiringReason(tier="reactive", owes=["player_2"])}
+    models = _game(seat=_BrokenModel(), seat_rescue=_BrokenModel())
+
+    # Act
+    agent_mod.run_agent(payload, HEALER_DAY_DISCUSS, DayDiscussOutput, "day_channel", models=models)
+
+    # Assert
+    assert models.outcomes.snapshot()["turns"] == [
+        {"player": "player_1", "day": 2, "turn": "day_channel", "path": "failed_pass"}]
+
+
+def test_a_resumed_games_outcome_record_carries_on_from_what_was_saved():
+    # Arrange: the record a game saved before a restart
+    from Agents.llm_factory.outcomes import RESCUE, TurnOutcomes
+    before = TurnOutcomes()
+    before.note(RESCUE, player="player_3", day=1, turn="day_votes")
+
+    # Act: the record is rebuilt from the saved form, and one more turn is noted
+    resumed = TurnOutcomes(before.snapshot())
+    resumed.note(RESCUE, player="player_4", day=2, turn="day_votes")
+
+    # Assert
+    assert resumed.count("rescue") == 2
+    assert [t["player"] for t in resumed.snapshot()["turns"]] == ["player_3", "player_4"]

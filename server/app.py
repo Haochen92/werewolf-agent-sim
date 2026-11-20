@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from Agents.observability.log_context import GameIdFilter
 from Agents.tracing import flush, init_tracing
 from server.config import server_settings
 from server.error_reporting import init_error_reporting
@@ -72,15 +73,22 @@ async def lifespan(app: FastAPI):
 
 def _configure_logging() -> None:
     """Give the app's loggers a handler and level. Uvicorn only configures its own;
-    an unconfigured root logger drops everything below WARNING on the floor."""
+    an unconfigured root logger drops everything below WARNING on the floor.
+
+    Every line carries the id of the game it was logged for, or "-" outside a game: several
+    games run in this process, and the engine's lines name a seat but not a game."""
     root = logging.getLogger()
     if not root.handlers:
         logging.basicConfig(
             level=server_settings.LOG_LEVEL.upper(),
-            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+            format="%(asctime)s %(levelname)s %(name)s [%(game_id)s]: %(message)s",
         )
     else:
         root.setLevel(server_settings.LOG_LEVEL.upper())
+    # On the handlers, not the logger: a logger's filter does not see lines from its children.
+    for handler in root.handlers:
+        if not any(isinstance(f, GameIdFilter) for f in handler.filters):
+            handler.addFilter(GameIdFilter())
 
 
 def create_app() -> FastAPI:

@@ -20,6 +20,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
 
 from Agents.llm_factory import GameModels, env_models
+from Agents.llm_factory.outcomes import FAILED_PASS, NO_ACTION_DEFAULT, RANDOM_DEFAULT, RESCUE
 from Agents.llm_factory.embeddings import (
     KEY_REFUSED,
     ProviderKeyRejected,
@@ -89,6 +90,7 @@ def run_agent(
     # the turn starts on the rescue model; the game's health object keeps that count.
     models = models or env_models()
     health = models.health
+    turn = {"player": player_id, "day": payload.get("current_day"), "turn": output_key}
     fallback_llm = models.seat_rescue()
     on_rescue = fallback_llm is not None and health.prefer_rescue()
     if on_rescue:
@@ -127,7 +129,9 @@ def run_agent(
         record_reads(reasoning["reads"], payload, output_key, output_schema)
         outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
         if outcome is not RETRY:
-            if not on_rescue:
+            if on_rescue:
+                models.outcomes.note(RESCUE, **turn)
+            else:
                 health.note_ok()
             return outcome
 
@@ -145,6 +149,7 @@ def run_agent(
             outcome = resolve_decision(result, reasoning, output_key, payload, valid_targets, models=models)
             if outcome is not RETRY:
                 logger.warning(f"{player_id} rescued by the fallback model on {output_key}")
+                models.outcomes.note(RESCUE, **turn)
                 return outcome
 
     # Exhausted discussion becomes a typed technical pass. Persisting the classification advances
@@ -162,6 +167,7 @@ def run_agent(
             player_id,
             output_key,
         )
+        models.outcomes.note(FAILED_PASS, **turn)
         return ResolvedDayDiscussion(
             entry=DayChannel(
                 day=current_day,
@@ -180,6 +186,7 @@ def run_agent(
             player_id,
             output_key,
         )
+        models.outcomes.note(FAILED_PASS, **turn)
         return ResolvedWolfDiscussion(
             entry=WolfChannel(
                 day=payload.get("current_day", 1),
@@ -194,10 +201,12 @@ def run_agent(
 
     logger.error(f"{player_id} failed all retries on {output_key}, using random fallback")
     if output_key == "day_votes":
+        models.outcomes.note(RANDOM_DEFAULT, **turn)
         return ResolvedDayVote(
             entry=DayVote(voter=player_id, votee=random.choice(valid_targets))
         )
     if output_key == KILL_TARGET:
+        models.outcomes.note(RANDOM_DEFAULT, **turn)
         return ResolvedNightChoice(entry=NightChoice(
             player_id, payload.get("player_role", ""), "kill", random.choice(valid_targets)))
     role = role_for_field(output_key)
@@ -205,6 +214,7 @@ def run_agent(
         # The role's no-action word when it has one (a random shot or sigil is worse play than
         # none); a random legal choice otherwise. A necromancer stays put.
         spec = ROLE_SPECS[role]
+        models.outcomes.note(NO_ACTION_DEFAULT if spec.no_action else RANDOM_DEFAULT, **turn)
         fallback = SimpleNamespace(**{output_key: spec.no_action or random.choice(valid_targets), "body": None, "bet_role": "none"})
         choice = night_choice(role, player_id, fallback, payload, valid_targets)
         return ResolvedNightChoice(entry=None if choice is RETRY else choice)

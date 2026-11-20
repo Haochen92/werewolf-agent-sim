@@ -94,8 +94,11 @@ def _prompt_source_files() -> list[Path]:
     )
 
 
-def runtime_fingerprint() -> dict:
+def runtime_fingerprint(game_model: str | None = None) -> dict:
     """Resolve the principal generation settings from env vars + factory defaults.
+
+    ``game_model`` is the model a game was started on, when its starter chose one (a served
+    game); None reads the environment's, which is what a command-line or batch game runs on.
 
     Mirrors the original Google/Vertex accessors in ``Agents.llm_factory`` using
     the same env vars, defaults, and imported constants. Newer backend/per-call
@@ -113,7 +116,7 @@ def runtime_fingerprint() -> dict:
         game_thinking_level,
     )
 
-    game_model = os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
+    game_model = game_model or os.getenv("GOOGLE_GENAI_MODEL", DEFAULT_GAME_MODEL)
     backend = _llm_backend(game_model)
     fingerprint = {
         "fingerprint_schema": FINGERPRINT_SCHEMA,

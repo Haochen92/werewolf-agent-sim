@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 import traceback
 from datetime import datetime, timezone
@@ -63,7 +64,10 @@ from Agents.config import RunConfig, build_runnable_config, normalize_run_config
 from Agents.llm_factory import GameModels
 from Agents.llm_factory.embeddings import ProviderKeyRejected
 from Agents.nodes.day.actors import preview_discuss
+from Agents.llm_factory.outcomes import TurnOutcomes
 from Agents.observability import EvalCaseSink
+from Agents.observability.log_context import GAME_ID
+from Agents.run_fingerprint import runtime_fingerprint
 from Agents.graphs.parent import parent_graph_compiled
 from Agents.rules.board_clocks import alive_role_counts
 from Agents.schemas.human_player import HumanTurnRequest
@@ -113,6 +117,18 @@ def _paused_task(snapshot: StateSnapshot, interrupt_id: str, seat: str):
                  for i in task.interrupts):
             return snapshot, task
     return None
+
+
+def served_fingerprint(models: GameModels) -> dict:
+    """The runtime fingerprint of a served game: the same fields a command-line game stamps,
+    with the model this game was started on, plus its rescue model. The server image holds
+    no git repository, so the commit is the one the image was built with (LANGFUSE_RELEASE,
+    set from the build's GIT_COMMIT argument)."""
+    fingerprint = runtime_fingerprint(game_model=models.model or None)
+    if fingerprint["git_commit"] == "unknown":
+        fingerprint["git_commit"] = os.environ.get("LANGFUSE_RELEASE") or "unknown"
+    fingerprint["rescue_model"] = models.rescue_model
+    return fingerprint
 
 
 class GameSession:
@@ -269,7 +285,11 @@ class GameSession:
 
         # Engine bootstrap.
         run = normalize_run_config(run_config)
-        self.config = build_runnable_config(run)
+        # The code version, prompt hash and models go on every span of the game's trace, as
+        # they do for a command-line game, and on the game's row with each run of its task.
+        self.fingerprint = served_fingerprint(self._models)
+        self.config = build_runnable_config(
+            run, metadata={"runtime_fingerprint": self.fingerprint})
         self.game_id: str = self.config["configurable"]["game_id"]
         self._session_id = run.session_id or self.game_id
         self._graph = graph if graph is not None else parent_graph_compiled
@@ -283,6 +303,13 @@ class GameSession:
         # Tokens and call time per model, saved on the row as the game goes (server/game/usage.py).
         self.usage_meter = UsageMeter()
         self._usage_saved_at = 0.0
+        # Which turns were not the game's own model's: kept here and shared with whichever
+        # models object the game currently has, so swapping that object loses nothing.
+        self.turn_outcomes = TurnOutcomes()
+        self._models.outcomes = self.turn_outcomes
+        self.cached_steps = 0
+        self._outcomes_changed = False
+        self._outcomes_saved_at = 0.0
 
         # What travels to the browsers, and how much of it is already saved.
         self.translator = Translator()
@@ -332,6 +359,7 @@ class GameSession:
 
     async def _run(self, graph_input: Any, waiting_on_humans: bool = False) -> None:
         TURN_CAPTURE.set(self.capture)
+        GAME_ID.set(self.game_id)  # every log line of this task and its worker threads
         recovered = graph_input is None
         self._capture_partial = self._capture_partial or recovered
         trace_input = {"game_id": self.game_id, "recovered": recovered}
@@ -358,6 +386,7 @@ class GameSession:
                         "recovered": recovered,
                     },
                 )
+                await self._record_run(getattr(root, "trace_id", "") or "", recovered)
                 try:
                     await self._drive_graph(graph_input, waiting_on_humans)
                     final_output = {
@@ -569,6 +598,29 @@ class GameSession:
                 self._usage_saved_at = time.monotonic()
             else:
                 self.usage_meter.changed = True
+        # The record of rescued, defaulted and cached turns is saved on the same schedule.
+        if self._repository is not None and (
+                self.turn_outcomes.changed or self._outcomes_changed) and (
+                self.game_over
+                or time.monotonic() - self._outcomes_saved_at >= _USAGE_SAVE_EVERY_S):
+            snapshot = {**self.turn_outcomes.snapshot(), "cached_steps": self.cached_steps}
+            if await self._repository.update_game(self.game_id, turn_outcomes=snapshot):
+                self._outcomes_saved_at, self._outcomes_changed = time.monotonic(), False
+            else:
+                self._outcomes_changed = True
+
+    async def _record_run(self, trace_id: str, recovered: bool) -> None:
+        """Write this run of the task on the game's row: its trace id (empty when tracing is
+        off), when it started, whether it follows a restart, and the fingerprint of the code
+        running it. A failure is logged and never holds the game up."""
+        if self._repository is None:
+            return
+        await self._repository.record_run(self.game_id, {
+            "trace_id": trace_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "recovered": recovered,
+            "fingerprint": self.fingerprint,
+        })
 
     def _on_chunk(self, chunk) -> bool:
         """Handle one chunk from the engine's stream. Returns True when the chunk is an
@@ -590,6 +642,12 @@ class GameSession:
         chunk = to_jsonable_python(chunk)  # engine objects -> the JSON shape the handlers read
         data = chunk.get("data") or {}
         if is_cached(chunk):
+            # A step replayed from the turn cache built no prompt and called no model, so
+            # nothing else records it. Counted on the game's row, and logged with the step.
+            self.cached_steps += 1
+            self._outcomes_changed = True
+            logger.info("game %s: engine step replayed from the turn cache (%s)",
+                        self.game_id, ", ".join(k for k in data if not k.startswith("__")) or "?")
             self.translator.restore_cached_inputs(chunk)
             return False
 
@@ -673,7 +731,9 @@ class GameSession:
         return text
 
     def _use_models(self, models: GameModels) -> None:
-        """Replace the game's models object, here and in the context the engine reads."""
+        """Replace the game's models object, here and in the context the engine reads. The
+        new object carries on the game's record of rescued and defaulted turns."""
+        models.outcomes = self.turn_outcomes
         self._models = models
         self._context["models"] = models
 
@@ -885,7 +945,8 @@ class GameSession:
     # -- after a restart: rebuilt by the live registry -------------------------------------
 
     def reload_history(self, log: list[ev.DurableEvent], human_players: list[str],
-                       cast: Sequence[CastSeat] = (), usage: dict | None = None) -> None:
+                       cast: Sequence[CastSeat] = (), usage: dict | None = None,
+                       turn_outcomes: dict | None = None) -> None:
         """Put back what the database holds for a game that had already started: the
         events the players were sent, which seats are human, and which puppet stands at
         each seat. The live registry reads them from the events table, the game row and
@@ -895,6 +956,9 @@ class GameSession:
         which the meter carries on from."""
         self.log = list(log)
         self.usage_meter = UsageMeter(usage)
+        self.turn_outcomes = TurnOutcomes(turn_outcomes)
+        self._models.outcomes = self.turn_outcomes
+        self.cached_steps = int((turn_outcomes or {}).get("cached_steps", 0))
         self.translator.hydrate(self.log)
         self.human_players = list(human_players)
         self.cast = list(cast)

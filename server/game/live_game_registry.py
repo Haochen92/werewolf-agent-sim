@@ -302,7 +302,7 @@ class LiveGameRegistry:
         session.reload_history(await self._repository.load_events(row.game_id),
                              row.human_players,
                              await self._repository.load_cast(row.game_id),
-                             usage=row.usage)
+                             usage=row.usage, turn_outcomes=row.turn_outcomes)
         self._register(session)
 
         if row.byok:

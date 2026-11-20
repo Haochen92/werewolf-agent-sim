@@ -7,6 +7,8 @@ graph); the runtime machine itself is pinned in test_game_session.py.
 """
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
 from server.game.lobby import MAX_HUMAN_SEATS
@@ -30,9 +32,57 @@ def seated_session(api_client, quiet_session):
 
 # ---- wiring: factory, lifespan registry, CORS -------------------------------------------
 
+class _Database:
+    """A database for the health check: answers, fails or hangs, as told."""
+
+    configured = True
+
+    def __init__(self, behaviour: str) -> None:
+        self.behaviour = behaviour
+
+    def session(self):
+        database = self
+
+        class _Session:
+            async def __aenter__(self):
+                if database.behaviour == "refuses":
+                    raise ConnectionError("test: database unavailable")
+                return self
+
+            async def __aexit__(self, *exc):
+                return False
+
+            async def execute(self, statement):
+                if database.behaviour == "hangs":
+                    await asyncio.Event().wait()
+
+        return _Session()
+
+
+@pytest.mark.parametrize("behaviour, status_code, body", [
+    ("answers", 200, {"status": "healthy", "database": "ok"}),
+    ("refuses", 503, {"status": "unhealthy", "database": "unreachable"}),
+    # A database that accepts and never answers must not hang the probe either.
+    ("hangs", 503, {"status": "unhealthy", "database": "unreachable"}),
+])
+def test_health_reports_whether_the_database_answers(
+        api_client, monkeypatch, behaviour, status_code, body):
+    # Arrange: the server's database replaced, and the probe's wait shortened
+    from server.routes import system
+    monkeypatch.setattr(system, "_DATABASE_CHECK_TIMEOUT_S", 0.2)
+    monkeypatch.setattr(api_client.app.state.resources, "database", _Database(behaviour))
+
+    # Act
+    response = api_client.get("/health")
+
+    # Assert
+    assert (response.status_code, response.json()) == (status_code, body)
+
+
 def test_health_and_lifespan_registry(api_client):
     # Round 1: the health endpoint
-    assert api_client.get("/health").json() == {"status": "healthy"}
+    # No database is configured in these tests, which the answer says.
+    assert api_client.get("/health").json() == {"status": "healthy", "database": "off"}
 
     # Round 2: the registry and the storage services
     resources = api_client.app.state.resources
