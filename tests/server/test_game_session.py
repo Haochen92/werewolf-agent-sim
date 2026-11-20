@@ -10,6 +10,7 @@ the HTTP layer has its own suite (test_http_api.py). Async tests run on pytest-a
 from __future__ import annotations
 
 import asyncio
+import threading
 from contextlib import contextmanager
 from types import SimpleNamespace
 
@@ -85,6 +86,67 @@ async def test_server_session_opens_one_named_trace_in_the_games_session(
     assert root.trace_updates[0]["metadata"]["game_id"] == session.game_id
     assert root.trace_updates[-1]["output"]["status"] == "success"
     assert captured["flushed"] is True
+
+
+async def test_the_server_keeps_running_other_work_while_a_finished_games_spans_are_sent(
+        quiet_session, monkeypatch):
+    """The send can take seconds when the trace store is slow (5 to 15 s measured with the
+    store unreachable). Every viewer of every game is served by the same event loop, so the
+    send must not hold it."""
+    # Arrange: a send that stays busy until this test, running on the event loop, releases it
+    send_started = threading.Event()
+    release_send = threading.Event()
+    send_finished = threading.Event()
+    seen = {}
+
+    def slow_send():
+        send_started.set()
+        # The bound only ends a failing run: an event loop held by the send never sets it.
+        seen["released_during_send"] = release_send.wait(timeout=3)
+        send_finished.set()
+
+    monkeypatch.setattr(rt, "flush", slow_send)
+    session = quiet_session(FakeGraph([]))
+
+    # Act: the game ends, and while its spans are being sent the event loop does other work
+    session.start()
+    await asyncio.to_thread(send_started.wait, 10)
+    release_send.set()
+    await asyncio.to_thread(send_finished.wait, 10)
+
+    # Assert
+    assert seen["released_during_send"] is True
+
+
+async def test_a_game_stopped_at_shutdown_has_its_spans_sent_before_the_stop_returns(
+        quiet_session, monkeypatch):
+    """Shutdown cancels the game's task. The send happens as the task leaves, and the process
+    exits soon after the stop returns, so the stop has to wait for it."""
+    # Arrange: a game that never ends by itself, and a send that stays busy until released
+    send_started = threading.Event()
+    release_send = threading.Event()
+    sent = threading.Event()
+
+    def slow_send():
+        send_started.set()
+        release_send.wait(timeout=3)  # the bound only ends a failing run
+        sent.set()
+
+    monkeypatch.setattr(rt, "flush", slow_send)
+    session = quiet_session(HangingGraph())
+    session.start()
+    await asyncio.sleep(0)  # let the task reach the graph
+
+    # Round 1: stop the game as shutdown does; the stop is still waiting while the send runs
+    stopping = asyncio.create_task(session.suspend())
+    await asyncio.to_thread(send_started.wait, 10)
+    finished_early, _ = await asyncio.wait({stopping}, timeout=0.2)
+    assert not finished_early
+
+    # Round 2: the send completes, and only then does the stop return
+    release_send.set()
+    await asyncio.wait_for(stopping, timeout=10)
+    assert sent.is_set()
 
 
 # ---- entitled(): the tier gate ----------------------------------------------------------

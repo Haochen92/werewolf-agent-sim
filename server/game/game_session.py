@@ -400,7 +400,19 @@ class GameSession:
             # Whatever way the task leaves, including a failure in the tracing setup
             # above: mark the game ended, then push the buffered spans out.
             self._end()
-            flush()
+            await self._send_spans()
+
+    async def _send_spans(self) -> None:
+        """Send the spans still buffered for this game, and wait until they are sent.
+
+        The send is a blocking call that waits on the trace store: 5 to 15 seconds were
+        measured with the store unreachable (2026-11-20). On the event loop it would stop
+        every viewer of every game for that long, so it runs on a worker thread. The task
+        still waits for it, so a game stopped at shutdown has its spans sent before the
+        stop returns."""
+        started = time.monotonic()
+        await asyncio.to_thread(flush)
+        logger.info("game %s: trace send took %.1f s", self.game_id, time.monotonic() - started)
 
     async def _drive_graph(self, graph_input: Any, waiting_on_humans: bool) -> None:
         """The streaming loop. Run the engine until the game ends, handling each chunk as
