@@ -7,7 +7,7 @@
  *   their role and the puppet they stand as. Punching the ticket calls `POST /games`, keeps the
  *   seat token that comes back (it is returned once, and a lost cookie has nothing else to
  *   rejoin with) and goes straight to `/games/[id]`, which opens on the deal.
- * - `room` (`/rooms/new`): a room others join. Rooms always deal at random, so there is no role
+ * - `room` (`/play/room`): a room others join. Rooms always deal at random, so there is no role
  *   choice. Punching calls `POST /rooms`, keeps the host key (returned once, the only proof of
  *   hosting) and goes to `/games/[id]`, where the host gives a name (and picks a puppet, on the
  *   boarding pass like everyone else) and waits for the others.
@@ -30,10 +30,11 @@ import { Alert, Select, Switch, TextInput } from '@mantine/core';
 import { createGame, createRoom, getModels } from '@/lib/api';
 import { departures } from '@/lib/departures';
 import { formatCost } from '@/lib/format';
-import { keyRefusal, modelProvider, PROVIDERS } from '@/lib/key-provider';
-import { hostKey, seatToken } from '@/lib/storage';
+import { backupFor, keyRefusal, modelProvider, PROVIDERS } from '@/lib/key-provider';
+import { byokKeys, hostKey, seatToken } from '@/lib/storage';
 import { queryKeys } from '@/lib/queryKeys';
-import { Button, HangTag, Icon, Paper, StationWall, wallPage } from '@/components/site';
+import { Button, Icon, Paper, PageGate, StationWall, wallPage } from '@/components/site';
+import { HeroTicket } from '../landing/HeroTicket';
 import { PuppetPicker } from '@/components/PuppetPicker';
 import { TrainDrawing } from '@/components/TrainLoader';
 import { useCharacters } from '@/hooks/useCharacters';
@@ -82,6 +83,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
   const [name, setName] = useState('');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [backupOn, setBackupOn] = useState(true);
   const [memory, setMemory] = useState(false);
   const [keyError, setKeyError] = useState<string | null>(null);
   const keyInput = useRef<HTMLInputElement>(null);
@@ -110,6 +112,12 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   const create = useMutation({
     mutationFn: async (): Promise<string> => {
+      // a saved key of another company backs a game the player pays for (KeyRow's switch)
+      const backup =
+        backupOn && apiKey.trim() ? backupFor(byokKeys.all(), model, menu?.backups) : null;
+      const backupBody = backup
+        ? { backup: { company: backup.provider, api_key: backup.key } }
+        : {};
       if (kind === 'solo') {
         const game = await createGame({
           human: true,
@@ -118,6 +126,7 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
           model,
           memory,
           character,
+          ...backupBody,
         });
         // The seat token comes back exactly once: stash it before navigating, or a cookie
         // loss later has nothing to rejoin with.
@@ -126,7 +135,13 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
         departures.mark(game.game_id, character);
         return game.game_id;
       }
-      const room = await createRoom({ name: name.trim(), model, api_key: apiKey, memory });
+      const room = await createRoom({
+        name: name.trim(),
+        model,
+        api_key: apiKey,
+        memory,
+        ...backupBody,
+      });
       hostKey.set(room.game_id, room.host_key);
       return room.game_id;
     },
@@ -166,14 +181,15 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
 
   return (
     <main className={`${classes.office} ${wallPage}`}>
+      <PageGate />
       <StationWall kind="granite" />
       <div className={classes.intro}>
         <div>
           <h1 className={classes.title}>The ticket office</h1>
         </div>
+        {/* the landing's paper tickets, placed as the departures hall's (owner, 2026-10-18) */}
         <nav className={classes.kinds} aria-label="Kind of game">
-          <span className={classes.rail} aria-hidden="true" />
-          <HangTag
+          <HeroTicket
             href="/play"
             current={kind === 'solo'}
             kicker="Admit one"
@@ -181,16 +197,16 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             className={kind === 'solo' ? undefined : classes.otherDoor}
           >
             One seat at a table of agents.
-          </HangTag>
-          <HangTag
-            href="/rooms/new"
+          </HeroTicket>
+          <HeroTicket
+            href="/play/room"
             current={kind === 'room'}
             kicker="Admit a party"
             title="Play with others"
             className={kind === 'room' ? undefined : classes.otherDoor}
           >
             Open a room; anyone can board until you start.
-          </HangTag>
+          </HeroTicket>
         </nav>
       </div>
 
@@ -392,6 +408,8 @@ export function TicketOffice({ kind }: { kind: TicketKind }) {
             onChange={onKeyChange}
             error={keyError}
             refusal={refusal}
+            backupOn={backupOn}
+            onBackup={setBackupOn}
           />
 
           {kind === 'room' ? (

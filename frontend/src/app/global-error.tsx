@@ -8,6 +8,7 @@
  */
 import { useEffect } from 'react';
 import * as Sentry from '@sentry/browser';
+import { stageDiagnostics } from '@/stage/diagnostics';
 import classes from './global-error.module.css';
 
 export default function GlobalError({
@@ -18,7 +19,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    Sentry.captureException(error);
+    Sentry.captureException(error, { contexts: { stage: stageDiagnostics() } });
   }, [error]);
 
   return (

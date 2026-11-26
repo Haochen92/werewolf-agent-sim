@@ -1,0 +1,110 @@
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=6dfa529e
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=b19b857d
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=2566ce35
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=fb9d9d53
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=3 game=eaf0dae2
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=98d97aaf
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=1c05f5b3
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=5663e1df
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=71450fa3
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=590075e9
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=dc331b19
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=59511984
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=2 days=3 game=9e8d03d4
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=4e8f6238
+threads=default hash=unset test_would=fail state_shots=0 metric_shots=1 uses_left=1 shot_night_death=True resolutions=3 days=4 game=eb449427
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=98c91a8d
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=9875b44f
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=04d4e831
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=3331b5a7
+threads=default hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=6 game=174aef7c
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=287a7fb7
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=22cef7e7
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=6 days=6 game=e3b72d1c
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=10df3bed
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=0ec1e62d
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=669d2959
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=d23e736a
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=7 days=7 game=4e070683
+threads=default hash=0 test_would=fail state_shots=0 metric_shots=1 uses_left=1 shot_night_death=True resolutions=3 days=4 game=5bee7841
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=a529a3c8
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=5 days=5 game=1d14f7c5
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=8a19cb43
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=5 game=a154fde9
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=1fdc29e1
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=4 game=7974364d
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=4 days=5 game=35871be8
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dab00e02
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=556fcbf1
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=a4a08269
+threads=default hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=337a2dce
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=unset test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=serial hash=0 test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False resolutions=3 days=4 game=dae81f0b
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=8727671b
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=971f6ce8
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=6 game=315460cf
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=3791b64a
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=adaf3a0e
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=2328dad6
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=2 days=2 game=f12cbd76
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=05e13f88
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=5 game=c60ce20c
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=7cea7c70
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=c41fde4b
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=185e933f
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=2eba552f
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=2a3087e6
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=f401aa7b
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=4 game=ba4674f0
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=d2b7fdca
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=eead9b02
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=a47dd2b4
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=9bbe6cae
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=5 game=0ad15eda
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=5 game=d79b5d63
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=3 game=305c8e9a
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=5 game=c01508cf
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=41a2c0c8
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=951a27c5
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=3 days=3 game=a09b44ee
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=5 game=69c5a2e8
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=f512ff98
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=2 days=2 game=fc3d9108
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=a686b102
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=4c6b594c
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=acefe832
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=400899cd
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=cfda23cd
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=264e76d0
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=5 days=5 game=40e0d6a0
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=5 game=28b6b335
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=4 days=4 game=2c1c9eb4
+threads=default spare test_would=pass state_shots=1 metric_shots=1 uses_left=1 shot_night_death=False times_targeted=0 resolutions=6 days=6 game=85952811

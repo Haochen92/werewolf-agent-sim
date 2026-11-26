@@ -2,8 +2,9 @@
 
 /**
  * The right side of the stage: the transcript drawer or the case file, one at a time, or
- * nothing (beat sheet §0 "The right slot", §12 "The slot"). Every scene mounts this once, in
- * the HUD, and lays its own room out narrower while it holds something (see slot.ts).
+ * nothing (beat sheet §0 "The right slot", §12 "The slot"). The theatre mounts this beside
+ * the scene, so an open panel survives room changes. Scenes lay their rooms out narrower
+ * while it holds something (see slot.ts).
  *
  * What must outlive a beat (the drawer's filters, the file's open tab, chosen seat and the
  * Record's page) comes from whoever mounts the stage, through `SceneProps.slot`; without it the
@@ -18,7 +19,9 @@ import { Film } from './film/Film';
 import { fileFocus, type FileChoice } from './film/case-file';
 import { recordMornings, type RecordPick } from './film/record-model';
 import type { SceneProps } from './scenes/types';
-import { atRail, slotOf, tapsOpenFiles } from './slot';
+import { notebookGame, useNotebook } from './notebook';
+import { useSmall } from './set';
+import { filmFull, slotOf, tapsOpenFiles } from './slot';
 import { actedTonight, nightBranchesOf } from './scenes/replay-night';
 
 /** Memoised: it redraws when the beat, the view or what the page hands the slot changes. */
@@ -34,6 +37,9 @@ export const SideSlot = memo(function SideSlot({
   const [ownTab, setOwnTab] = useState('notes');
   const [ownSeat, setOwnSeat] = useState<FileChoice | null>(null);
   const [ownPick, setOwnPick] = useState<RecordPick | null>(null);
+  // a seated player's own files on the seats, live (film/PlayerFile.tsx)
+  const book = useNotebook(notebookGame(presentation, me));
+  const small = useSmall();
   const occupant = slotOf(presentation);
   // the epilogue is the ledger come down over the whole stage: nothing sits beside it
   if (!occupant || beat.id === 'over.epilogue') return null;
@@ -88,7 +94,6 @@ export const SideSlot = memo(function SideSlot({
           cast={cast}
           filters={slot?.filters ?? own.filters}
           onFilters={slot?.onFilters ?? own.setFilters}
-          rail={atRail(beat)}
           animate={animate}
           scroll={slot?.drawerScroll ?? own.scroll}
           onRecord={openRecord}
@@ -112,6 +117,8 @@ export const SideSlot = memo(function SideSlot({
           ledger={slot?.ledger ?? null}
           recordPick={slot?.onRecordPick ? (slot.recordPick ?? null) : ownPick}
           onRecordPick={pickPage}
+          player={book && me ? { book, me, cast: view.castRoleCounts ?? {} } : null}
+          full={filmFull(presentation, small)}
         />
       )}
     </Layer>

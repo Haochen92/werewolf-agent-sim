@@ -1,0 +1,203 @@
+{
+ "pointer": {
+  "code": "evaluation/experiments/deduction_block_census.py",
+  "git_commit": "07393835377c453eb87f70c49583d9d66d939f23",
+  "git_dirty": true
+ },
+ "turns": 278,
+ "all": {
+  "turns": 278,
+  "public_lines": {
+   "median": 1.0,
+   "p90": 5,
+   "max": 7,
+   "mean": 2.1
+  },
+  "public_chars": {
+   "median": 338.0,
+   "p90": 827,
+   "max": 1025,
+   "mean": 388.8
+  },
+  "seat_lines": {
+   "median": 4.0,
+   "p90": 8,
+   "max": 12,
+   "mean": 4.1
+  },
+  "seat_chars": {
+   "median": 742.0,
+   "p90": 1778,
+   "max": 2920,
+   "mean": 912.4
+  },
+  "both_chars": {
+   "median": 1198.5,
+   "p90": 2430,
+   "max": 3583,
+   "mean": 1301.2
+  },
+  "empty_seat_block": 20,
+  "turns_with": {
+   "F4": 81,
+   "F5": 54,
+   "F6": 30,
+   "any conditional": 110
+  },
+  "conditional_items": {
+   "F4": 81,
+   "F5": 81,
+   "F6": 32
+  },
+  "turns_with_comparisons": {
+   "Table E": 65,
+   "claim status": 208,
+   "evil seat's roles": 93,
+   "evil seat's own lines": 48
+  },
+  "table_e_items": {
+   "E1": 78,
+   "E14+own": 30,
+   "E17": 49,
+   "E2a+own": 4,
+   "E4b+own": 50,
+   "F7+L8": 7
+  },
+  "turns_with_level_7": {
+   "F8": 0,
+   "F9": 47,
+   "F1+C7": 11
+  }
+ },
+ "frozen": {
+  "turns": 52,
+  "public_lines": {
+   "median": 1.0,
+   "p90": 6,
+   "max": 7,
+   "mean": 2.4
+  },
+  "public_chars": {
+   "median": 338.0,
+   "p90": 925,
+   "max": 1025,
+   "mean": 492.2
+  },
+  "seat_lines": {
+   "median": 5.0,
+   "p90": 7,
+   "max": 7,
+   "mean": 4.8
+  },
+  "seat_chars": {
+   "median": 1077.0,
+   "p90": 1470,
+   "max": 1570,
+   "mean": 1051.6
+  },
+  "both_chars": {
+   "median": 1477.0,
+   "p90": 2360,
+   "max": 2458,
+   "mean": 1543.8
+  },
+  "empty_seat_block": 0,
+  "turns_with": {
+   "F4": 14,
+   "F5": 10,
+   "F6": 6,
+   "any conditional": 24
+  },
+  "conditional_items": {
+   "F4": 14,
+   "F5": 12,
+   "F6": 6
+  },
+  "turns_with_comparisons": {
+   "Table E": 16,
+   "claim status": 50,
+   "evil seat's roles": 2,
+   "evil seat's own lines": 2
+  },
+  "table_e_items": {
+   "E1": 6,
+   "E17": 10,
+   "E4b+own": 2
+  },
+  "turns_with_level_7": {
+   "F8": 0,
+   "F9": 5,
+   "F1+C7": 11
+  }
+ },
+ "captured": {
+  "turns": 226,
+  "public_lines": {
+   "median": 1.0,
+   "p90": 4,
+   "max": 6,
+   "mean": 2.0
+  },
+  "public_chars": {
+   "median": 312.0,
+   "p90": 728,
+   "max": 875,
+   "mean": 365.1
+  },
+  "seat_lines": {
+   "median": 3.0,
+   "p90": 8,
+   "max": 12,
+   "mean": 3.9
+  },
+  "seat_chars": {
+   "median": 670.0,
+   "p90": 1800,
+   "max": 2920,
+   "mean": 880.4
+  },
+  "both_chars": {
+   "median": 975.0,
+   "p90": 2569,
+   "max": 3583,
+   "mean": 1245.4
+  },
+  "empty_seat_block": 20,
+  "turns_with": {
+   "F4": 67,
+   "F5": 44,
+   "F6": 24,
+   "any conditional": 86
+  },
+  "conditional_items": {
+   "F4": 67,
+   "F5": 69,
+   "F6": 26
+  },
+  "turns_with_comparisons": {
+   "Table E": 49,
+   "claim status": 158,
+   "evil seat's roles": 91,
+   "evil seat's own lines": 46
+  },
+  "table_e_items": {
+   "E1": 72,
+   "E14+own": 30,
+   "E17": 39,
+   "E2a+own": 4,
+   "E4b+own": 48,
+   "F7+L8": 7
+  },
+  "turns_with_level_7": {
+   "F8": 0,
+   "F9": 42,
+   "F1+C7": 0
+  }
+ },
+ "games": [
+  "2f19d908",
+  "403f4dbc",
+  "645228e7",
+  "88aee4e4"
+ ]
+}

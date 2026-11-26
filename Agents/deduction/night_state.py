@@ -9,12 +9,13 @@ simultaneous, so a player revealed dead this morning still acted last night (cat
 from __future__ import annotations
 
 from Agents.schemas.game_events import DeathRecord
+from Agents.schemas.role_traits import silently_immune, the_role
 
-ALWAYS_IMMUNE = "serial_killer"
+ALWAYS_IMMUNE = the_role(night_immune="always")
 """The serial killer cannot be killed at night, on any night."""
-IMMUNE_ON_NIGHT_ONE = "necromancer"
-"""The necromancer cannot be killed on night 1 only."""
-IMMUNE_WHEN_SELF_BETTING = "fortune_teller"
+IMMUNE_ON_FIRST_NIGHTS = the_role(night_immune="first_nights")
+"""The necromancer cannot be killed on nights 1 to NECROMANCER_IMMUNE_NIGHTS only."""
+IMMUNE_WHEN_SELF_BETTING = the_role(night_immune="self_bet")
 """The fortune teller cannot be killed on a night it bets on itself. The morning announces an attack
 its self-bet stopped (R10, 2026-10-17), so it is never a silent immune target: its records say
 `self_bet_saved` (catalogue A53, A54)."""
@@ -37,6 +38,18 @@ def revealed_before_night(dead_roster: list[DeathRecord], night: int) -> dict[st
     return revealed
 
 
+def deaths_before_night(dead_roster: list[DeathRecord], night: int) -> list[DeathRecord]:
+    """Every death before night `night` began, concealed or not: a night death on an earlier
+    night, or a lynch on day `night` or before."""
+    earlier = []
+    for death in dead_roster:
+        died_on_an_earlier_night = death.phase == "night" and death.day < night
+        lynched_before_this_night = death.phase == "day" and death.day <= night
+        if died_on_an_earlier_night or lynched_before_this_night:
+            earlier.append(death)
+    return earlier
+
+
 def role_revealed_on_others(role: str, player: str, dead_roster: list[DeathRecord],
                             cast_role_counts: dict[str, int]) -> bool:
     """Whether every dealt copy of `role` has been publicly revealed on players other than
@@ -51,20 +64,15 @@ def role_revealed_on_others(role: str, player: str, dead_roster: list[DeathRecor
 
 def roles_always_immune(night: int, cast_role_counts: dict[str, int]) -> set[str]:
     """The roles in this cast that cannot be killed on `night` whatever they choose: the serial
-    killer, and the necromancer on night 1. (The fortune teller only on a self-bet night, and the
+    killer, and the necromancer on its first nights. (The fortune teller only on a self-bet night, and the
     morning announces that attack.)"""
-    roles = set()
-    if cast_role_counts.get(ALWAYS_IMMUNE):
-        roles.add(ALWAYS_IMMUNE)
-    if cast_role_counts.get(IMMUNE_ON_NIGHT_ONE) and night == 1:
-        roles.add(IMMUNE_ON_NIGHT_ONE)
-    return roles
+    return {role for role in silently_immune(night) if cast_role_counts.get(role)}
 
 
 def immune_candidates(target: str, night: int, own_role: str, cast_role_counts: dict[str, int],
                       dead_roster: list[DeathRecord]) -> list[str]:
     """The roles `target` could hold that would make an attack on it fail in silence on `night`
-    (catalogue L1, per cast): the serial killer, and the necromancer on night 1. A fortune teller
+    (catalogue L1, per cast): the serial killer, and the necromancer on its first nights. A fortune teller
     betting on itself is not one: the morning announces an attack its self-bet stopped (R10).
 
     Ruled out: the seat's own role (it is not the target), and a role publicly revealed on

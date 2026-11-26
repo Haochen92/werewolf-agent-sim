@@ -7,12 +7,31 @@ them can tell you. Commands run from `frontend/`.
 
 | Layer | Tool | What it checks | Size, time |
 | --- | --- | --- | --- |
-| Unit | Vitest, in Node (no browser) | The logic: the event fold and the store, the beat list, the live and replay reducers, the paint generators' markup, the dock's rules, the music's cue sheet. A small layer renders components to HTML on the server (`renderToStaticMarkup`) to prove private data reaches only the right reader. | About 63 files and 1,600 tests, 20 s. `npm test` |
+| Unit | Vitest, in Node (no browser) | The logic: the event fold and the store, the beat list, the live and replay reducers, the paint generators' markup, the dock's rules, the music's cue sheet. A small layer renders components to HTML on the server (`renderToStaticMarkup`) to prove private data reaches only the right reader. | About 20 s. `npm test` |
 | Types, lint, format | `tsc`, ESLint (with React's hook rules), Prettier | Types; hook dependency lists (`react-hooks/exhaustive-deps`, which is what keeps a `useMemo` from serving stale data); formatting. | Seconds. `npm run typecheck`, `npm run lint`, `npm run format:check` |
 | Build | `next build` | What the three above miss: a server component calling a client hook fails only here, when the page is prerendered. | About 2 min |
-| Browser | Playwright, headless Chromium | The pages as a browser draws them, against a mocked API (below). | 5 spec files, 173 tests, about 16 min. `npm run e2e` |
+| Browser | Playwright, headless Chromium | The pages as a browser draws them, against a mocked API (below). | About 16 min. `npm run e2e` |
 | Diagnostics | Scripts, not pass/fail | Measurements taken while working on performance (below). | As needed |
 | The real phone | The owner's iPhone, Safari's Web Inspector over a cable | Memory crashes, frame rate, touch, sound. | By hand |
+
+## What the goldens pin
+
+A golden is a saved output that a test compares the new output with, whole. There are two kinds.
+
+- **Beat goldens** (`src/stage/beats/__goldens__/`): the whole beat list that `beatsFor` cuts from
+  a game, one line per beat, written by `toMatchFileSnapshot` in `src/stage/beats/beatsFor.test.ts`.
+  Four files: the public cut and the X-ray cut of two games, the nine-seat fixture `9369a5c1` and
+  the Phase 2 game. They hold the cutter to `beat_sheet.md`: change the sheet, change the cutter,
+  regenerate (`npx vitest run -u`), and read the diff. The two ten-seat games
+  (`replay-phase3.json`, `replay-phase3-necro.json`) have no whole golden; targeted assertions in
+  the same file hold their beats.
+- **Screenshot goldens** (`e2e/__screenshots__/`): pictures of the page, under "The browser suite"
+  below.
+
+The fixtures are real games, not hand-written ones: archived games in `src/stage/fixtures/`, the
+593-event seed game in `src/game/__fixtures__/`, and the ten-seat game wrapped from the server's
+translator golden (`ten_seat_pass.md` §4). So a golden pins what the stage does with games that
+happened, and nothing about a shape of game no fixture holds.
 
 ## The browser suite
 
@@ -96,11 +115,23 @@ one sitting (`frontend_lessons.md` 25).
 - **WebKit at all.** The suite runs in Chromium only.
 - **The real server.** The API is mocked, so a contract change on the server shows up only
   in a real game. `npm run generate-api-types` keeps the types in step.
+- **The server's tiers.** `e2e/live.spec.ts` decides what seat 7 receives from its own copy of
+  the server's entitlement (its `OBSERVER`, `FACTION` and `SEAT` sets, copied from
+  `server/game/entitlement.py::entitled` and `server/schemas/events.py::EVENT_TIERS`). A change to
+  the server's tiers passes the browser suite unchanged. On 2026-10-26 the copy already lacks two
+  seat-tier types, `uses_remaining` and `night_record`, which the nine-seat game it streams never
+  carries.
 - **Sound.** The music's cue logic is unit-tested, but the browser suite never plays audio.
+- **Accessibility.** Nothing checks it (no axe, no `jsx-a11y` lint rules). The site was built with
+  care: real `<button>`s and links, `aria-*` labels, `aria-live` regions, `prefers-reduced-motion`
+  and `:focus-visible` styles. But it has never been audited or played by keyboard alone. Known
+  gaps from a 2026-11-11 scan: the lobby inputs turn their focus outline off with no
+  `:focus-visible` replacement (`Lobby.module.css`), and there is no skip link.
 
 ## Who runs the browser tests
 
-Headless is the normal way to run Playwright for everyone, people and CI alike: it is faster,
+Headless is the normal way to run Playwright for everyone (a CI would run it so too; this
+project has no CI): it is faster,
 and it is what a test machine has. A person debugging a failure adds:
 - `--headed`, to watch the browser;
 - `--ui`, to step through tests with a timeline;
@@ -124,3 +155,12 @@ desktop, and they remain the final word on how it feels.
   - picture density at several screen sizes;
   - a live burst and reconnect;
   - a soak of 15–30 minutes on a phone.
+- **Accessibility checks (added 2026-11-11, about half a day).**
+  - Add `@axe-core/playwright` to the site, lobby, live and replay specs, failing on any violation.
+  - Have an agent fix the violations it finds, with a person reviewing the diffs (colour changes
+    affect the look).
+  - Write one keyboard-only test: join a game and cast a vote with `Tab`, `Enter` and `Escape`.
+  - Fix the two known gaps above.
+
+  This would let the project claim "checked with axe and keyboard-tested", not "accessible":
+  axe finds only the mechanical third to half of real problems.

@@ -1,0 +1,102 @@
+[
+ {
+  "case_id": "c060",
+  "label": "match",
+  "reason": "Lesson asks for one neutral procedural point tied to public claims; it notes the trailseer report only shows where player_1 went and asks the sentinel/healer about the save, with no accusation."
+ },
+ {
+  "case_id": "c061",
+  "label": "match",
+  "reason": "Lesson says abstain when the room is abstaining and no evidence-backed target exists; the decision is abstain."
+ },
+ {
+  "case_id": "c062",
+  "label": "uncheckable",
+  "reason": "Lesson concerns whether to spend a conceal on the kill; the decision is only a night chat, which shows nothing about conceal."
+ },
+ {
+  "case_id": "c063",
+  "label": "uncheckable",
+  "reason": "Lesson says protect the confirmed-Town player with the best remaining ability; the record shows only target player_4 and does not confirm that player_4 is the vigilante with bullets left."
+ },
+ {
+  "case_id": "c064",
+  "label": "match",
+  "reason": "Lesson says keep sigils when no suspect has attack evidence; the decision is declined."
+ },
+ {
+  "case_id": "c065",
+  "label": "match",
+  "reason": "Lesson says hold fire with no concrete lead; the decision is hold_fire."
+ },
+ {
+  "case_id": "c066",
+  "label": "match",
+  "reason": "Lesson says watch the likely next target such as the most vocal question-driver rather than holding or self-watching; it watches player_1, another player."
+ },
+ {
+  "case_id": "c067",
+  "label": "match",
+  "reason": "Lesson says ask in neutral evidence-seeking terms what separate result backs the claim; it asks what else supports player_6 sigil claim."
+ },
+ {
+  "case_id": "c068",
+  "label": "match",
+  "reason": "Lesson says keep sigils when no suspect has attack evidence; the decision is declined."
+ },
+ {
+  "case_id": "c069",
+  "label": "match",
+  "reason": "Lesson says short non-fabricating defense, no rival claim, no partner mention, steer suspicion to non-partners; it defends briefly as unclaimed and points to player_10 and player_6."
+ },
+ {
+  "case_id": "c070",
+  "label": "match",
+  "reason": "Lesson says ask neutrally what separate result backs the accusation; it asks what a second check or sentinel watch would show and what cross-checkable result player_4 has."
+ },
+ {
+  "case_id": "c071",
+  "label": "match",
+  "reason": "Lesson says hold fire with no concrete lead; the decision is hold_fire."
+ },
+ {
+  "case_id": "c072",
+  "label": "match",
+  "reason": "Lesson says say a visit shows only that you went there and redirect to the reporters exact wording; the decision says exactly that and invents no role."
+ },
+ {
+  "case_id": "c073",
+  "label": "partial",
+  "reason": "Lesson wants a concrete rival suspect and a specific question, with the accuser incentive weighed; it asks player_8 a specific question but does not name any incentive."
+ },
+ {
+  "case_id": "c074",
+  "label": "match",
+  "reason": "Lesson says do not cite channeled info and restate only public or own-received facts; the decision cites nothing from the dead body."
+ },
+ {
+  "case_id": "c075",
+  "label": "match",
+  "reason": "Lesson says vote with the plurality rather than a solo dissent; the discussion shows others also choosing to abstain and it abstains."
+ },
+ {
+  "case_id": "c076",
+  "label": "match",
+  "reason": "Lesson says echo the room demand that players state night results; it asks claimants to share what they learned."
+ },
+ {
+  "case_id": "c077",
+  "label": "match",
+  "reason": "Lesson says vote with the plurality when the room converges and you are not the target; it votes player_10 who is accused by four players."
+ },
+ {
+  "case_id": "c078",
+  "label": "uncheckable",
+  "reason": "Lesson says follow an unconfirmed non-claiming player; the record does not show whether player_8 is non-claiming or unconfirmed."
+ },
+ {
+  "case_id": "c079",
+  "label": "match",
+  "reason": "Lesson says hold fire while no living player is tied to a lone-killer signal; the decision is hold_fire."
+ }
+]

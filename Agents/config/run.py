@@ -23,6 +23,7 @@ from Agents.memory.persistence.config import (
     normalize_memory_persistence_config,
 )
 from Agents.schemas.deduction import DeductionMode
+from Agents.schemas.roles import Side
 
 # --- Pipeline arm defaults (memory OFF baseline) --------------------------------------
 # Empty: retrieval reads a role that is not listed as off, and the post-game extraction reads it as on,
@@ -62,9 +63,17 @@ DEFAULT_SP_EXPLORATION_SLOT = True
 DEFAULT_STAGE_FILTER = False
 # The deduction engine (Agents/deduction/; owner, 2026-10-16): how much of it the AI seats get, set
 # once per game so a game can be an A/B arm. "off" = none, "record" = the lines beside each seat's
-# own night records (level 1), "full" = those plus the deduction block once it is built. A human
-# seat never gets any.
+# own night records (level 1), "public" = those plus what the record alone works out (level 2),
+# "full" = those plus the claims, conditionals, explanations and evil covers (level 3); the levels are
+# defined on DeductionMode (Agents/schemas/deduction.py). A human seat never gets any.
 DEFAULT_DEDUCTION_MODE: DeductionMode = "full"
+# A side's own level (owner, 2026-10-18: a difficulty setting for experiments, e.g. the town at level 3
+# and the wolves at level 1): {"town" | "wolves" | "lone_killer" | "neutral": mode}, overriding
+# deduction_mode for the seats of the sides it names.
+DEFAULT_DEDUCTION_BY_SIDE: dict[str, DeductionMode] = {}
+# A speaking voice for each AI seat, fixed for the game (Agents/prompts/voices.py; owner, 2026-10-18).
+# Off by default: a prompt change, run as an A/B against games without it first.
+DEFAULT_PERSONA_VOICES = False
 
 
 class RunConfig(BaseModel):
@@ -90,6 +99,8 @@ class RunConfig(BaseModel):
     sp_exploration_slot: bool = DEFAULT_SP_EXPLORATION_SLOT
     stage_filter: bool = DEFAULT_STAGE_FILTER
     deduction_mode: DeductionMode = DEFAULT_DEDUCTION_MODE
+    deduction_by_side: dict[Side, DeductionMode] = Field(default_factory=lambda: dict(DEFAULT_DEDUCTION_BY_SIDE))
+    persona_voices: bool = DEFAULT_PERSONA_VOICES
     game_id: str = ""
     session_id: str | None = None
     human_player: int = 0

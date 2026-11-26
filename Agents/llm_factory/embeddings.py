@@ -124,15 +124,19 @@ _KEY_REJECTED_MARKERS = (
 KEY_REFUSED = "refused this game's API key"
 
 
-def provider_complaint(exc: BaseException) -> str:
+def provider_complaint(exc: BaseException, scrub: Callable[[str], str] | None = None) -> str:
     """The provider's own short reason for a failed call, e.g. "401, invalid x-api-key": the
-    status and the message from the SDK's error body (Anthropic and OpenAI shape it alike)."""
+    status and the message from the SDK's error body (Anthropic and OpenAI shape it alike).
+    ``scrub`` removes a key from the message before it is cut to length, so a key that the cut
+    would split cannot leave its first part behind."""
     status = getattr(exc, "status_code", None)
     body = getattr(exc, "body", None)
     error = body.get("error") if isinstance(body, dict) else None
     message = error.get("message") if isinstance(error, dict) else None
     if not message:
         message = str(getattr(exc, "message", "") or exc)
+    if scrub is not None:
+        message = scrub(message)
     message = message.strip()[:200]
     return f"{status}, {message}" if status else message
 
@@ -249,9 +253,15 @@ class _RetryingOpenRouterEmbeddings(OpenAIEmbeddings):
 
 
 def _create_openrouter_embeddings(model: str, output_dimensionality: int | None) -> OpenAIEmbeddings:
+    """Every request is timed, and only ``_embed_with_retries`` asks again. Left unset, the
+    client waits on a request with no limit and re-sends it twice on its own, under the five
+    attempts here: a held connection then stalls a seat's lesson lookup, and the store's lock
+    with it, for as long as the host likes (found by reading, 2026-11-11; no incident)."""
     return _RetryingOpenRouterEmbeddings(
         model=model, base_url="https://openrouter.ai/api/v1", api_key=os.getenv("OPENROUTER_API_KEY"),
         dimensions=output_dimensionality,
+        timeout=float(os.getenv("EMBED_TIMEOUT_S", "30")),
+        max_retries=0,
         # Not an OpenAI model: send raw text, not tiktoken ids.
         check_embedding_ctx_length=False,
         model_kwargs={"extra_body": {"provider": {"order": OPENROUTER_EMBEDDING_PROVIDERS,

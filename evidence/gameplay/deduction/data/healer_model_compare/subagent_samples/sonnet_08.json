@@ -1,0 +1,21 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "follow result matches player_7's own admission and my block", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claim only; unverified Suspicious read on player_9", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_6", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "admits going to me; I was roleblocked last night, only the Chanteuse could do that", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "only a claimed read from player_5", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "updated_strategy": "Night 1 I was roleblocked and player_7 admitted visiting me, so player_7 is the Chanteuse (a wolf). I revealed the block but not my role. Push the vote on player_7; player_3's trailseer claim looks consistent. Do not claim healer unless forced; protect a likely real Town claimant (player_3 or player_5) at night.",
+  "pass_turn": false,
+  "message": "player_3 named me, so I'll answer. player_7 says they went to me last night, and I got the roleblocked message last night. Only the Chanteuse blocks, and that's a wolf. So player_7 is my vote today, and player_3's follow checks out.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_3", "addressed_form": "response", "stance": "defense"},
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"}
+  ]
+}

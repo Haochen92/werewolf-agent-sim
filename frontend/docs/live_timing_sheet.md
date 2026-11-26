@@ -9,6 +9,14 @@
 > Langfuse trace `0feb5de6`, 1,436 spans; 527 durable events) and the beat sheet's holds (§0).
 > Companion records: beat sheet §12 (live pacing), `server_design_notes.md` §7 (the AFK
 > clocks), `docs/agentic_ai_encountered_issues.md` entry 3 (how this came up).
+>
+> *2026-10-24: the lag was measured again, from traces, on 13 served games, mostly Claude Haiku 5.5,
+> by a runner that can be rerun on any served game: [`stage_fit/`](stage_fit/README.md). On Haiku the stage
+> waits for the model 2.7–5.1% of its playing time, mostly in runs of passes and at the morning after the
+> pack's night chain. The figures below are the flash-lite game of 2026-10-01.*
+> [2026-10-26: stage_fit measured the waits on 13 games (how often the stage stands with nothing to
+> play), not the lag (how far the stage runs behind the server); the lag figures below are still the
+> one flash-lite game's.]
 
 ## 0. The ruling, and how to read the sheet
 
@@ -39,6 +47,10 @@ role acts in parallel from the barrier's start; healer 2.3 s, investigator 2.5 s
 day summary 2–4 s between the last turn and the ballot. Game over → extraction (memory on):
 tens of seconds to minutes; the longest single generation in this game was 105 s (a stall;
 entry 1 of the issues record). A human's own turn: whatever they take (night 1 here: 116 s).
+[2026-10-26: since 2026-10-12 (`65be9ea8`) a served game no longer extracts at game over: the
+game keeps its extraction input and an offline job extracts a memory-on game's lessons later,
+never during the game (`server/game/run_config.py::game_run_config`). The extraction time above
+is this game's, before that change.]
 
 **Stage (beat sheet §0, normal speed).** A speech holds words ÷ 2.4 s, floor 5 s, cap 15 s;
 in this game 20–58 words, so 9–15 s and mostly the cap. A pass 4 s. Night shutter 6 s; a card
@@ -114,6 +126,10 @@ tab unlocked on arrival ("the file unlocked halfway"); now they unlock when the 
 the replay row is filed only when the engine's run ends: the curtain shows "Winding the reels…"
 until `GET /replays/{id}` answers (the status cannot say it while this viewer's stream holds the
 game live).
+[2026-10-26: extraction no longer runs here; since 2026-10-12 it is an offline job after the
+game (`server/game/run_config.py::game_run_config`). The curtain and its "Winding the reels…"
+plaque remain (`frontend/src/stage/scenes/GameOverScene.tsx`) and still wait for the replay to
+answer; how long that wait is now was not measured.]
 
 ## 3. Scenario B — four friends at a table (four humans, five agents; deadlines 120 s)
 
@@ -150,6 +166,12 @@ the turn at reading pace (see the ruling below for the jump).
 | A draft (up to 3 × ≤ 20 s credit) | yes (the human's turn) | no | lengthens the table's wall time only | `DRAFT_CREDIT_CAP_S` |
 | An LLM stall | generation slower than reading | no: everyone waits in step | everyone; the risk is dead air, not divergence | the request budget + rescue (issues entry 1) |
 | Game over → extraction | the run continues | the X-ray waits for the stage | everyone | `seesXray`; the curtain's wait |
+
+[2026-10-26: two rows are dated. "In solo the human waits for their turn beat after the dock
+opened" is the old rule: since 2026-10-12 a solo prompt waits for the stage, so the dock opens
+when the stage reaches the turn (`frontend/src/stage/containers/live-queue.ts`, its header).
+"Game over → extraction": since 2026-10-12 a served game does not extract at game over; an
+offline job does it later (`server/game/run_config.py::game_run_config`).]
 
 ## 5. Rulings (owner, 2026-10-01)
 

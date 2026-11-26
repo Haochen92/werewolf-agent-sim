@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 600" width="980" height="600" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="600" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A wall capped short of the page ends in an edge</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The archive&#x27;s wall: height 760 px; under it the page&#x27;s ground, --bg #0c0a07</text>
+<defs><linearGradient id="before" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3a26"/><stop offset="0.35" stop-color="#2a2016"/><stop offset="0.75" stop-color="#050403"/><stop offset="1" stop-color="#020201"/></linearGradient></defs>
+<defs><linearGradient id="after" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3a26"/><stop offset="0.35" stop-color="#2a2016"/><stop offset="0.71" stop-color="#0a0806"/><stop offset="1" stop-color="#0c0a07"/></linearGradient></defs>
+<text x="90" y="96" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">Before (to 2026-10-14)</text>
+<rect x="90" y="110" width="140" height="380" fill="url(#before)" stroke="#6b7280" stroke-width="1"/>
+<rect x="90" y="490" width="140" height="70" fill="#2b2620" stroke="#6b7280"/>
+<text x="240" y="494" font-size="12" fill="#4b5563" text-anchor="start">760 px</text>
+<text x="330" y="96" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">After: the fade on top</text>
+<rect x="330" y="110" width="140" height="380" fill="url(#after)" stroke="#6b7280" stroke-width="1"/>
+<rect x="330" y="490" width="140" height="70" fill="#0c0a07" stroke="#6b7280"/>
+<text x="480" y="494" font-size="12" fill="#4b5563" text-anchor="start">760 px</text>
+<path d="M84,490 L236,490" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="90" y="578" font-size="12.5" fill="#b91c1c" text-anchor="start">black meets the</text>
+<text x="90" y="595" font-size="12.5" fill="#b91c1c" text-anchor="start">lighter ground: an edge</text>
+<text x="330" y="578" font-size="12.5" fill="#15803d" text-anchor="start">the foot is the</text>
+<text x="330" y="595" font-size="12.5" fill="#15803d" text-anchor="start">ground&#x27;s colour: no edge</text>
+<rect x="560" y="100" width="400" height="230" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="580" y="128" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">.records::after, top layer first</text>
+<text x="580" y="154" font-size="14.5" fill="#1f2937" text-anchor="start">1. transparent, then to --bg over the last</text>
+<text x="580" y="177" font-size="14.5" fill="#1f2937" text-anchor="start">    220 px (the fix, 2026-10-14)</text>
+<text x="580" y="200" font-size="14.5" fill="#1f2937" text-anchor="start">2. the pendant&#x27;s warm glow</text>
+<text x="580" y="223" font-size="14.5" fill="#1f2937" text-anchor="start">3. the vignette: black at 0.8</text>
+<text x="580" y="246" font-size="14.5" fill="#1f2937" text-anchor="start">4. the dark closing in, to --bg at 80%</text>
+<text x="580" y="269" font-size="14.5" fill="#1f2937" text-anchor="start"></text>
+<text x="580" y="292" font-size="14.5" fill="#1f2937" text-anchor="start">and under them, .records::before:</text>
+<text x="580" y="315" font-size="14.5" fill="#1f2937" text-anchor="start">the oxblood band, the tile</text>
+<text x="560" y="370.0" font-size="13.5" fill="#374151" text-anchor="start">In a background list the first layer paints on top,</text>
+<text x="560" y="389.575" font-size="13.5" fill="#374151" text-anchor="start">and ::after paints over ::before. The ground&#x27;s</text>
+<text x="560" y="409.15" font-size="13.5" fill="#374151" text-anchor="start">difference is drawn larger than it is; it</text>
+<text x="560" y="428.725" font-size="13.5" fill="#374151" text-anchor="start">showed as a faint line.</text>
+</svg>

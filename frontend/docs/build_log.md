@@ -1,5 +1,27 @@
 # Frontend v1 — build log: decisions, failures, and what they cost
 
+Status (2026-10-26): a journey log, kept whole. Its "I" is the AI builder that built the client to
+the owner's specs (the owner wrote the event schema and co-wrote the beat sheet), not the owner. The
+amendments the header below calls uncommitted (§3.8 to §3.12) are in today's code. The browser's
+current account is [`client_design/client_design.md`](client_design/client_design.md); deploys are in
+[`deploy_log.md`](deploy_log.md).
+
+| Section | What it covers | Date | Told now in |
+|---|---|---|---|
+| §1.1 to §1.7 | Deploy and environment: the wrong service on port 8000, eager credentials, the missing store mount, Cloudflare buffering the stream, the compose file, the database outside compose, tooling friction | 2026-08-21 | §1.4's header scope: `frontend_lessons.md` 31 |
+| §2.1 to §2.6 | The wire against the docs, read off a real 593-event game: a day is slots, nights belong to the day before, phases can be absent, no `can_pass`, an untyped turn endpoint, small contract facts | 2026-08-21 | client_design §1, §7 |
+| §3.1 to §3.7 | Client bugs: seat recovery that never fired, a refresh replaying the drama, a useful wrong test, the health check on IPv6, a white flash, an invisible night tint, small slips | 2026-08-21 | client_design §3, §5 |
+| §3.8 to §3.12 | The independent review's cross-layer finds: the R7 backlog dropped, a stale turn dock, the private data the UI hid, rejoin without the stream, smaller finds | 2026-08-21 | client_design §3, §4 |
+| §3.13 | Coming back to your own room made a second passenger | 2026-09-27 | client_design §5 |
+| §3.14 | The carriage's sides on a phone | 2026-09-27 | |
+| §3.15 | The ballot opened among the day's passes | 2026-10-12 | `beat_sheet.md` §12 |
+| §4.1 to §4.6 | Judgement calls: the reducer knows no time, "who am I" passed in, the X-ray is arrangement, two takeovers, deviations, missed scope | 2026-08-21 | client_design §1, §4 |
+| §5.1 | Portrait generation blocked, then landed | 2026-08-21 | superseded: the portraits went on 2026-10-17; the seats are the cast puppets |
+| §6 | What verification caught, by method | 2026-08-21 | [`testing.md`](testing.md) |
+| §6.1 to §6.3 | Server refactors: one game table, the durability split, the router split | 2026-08-22 | kept here; they are server work done by the same builder |
+| §7 | Handoff notes | 2026-08-21 | |
+| §8 | The stage on a phone | from 2026-10-01 | |
+
 > Written 2026-08-21, at the end of the P0→P3 build (branch `feature-frontend-v1`, 24 commits,
 > tag `frontend-v1-headless` at the pre-visual fork point). Deployed at
 > **wolf.liuhaochen.com**.
@@ -140,6 +162,12 @@ indicated a fault.
 **Generalises to:** streaming responses have a *path*, not just an endpoint. Every hop can
 buffer. Test through the real public URL, never only against the origin — and when it fails,
 bisect the path rather than guessing at the code.
+
+[2026-10-26: since 2026-10-15 the header is set on the stream's route only
+(`/api/games/{id}/events`), because on the whole `/api` block it also stopped Cloudflare
+compressing every JSON response. The mechanism is unproven: another stream behind the same
+Cloudflare flows without `no-transform`, so "transforming is what its buffering hangs off" is a
+guess. The header stays on the stream. See `frontend_lessons.md` 31.]
 
 ### 1.5 🟡 The project's compose file did not contain the deployment
 
@@ -449,6 +477,11 @@ fresh snapshot boundary, and a new credentialled source catches up. A 403 from t
 also performs the promised one-time local-token rejoin and retries the unchanged payload once;
 failed tokens are cleared. Waiting lobbies no longer open an events endpoint that can only 409.
 
+[2026-10-26: since 2026-10-15 a token is cleared only when the server refuses it (403, 404 or
+410; `src/lib/request.ts::ApiError.refusesToken`), never on a network failure. The rest holds:
+`useGameStream`'s connect effect depends on `status?.you`, so a seat appearing closes the
+anonymous source.]
+
 ### 3.12 🟠 The smaller review findings, closed together
 
 - **Status fetch failures were invisible.** `useGameStream` discarded the query error, leaving
@@ -747,6 +780,10 @@ pages.** Layout, spacing, contrast and the story/machine-world separation are un
 eye. Component *structure* is verified; component *appearance* is not. That review is
 outstanding, and `ux_journeys` §0 reserves it for the owner against the running app anyway.
 
+[2026-10-26: closed from 2026-09-25, when Playwright came in and an agent could see the pages as
+a browser draws them, and by the owner's checks on the running app, on the phone and the desktop.
+See [`testing.md`](testing.md).]
+
 ---
 
 ## 7. If someone picks this up next
@@ -762,6 +799,8 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
 4. **`can_pass` on the wire** would remove the one place the client cannot pre-validate.
 5. **Portraits are landed.** The twelve-asset WebP set is wired through the manifest; future
    replacement remains an asset-only swap at that import boundary.
+   [2026-10-26: the portraits were removed on 2026-10-17 (`ba1c7e7c`); the seats are the cast
+   puppets.]
 6. **Absence, disconnection and recovery have one map:** [`seat_continuity.md`](seat_continuity.md)
    (2026-09-09). Read it before touching the AFK timer, rejoin, or recovery.
 
@@ -773,6 +812,22 @@ outstanding, and `ux_journeys` §0 reserves it for the owner against the running
 > Added after the Playhouse redesign (2026-09-28) met its first iPhone. Same shape as the
 > sections above: what happened, the mechanism, what it cost, how it was settled, and an honest
 > reading of where the art pipeline stands against production practice.
+
+The sections of §8 (index added 2026-10-26; four entries carry dated notes where a later reading
+overturned a claim):
+
+| Section | Content |
+|---|---|
+| §8.1 | Every stage page killed: five full-stage SVG masks; the subtraction probe; who did what |
+| §8.2 | Where the art pipeline stands against production practice (dated note: motion is script, not the compositor) |
+| §8.3 | Fast beats killed the page: the scene keyed per beat; the set and beat split; the bake; the inspector's layer table (534 MB to 114) |
+| §8.4 | The jar and the shutter: an SVG transform attribute against a CSS transform on an HTML box |
+| §8.5 | The camera's move repaints the world: a cut on a phone; raster per transition |
+| §8.6 | Three things still animating at rest; the census instead of a layer readout (dated note: CDP does count layers) |
+| §8.7 | The rule becomes a gate (`e2e/phone-rule.spec.ts`); the sweep's whole list in one batch; one flag for "a phone" |
+| §8.8 | The black frame: the backdrop remounted; one backdrop owned by the Stage; `decoding="sync"` (dated note: a remount is not proven a re-decode) |
+| §8.9 | The stutter left: one host for the car, 24 steps a second, the GPU route measured and refused, the picture census; the second pass from the rendering audit; before and after |
+| §8.10 | The box, not the figure: bounded movers; the day-4 walk; the countdown as a leaf; test waits sized to the stream (dated note: three of the five "next" items done) |
 
 ### 8.1 🔴 iPhone Safari killed every stage page
 
@@ -811,6 +866,10 @@ brief and reviewed on the goldens and on the phone.
 Not the cause, and worth saying so: JavaScript is not the bottleneck (the scene's JS heap is about
 10 MB and nothing is computed per frame; motion runs on the compositor), and image size is not
 either (the whole sprite set is 12 MB of WebP; a day scene decodes about 18 MB).
+[2026-10-26: "motion runs on the compositor" was wrong. Reading motion's source on 2026-10-02
+(§8.4) showed it writes `style.transform` from script each frame for `x`, `y`, `rotate` and
+`scale`, so its moves get no layer of their own; `frontend_lessons.md` lesson 40 (2026-10-15)
+is the same finding on the puppet's rise.]
 
 Where it is below production grade:
 
@@ -877,7 +936,7 @@ What a beat step rebuilds, Chromium, 30 steps at 330 ms (`.churn` probe, Mutatio
 (stage_architecture §6). The workbench's URL writes went to the browser's history API at the
 same time: a Next `router.replace` refetches the page from the server on every search-param
 change, which over the internet capped the probe at about three beats a second, the very rate
-in question. The phone’s reading, before the split (iPhone, Safari, the day scene on a loop): the page died at `auto=1000`, `500` and `330` alike, so the cost is cumulative as well as rate-bound: the loop walks every speaker’s puppet and the decoded pictures pile up on top of the rebuilds. After the split: _[pending the owner’s reading]_.
+in question. The phone’s reading, before the split (iPhone, Safari, the day scene on a loop): the page died at `auto=1000`, `500` and `330` alike, so the cost is cumulative as well as rate-bound: the loop walks every speaker’s puppet and the decoded pictures pile up on top of the rebuilds. After the split: the loop still died at one beat a second (the owner's reading the same day, in the next paragraph).
 
 **The bake (same day, after the phone's reading on the split).** The split did not move the
 floor: the loop still died at one beat a second, and the subtraction probe on the loop said
@@ -1039,6 +1098,10 @@ in a night room), the DOM is modest, and the JS heap sits at 13–21 MB; none of
 gigabyte. Chromium's layer tree is no longer readable over the protocol (the Layers panel is
 gone from DevTools), so the layers were found by census instead: every `animation:`,
 `will-change`, filter, blend, mask and scroller in the stage's css.
+[2026-10-26: headless Chromium does count layers over the protocol: `LayerTree.enable`, then
+the `layerTreeDidChange` events. It was used on 2026-10-22 to count the deal's layers
+(`frontend_lessons.md` lesson 47 and S16). The census stands as the method that found these
+three.]
 
 **Found.** Three things still animated at rest, each the §8.3 mechanism (a layer of its own,
 and every stage layer painted over it promoted with it):
@@ -1115,6 +1178,10 @@ keyed whole per beat, so every beat there unmounts the scene and mounts a fresh 
 sets `decoding="async"`), so for a frame the house's dark shows through the empty picture, and
 the 18 MB sheet is decoded again each beat, which also feeds the stutter. Chromium keeps the
 decoded picture and shows no flash, which is why the goldens never saw it.
+[2026-10-26: the re-decode is inferred from the remount, not measured. The rendering audit of
+the same day ("What these results deprioritize") recorded no `Decode Image` work in its warm
+traces while a transition rebuilt the room, and notes that a remount does not prove a picture
+was decoded again. The black frame itself was seen on the phone and stands.]
 
 **Done.** The Stage draws one backdrop (`BackdropSheet`) at the foot of the paint layer, in a
 box of its own present from the first render, from a description the scene registers through
@@ -1362,3 +1429,11 @@ render, and the set re-registered with it, if live typing shows on a phone's tim
 light's cache keyed by geometry, if a remount ever shows the holes' 60–110 ms again. The deal
 and the ending's figures per beat, if their beats ever show. Transcript rows in view only,
 for very long games.
+[2026-10-26: three of the five were done later. The catch-up frames are handed to the store as
+one block (`frontend/src/hooks/catch-up-boundary.ts::catchUpBatch`, `88f491a7`, 2026-10-15;
+lesson 32). The typed text moved into the dock and the scene's props keep their identity
+(`1f3f2769`, 2026-10-15; lessons 33 and 34). The light's cache is kept by the options alone
+(`frontend/src/stage/Stage.tsx::drawn`, `f30d4496`, 2026-10-15; lesson 36). Still open: the
+deal and the ending key their figures per beat (`DealBeat`, `OverBeat`), and the drawer renders
+every row. `frontend_lessons.md` has since grown from twenty entries to 50 numbered lessons
+(1 to 49, with 29a and 29b) and 23 small things.]

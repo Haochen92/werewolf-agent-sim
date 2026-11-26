@@ -1,15 +1,15 @@
 'use client';
 
 /**
- * The window's shutter, moving: three louvred sections (a painted raster since 2026-09-30,
- * `SPRITES.props.shutter`) that come down out of the walnut pelmet over the glass, or gather
- * back up into it. It drops at the vote and at the morning's
+ * The window's shutter, moving: a felt roller blind (a painted raster, `SPRITES.props.shutter`;
+ * the felt set of 2026-10-17) that comes down out of the walnut pelmet over the glass, its hem
+ * rod and pull ring on the frame's foot, or rolls back up into it. It drops at the vote and at the morning's
  * report, and gathers up when night falls and when the day begins (handoff §2).
  *
  * At rest it draws exactly what the paint's `shutter()` draws (the same markup, from
  * `shutterParts`), so a scene that mounts this instrument leaves the paint's shutter out. When
  * played, the panel slides from under the pelmet (its box is clipped there, so it comes from
- * behind it and goes back behind it) and the folded stack under the pelmet fades out as the
+ * behind it and goes back behind it) and the rolled-up stack under the pelmet fades out as the
  * panel leaves it, or in as it returns. The panel is an HTML box of its own (its slide a CSS
  * transform; the stack and the pelmet stay in the drawing above it). Timings from benches 67 and 75: down 1.1 s after 0.35 s;
  * up 1.2 s after `delay`.
@@ -53,10 +53,10 @@ export function Shutter({ g, state, animate = false, delay }: ShutterProps) {
     height: '100%',
     overflow: 'visible',
   };
-  // the panel's own box: the clip's rectangle, under the pelmet (window.ts `shutterParts`)
-  const { f, pel } = shutterGeometry(g);
-  const box = { x: pel.x, y: pel.y + pel.h - 2, w: pel.w, h: f.h + 40 };
-  const up = -(f.h + 12);
+  // the panel's own box: the clip's rectangle, under the pelmet (window.ts `shutterGeometry`);
+  // raised, the whole picture (the ring's foot too) goes up past its top
+  const { box, picture } = shutterGeometry(g);
+  const up = -(picture.y + picture.h - box.y + 4);
   return (
     <>
       {/* the panel rides an HTML box clipped under the pelmet, so its slide is a CSS transform

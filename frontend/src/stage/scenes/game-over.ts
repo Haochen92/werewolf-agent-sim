@@ -12,6 +12,7 @@ import type { Phase } from '../paint/materials';
 import {
   factionOf,
   isPackRole,
+  neutralWinner,
   ROLE_NAME,
   seatNumber,
   winnerKey,
@@ -24,14 +25,16 @@ export type EndedAt = 'morning' | 'lynch';
 
 /**
  * The hour the shutter rises on for each winner: the town's day, the wolves' night, the lone
- * killer's dusk (the serial killer's or the necromancer's), and for a draw, which nobody won, a
- * grey dawn.
+ * killer's dusk (the serial killer's or the necromancer's), and for a game no side won, a grey
+ * dawn: a draw's, or the neutral's when it won it.
  */
 export const WINNERS_HOUR: Record<WinnerKey, Phase> = {
   villagers: 'day',
   wolves: 'night',
   serial_killer: 'dusk',
   necromancer: 'dusk',
+  speculator: 'dawn',
+  fortune_teller: 'dawn',
   draw: 'dawn',
 };
 
@@ -40,8 +43,23 @@ export const WINNER_LINE: Record<WinnerKey, string> = {
   wolves: 'The wolves have won',
   serial_killer: 'The serial killer has won',
   necromancer: 'The necromancer has won',
+  speculator: 'The speculator has won',
+  fortune_teller: 'The fortune teller has won',
   draw: 'No side has won',
 };
+
+/**
+ * Who the ending is for: the winner, or, in a game no side won, the neutral when it won it
+ * (the wire's winner is then none, its result "won"). The neutral is the lineup's, or the cast
+ * counts' in a game without one.
+ */
+export function endingWinner(
+  view: Pick<GameView, 'winner' | 'neutralResult' | 'lineup' | 'castRoleCounts'>,
+): WinnerKey {
+  const dealt = { ...view.castRoleCounts };
+  for (const r of view.lineup) dealt[r] = 1;
+  return winnerKey(view.winner, neutralWinner(dealt, view.neutralResult));
+}
 
 /**
  * Where the game stopped: at a morning (the night of the last day was resolved) or at a
@@ -91,13 +109,15 @@ export function roleWon(
 /** The winners' survivors, in seat order: the ones who take the stand. A draw has none. */
 export function winnersOf(view: GameView): string[] {
   if (!view.over) return [];
-  const winner = winnerKey(view.winner);
+  const winner = endingWinner(view);
   if (winner === 'draw') return [];
   return view.seats.filter((s) => {
     if (!view.alive.includes(s)) return false;
     const role = knownRole(view, s);
-    // a neutral never takes the stand: its result is the line under the winner's
-    if (role) return factionOf(role) !== 'neutral_benign' && roleWon(role, winner);
+    // a neutral takes the stand only for a game no side won: else its result is the line
+    // under the winner's
+    if (role)
+      return factionOf(role) === 'neutral_benign' ? role === winner : roleWon(role, winner);
     // a pack mate, known by side only
     return winner === 'wolves' && knownSide(view, s) === 'wolves';
   });

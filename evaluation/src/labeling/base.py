@@ -126,6 +126,19 @@ class LabelingAdapter(ABC):
             return item.key[:truncation_length]
         return item.key
 
+    @property
+    def manual_response_field(self) -> str:
+        """Return the JSON field name the person fills in for each item of a manual export.
+
+        The exporter writes one response row per item with this field left blank, e.g.
+        ``{"idx": 1, "key": "...", "type": "...", "relevance": _}``. Override it for a task
+        whose answer is not a relevance score (e.g. ``"accusation"``).
+
+        Returns:
+            The field name; ``"relevance"`` unless a subclass overrides it.
+        """
+        return "relevance"
+
     def format_for_manual(self, item: LabelItem, game_state: str | None = None) -> str:
         """Render markdown for human labeling. Override for domain-specific context."""
         lines = [f"### Item [{item.key[:12]}] ({item.item_type})"]

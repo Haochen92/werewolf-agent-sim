@@ -34,9 +34,14 @@ def _day_state(human: str | None) -> dict:
 
 
 def test_a_human_vote_is_announced_with_its_candidates(monkeypatch):
+    # Arrange
     monkeypatch.setattr(flow, "game_config_from_runnable", lambda config: GameConfig())
     written = _capture(monkeypatch, flow)
+
+    # Act
     sends = flow.fan_out_vote(_day_state(human="player_3"), {})
+
+    # Assert
     assert [s.node for s in sends] == ["vote", "vote", "vote_human"]
     [ann] = written
     assert ann["event"] == "human_turn_opened"
@@ -59,8 +64,13 @@ def _night_state(**over) -> dict:
 
 
 def test_a_human_solo_night_actor_is_announced_with_every_other_survivor(monkeypatch):
+    # Arrange
     written = _capture(monkeypatch, orchestrator)
+
+    # Act
     phases = orchestrator.route_night_actors(_night_state(human_players=["player_8", "player_9"]))
+
+    # Assert
     assert "HEALER_NIGHT_PHASE" in phases and "VIGILANTE_NIGHT_PHASE" in phases
     by_player = {a["player"]: a for a in written}
     assert by_player["player_8"]["phase"] == "healer_target"
@@ -78,12 +88,16 @@ def test_a_human_wolf_is_not_announced_the_pack_prompts_at_the_turn(monkeypatch)
 def test_a_human_wolfs_skill_turn_is_announced_with_its_targets(monkeypatch):
     # Owner, 2026-10-17: the skill turns run in parallel inside the pack's subgraph, so a human
     # chanteuse's block waited for the illusionist's agent before its prompt opened.
+
+    # Arrange
     from Agents.nodes.night import pack
     written = _capture(monkeypatch, pack)
     state = _night_state(
         human_players=["player_6"], uses_left={"illusionist": 1}, carrier="player_2",
         wolves_target="player_8", day_channel=[], wolf_channel=[], night_actions=[], current_round=4,
     )
+
+    # Round 1: a human wolf's skill turn
     sends = pack.pack_fan_out_skills(state)
     assert sorted(s.node for s in sends) == ["PACK_SKILL", "PACK_SKILL_HUMAN"]
     [ann] = written
@@ -91,6 +105,8 @@ def test_a_human_wolfs_skill_turn_is_announced_with_its_targets(monkeypatch):
     human_send = next(s for s in sends if s.node == "PACK_SKILL_HUMAN")
     from Agents.turn.action_space import valid_targets_for_action
     assert ann["valid_targets"] == valid_targets_for_action(human_send.arg, "block_target")
+
+    # Round 2: no human wolf
     # an agent wolf's skill turn is not announced
     written.clear()
     pack.pack_fan_out_skills({**state, "human_players": []})
@@ -98,11 +114,13 @@ def test_a_human_wolfs_skill_turn_is_announced_with_its_targets(monkeypatch):
 
 
 def test_a_human_round_turn_is_announced_with_its_round(monkeypatch):
+    # Arrange
     written = _capture(monkeypatch, flow)
     state = _day_state(human="player_3")
     state["day_round"] = "opening"
     state["round_players"] = ["player_1", "player_2", "player_3"]
 
+    # Round 1: the opening
     sends = flow.fan_out_round(state, {})
 
     nodes = []
@@ -115,6 +133,7 @@ def test_a_human_round_turn_is_announced_with_its_round(monkeypatch):
     assert announcement["phase"] == "day_channel"
     assert announcement["day_round"] == "opening"
 
+    # Round 2: the closing
     state["day_round"] = "closing"
     state["round_players"] = ["player_3"]
     flow.fan_out_round(state, {})
@@ -122,15 +141,19 @@ def test_a_human_round_turn_is_announced_with_its_round(monkeypatch):
 
 
 def test_a_human_vote_announcement_carries_no_round(monkeypatch):
+    # Arrange
     monkeypatch.setattr(flow, "game_config_from_runnable", lambda config: GameConfig())
     written = _capture(monkeypatch, flow)
 
+    # Act
     flow.fan_out_vote(_day_state(human="player_3"), {})
 
+    # Assert
     assert written[0]["day_round"] is None
 
 
 def test_a_human_necromancers_announcement_carries_its_bodies(monkeypatch):
+    # Arrange
     from Agents.schemas.game_events import DeathRecord
     written = _capture(monkeypatch, orchestrator)
     state = _night_state(
@@ -140,19 +163,28 @@ def test_a_human_necromancers_announcement_carries_its_bodies(monkeypatch):
         surviving_villagers=["player_1", "player_7", "player_8"],
         dead_roster=[DeathRecord(player="player_9", role="vigilante", day=2, phase="night")],
     )
+
+    # Act
     orchestrator.route_night_actors(state)
+
+    # Assert
     (ann,) = [a for a in written if a["player"] == "player_7"]
     assert ann["phase"] == "necromancer_target" and ann["bodies"] == ["player_9"]
     assert ann["valid_targets"][-1] == "stay_put"
 
 
 def test_a_human_fortune_teller_is_offered_itself_only_while_a_self_bet_is_left(monkeypatch):
+    # Arrange
     written = _capture(monkeypatch, orchestrator)
     base = dict(lineup=lineup("serial_killer", "fortune_teller"), human_players=["player_4"],
                 roles={"player_1": "sentinel", "player_2": "illusionist", "player_4": "fortune_teller",
                        "player_6": "chanteuse"},
                 surviving_villagers=["player_1", "player_4"])
+
+    # Act: route the night with a self-bet left, then with none left
     orchestrator.route_night_actors(_night_state(**base, uses_left={"fortune_teller": 1}))
     orchestrator.route_night_actors(_night_state(**base, uses_left={"fortune_teller": 0}))
+
+    # Assert
     first, second = [a["valid_targets"] for a in written if a["player"] == "player_4"]
     assert "player_4" in first and "player_4" not in second

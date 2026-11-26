@@ -2,7 +2,7 @@
 target.
 
 - An attack that went ahead and failed in silence means the target was immune: the serial killer,
-  or the necromancer on night 1 (A13–A19).
+  or the necromancer on nights 1 and 2 (A13–A19).
 - An attack the fortune teller's self-bet stopped is announced, and names the fortune teller to the
   attacker and to a protector alike (A53, A54; R10, 2026-10-17).
 - An attack stopped by a save means the target can be killed at night (A11, A12).
@@ -13,20 +13,16 @@ target.
 
 from __future__ import annotations
 
-import re
-
 from Agents.deduction import wording
+from Agents.deduction.morning import announcement_of, save_of
 from Agents.deduction.night_state import IMMUNE_WHEN_SELF_BETTING, immune_candidates, roles_always_immune
 from Agents.schemas.deduction import AttackOutcome, OwnResultLine, ProtectedBy, RoleIn, SeatView
 from Agents.schemas.game_events import NightActionRecord
+from Agents.schemas.role_traits import STRUCK_BY_SIGIL, WOLF_ROLES
 
-WOLF_ROLES = frozenset({"chanteuse", "illusionist"})
-
-# The protector's record when its target was saved: "player_3 was attacked by the wolves and a
-# sigil, and your protection saved them." The attacker types come from this sentence, which the
-# engine itself writes (Agents/rules/night_record.py).
-SAVED_BY_YOUR_PROTECTION = re.compile(r"was attacked by (?P<attackers>.+), and your protection saved them\.")
-SAVED_BY_REANIMATED_HEALER = "a reanimated healer saved them"
+SIGILS = frozenset({"sigilist", "reanimated_sigilist"})
+"""A sigil's attack, placed by the living Sigilist or through its body: either strikes only a
+player who attacked in their own name."""
 
 
 def _always_immune_other_than(own_role: str, night: int, cast_role_counts: dict[str, int]) -> list[str]:
@@ -39,7 +35,7 @@ def _always_immune_other_than(own_role: str, night: int, cast_role_counts: dict[
 
 def immune_target_line(record: NightActionRecord, view: SeatView) -> OwnResultLine | None:
     """A13–A19: the attack went ahead and the target was unharmed, in silence. Since R10 every
-    cast leaves one explanation at most (the serial killer, or the necromancer on night 1), so the
+    cast leaves one explanation at most (the serial killer, or the necromancer on nights 1 and 2), so the
     line names it; the "either … or" form of A14 is retired."""
     target = record.target
     candidates = immune_candidates(target, record.day, view.role, view.cast_role_counts, view.dead_roster)
@@ -68,15 +64,20 @@ def self_bet_saved_line(record: NightActionRecord, view: SeatView) -> OwnResultL
 
 
 def saved_from_your_attack_line(record: NightActionRecord, view: SeatView) -> OwnResultLine | None:
-    """A11, A12: the attacker's target survived because someone protected it."""
+    """A11, A12: the attacker's target survived because someone protected it. Who protected it
+    (the living Healer, or the Necromancer through the Healer's body) is the morning's word; a
+    payload with no morning leaves the protector unnamed."""
     target = record.target
     sentences = []
     facts = []
 
-    saved_through_body = SAVED_BY_REANIMATED_HEALER in record.outcome
+    morning = announcement_of(view, record.day)
+    save = save_of(morning, target) if morning is not None else None
+    saved_through_body = save is not None and save.saver == "reanimated_healer"
     if saved_through_body:
         sentences.append(wording.saved_by_necromancer_through_healer_body(target))
-    facts.append(ProtectedBy(target, through_body=saved_through_body))
+    if save is not None:
+        facts.append(ProtectedBy(target, through_body=saved_through_body))
 
     ruled_out = _always_immune_other_than(view.role, record.day, view.cast_role_counts)
     if ruled_out:
@@ -93,15 +94,11 @@ def saved_from_your_attack_line(record: NightActionRecord, view: SeatView) -> Ow
 
 
 def your_protection_saved_line(record: NightActionRecord, view: SeatView) -> OwnResultLine | None:
-    """A1 with B11: the protector learns its target was attacked, and by whom."""
-    match = SAVED_BY_YOUR_PROTECTION.search(record.outcome)
-    if match is None:
-        return None
+    """A1 with B11: the protector learns its target was attacked, and by whom (the record's
+    `attacker_types`; a record from before they were kept names none)."""
     target = record.target
-    attackers = match.group("attackers")
-    attacked_by_wolves = "the wolves" in attackers
-    # "a sigil" and "a reanimated sigil" both strike only a player who attacked in its own name.
-    struck_by_sigil = "sigil" in attackers
+    attacked_by_wolves = "wolves" in record.attacker_types
+    struck_by_sigil = bool(SIGILS & set(record.attacker_types))
 
     possible_roles = set(view.cast_role_counts) - {view.role}
     sentences = []
@@ -113,13 +110,13 @@ def your_protection_saved_line(record: NightActionRecord, view: SeatView) -> Own
 
     if attacked_by_wolves and struck_by_sigil:
         sentences.append(wording.attacked_by_wolves_and_sigil_so_vigilante(target))
-        possible_roles &= {"vigilante"}
+        possible_roles &= STRUCK_BY_SIGIL - WOLF_ROLES
     elif attacked_by_wolves:
         sentences.append(wording.attacked_by_wolves_so_not_a_wolf(target))
         possible_roles -= WOLF_ROLES
     elif struck_by_sigil:
         sentences.append(wording.struck_by_sigil_so_attacked_in_own_name(target))
-        possible_roles &= WOLF_ROLES | {"vigilante"}
+        possible_roles &= STRUCK_BY_SIGIL
 
     if not sentences:
         return None

@@ -1,0 +1,18 @@
+{
+  "boards": 30,
+  "score": {
+    "on/overall": 0.039,
+    "on/town": 0.039,
+    "off/overall": 0.41,
+    "off/town": 0.247,
+    "off/serial_killer": 0.701,
+    "off/wolf": 0.5,
+    "n_on/overall": 458,
+    "n_on/town": 458,
+    "n_off/overall": 910,
+    "n_off/town": 438,
+    "n_off/serial_killer": 144,
+    "n_off/wolf": 328
+  },
+  "soft_fallback_games": {}
+}

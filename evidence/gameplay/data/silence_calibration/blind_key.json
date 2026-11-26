@@ -1,0 +1,1094 @@
+{
+ "s000": {
+  "turn": "voices-06.on:4:player_4:3",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s001": {
+  "turn": "voices-07.on:3:player_10:4",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s002": {
+  "turn": "voices-04.on:2:player_3:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s003": {
+  "turn": "voices-07.on:2:player_3:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s004": {
+  "turn": "voices-07.on:6:player_8:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s005": {
+  "turn": "voices-02.on:5:player_10:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s006": {
+  "turn": "voices-02.on:3:player_5:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s007": {
+  "turn": "voices-03.on:3:player_4:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s008": {
+  "turn": "voices-01.on:2:player_1:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s009": {
+  "turn": "voices-02.off:3:player_7:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s010": {
+  "turn": "voices-03.on:5:player_2:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s011": {
+  "turn": "voices-05.off:4:player_9:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s012": {
+  "turn": "voices-05.on:4:player_1:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s013": {
+  "turn": "voices-03.off:4:player_8:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s014": {
+  "turn": "voices-06.off:4:player_8:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s015": {
+  "turn": "voices-07.on:3:player_8:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s016": {
+  "turn": "voices-07.on:3:player_6:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s017": {
+  "turn": "voices-03.off:2:player_9:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s018": {
+  "turn": "voices-04.on:4:player_6:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s019": {
+  "turn": "voices-04.off:3:player_7:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s020": {
+  "turn": "voices-07.off:5:player_7:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s021": {
+  "turn": "voices-04.off:4:player_7:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s022": {
+  "turn": "voices-02.on:3:player_7:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s023": {
+  "turn": "voices-07.off:3:player_9:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s024": {
+  "turn": "voices-07.on:2:player_7:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s025": {
+  "turn": "voices-03.off:5:player_8:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s026": {
+  "turn": "voices-07.on:3:player_1:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s027": {
+  "turn": "voices-04.on:3:player_9:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s028": {
+  "turn": "voices-07.on:4:player_4:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s029": {
+  "turn": "voices-07.on:2:player_5:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s030": {
+  "turn": "voices-03.on:5:player_4:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s031": {
+  "turn": "voices-04.off:5:player_3:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s032": {
+  "turn": "voices-06.on:5:player_6:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s033": {
+  "turn": "voices-07.off:2:player_3:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s034": {
+  "turn": "voices-07.on:6:player_4:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s035": {
+  "turn": "voices-05.on:1:player_3:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s036": {
+  "turn": "voices-01.on:2:player_6:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s037": {
+  "turn": "voices-05.on:2:player_8:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s038": {
+  "turn": "voices-05.off:6:player_2:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s039": {
+  "turn": "voices-03.on:6:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s040": {
+  "turn": "voices-06.off:2:player_5:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s041": {
+  "turn": "voices-02.on:4:player_1:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s042": {
+  "turn": "voices-05.off:4:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s043": {
+  "turn": "voices-02.off:4:player_1:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s044": {
+  "turn": "voices-07.on:3:player_10:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s045": {
+  "turn": "voices-02.off:3:player_5:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s046": {
+  "turn": "voices-02.off:2:player_5:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s047": {
+  "turn": "voices-08.off:4:player_5:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s048": {
+  "turn": "voices-06.off:4:player_7:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s049": {
+  "turn": "voices-08.off:3:player_1:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s050": {
+  "turn": "voices-02.on:4:player_1:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s051": {
+  "turn": "voices-02.on:1:player_3:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s052": {
+  "turn": "voices-06.on:2:player_5:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s053": {
+  "turn": "voices-07.on:2:player_4:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s054": {
+  "turn": "voices-06.on:4:player_4:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s055": {
+  "turn": "voices-02.on:1:player_10:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s056": {
+  "turn": "voices-03.on:3:player_8:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s057": {
+  "turn": "voices-02.on:3:player_6:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s058": {
+  "turn": "voices-02.off:2:player_5:4",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s059": {
+  "turn": "voices-08.off:3:player_7:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s060": {
+  "turn": "voices-08.off:3:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s061": {
+  "turn": "voices-05.on:5:player_6:3",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s062": {
+  "turn": "voices-08.off:3:player_5:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s063": {
+  "turn": "voices-04.off:4:player_8:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s064": {
+  "turn": "voices-04.on:4:player_3:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s065": {
+  "turn": "voices-06.on:2:player_1:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s066": {
+  "turn": "voices-02.off:3:player_10:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s067": {
+  "turn": "voices-08.off:2:player_5:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s068": {
+  "turn": "voices-04.on:2:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s069": {
+  "turn": "voices-04.off:5:player_2:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s070": {
+  "turn": "voices-03.on:4:player_4:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s071": {
+  "turn": "voices-07.off:5:player_2:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s072": {
+  "turn": "voices-02.off:4:player_10:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s073": {
+  "turn": "voices-08.on:4:player_6:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s074": {
+  "turn": "voices-02.off:1:player_9:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s075": {
+  "turn": "voices-04.off:4:player_2:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s076": {
+  "turn": "voices-04.on:2:player_7:3",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s077": {
+  "turn": "voices-04.off:2:player_3:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s078": {
+  "turn": "voices-06.off:2:player_7:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s079": {
+  "turn": "voices-05.off:5:player_5:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s080": {
+  "turn": "voices-05.off:3:player_9:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s081": {
+  "turn": "voices-04.on:3:player_2:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s082": {
+  "turn": "voices-05.on:3:player_5:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s083": {
+  "turn": "voices-06.on:5:player_10:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s084": {
+  "turn": "voices-08.on:2:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s085": {
+  "turn": "voices-05.off:3:player_1:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s086": {
+  "turn": "voices-02.off:3:player_3:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s087": {
+  "turn": "voices-03.on:5:player_4:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s088": {
+  "turn": "voices-05.on:3:player_1:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s089": {
+  "turn": "voices-06.off:5:player_5:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s090": {
+  "turn": "voices-05.on:3:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s091": {
+  "turn": "voices-03.on:5:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s092": {
+  "turn": "voices-06.off:4:player_5:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s093": {
+  "turn": "voices-03.off:3:player_10:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s094": {
+  "turn": "voices-03.off:5:player_3:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s095": {
+  "turn": "voices-07.on:4:player_1:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s096": {
+  "turn": "voices-05.on:4:player_9:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s097": {
+  "turn": "voices-02.off:1:player_4:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s098": {
+  "turn": "voices-05.on:5:player_5:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s099": {
+  "turn": "voices-06.off:2:player_2:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s100": {
+  "turn": "voices-07.off:5:player_3:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s101": {
+  "turn": "voices-04.off:3:player_7:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s102": {
+  "turn": "voices-02.off:3:player_3:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s103": {
+  "turn": "voices-05.off:3:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s104": {
+  "turn": "voices-03.on:4:player_9:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s105": {
+  "turn": "voices-08.on:2:player_6:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s106": {
+  "turn": "voices-02.on:4:player_1:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s107": {
+  "turn": "voices-05.on:3:player_10:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s108": {
+  "turn": "voices-05.on:5:player_8:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s109": {
+  "turn": "voices-08.off:1:player_1:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s110": {
+  "turn": "voices-04.off:2:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s111": {
+  "turn": "voices-07.on:5:player_9:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s112": {
+  "turn": "voices-04.on:2:player_7:4",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s113": {
+  "turn": "voices-04.off:5:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s114": {
+  "turn": "voices-03.on:3:player_9:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s115": {
+  "turn": "voices-05.on:4:player_5:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s116": {
+  "turn": "voices-04.off:3:player_3:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s117": {
+  "turn": "voices-05.on:4:player_5:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s118": {
+  "turn": "voices-06.off:4:player_1:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s119": {
+  "turn": "voices-04.on:4:player_6:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s120": {
+  "turn": "voices-07.on:2:player_1:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s121": {
+  "turn": "voices-06.off:5:player_1:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s122": {
+  "turn": "voices-02.off:4:player_5:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s123": {
+  "turn": "voices-03.on:3:player_5:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s124": {
+  "turn": "voices-07.off:2:player_6:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s125": {
+  "turn": "voices-08.on:3:player_9:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s126": {
+  "turn": "voices-06.off:4:player_6:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s127": {
+  "turn": "voices-01.off:4:player_4:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s128": {
+  "turn": "voices-08.on:1:player_1:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s129": {
+  "turn": "voices-04.off:4:player_8:3",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s130": {
+  "turn": "voices-02.off:6:player_10:0",
+  "kind": "held",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": "opening_filtered"
+ },
+ "s131": {
+  "turn": "voices-04.on:4:player_9:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s132": {
+  "turn": "voices-08.on:3:player_8:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s133": {
+  "turn": "voices-06.on:2:player_2:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s134": {
+  "turn": "voices-07.off:3:player_2:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s135": {
+  "turn": "voices-01.off:2:player_6:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s136": {
+  "turn": "voices-02.on:3:player_3:2",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s137": {
+  "turn": "voices-03.off:2:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s138": {
+  "turn": "voices-02.on:2:player_7:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s139": {
+  "turn": "voices-06.off:3:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s140": {
+  "turn": "voices-08.on:3:player_2:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s141": {
+  "turn": "voices-03.off:1:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s142": {
+  "turn": "voices-03.on:4:player_5:2",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s143": {
+  "turn": "voices-02.off:2:player_5:1",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s144": {
+  "turn": "voices-01.off:3:player_7:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s145": {
+  "turn": "voices-07.off:5:player_2:1",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s146": {
+  "turn": "voices-08.off:2:player_1:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s147": {
+  "turn": "voices-02.off:1:player_2:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s148": {
+  "turn": "voices-06.on:3:player_10:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s149": {
+  "turn": "voices-03.on:3:player_1:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s150": {
+  "turn": "voices-08.on:4:player_8:4",
+  "kind": "posted",
+  "round": "discussion",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s151": {
+  "turn": "voices-07.on:5:player_7:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s152": {
+  "turn": "voices-02.off:2:player_10:1",
+  "kind": "posted",
+  "round": "proactive",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s153": {
+  "turn": "voices-05.off:1:player_3:0",
+  "kind": "pass",
+  "round": "opening",
+  "forced": true,
+  "pass_reason": "voluntary"
+ },
+ "s154": {
+  "turn": "voices-02.off:5:player_5:0",
+  "kind": "posted",
+  "round": "opening",
+  "forced": false,
+  "pass_reason": null
+ },
+ "s155": {
+  "turn": "voices-05.off:3:player_3:2",
+  "kind": "pass",
+  "round": "proactive",
+  "forced": true,
+  "pass_reason": "voluntary"
+ }
+}

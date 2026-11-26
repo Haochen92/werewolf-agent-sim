@@ -1,0 +1,45 @@
+{"pair": "p01", "more_natural": "X", "robotic": [], "note": "Y filler opener"}
+{"pair": "p03", "more_natural": "X", "robotic": [], "note": "asks directly, spoken"}
+{"pair": "p05", "more_natural": "X", "robotic": [], "note": "casual lead-in"}
+{"pair": "p07", "more_natural": "X", "robotic": [], "note": "human aside"}
+{"pair": "p09", "more_natural": "Y", "robotic": [], "note": "spoken, natural hedges"}
+{"pair": "p11", "more_natural": "X", "robotic": ["Y"], "note": "casual yeah vs report-like"}
+{"pair": "p13", "more_natural": "same", "robotic": [], "note": "near identical"}
+{"pair": "p15", "more_natural": "X", "robotic": [], "note": "idiomatic voice"}
+{"pair": "p17", "more_natural": "Y", "robotic": [], "note": "by my math, at your place"}
+{"pair": "p19", "more_natural": "X", "robotic": [], "note": "hand over, right read"}
+{"pair": "p21", "more_natural": "X", "robotic": [], "note": "clipped chat speech"}
+{"pair": "p23", "more_natural": "Y", "robotic": ["X"], "note": "chatty vs report-like"}
+{"pair": "p25", "more_natural": "X", "robotic": [], "note": "natural poke at"}
+{"pair": "p27", "more_natural": "X", "robotic": [], "note": "terse spoken"}
+{"pair": "p29", "more_natural": "X", "robotic": [], "note": "Y filler opener"}
+{"pair": "p31", "more_natural": "X", "robotic": ["Y"], "note": "stock opener but human vs semicolon report"}
+{"pair": "p33", "more_natural": "X", "robotic": [], "note": "dropped by, came knocking"}
+{"pair": "p35", "more_natural": "Y", "robotic": ["X"], "note": "colloquial vs report-like"}
+{"pair": "p37", "more_natural": "Y", "robotic": [], "note": "human, conversational"}
+{"pair": "p39", "more_natural": "Y", "robotic": [], "note": "spoken close"}
+{"pair": "p41", "more_natural": "X", "robotic": [], "note": "clipped, direct"}
+{"pair": "p43", "more_natural": "X", "robotic": [], "note": "paid me a visit"}
+{"pair": "p45", "more_natural": "Y", "robotic": [], "note": "smoother"}
+{"pair": "p47", "more_natural": "Y", "robotic": ["X"], "note": "tailing, settles nothing"}
+{"pair": "p49", "more_natural": "same", "robotic": [], "note": "near identical"}
+{"pair": "p51", "more_natural": "Y", "robotic": ["X"], "note": "casual vs report-like"}
+{"pair": "p53", "more_natural": "X", "robotic": [], "note": "plain; Y overdone sorry/honestly"}
+{"pair": "p55", "more_natural": "Y", "robotic": ["X"], "note": "tailed, pick it apart"}
+{"pair": "p57", "more_natural": "Y", "robotic": [], "note": "squares with, if I were you"}
+{"pair": "p59", "more_natural": "X", "robotic": [], "note": "staying with me"}
+{"pair": "p61", "more_natural": "X", "robotic": [], "note": "somebody was guarding"}
+{"pair": "p63", "more_natural": "X", "robotic": [], "note": "yeah, I say we"}
+{"pair": "p65", "more_natural": "Y", "robotic": ["X"], "note": "terse spoken vs report-like"}
+{"pair": "p67", "more_natural": "Y", "robotic": [], "note": "trimmed, spoken"}
+{"pair": "p69", "more_natural": "Y", "robotic": [], "note": "compact"}
+{"pair": "p71", "more_natural": "X", "robotic": ["Y"], "note": "promise, gut vs report-like"}
+{"pair": "p73", "more_natural": "Y", "robotic": [], "note": "fragments spoken"}
+{"pair": "p75", "more_natural": "Y", "robotic": [], "note": "compact"}
+{"pair": "p77", "more_natural": "X", "robotic": [], "note": "Y filler"}
+{"pair": "p79", "more_natural": "X", "robotic": [], "note": "Y wordy with please"}
+{"pair": "p81", "more_natural": "Y", "robotic": ["X"], "note": "stuck, spoken vs report-like"}
+{"pair": "p83", "more_natural": "X", "robotic": [], "note": "cleaner"}
+{"pair": "p85", "more_natural": "X", "robotic": [], "note": "Y flourish"}
+{"pair": "p87", "more_natural": "Y", "robotic": [], "note": "flows"}
+{"pair": "p89", "more_natural": "X", "robotic": ["Y"], "note": "nice call vs report-like"}

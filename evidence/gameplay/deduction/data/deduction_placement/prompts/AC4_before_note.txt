@@ -1,0 +1,122 @@
+== Previous days ==
+-- The game master's record (exact; it outranks anything a player or a summary says) --
+[Day 1] There is no vote on day 1, so no one voted and no one is eliminated.
+[Day 1] Night of day 1: No one died last night.
+[Day 2] Here's the vote result for day 2:
+  player_1 voted to abstain
+  player_2 voted to abstain
+  player_3 voted to abstain
+  player_4 voted to abstain
+  player_5 voted to abstain
+  player_6 voted to eliminate player_2
+  player_7 voted to abstain
+  player_8 voted to abstain
+  player_9 voted to abstain
+  player_10 voted to abstain
+The town chose to abstain. No one is eliminated today.
+[Day 2] Night of day 2: player_8 was killed by the wolves last night. Their role is hidden by an illusionist.
+[Day 3] Here's the vote result for day 3:
+  player_1 voted to eliminate player_4
+  player_2 voted to eliminate player_6
+  player_3 voted to eliminate player_6
+  player_4 voted to eliminate player_6
+  player_5 voted to eliminate player_6
+  player_6 voted to eliminate player_4
+  player_7 voted to eliminate player_6
+  player_9 voted to eliminate player_6
+  player_10 voted to eliminate player_6
+Player player_6 has been voted out and was a illusionist.
+[Day 3] Night of day 3: player_4 was killed by the wolves last night. They were a investigator. The record of player_4, the investigator: night 2, checked player_6: Suspicious. player_5 was killed by a reanimated wolf last night. Their role is hidden by a reanimated illusionist. The Speculator has picked Town.
+[Day 4] Here's the vote result for day 4:
+  player_1 voted to eliminate player_3
+  player_2 voted to eliminate player_1
+  player_3 voted to abstain
+  player_7 voted to eliminate player_1
+  player_9 voted to eliminate player_1
+  player_10 voted to eliminate player_1
+Player player_1 has been voted out and was a chanteuse.
+[Day 4] Night of day 4: player_7 was killed by a reanimated wolf last night. They were a healer. The record of player_7, the healer: night 1, protected player_9; no attack on them was announced; night 2, protected player_4; no attack on them was announced; night 3, protected player_9; no attack on them was announced.
+
+-- Claims made in the day discussion (claims, not facts; a note starting "Record:" or "Rules:" is an exact check by the game master; a plan said in the day binds no one: a player may choose a different target at night) --
+player_4: claimed investigator (day 3). Record: revealed as investigator when they died on night 3, as claimed.
+  Night 1: says they did not act.
+  Night 2: says they did not visit player_8 (changed on day 3; earlier: Night 2: checked player_6, says they read Suspicious).
+player_9: claimed sentinel (day 3).
+  Night 1: says they did not act.
+  Night 2: watched player_6; says player_4 and player_8 visited them (a visit alone does not establish a visitor's role or what they did).
+  Night 3: says they tried to watch and were roleblocked.
+player_6: claimed no role.
+  Night 2: says they did not act.
+
+-- Accusations in the day discussion (a summariser's account of what players argued; claims, not facts) --
+[Day 3] player_4 (revealed investigator, killed night 3) → player_6 (revealed illusionist, voted out day 3): player_4 argued their night 2 investigation on player_6 read Suspicious, so player_6 is a wolf or the necromancer, and player_6 was visited while claiming otherwise. Defense: player_6 said they visited nobody on night 2, called player_4's Suspicious read a claim, and said the investigator and sentinel accounts cannot both be honest.
+[Day 3] player_2 → player_6 (revealed illusionist, voted out day 3): player_2 argued player_6 voted player_2 on day 2 with no reason and now claims no night 2 visit, so the lie is likelier in player_6's answers than in player_4's or player_9's. Defense: player_6 said they visited nobody on night 2 and voted player_2 because player_2 pushed abstain without a reason player_6 could weigh.
+[Day 3] player_6 (revealed illusionist, voted out day 3) → player_4 (revealed investigator, killed night 3): player_6 argued player_4's Suspicious read on player_6 is only a claim, and the investigator and sentinel claims cannot both be fully honest. Defense: player_4 said player_9's watch shows player_4 at player_6's door, matching the night 2 check, and said player_4 checked nobody on night 1. Disputed: player_9 said player_4's night 2 check fits the watch showing player_4 at player_6's door, though player_9 cannot confirm the check.
+[Day 4] player_1 (revealed chanteuse, voted out day 4) → player_9: player_1 asked player_9 who visited them on night 3 and whom they watched, so other players could check it against their own accounts. Defense: player_9 said they were roleblocked on night 3, so watched nobody and learned nothing. Their night 2 watch on player_6 showed player_4 and player_8, which fits player_4's check. They have one watch left.
+
+== Worked out from the public record ==
+The game computed these lines from the announcements, the dead roster and the wills. Each line is certain unless it names what it assumes.
+- The Speculator picked Town on night 3, so it was alive at the start of that night, and it will not pick again.
+- player_8's hidden role can only be the Sentinel, the Trailseer, the Vigilante or the Sigilist.
+- player_6 was voted out on day 3 as the Illusionist, so from night 3 on the Necromancer can use player_6's body to attack someone.
+- player_5's hidden role can only be the Sentinel, the Trailseer, the Vigilante, the Sigilist or the Speculator.
+- player_1 was voted out on day 4 as the Chanteuse, so from night 4 on the Necromancer can use player_1's body to block someone.
+- player_7 was killed through the dead Illusionist's body and their role was not hidden, so the Illusionist's conceals are used up: no death will be hidden again.
+
+== Today's discussion ==
+player_9: Sharing my night 4 result since it's new: my watch on player_3 found no one visited them, so they did nothing that night. Night 4 went to the reanimated illusionist killing player_7, so the necromancer is still active.
+=========================
+
+== Dead so far (public) ==
+player_8 (role not revealed, night 2), player_6 (illusionist, lynched day 3), player_4 (investigator, night 3), player_5 (role not revealed, night 3), player_1 (chanteuse, lynched day 4), player_7 (healer, night 4)
+
+== Roles still in play (fixed cast minus revealed deaths) ==
+1 sentinel, 1 trailseer, 1 vigilante, 1 sigilist, 1 necromancer, 1 speculator (2 of these are dead: bodies whose roles are hidden)
+
+## VIGILANTE (Core Strategy)
+
+Identity & Goal: You are the Vigilante, on the town's side: the town's only proactive night
+kill, drawing from a small fixed supply of bullets.
+
+You are player_2, a vigilante.
+
+Voting & Logic: During the day you vote like any town player. Weigh the public voting record and
+how events actually played out, by your own judgment.
+
+You are now at the end of the current day of discussion. Vote to eliminate the player you believe
+is most likely to be a threat to the town — a wolf or the lone killer.
+You must vote from one of the surviving players, or "abstain" when it is offered.
+You cannot vote for yourself.
+You may vote "abstain" if you have no one you can justify eliminating yet — an abstain plurality means no one is eliminated today. Only abstain when holding off genuinely beats a guess; a wrong elimination is costly, but so is letting the killers act another night unchecked.
+
+You must respond with a valid JSON:
+{"reads": [{"player": "<exact player_id>", "why": "pushed the only counted lynch with no evidence", "suspected_role": "<a role from the line-up, or unclear>", "confidence": "low"}], "updated_strategy": "your updated private strategy note for future turns", "vote_target": "exact player_id from the surviving players list, or \"abstain\""}
+
+Before your decision, record your current read — one entry each for: player_3, player_9, player_10 (best-guess role, or 'unclear').
+Day 5. Time to vote!
+
+Here are the surviving players: player_2, player_3, player_9, player_10
+Bullets left: 2
+Your night actions (private; recorded by the game master, and only you know them):
+Night 1: you held your fire.
+Night 2: you held your fire.
+Night 3: you held your fire.
+Night 4 (last night): you held your fire.
+
+== Worked out for you ==
+The game computed these lines from the public record, your own night results and what players say they did. Each line is certain unless it names what it assumes.
+- Both wolves are dead: player_6 and player_1. The Necromancer is alive: it killed through a body on night 4. It is player_3, player_9 or player_10.
+- The Speculator is one of player_3, player_9 and player_10, or is player_5's hidden body.
+- If player_9's claim is true, the Necromancer is player_3 or player_10.
+- player_4's will shows player_4 checked player_6 on night 2, so player_4 went to player_6 that night, as player_9's watch reported. This confirms that part of the report, not that player_9 is the Sentinel.
+- The Necromancer attacked player_7 on night 4 through player_6's body (the Illusionist): it was alive that night, and a kill through a body makes it read Suspicious that night. It acts once a night, so it did nothing else. No protection went ahead on player_7 on night 4: one would have saved player_7.
+
+Adaptive Strategic thinking:
+    You have a private strategy note from your previous turns (your own working notes: they can be
+    out of date or wrong, and the game master's record and the transcript outrank them):
+    Both wolves are dead, so the necromancer is one of player_3, player_9, or player_10. I hold 2 bullets and will shoot only against a verified contradiction or a clear necromancer pattern, since a wrong shot gives the necromancer the win. Track player_9's sentinel claim against any watch results they report, and watch for a sentinel counter-claim or a conflicting account.
+
+    Your updated_strategy replaces this note, so carry forward what still matters (your reads, your
+    plans for the night) and drop what the day has disproven. Keep it concise (3-5 sentences).
+    This is private and will not be shared with other players.
+Cast your vote. Choose the player who is the greatest threat to the town.

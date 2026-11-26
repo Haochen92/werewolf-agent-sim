@@ -1,0 +1,103 @@
+{
+  "label": "admission_bench_glm_2026_10_04",
+  "run_at": "2026-10-04T11:10:49.181895+00:00",
+  "config": {
+    "label": "admission_bench_glm_2026_10_04",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 2,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "flashlite35_medium",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "glm53_flash_nothink",
+        "model": "openrouter/z-ai/glm-5.3-flash",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2",
+          "GOOGLE_GENAI_THINKING_LEVEL": "minimal",
+          "LLM_STRUCTURED_MODE": "json_mode"
+        },
+        "memory": "none"
+      }
+    ],
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "GLM-5.3 Flash (OpenRouter, pinned to Z.AI) as a no-thinking baseline: its endpoint refuses reasoning off, so 'minimal' maps to effort low (~8 reasoning tokens, ~3 s a call); with full thinking it took 34-55 s a call, too slow for live seats. json_mode (its admission's recommended mode). The 3.5 flash-lite medium reference's generations and verdicts are copied from admission_bench_2026_10_04, so it is neither regenerated nor rejudged."
+  },
+  "n_cases": 89,
+  "arms": {
+    "flashlite35_medium": {
+      "bad": {
+        "all": "16/178 (9%)",
+        "phase:day_discussion": "14/136 (10%)",
+        "phase:day_vote": "2/42 (5%)",
+        "role:healer": "3/24 (12%)",
+        "role:investigator": "0/16 (0%)",
+        "role:serial_killer": "2/26 (8%)",
+        "role:vigilante": "6/52 (12%)",
+        "role:villager": "2/42 (5%)",
+        "role:wolf": "3/18 (17%)",
+        "slice:control": "1/80 (1%)",
+        "slice:curated": "11/88 (12%)",
+        "slice:pinned": "4/10 (40%)",
+        "source:census": "12/168 (7%)",
+        "source:checkpoint": "4/10 (40%)"
+      },
+      "deception": 1,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 4922.5,
+        "cached": 1386.4,
+        "output": 1760.5,
+        "reasoning": 1375.8,
+        "seconds": 6.9
+      },
+      "generation_samples_measured": 178
+    },
+    "glm53_flash_nothink": {
+      "bad": {
+        "all": "57/177 (32%)",
+        "phase:day_discussion": "50/135 (37%)",
+        "phase:day_vote": "7/42 (17%)",
+        "role:healer": "4/24 (17%)",
+        "role:investigator": "2/16 (12%)",
+        "role:serial_killer": "6/26 (23%)",
+        "role:vigilante": "23/52 (44%)",
+        "role:villager": "17/41 (41%)",
+        "role:wolf": "5/18 (28%)",
+        "slice:control": "10/80 (12%)",
+        "slice:curated": "42/87 (48%)",
+        "slice:pinned": "5/10 (50%)",
+        "source:census": "52/167 (31%)",
+        "source:checkpoint": "5/10 (50%)"
+      },
+      "deception": 3,
+      "invalid": 1,
+      "generation_per_sample": {
+        "input": 4582.6,
+        "cached": 2252.3,
+        "output": 560.9,
+        "reasoning": 137.2,
+        "seconds": 15.2
+      },
+      "generation_samples_measured": 177
+    }
+  },
+  "paired_vs_first": {
+    "glm53_flash_nothink": {
+      "cases": 89,
+      "better": 3,
+      "worse": 33,
+      "two_sided_sign_p": 0.0
+    }
+  }
+}

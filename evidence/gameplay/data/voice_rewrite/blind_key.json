@@ -1,0 +1,452 @@
+{
+ "p00": {
+  "line": 12,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p01": {
+  "line": 4,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p02": {
+  "line": 16,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p03": {
+  "line": 6,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p04": {
+  "line": 3,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p05": {
+  "line": 18,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p06": {
+  "line": 8,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p07": {
+  "line": 24,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p08": {
+  "line": 22,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p09": {
+  "line": 6,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p10": {
+  "line": 15,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p11": {
+  "line": 5,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p12": {
+  "line": 17,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p13": {
+  "line": 13,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p14": {
+  "line": 20,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p15": {
+  "line": 15,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p16": {
+  "line": 8,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p17": {
+  "line": 26,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p18": {
+  "line": 25,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p19": {
+  "line": 13,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p20": {
+  "line": 23,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p21": {
+  "line": 20,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p22": {
+  "line": 21,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p23": {
+  "line": 29,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p24": {
+  "line": 29,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p25": {
+  "line": 14,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p26": {
+  "line": 16,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p27": {
+  "line": 19,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p28": {
+  "line": 5,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p29": {
+  "line": 7,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p30": {
+  "line": 25,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p31": {
+  "line": 0,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p32": {
+  "line": 22,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p33": {
+  "line": 22,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p34": {
+  "line": 26,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p35": {
+  "line": 10,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p36": {
+  "line": 24,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p37": {
+  "line": 23,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p38": {
+  "line": 11,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p39": {
+  "line": 9,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p40": {
+  "line": 18,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p41": {
+  "line": 1,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p42": {
+  "line": 18,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p43": {
+  "line": 28,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p44": {
+  "line": 6,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p45": {
+  "line": 27,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p46": {
+  "line": 15,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p47": {
+  "line": 19,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p48": {
+  "line": 7,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p49": {
+  "line": 17,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p50": {
+  "line": 12,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p51": {
+  "line": 0,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p52": {
+  "line": 12,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p53": {
+  "line": 13,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p54": {
+  "line": 1,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p55": {
+  "line": 16,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p56": {
+  "line": 3,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p57": {
+  "line": 14,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p58": {
+  "line": 25,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p59": {
+  "line": 11,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p60": {
+  "line": 1,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p61": {
+  "line": 17,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p62": {
+  "line": 0,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p63": {
+  "line": 20,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p64": {
+  "line": 4,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p65": {
+  "line": 29,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p66": {
+  "line": 28,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p67": {
+  "line": 9,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p68": {
+  "line": 27,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p69": {
+  "line": 3,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p70": {
+  "line": 27,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p71": {
+  "line": 5,
+  "persona": "warm",
+  "x": "rewrite"
+ },
+ "p72": {
+  "line": 10,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p73": {
+  "line": 2,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p74": {
+  "line": 21,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p75": {
+  "line": 28,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p76": {
+  "line": 7,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p77": {
+  "line": 24,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p78": {
+  "line": 10,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p79": {
+  "line": 11,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p80": {
+  "line": 26,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p81": {
+  "line": 2,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p82": {
+  "line": 9,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p83": {
+  "line": 4,
+  "persona": "dry",
+  "x": "rewrite"
+ },
+ "p84": {
+  "line": 23,
+  "persona": "blunt",
+  "x": "original"
+ },
+ "p85": {
+  "line": 21,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p86": {
+  "line": 19,
+  "persona": "warm",
+  "x": "original"
+ },
+ "p87": {
+  "line": 2,
+  "persona": "dry",
+  "x": "original"
+ },
+ "p88": {
+  "line": 14,
+  "persona": "blunt",
+  "x": "rewrite"
+ },
+ "p89": {
+  "line": 8,
+  "persona": "warm",
+  "x": "rewrite"
+ }
+}

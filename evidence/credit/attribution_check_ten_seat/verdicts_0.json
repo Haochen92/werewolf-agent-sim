@@ -1,0 +1,102 @@
+[
+ {
+  "case_id": "c000",
+  "label": "match",
+  "reason": "Lesson allows one neutral clarifying question and no accusations; the player asks sentinel/trailseer holders who they saw, with no accusation or defense."
+ },
+ {
+  "case_id": "c001",
+  "label": "match",
+  "reason": "Lesson asks one short evidence-based observation with no role claim or wolf accusation; the player notes player_7's visit fits the lynched chanteuse, disclaims a role, and accuses no one."
+ },
+ {
+  "case_id": "c002",
+  "label": "match",
+  "reason": "Lesson says stay unclaimed, stress the read is unverified and ask when/why picked; the player does exactly that."
+ },
+ {
+  "case_id": "c003",
+  "label": "match",
+  "reason": "Lesson says abstain with the room on an early no-evidence vote; the player abstained."
+ },
+ {
+  "case_id": "c004",
+  "label": "match",
+  "reason": "Lesson allows at most one neutral clarifying question; the player asks claimants who they watched/followed and nothing else."
+ },
+ {
+  "case_id": "c005",
+  "label": "match",
+  "reason": "Lesson says keep the empty-follow suspect on the list and pick the next follow from remaining candidates; the player moved the follow to player_10."
+ },
+ {
+  "case_id": "c006",
+  "label": "match",
+  "reason": "Lesson says the last wolf should vote a non-wolf (prioritizing the lone killer); the player voted player_7, a non-wolf vigilante claimant."
+ },
+ {
+  "case_id": "c007",
+  "label": "match",
+  "reason": "Lesson says give the rules point that a concealed victim leaves no carrier trace, without claiming an action or denying; the player does exactly that."
+ },
+ {
+  "case_id": "c008",
+  "label": "match",
+  "reason": "Lesson says vote with the majority on the public-record suspect; the player voted player_5, whom player_7's trailseer record and others were targeting."
+ },
+ {
+  "case_id": "c009",
+  "label": "uncheckable",
+  "reason": "Lesson concerns agreeing with the Illusionist to conceal in the night chat, but a 'chat' record shows no content."
+ },
+ {
+  "case_id": "c010",
+  "label": "uncheckable",
+  "reason": "Lesson says vote the one with thinner support; both others back each other and the record does not show which claim is thinner, so voting player_6 cannot be judged."
+ },
+ {
+  "case_id": "c011",
+  "label": "match",
+  "reason": "Lesson asks one short neutral procedural point; the player asks one question about visit direction without revealing a block."
+ },
+ {
+  "case_id": "c012",
+  "label": "mismatch",
+  "reason": "Lesson says echo the room's demand that evasive players state role and night action; the player instead volunteers that it visited player_2's door and explains why, demanding nothing of anyone."
+ },
+ {
+  "case_id": "c013",
+  "label": "match",
+  "reason": "Lesson offers a procedural point about concealed bodies and trailseer visibility, unclaimed and without accusation; the player makes that point."
+ },
+ {
+  "case_id": "c014",
+  "label": "match",
+  "reason": "Lesson says abstain on the first vote day without hard evidence; the player abstained."
+ },
+ {
+  "case_id": "c015",
+  "label": "match",
+  "reason": "Lesson says abstain with the room on an early no-evidence vote; the player abstained."
+ },
+ {
+  "case_id": "c016",
+  "label": "match",
+  "reason": "Lesson says stay unclaimed and question the accusers' premises and history; the player stays unclaimed, calls player_1's single read weak and asks for player_4's bullet count."
+ },
+ {
+  "case_id": "c017",
+  "label": "match",
+  "reason": "Lesson says vote with the forming majority on the remaining threat; the player voted player_7 with the bloc."
+ },
+ {
+  "case_id": "c018",
+  "label": "uncheckable",
+  "reason": "Lesson is about whether to conceal/carry; the record shows only 'chat', so no conceal decision is visible."
+ },
+ {
+  "case_id": "c019",
+  "label": "uncheckable",
+  "reason": "Lesson says put a conceal on a high-value or tracking-threat victim; a conceal was used but the record has no target or victim role, so the fit cannot be judged."
+ }
+]

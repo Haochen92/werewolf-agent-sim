@@ -13,8 +13,8 @@ from typing import Any
 
 from langchain_core.prompts import ChatPromptTemplate
 
-from Agents.llm_factory import get_llm_extractor
-from Agents.prompts.prompt_formatters import format_day_channel_for_day
+from Agents.llm_factory import GameModels, env_models
+from Agents.prompts.prompt_formatters import format_day_channel_for_day, one_line
 from Agents.schemas import AddressingExtraction
 from Agents.schemas.game_events import AddressedTarget
 
@@ -51,35 +51,37 @@ Who does this message address?""",
 
 
 def extract_addressed_targets(
-    message: str, payload: dict[str, Any], current_day: int
+    message: str, payload: dict[str, Any], current_day: int, *, models: GameModels | None = None
 ) -> list[AddressedTarget]:
     """Tag whom a human's message addresses, so it drives the reactive scheduler like an LLM's
     self-tagged addressed_targets.
 
     Returns [] on an empty/absent message or any extractor error — fail open, so a tagging failure
     drops only that turn's OPENINGS (new questions/accusations) and never stalls the turn; the
-    driver's discharge-from-``owes`` handles the human's own obligations regardless.
+    driver's discharge-from-``owes`` handles the human's own obligations regardless. The extractor
+    is ``models``' (the turn's); None takes the accessors' models.
     """
     if not message or not message.strip():
         return []
     self_id = payload.get("player_id", "")
     roster = [p for p in _surviving(payload) if p != self_id]
+    models = models or env_models()
     try:
         result = (
             ADDRESSING_EXTRACTOR_PROMPT
-            | get_llm_extractor().with_structured_output(AddressingExtraction)
+            | models.extractor().with_structured_output(AddressingExtraction)
         ).invoke(
             {
                 "roster": ", ".join(roster),
                 "day_channel": format_day_channel_for_day(payload.get("day_channel", []), current_day),
                 "player_id": self_id,
-                "message": message,
+                "message": one_line(message),
             },
             config={"run_name": f"addressing_extract_{self_id}"},
         )
         return _sanitize_against_roster(result.addressed_targets, roster)
     except Exception as exc:
-        logger.warning(f"addressing extraction failed: {exc}; defaulting to no addressees")
+        logger.warning(f"addressing extraction failed: {models.redact(str(exc))}; defaulting to no addressees")
         return []
 
 

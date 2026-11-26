@@ -206,7 +206,7 @@ tokens misses a thinking budget that is used in full.
 
 **Motivation.** Everything above was measured on Gemini. In July the game gained DeepSeek seats
 (`deepseek-v4-pro`, chosen on cost and dialogue quality; see
-[`../model_selection/`](../model_selection/report.md)). DeepSeek caches prompt starts automatically, and on
+[`../model_selection/`](../evaluation/model_admission/model_selection.md)). DeepSeek caches prompt starts automatically, and on
 this workload it fired: the first measured game read about 31% of its input from cache (450k of 1.50M
 tokens). Hypothesis A had been disproved on Gemini, not in general. On a provider whose automatic cache
 works, prompt order is a lever again.
@@ -234,7 +234,7 @@ price $0.292 → $0.260 per million tokens. One game per side; the same release 
 at about 120 words, and the second game was about half as long. So this shows the direction, not the size
 of the reorder's effect. Shipped with the rest of that release's prompt changes.
 
-*Provenance:* commit `47d9a719`; game costs in `../model_selection/report.md`.
+*Provenance:* commit `47d9a719`; game costs in `../evaluation/model_admission/model_selection.md`.
 
 ---
 
@@ -246,14 +246,26 @@ how much of a real turn it reads from cache. That had to be measured per model.
 
 **Build.** The model-admission check (the tests a model passes before it can play) gained a caching
 step: the provider's minimum cacheable prompt, and the cached share of three real prompts (a seat's turn,
-the same seat's next turn, another seat's turn). The hallucination bench, which compares models on the same
-turns, began recording cached tokens so each model's cost includes its discount.
+the same seat's next turn, another seat's turn). The probe sends plain identical prompts with no
+provider-specific cache marks, so what it measures is each provider's **automatic** prefix cache: OpenAI's
+automatic prompt caching, DeepSeek's, whatever the OpenRouter-served models do, and on Gemini the implicit
+cache of Vertex (global location), the same mechanism §3 probed in June. The hallucination bench, which
+compares models on the same turns, began recording cached tokens so each model's cost includes its
+discount.
 
-**Result** (one probe per model; the table is in the report, §4.2):
-- Claude, Qwen and OpenAI read much more of a seat's own next turn (57–90%) than of a neighbour's (0–36%).
+**Result** (one probe per model, automatic caching only; the table is in the report, §4.2):
+- Qwen and OpenAI read much more of a seat's own next turn (57–79%) than of a neighbour's (29–36%).
 - GLM, DeepSeek and MiniMax read little of either (3–13%), DeepSeek despite reading 31–41% of a live game
   (§7). The probe sends only three requests.
-- Gemini 3.5 Flash-Lite cached nothing up to 8,192 tokens, repeating the June finding on a newer model.
+- Gemini 3.5 Flash-Lite cached nothing up to 8,192 tokens, repeating the June finding on a newer model:
+  Vertex's implicit cache has not fired for this pipeline's prompts in two probes four months apart.
+
+*Claude, measured a week later (2026-10-11).* Claude Haiku 5.5 was probed with the same three prompts
+and read 90% of a seat's next turn and 0% of a neighbour's. That row is not an automatic-cache result:
+Claude has no implicit cache, and the probe ran on the marked-request path of §9 while it was still
+uncommitted (the record's fingerprint is `660ca84b`, dirty; the path was committed 2026-10-12 as
+`5685bf29`). It is listed with the others in the report's table because the three prompts are the same;
+the mechanism is not.
 
 **A re-check of the rendered prompts.** Rendering real prompts showed where the shared start ends. One
 seat's successive turns share about 84% of their prompt. Two different seats share about 800 tokens,
@@ -487,7 +499,7 @@ schemas order their fields so a seat commits before it speaks. Checked on the re
 
 **Decision (owner): reads first in every seat schema.** The shared base of all 16 seat schemas now orders
 reads → strategy verdicts → memory verdicts → strategy note → decision, and the discussion prompt's
-examples follow. The July reads work (T1c, `../generation_prompt/validation_plan.md`) tested reads
+examples follow. The July reads work (T1c, `../gameplay/turn_prompt/validation_plan.md`) tested reads
 *before the strategy note and the action*; that order is kept, and the position of the memory verdicts
 relative to reads was not what it tested. **Result: Haiku unenforced, the same 24 real turns, 24/24 in
 schema order and no failures.** This changes every seat's prompt in both modes, so it is a new prompt
@@ -666,7 +678,92 @@ Credit was unaffected (those turns carry no lesson keys); the records were not.
 
 Not yet measured: how often the enforced retry fires and holds in live games (no game has run since).
 
-## 17. Where it stands
+## 17. 2026-10-30 — Per-game cost: the sixteen memory-off games added up, and two games repriced at other models' rates
+
+**Motivation.** The write-up's cost chapter needed three numbers no record stated: what a memory-off
+Haiku game costs on average and where its tokens go; what share of a game's bill is output; and what the
+same game would cost on a model that has never played a seat. The sixteen persona-voice games of
+2026-10-18 (`evidence/gameplay/data/persona_voice_games/`) carry every call's tokens in their manifests,
+so all three can be read without a model call.
+
+**Method.** `evaluation/experiments/game_cost_reprice.py` sums each manifest's hourly usage buckets
+(input, cached, written, output, reasoning) and prices the per-game mean at a table of list rates
+(`evaluation/config/reprice_rates_2026_10_30.json`): plain input at the input rate, cached input at the
+cached rate, written input at the input rate times the write premium (1.25 on Claude and GPT-6), output
+at the output rate. The rates are the catalogue's (`Agents/llm_factory/pricing.py`); Opus 5.5, which the
+catalogue does not price, is at Anthropic's first-party rates as the Claude API reference lists them
+($4 input, $20 output, $0.20 cache read per million; table cached 2026-10-06, read 2026-10-30). The
+memory-on game of 2026-10-13 (§11's layout study, `haiku_after`, the game priced at $0.215 in the content
+plan) is given to the script by hand: 1,754,420 input tokens, 870,186 read from cache, about 232,000
+output (its $0.116 of output at $0.50 per million); its written tokens are not separated, so they are
+priced as plain input, which is why the repriced Haiku figure ($0.21) sits a little under the recorded one.
+
+**The sixteen games** (Haiku 5.5, low thinking, memory off, voices on in eight and off in eight,
+ten-seat AI-only; recorded cost from each manifest's `cost_usd`):
+
+| | Per game |
+|---|---|
+| Calls | 104–254, mean 172 (4-day games about 105–115 calls, 6-day games 189–254) |
+| Input tokens | mean 1,442,000, of which 53% read from cache (50–55% in every game); none written (the meter recorded no writes on this backend) |
+| Output tokens | mean 160,000, of which about 75,000 reasoning |
+| Recorded cost | $0.08–0.26, mean $0.16; $2.48 in all |
+
+So nine tokens in ten are input, and the money splits about evenly: at Haiku's rates the mean game's
+output is about $0.08 of $0.16, its plain input about $0.07 and its cached input under a cent.
+
+**The same tokens at other rates** (an illustration of the step between model classes, not a measured
+game: another model writes a different amount, Opus cannot turn its reasoning off where these seats ran
+at low thinking, and tokenisers differ; no Sonnet or Opus game has been played in the seats):
+
+| Model | Memory off (mean of the 16) | Memory on (the 2026-10-13 game) |
+|---|---:|---:|
+| Claude Haiku 5.5 (measured) | $0.16 | $0.21 |
+| GPT-6 Luna | $0.16 | $0.21 |
+| DeepSeek V4.1 Flash (off-peak) | $0.20 | $0.27 |
+| Gemini 3.5 Flash-Lite | $0.63 | $0.87 |
+| Gemini 3.6 Flash | $2.33 | $3.20 |
+| Claude Sonnet 5.5 | $3.03 | $4.18 |
+| Claude Opus 5.5 | $6.05 | $8.35 |
+
+With no cache hits at all the same games would cost $0.22 (Haiku) to $8.96 (Opus) memory off; the
+script prints that column too. Luna's row equals Haiku's because their list rates are identical; in the
+paired games of §13 Luna wrote less and so cost less per call.
+
+**What it changes.** Nothing in the pipeline. It gives the cost chapter a sourced mean and output share
+for the default configuration, and a labelled estimate for the classes never played.
+
+**Served games, as the site averages them** (read 2026-10-30, the same query as the model menu's
+`ReplayService.average_costs`: the most recent completed, listed games with usage recorded, priced by
+`server/game/usage.py` from their stored counts at dated rates; 34 such games). Memory off unless said.
+
+| Model | Games (with a human seat) | Dates | Mean | Range |
+|---|---|---|---|---|
+| Claude Haiku 5.5 | 7 (7) | 2026-10-12 to 10-21 | $0.149 | $0.08–0.20 |
+| DeepSeek V4.1 Flash | 3 (3) | 2026-10-17 to 10-21 | $0.097 | $0.07–0.14 |
+| GPT-6 Luna | 8 (4) | 2026-10-05 to 10-17 | $0.114 | $0.04–0.22 |
+| GLM 5.3 Flash | 1 (1) | 2026-10-05 | $0.089 | — |
+| Gemini 3.5 Flash-Lite | 8 (2) | 2026-10-04 to 10-11 | $0.721 | $0.52–0.96 |
+| Gemini 3.5 Flash | 6 (0) | 2026-10-10 | $2.718 | $2.22–3.05 |
+| Claude Haiku 5.5, memory on | 1 (0) | 2026-10-14 | $0.118 | — |
+
+Read with care:
+- The menu's averages mix served games with batch games loaded into the same table. Luna's $0.114 is
+  four AI-only games of 2026-10-10 ($0.12–0.22, the `phase3_luna_games` batch) and four games with a
+  human seat ($0.04–0.08); Flash-Lite's and Flash's rows are mostly the 2026-10-10 batch. Haiku's seven
+  and DeepSeek's three are all served games with one human seat.
+- One DeepSeek game ($0.14, two days, 91 calls) was billed in DeepSeek's peak hours (09 UTC on a
+  weekday), at twice the off-peak rate; the other two were off-peak.
+- GLM is one game.
+- The meter records a token written to the provider's cache inside `input` and, for Claude seats,
+  not in `written`, so a write is priced as plain input without its 25% premium. Checked on two served
+  Haiku games against their traces (`game_cache_share.py`): the trace's input total equals the meter's;
+  writes were 7–9% of input; the trace-priced cost was $0.0827 against the meter's $0.0811 and $0.1593
+  against $0.1567, about 2% under. Luna games before 2026-10-17 record no writes at all. The per-game
+  figures above are therefore a little under the bill, by about the write premium.
+- A served game's human seat makes no calls, so these games are cheaper than the AI-only ones above
+  for that reason as well as their length (two to six days).
+
+## 18. Where it stands
 
 Caching is a property of each provider: automatic on DeepSeek, boundary-based on OpenAI (implicit at the
 last eligible message, or explicit breakpoints), marked on Claude, a cache object on Gemini. The

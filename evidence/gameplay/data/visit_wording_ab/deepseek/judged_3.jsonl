@@ -1,0 +1,46 @@
+{"id": "v003", "mech": 1, "chew": 1, "clear": null, "note": "Treats 'came to visit me' and follow result as different shapes; they are the same fact."}
+{"id": "v007", "mech": 1, "chew": 0, "clear": 0, "note": "Sentinel says it visited no one, but its watch on player_4 was a visit; no own result."}
+{"id": "v011", "mech": 0, "chew": 0, "clear": 1, "note": "player_3 visited player_4 night 1, correct direction."}
+{"id": "v015", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v019", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v023", "mech": 0, "chew": 0, "clear": 1, "note": "Night-4 follow player_1 -> player_3, correct."}
+{"id": "v027", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v031", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v035", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v039", "mech": 0, "chew": 0, "clear": 1, "note": "Last night (n4) follow player_1 -> player_3, correct."}
+{"id": "v043", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v047", "mech": 1, "chew": 0, "clear": 1, "note": "Claims a body's visit reads as player_6 targeting; record shows player_6 visited no one. Results correct."}
+{"id": "v051", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v055", "mech": 1, "chew": 0, "clear": 0, "note": "Implies checked target knows it was checked; own result vague (no n2 target named)."}
+{"id": "v059", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v063", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v067", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v071", "mech": 1, "chew": 1, "clear": null, "note": "Says a follow result can't name the follower as destination; it can."}
+{"id": "v075", "mech": 1, "chew": 0, "clear": null, "note": "Asks a follow-claimant to watch player_3 and report who visits; follow can't show that."}
+{"id": "v079", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v083", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v087", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v091", "mech": 0, "chew": 1, "clear": null, "note": "Most of the line explains what a track result shows and its phrasing."}
+{"id": "v095", "mech": 1, "chew": 0, "clear": 0, "note": "Sentinel says it visited no one; its watch was a visit. No own result."}
+{"id": "v099", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own watch result."}
+{"id": "v103", "mech": 1, "chew": 0, "clear": 0, "note": "Says follow would read 'visited no one'; its watch on player_4 was a visit."}
+{"id": "v107", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow (player_6 -> player_7)."}
+{"id": "v111", "mech": 0, "chew": 1, "clear": null, "note": "Main thrust is rebutting a rules argument about what a watch shows."}
+{"id": "v115", "mech": 1, "chew": 0, "clear": 1, "note": "Argues empty watch disproves own visit; watcher never appears in its own result."}
+{"id": "v119", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v123", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow results."}
+{"id": "v127", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v131", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own follow result."}
+{"id": "v135", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v139", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v143", "mech": 1, "chew": 0, "clear": null, "note": "Sentinel denies visiting player_4, though its watch on player_4 was a visit."}
+{"id": "v147", "mech": 0, "chew": 0, "clear": 1, "note": "player_3 came to speaker night 1, correct."}
+{"id": "v151", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own watch result."}
+{"id": "v155", "mech": 1, "chew": 0, "clear": null, "note": "Says follow should read 'visited no one'; its watch on player_4 was a visit."}
+{"id": "v159", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v163", "mech": 0, "chew": 0, "clear": 1, "note": "Night-5 follow player_6 -> no one, correct."}
+{"id": "v167", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v171", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v175", "mech": 0, "chew": 0, "clear": 0, "note": "Hints at a visit to player_7 but names no visitor or source."}
+{"id": "v179", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v183", "mech": 1, "chew": 0, "clear": null, "note": "Says player_4's 'came to me' and follow wording can't both be true; same fact."}

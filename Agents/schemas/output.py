@@ -23,7 +23,8 @@ from Agents.schemas.roles import roles
 # (Agents/rules/claim_ledger.py). Every role of the pool, dealt or not: the summariser transcribes
 # claims and a player may claim anything.
 NIGHT_RESULT_WORDS = ("not_a_wolf", "suspicious", "not_suspicious", "saved_from_attack", "no_attack", "died", "survived",
-                      "no_visitors", "no_effect", "roleblocked", "not_said")
+                      "no_visitors", "no_effect", "roleblocked", "held_fire", "kept_check", "kept_watch", "kept_sigil",
+                      "not_said")
 CLAIMED_ROLE_ENUM = Literal[tuple(roles)]
 CLAIMED_RESULT_ENUM = Literal[(*roles, *NIGHT_RESULT_WORDS)]
 
@@ -285,11 +286,12 @@ class DaySummaryOutputV3(LenientToolCallModel):
 # Model-visible: no class docstrings.
 class ClaimedNightAction(LenientToolCallModel):
     night: int = Field(description="The night the action happened; 0 if the player did not say")
-    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick", "no_action"] = Field(
+    action: Literal["investigate", "protect", "shoot", "kill", "watch", "follow", "sigil", "block", "conceal", "bet", "pick", "visit", "no_action"] = Field(
         description=(
-            "What the player says they already did that night (not a plan for a coming night); no_action "
-            "when they say they did not act or visited no one that night (held fire, kept a watch or a "
-            "sigil, stayed home, did not visit someone)"
+            "What the player says they already did that night (not a plan for a coming night); visit when "
+            "they say they went to the target that night without saying what they did there (result "
+            "not_said); no_action when they say they did not act or visited no one that night (held fire, "
+            "kept a watch or a sigil, stayed home, did not visit someone)"
         ),
     )
     target: str = Field(description="Player ID the action was on; for no_action, the player they say they did not visit, or empty string")
@@ -299,7 +301,9 @@ class ClaimedNightAction(LenientToolCallModel):
             "they say they found). protect: saved_from_attack or no_attack. shoot / kill: died or "
             "survived. watch: no_visitors if they say no one visited; follow: no_visitors if they say the "
             "player visited no one. sigil: no_effect if they say it had no effect. Any action: roleblocked "
-            "if they say they were blocked and it was not carried out. not_said if they did not say, or said "
+            "if they say they were blocked and it was not carried out. no_action: held_fire if they say they "
+            "held fire, kept_check / kept_watch / kept_sigil if they say they kept a check, a watch or a "
+            "sigil unused. not_said if they did not say, or said "
             "it only vaguely."
         ),
     )
@@ -348,8 +352,8 @@ class RoleClaimV4(LenientToolCallModel):
 
 
 # Built on the base Accusation, not v3, so it carries no record_check (2026-10-16): the summariser's
-# check against the record was wrong in all 27 it wrote across 36 replayed summaries
-# (evidence/reasoning_failures/experiment_log.md §3); the claim ledger checks claims in code.
+# check against the record was wrong in all 27 it wrote across 66 replayed summaries
+# (evidence/gameplay/deduction/experiment_log.md §3); the claim ledger checks claims in code.
 class AccusationV4(Accusation):
     # Every written field is capped at 30 words (2026-10-04): DeepSeek wrote a median of 40 and up to
     # 92 per field, and agents read all of it every day. 3.5 flash-lite already writes about 20.
@@ -465,17 +469,16 @@ class LineEchoVerdict(LenientToolCallModel):
     )
     adds: str = Field(
         description=(
-            "What the new line says that no earlier line said: a reason, a fact, a name, a conclusion, "
-            "a next step, a question put to a player, an answer to a player. Crediting an earlier "
-            "speaker and then adding to their point counts as adding. Write exactly 'nothing' only if "
-            "every part of the new line's point was already said by an earlier line."
+            "What the new line adds that the discussion did not have: a fact, a reading with its reason, "
+            "a question or test nobody asked. Write exactly 'nothing' only if it restates, agrees without a "
+            "new reason, repeats a request already made, or is filler."
         ),
     )
     same_point_as: str = Field(
         description=(
-            "Empty string unless adds is 'nothing'. Then the player id of the FIRST earlier line that "
-            "already made the whole point: the same observation, the same suspicion of the same player "
-            "for the same reason, or the same proposal."
+            "Empty string unless adds is 'nothing'. Then the player id of the FIRST earlier line the new "
+            "line restates, agrees with or repeats, or 'none' if it is filler that repeats no particular "
+            "line."
         ),
     )
 
@@ -488,7 +491,8 @@ class OpeningVerdict(LenientToolCallModel):
         description=(
             "claim = the speaker claims a role for themselves, or claims a role someone else claimed "
             "(a counterclaim); night_action = the speaker states their OWN night action or its result "
-            "(whom they protected, investigated, shot, or that they held fire, and what they learned); "
+            "(whom they protected, checked, shot, watched, followed, blocked or set a sigil on, a bet "
+            "or a pick, that they held fire or did nothing, and what they saw or learned); "
             "challenge = the speaker disputes a claim made on an earlier day, giving a reason; "
             "repeat = the line only repeats an earlier line in this list that is not a claim; "
             "other = anything else: a deduction, a suspicion, advice, a general remark."

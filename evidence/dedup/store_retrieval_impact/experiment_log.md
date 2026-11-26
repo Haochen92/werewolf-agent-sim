@@ -117,6 +117,8 @@ Filtering made scores *worse*. Two mechanisms caused this:
 
 The original evaluation above used n=5 frozen cases and v0 (untuned) batch dedup prompts. After tuning batch prompts through v1-v3 (see [batch_dedup](../batch_dedup/experiment_log.md)), we created a third store — v4_deduped_v2 — using v3 prompts, then re-evaluated all three stores on the full 40-case eval set (39 complete).
 
+*Corrected 2026-10-26: all 40 cases were scored (`evaluation/eval_results/legacy/retrieval_eval_20260526_174803.jsonl`, 240 rows, none missing). The means tables below are over the first 39 (the 40th, a wolf day_vote, was dropped for no recorded reason); the win/tie/loss counts and the −0.28 delta are over all 40. The 40-case means differ by at most 0.04.*
+
 ### Store sizes
 
 | Store | Prompts | Observations | Strategy Points | Total | Reduction |
@@ -197,4 +199,16 @@ code:
 2. **Numbers are v4-store-era.** These n=5 / n=39 results justify the *direction* (clean
    conservatively, don't over-merge), not absolute scores on today's v6 store — and the n=5 phase is
    superseded by n=39 regardless. The consolidated current-vs-documented gaps live in
-   [../report.md](../report.md) § *Current-vs-documented gaps*.
+   [../experiment_log.md](../experiment_log.md) §11 (the gap table, moved there 2026-10-26).
+
+*Addendum 2026-10-14.* Three facts for a reader arriving from the ten-seat game. The study's control
+was plain top-k retrieval and its comparison was store dedup against retrieval-time **filtering** (the
+similarity gate, MMR, the per-situation cap); the cross-encoder and LLM rerankers were out of scope
+(`../../retrieval/reranking/`), so nothing here ranks dedup against reranking. The ten-seat store
+(`memory_stores/ten_seat_v2`) holds about 2,000 observations and 500 strategy points, against the 198
+strategy points of the v4 store above, and the served demo retrieves strategy points only, with
+filtering and reranking at their disabled defaults; whether strategy points are still a coverage rather
+than a duplication problem at that size has not been measured. The judge was gemini-2.5-flash on the
+40-case `v4_filtering_eval` set (`evaluation/frozen_eval_sets/`); the numbers are direction on a
+nine-seat store, not today's scores.
+

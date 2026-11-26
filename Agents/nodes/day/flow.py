@@ -10,6 +10,8 @@ and the summary only. route_after_discussion holds the day's branching after the
 The per-role actor nodes these dispatch to (via Send) live in day/actors.py.
 """
 
+import random
+import zlib
 from collections.abc import Iterable
 from logging import getLogger as _getLogger
 from typing import Literal
@@ -20,6 +22,8 @@ from langgraph.graph import END
 from langgraph.runtime import Runtime
 from langgraph.types import Send
 
+from Agents.config import game_id_from_runnable
+from Agents.llm_factory import game_models
 from Agents.game_config import GameConfig, game_config_from_runnable
 from Agents.schemas import DayChannel, DayRound, DaySummary, FiringReason, RoundCandidate
 from Agents.rules.closing import closing_announcement, closing_speakers
@@ -41,7 +45,7 @@ from Agents.turn.scheduler import select_next_speaker
 
 from Agents.tracing import (
     GraphContext,
-    langfuse,
+    get_langfuse,
 )
 
 logger = _getLogger(__name__)
@@ -178,6 +182,10 @@ def build_speaker_send(
         # Public dead roster — attached to EVERY role's payload (no leak gating; the dead
         # players' roles were announced publicly). Renders the who-died-and-as-what block.
         "dead_roster": state.get("dead_roster", []),
+        # Each morning and each read-out will as data, for the deduction engine; public like the
+        # roster, never rendered.
+        "night_announcements": state.get("night_announcements", []),
+        "read_out_wills": state.get("read_out_wills", []),
         # Public fixed-cast census (counts only, no identities) — feeds the alive-roles line
         # (cast minus revealed deaths). Same no-leak rationale as dead_roster.
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
@@ -187,6 +195,7 @@ def build_speaker_send(
         "player_role": role,
         "current_day": state["current_day"],
         "voting_available": voting_available,
+        "game_id": state.get("game_id", ""),
         # A sweep turn is the open floor (the prompt's rules block and the human's ask follow
         # day_round); a reactive turn is the discussion. The opening and closing rounds are
         # fanned out by fan_out_day (Phase 2).
@@ -226,6 +235,8 @@ def fan_out_day(
             "day_summaries": state.get("day_summaries", []),
             # Public dead roster on every role's payload (see build_speaker_send).
             "dead_roster": state.get("dead_roster", []),
+            "night_announcements": state.get("night_announcements", []),
+            "read_out_wills": state.get("read_out_wills", []),
             # Public fixed-cast census feeding the alive-roles line (see build_speaker_send).
             "cast_role_counts": cast_role_counts(state.get("roles", {})),
             "lineup": state.get("lineup", []),
@@ -239,6 +250,12 @@ def fan_out_day(
             # Which round of the day this turn belongs to (opening / closing here); the prompt
             # picks its rules block by it. Votes carry it too, unused.
             "day_round": day_round,
+            # A vote turn reads a conditional about a player as its contrapositive (deduction
+            # engine, fold rule 3: Agents/deduction/conditionals/).
+            "vote_turn": phase == "vote",
+            # The node-cache key reads only the payload, and one cache serves every game in the
+            # process: the game's id keeps two games' identical turns apart (turn_cache_key).
+            "game_id": state.get("game_id", ""),
         }
 
     for player in surviving_players:
@@ -293,8 +310,9 @@ def _todays_entry_count(state: DayGraphState) -> int:
 
 
 def start_opening(state: DayGraphState):
-    """Entry node of the opening round: every living player gets a turn at once, their lines
-    played in seat order."""
+    """Entry node of the opening round: every living player gets a turn at once. They are listed
+    in seat order, as the round_opened event shows them; the order their lines are played in is
+    drawn when they are collected (_round_order)."""
     surviving_players = state["surviving_villagers"] + state["surviving_wolves"]
     players = seat_order(surviving_players)
     return {"day_round": "opening", "round_players": players}
@@ -339,16 +357,31 @@ def fan_out_round(state: DayGraphState, config: RunnableConfig):
     return sends
 
 
-def _round_order(state: DayGraphState) -> list[str]:
-    """The order a round's lines are played in: the order the entry node listed the round's
-    players (seat order for the opening, since nobody saw anyone else's line; the accused as
-    they were called, most accused first, for the closing)."""
-    return list(state["round_players"])
+def _round_order(state: DayGraphState, config: RunnableConfig) -> list[str]:
+    """The order a round's lines are played in. The closing's is the order the accused were
+    called, most accused first. The opening's is drawn each day, as the rules tell the players:
+    nobody saw anyone else's line, so no order is the true one, and in seat order player_1's line
+    always led the transcript, where a model gives most weight to whoever is listed first. The
+    draw is seeded by the game and the day, so a paired game replays the same order; no game_id
+    (a bare unit test) draws unseeded, as initialize_game does."""
+    if state["day_round"] != "opening":
+        return list(state["round_players"])
+    players = seat_order(state["round_players"])
+    game_id = game_id_from_runnable(config)
+    if game_id:
+        seed_text = "{}:{}:opening".format(game_id, state["current_day"])
+        rng = random.Random(zlib.crc32(seed_text.encode("utf-8")))
+    else:
+        rng = random.Random()
+    rng.shuffle(players)
+    return players
 
 
-def collect_round(state: DayGraphState, config: RunnableConfig):
+def collect_round(state: DayGraphState, config: RunnableConfig,
+                  runtime: Runtime[GraphContext] | None = None):
     """Barrier node after the round's turns: order the round's lines, run the opening's filter
-    (humans exempt), number them, and write them into day_channel in sequence."""
+    (humans exempt), number them, and write them into day_channel in sequence. The filter's judge
+    is the graph context's model; a direct call with no runtime takes the accessors'."""
     current_day = state["current_day"]
     day_round = state["day_round"]
 
@@ -365,7 +398,7 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
         return {}
 
     ordered: list[DayChannel] = []
-    for player in _round_order(state):
+    for player in _round_order(state, config):
         if player in by_player:
             ordered.append(by_player.pop(player))
     # Defensive: a candidate from a player the order did not name (should not happen) still lands.
@@ -373,7 +406,8 @@ def collect_round(state: DayGraphState, config: RunnableConfig):
         ordered.append(by_player[player])
 
     if day_round == "opening":
-        ordered = _filter_keeping_humans(ordered, state, filter_openings)
+        models = game_models(getattr(runtime, "context", None))
+        ordered = _filter_keeping_humans(ordered, state, lambda entries: filter_openings(entries, models=models))
 
     first_seq = _todays_entry_count(state)
     numbered: list[DayChannel] = []
@@ -451,7 +485,7 @@ def summarize_day_discussion(
     game_id = str(configurable.get("game_id") or "")
     span_name = day_summary_span_name(game_id, current_day)
 
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=span_name,
         input={"day": current_day, "raw_discussion": raw_discussion},
@@ -464,6 +498,7 @@ def summarize_day_discussion(
             cast_role_counts=cast_role_counts(state.get("roles", {})),
             lineup=state.get("lineup", []),
             earlier_messages=[m for m in state.get("day_channel", []) if m.day < current_day],
+            models=game_models(runtime.context),
         )
 
         day_summary_case = DaySummaryCase(

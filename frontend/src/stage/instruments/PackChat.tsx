@@ -22,6 +22,7 @@ import type { Character } from '@/assets/manifest';
 import { ChipSprite } from '../cast/ChipSprite';
 import { useMotionScale } from '../motion';
 import { seatify, seatNumber } from '../roles';
+import { KitIcon } from './KitIcon';
 import styles from './PackChat.module.css';
 
 export type PackEntry =
@@ -226,6 +227,7 @@ export function SayLine({
         onChange={(e) => setText(e.target.value)}
       />
       <button type="submit" disabled={shut || !text.trim()}>
+        <KitIcon name="send" />
         Say it
       </button>
       {onPass ? (
@@ -238,6 +240,7 @@ export function SayLine({
             onPass();
           }}
         >
+          <KitIcon name="pass" />
           Pass
         </button>
       ) : null}
@@ -251,6 +254,7 @@ export function SayLine({
             onAgent();
           }}
         >
+          <KitIcon name="agent" />
           Let my agent talk
         </button>
       ) : null}

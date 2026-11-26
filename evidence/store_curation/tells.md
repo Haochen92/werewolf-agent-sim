@@ -1,5 +1,17 @@
 # The tell store — ledger, canon, checklist, and the injected book
 
+> **v7 loop only (dated 2026-10-26).** This page describes the tell store as the nine-seat v7 loop ran
+> it in July 2026 (`evaluation/src/loop/tell_fold.py`, `tell_credit.py`, `tells.py`). None of it is part
+> of today's game. The fold, the tell credit and the mining did not graduate into today's
+> consolidation code (`Agents/memory/consolidation/`), and served games load no tell book: the prompt's
+> book slot renders only when `WW_TELL_BOOK` is set (`Agents/memory/tell_book.py::tell_book_block`),
+> and in the repository only the loop's driver and tests set it. Two statements below were overtaken
+> by the July learning run: the fold has run inside a live generation loop (four folds, one per
+> generation, in `../memory_system/v7/execution_plan/data/v7_compound_town5/loop_history.json`), and
+> the July test's memory games showed every seat the final book, so the test measured lessons and
+> tells together ([v7 report](../memory_system/v7/report.md), "What the signed run found"). The status
+> lines' suite counts are the July working tree's. Today's curation is in [the report](report.md).
+
 > **Scope:** the per-store mechanism doc for tells, under the framework in [`report.md`](report.md)
 > (its cross-cutting principles are cited by number). A tell is a falsifiable behavior→role fact —
 > "a player who is accused counter-accuses their accuser of using the role claim as a distraction"

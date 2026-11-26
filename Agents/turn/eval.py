@@ -35,7 +35,7 @@ class TurnCapture:
     reads: list[dict] = field(default_factory=list)
 
 
-# The capture of the game this turn belongs to, set like GAME_LLM (Agents/llm_factory/chat.py): the
+# The capture of the game this turn belongs to, set by the session in the game's task: the
 # server's GameSession sets its own inside the game's task, so concurrent games never share a list.
 # The default is the process globals above, which one-game-at-a-time callers read after run_game.
 TURN_CAPTURE: ContextVar[TurnCapture] = ContextVar(

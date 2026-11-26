@@ -1,5 +1,7 @@
 # Werewolf Playhouse: design handoff
 
+Status (2026-10-26): Dated record of the design chat's decisions, 2026-09-25 (amended 2026-09-29). The truth for what the stage shows is `beat_sheet.md`; for how it is built, `stage_architecture.md`. Later departures are their "As built" lines, not marked here.
+
 Status as of 2026-09-25, end of day. The visual redesign of wolf.liuhaochen.com, consolidated from the production log's revisions 62 to 75, the transcript decisions of revisions 9 to 52, and the code review of 2026-09-25. This is the document the codebase build starts from. Everything marked **Agreed** is locked; **Proposed** was built and reviewed but not locked; **Open** has not been designed.
 
 The benches (the working HTML pages, one per scene) are listed at the end with their links. They are the record of how each decision was reached; this document is the record of what was decided. Pixel-level tuning (spacing, easing, exact timings) is done in the codebase against real components, not on the benches; where a bench falls short of the intent, this document states the intent.
@@ -264,3 +266,5 @@ Sprites are decoded as files under `sprites/` (day/<character>/{base,talking,thi
 - `kits/`: the three vector kits and the cast module, as the benches froze them (§8 lists what the benches draw over them that the kit should absorb).
 - `sprites/`: every raster asset, decoded; `manifest.json` has sizes and body measures.
 - `reference-events-schema.py`: the wire contract the beats are built on. `landing-handoff-2026-09-22.md`: the landing's state, for the chat after this one.
+
+[2026-10-26: where the bundle went. In git, in `frontend/docs/design_2026-09-25/`: this file, `kits/`, the sprite manifest as `sprites-manifest.json`, `landing-handoff-2026-09-22.md`, and the bundle's `README.md` as `BUNDLE_README.md`. Archived in `frontend/claude_artifacts/design/`, which `frontend/.gitignore` excludes, so on the build machine only and not in git: `benches/` (the thirteen pages, `hud-blockout.html` and `landing-prototype-v1.html` among them), `sprites/` with `manifest.json`, and `production-log-rev-62.html`. `reference-events-schema.py` was not kept: it was byte-identical to `server/schemas/events.py` (`stage_architecture.md` §9), which is the contract.]

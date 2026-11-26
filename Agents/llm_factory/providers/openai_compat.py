@@ -150,13 +150,13 @@ def _build_openai_compat_chat_model(
 
 
 def build_chat_model(model: str, *, temperature: float, thinking_level: str | None, mode: str,
-                     game_key: str) -> ChatOpenAI:
+                     game_key: str, **limits: Any) -> ChatOpenAI:
     """The chat model for an OpenAI-protocol id (one of ``PREFIXES``); ``game_key`` is the game's own
-    key for this provider, or empty."""
+    key for this provider, or empty. ``limits`` is the client's ``timeout`` and ``max_retries``."""
     if model.startswith("nim/"):
         return _build_openai_compat_chat_model(
             model.removeprefix("nim/"), _NIM_BASE_URL, "NVIDIA_API_KEY",
-            temperature=temperature, structured_mode=mode, api_key_override=game_key,
+            temperature=temperature, structured_mode=mode, api_key_override=game_key, **limits,
         )
 
     if model.startswith("deepseek/"):
@@ -172,7 +172,7 @@ def build_chat_model(model: str, *, temperature: float, thinking_level: str | No
         return _build_openai_compat_chat_model(
             model.removeprefix("deepseek/"), _DEEPSEEK_BASE_URL, "DEEPSEEK_API_KEY",
             temperature=temperature, structured_mode=mode, api_key_override=game_key,
-            extra_body={"thinking": {"type": "enabled" if thinking else "disabled"}},
+            extra_body={"thinking": {"type": "enabled" if thinking else "disabled"}}, **limits,
         )
 
     # OpenAI and xAI (Grok) speak the OpenAI protocol; structured output rides tool calling, as
@@ -185,7 +185,7 @@ def build_chat_model(model: str, *, temperature: float, thinking_level: str | No
         return _build_openai_compat_chat_model(
             model.removeprefix("openai/"), _OPENAI_BASE_URL, "OPENAI_API_KEY",
             temperature=temperature, structured_mode=mode, api_key_override=game_key,
-            strict_schema_retry=True, **effort)
+            strict_schema_retry=True, **effort, **limits)
 
     if model.startswith("openrouter/"):
         routed = model.removeprefix("openrouter/")
@@ -203,11 +203,12 @@ def build_chat_model(model: str, *, temperature: float, thinking_level: str | No
                                       else {"effort": thinking_level})
         return _build_openai_compat_chat_model(
             routed, _OPENROUTER_BASE_URL, "OPENROUTER_API_KEY",
-            temperature=temperature, structured_mode=mode, extra_body=extra, api_key_override=game_key)
+            temperature=temperature, structured_mode=mode, extra_body=extra, api_key_override=game_key,
+            **limits)
 
     if model.startswith("xai/"):
         return _build_openai_compat_chat_model(
             model.removeprefix("xai/"), _XAI_BASE_URL, "XAI_API_KEY",
-            temperature=temperature, structured_mode=mode, api_key_override=game_key)
+            temperature=temperature, structured_mode=mode, api_key_override=game_key, **limits)
 
     raise ValueError(f"{model} is not an OpenAI-protocol model ({', '.join(PREFIXES)})")

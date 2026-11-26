@@ -111,10 +111,19 @@ describe('archive filters', () => {
     expect(runAll(['speculator', 'serial_killer'])).toEqual(['cccc3333', 'eeee5555']);
   });
 
-  it('ending phase: exact, and an unrecorded phase matches only "any"', () => {
-    expect(run({ ended: 'night' })).toEqual(['cccc3333', 'aaaa1111']);
-    expect(run({ ended: 'voting' })).toEqual(['bbbb2222']);
-    expect(run({ ended: 'day' })).toEqual([]);
+  it('winner: a game no side won is the neutral’s when it won it, not a draw', () => {
+    const alone = row({
+      game_id: 'gggg7777',
+      winner: null,
+      days: 5,
+      finished_at: '2026-08-01T10:00:00Z',
+      cast_role_counts: { speculator: 1, serial_killer: 1 },
+      neutral_result: 'won',
+    });
+    const runWith = (winners: ReplayFilters['winners']) =>
+      ids(applyFilters([alone], { ...NO_FILTERS, winners }, 'new', none));
+    expect(runWith(['speculator'])).toEqual(['gggg7777']);
+    expect(runWith(['draw'])).toEqual([]);
   });
 
   it('model: an id, or "" for the unrecorded ones', () => {
@@ -174,17 +183,15 @@ describe('archive filters', () => {
       ...NO_FILTERS,
       winners: ['wolves', 'villagers'],
       model: 'gemini-3.6-flash',
-      ended: 'night',
     };
     const chips = activeFilters(f, (id) => `label:${id}`);
     expect(chips.map((c) => c.label)).toEqual([
       'Won by the wolves',
       'Won by the town',
-      'Ended at night',
       'label:gemini-3.6-flash',
     ]);
     expect(chips[0].without.winners).toEqual(['villagers']);
-    expect(chips[3].without.model).toBeNull();
+    expect(chips[2].without.model).toBeNull();
     expect(activeFilters(NO_FILTERS, String)).toEqual([]);
   });
 });

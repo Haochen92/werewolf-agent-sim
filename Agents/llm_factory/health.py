@@ -7,7 +7,7 @@ model (``agent_player.run_agent``). This keeps the count: after ``rescue_after``
 turns in a row the game's next turns skip the primary and start on the rescue for
 ``cooldown_s`` seconds, then try the primary once more; another stall re-arms the rescue, a
 good answer clears the count. One per served game, shared by every seat's thread
-(``GameLLM.health``), so a squeeze one seat ran into spares the others the wait.
+(``GameModels.health``), so a squeeze one seat ran into spares the others the wait.
 """
 
 from __future__ import annotations

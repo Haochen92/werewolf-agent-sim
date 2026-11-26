@@ -26,7 +26,7 @@ from server.storage.game_repository import GameRepository
 from server.storage.replay_service import ReplayService
 
 
-def get_resources(request: Request) -> AppResources:
+async def get_resources(request: Request) -> AppResources:
     """The one process-lifetime container created by the FastAPI lifespan."""
     return request.app.state.resources
 
@@ -34,7 +34,7 @@ def get_resources(request: Request) -> AppResources:
 Resources = Annotated[AppResources, Depends(get_resources)]
 
 
-def get_games(resources: Resources) -> LiveGameRegistry:
+async def get_games(resources: Resources) -> LiveGameRegistry:
     """The app's registry of every waiting room and running game (game/live_game_registry.py).
 
     It belongs to ``AppResources``: empty at boot, rehydrated by recovery, its tasks
@@ -47,21 +47,21 @@ def get_games(resources: Resources) -> LiveGameRegistry:
 GamesRegistry = Annotated[LiveGameRegistry, Depends(get_games)]
 
 
-def get_game_repository(resources: Resources) -> GameRepository:
+async def get_game_repository(resources: Resources) -> GameRepository:
     return resources.game_repository
 
 
 GameRepositoryDep = Annotated[GameRepository, Depends(get_game_repository)]
 
 
-def get_graph_runtime(resources: Resources) -> GraphRuntime:
+async def get_graph_runtime(resources: Resources) -> GraphRuntime:
     return resources.graph_runtime
 
 
 GraphRuntimeDep = Annotated[GraphRuntime, Depends(get_graph_runtime)]
 
 
-def get_replay_service(resources: Resources) -> ReplayService:
+async def get_replay_service(resources: Resources) -> ReplayService:
     """Return the app-owned replay reader without creating a storage client."""
     return resources.replays
 
@@ -69,7 +69,7 @@ def get_replay_service(resources: Resources) -> ReplayService:
 ReplayServiceDep = Annotated[ReplayService, Depends(get_replay_service)]
 
 
-def get_house(resources: Resources) -> HousePolicy:
+async def get_house(resources: Resources) -> HousePolicy:
     """The house's purse: who pays for a new game and which model it runs on."""
     return resources.house
 
@@ -104,7 +104,7 @@ def ended_detail(row: GameRow) -> str:
 Room = Annotated[Entry | GameRow, Depends(get_room)]
 
 
-def get_game(room: Room) -> GameSession:
+async def get_game(room: Room) -> GameSession:
     """Like get_room, but the caller needs a RUNNING game: a lobby is 409 and an ended
     game is 410."""
     if isinstance(room, GameRow):
@@ -120,7 +120,7 @@ def seat_cookie_name(game_id: str) -> str:
     return f"seat_{game_id}"
 
 
-def get_seat_token(game_id: str, request: Request) -> str:
+async def get_seat_token(game_id: str, request: Request) -> str:
     """The viewer's seat-token cookie for THIS game; "" = no cookie (a spectator).
 
     The token is minted at /join (or the solo POST /games door), delivered as an

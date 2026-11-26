@@ -3,7 +3,18 @@
    under it are Rooms.module.css; the three features are Features.module.css. */
 
 .landing {
+  /* where the platform's two lamps hang, which the carriage's light follows (Carriage.module.css):
+     on a desktop just outside the content column, on a phone at the screen's edges */
+  --lx: max(6%, calc(50% - 650px));
+  --rx: min(94%, calc(50% + 650px));
+  isolation: isolate;
   padding-bottom: 8px;
+}
+@media (max-width: 860px) {
+  .landing {
+    --lx: 14px;
+    --rx: calc(100% - 14px);
+  }
 }
 /* the platform's wall and the carriage span the screen, past the column: the page itself clips
    sideways while the landing is on it, so nothing scrolls sideways */
@@ -11,85 +22,161 @@
   overflow-x: clip;
 }
 
-/* ---------- the hero ---------- */
+/* ---------- the hero (owner, 2026-10-18) ----------
+   The night platform as a handmade set fills the first screen, from the page's top (behind the
+   nav's board) to the fold; the words lie on its calm sky: centre-left on a wide screen, the
+   carriage and its passengers on the right; on a phone over the sky, the passengers under them.
+   The picture is still, drawn once (no filter, no blend), and only its own file is fetched. */
 .hero {
+  /* where the nav's board ends (TopNav: one row, two on a phone) */
+  --nav-foot: 110px;
   position: relative;
   isolation: isolate;
-  /* the room under the nav: the title is a sign in the middle of the wall (owner, 2026-10-16),
-     and the lamps hang from the same number (PlatformBackdrop.module.css .heroScene) */
-  padding: var(--hero-top) 0 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100svh - var(--nav-foot));
+  padding: 24px 0 72px;
   text-align: center;
 }
-/* candle glow behind the tags */
-.hero::after {
+.scene {
+  position: absolute;
+  top: calc(-1 * var(--nav-foot));
+  bottom: 0;
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  pointer-events: none;
+}
+.scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* the carriage's feet and the passengers kept, the sky given up first */
+  object-position: 50% 75%;
+}
+/* the scene's foot fades to the page's ground, where the carriage below begins */
+.scene::after {
   content: '';
   position: absolute;
-  left: 50%;
-  bottom: -120px;
-  z-index: -1;
-  width: 900px;
-  max-width: 100%;
-  height: 420px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 60%,
-    rgba(224, 166, 58, 0.22),
-    rgba(224, 166, 58, 0.06) 45%,
-    transparent 70%
-  );
+  inset: auto 0 0;
+  height: 90px;
+  background: linear-gradient(transparent, var(--bg));
 }
-/* the game's name as the station's sign, and the hook under it (docs/typography.md) */
+.heroText {
+  position: relative;
+}
+/* the game's name, and the hook under the rule (docs/typography.md) */
 .name {
   margin: 0;
   font-family: var(--font-garamond);
   font-weight: 600;
-  font-size: var(--name-size);
+  font-size: clamp(44px, 5.3vw, 80px);
   line-height: 1.02;
   letter-spacing: 0.005em;
   text-wrap: balance;
   color: var(--text);
+  text-shadow: 0 2px 18px rgba(4, 6, 16, 0.6);
 }
-/* lighter and lamplit, so it reads as the line under the sign, not a second title (owner, 2026-10-16) */
+.rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: min(480px, 92%);
+  margin: 14px auto 10px;
+  color: var(--sign-hook);
+}
+.ruleSide {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 20px;
+}
+.ruleMark {
+  flex: none;
+  width: 38px;
+  height: 38px;
+}
+/* lighter and lamplit, so it reads as the line under the name, not a second title (owner, 2026-10-16) */
 .tagline {
-  margin: 12px auto 30px;
+  margin: 0 auto 30px;
   font-family: var(--font-garamond);
   font-weight: 500;
-  font-size: clamp(22px, 3.9vw, 40px);
+  font-size: clamp(22px, 2.9vw, 38px);
   line-height: 1.15;
   letter-spacing: 0.02em;
   text-wrap: balance;
   color: var(--sign-hook);
+  text-shadow: 0 2px 14px rgba(4, 6, 16, 0.7);
 }
-/* the doors, hung from a rail on a wide screen, flat and stacked on a phone */
-.seatRail {
-  position: relative;
+/* the two tickets, side by side */
+.tickets {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  align-items: flex-start;
-  gap: 22px;
-  margin-top: 40px;
-  padding-top: 32px;
+  align-items: stretch;
+  gap: 18px;
 }
-.rail {
-  position: absolute;
-  left: 50%;
-  top: 22px;
-  width: min(560px, 84%);
-  height: 1px;
-  transform: translateX(-50%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 235, 200, 0.22) 18%,
-    rgba(255, 235, 200, 0.22) 82%,
-    transparent
-  );
+
+/* a wide screen: the words centre-left, on the sky between the station's lamp and the carriage,
+   their middle at --at of the screen, a dark breath behind them so the name reads over the hills */
+@media (min-width: 861px) and (min-aspect-ratio: 1/1) {
+  .heroText {
+    --at: 31vw;
+    --block: min(640px, 46vw);
+    width: var(--block);
+    margin-left: calc(
+      max(var(--at), 24px + var(--block) / 2) - 50vw + 50% - var(--block) / 2
+    );
+  }
+  .heroText::before {
+    content: '';
+    position: absolute;
+    inset: -12% -18%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(6, 8, 20, 0.42), transparent);
+    pointer-events: none;
+  }
+}
+/* a laptop's narrower screen: the words smaller and further left, so the tickets clear the
+   carriage's front end */
+@media (min-width: 861px) and (max-width: 1365px) and (min-aspect-ratio: 1/1) {
+  .heroText {
+    --at: 27vw;
+    --block: min(580px, 52vw);
+  }
+  .name {
+    font-size: 66px;
+  }
+  .tagline {
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+  .tickets {
+    gap: 14px;
+  }
+}
+/* a small laptop or a tablet on its side: smaller still, the tickets narrower */
+@media (min-width: 861px) and (max-width: 1099px) and (min-aspect-ratio: 1/1) {
+  .heroText {
+    --block: 470px;
+  }
+  .name {
+    font-size: 56px;
+  }
+  .tagline {
+    font-size: 28px;
+  }
+  .tickets {
+    --ticket-w: 222px;
+    --ticket-title: 24px;
+  }
 }
 
 /* ---------- the sections: the carriage, then the rooms (Rooms.module.css) under it ---------- */
 .first {
+  /* the carriage's sign hangs just under the hero's faded foot, not after a band of dark */
+  margin-top: -84px;
   padding-top: 22px;
   padding-bottom: 72px;
 }
@@ -115,9 +202,23 @@
 }
 
 /* ---------- the story: at the top of the reading room, on the wall, in the world's voice ---------- */
+/* the story's line as its title, the brand's rule under it, then the rest centred (owner's mock,
+   2026-10-18) */
+.storyTitle {
+  max-width: 32ch;
+  margin: 0 auto;
+  font-family: var(--font-garamond);
+  font-weight: 600;
+  font-size: clamp(30px, 3.9vw, 54px);
+  line-height: 1.12;
+  text-wrap: balance;
+  color: var(--text);
+  text-shadow: 0 2px 16px rgba(4, 6, 16, 0.7);
+}
 .prologue {
-  max-width: 60ch;
-  margin: 0 auto 110px;
+  max-width: 56ch;
+  margin: 26px auto 0;
+  text-align: center;
 }
 .tale {
   margin: 0 0 18px;
@@ -142,18 +243,26 @@
 
 /* ---------- the ending: the research question behind the game ---------- */
 /* a quiet reading column: centred on the page, its text set left (as the replay's pitch is) */
+/* The closing: the research (owner's mock, 2026-10-18). On a wide screen the question and why
+   on the left with the way to the case study, the two threads on the right parted by a gold
+   rule; under a gold rule across both, the turn to judging them, in italic, and where the work
+   stands. A phone stacks them. */
 .closing {
-  max-width: 64ch;
+  max-width: 1160px;
   margin-inline: auto;
 }
+/* the page ends on the closing word: the footer follows it close (owner, 2026-10-18) */
+.landing + footer {
+  margin-top: 0;
+}
 .closing h2 {
-  margin: 0 0 18px;
+  margin: 0 0 22px;
   text-wrap: balance;
   font-family: var(--font-garamond);
-  font-size: 32px;
+  font-size: clamp(32px, 3.6vw, 50px);
   font-weight: 600;
   letter-spacing: 0;
-  line-height: 1.16;
+  line-height: 1.1;
   color: var(--text);
 }
 .closing p {
@@ -161,43 +270,90 @@
   margin: 0 0 16px;
   color: var(--muted);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
-/* The two research questions share the reading column and the station's brass rules. */
+.research {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 72px;
+}
+/* the way to the evidence: a line of text over a gold rule, as the footer's links are */
+.researchLink {
+  display: inline-block;
+  margin-top: 12px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--brass, #c9963f);
+  color: var(--text);
+  font-size: 16px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.researchLink:hover {
+  color: var(--sign-hook);
+}
 .researchThreads {
   display: grid;
-  gap: 26px;
-  margin-block: 28px;
+  align-content: start;
+  gap: 30px;
+  padding-top: 8px;
 }
-.researchThread {
-  padding-left: 20px;
-  border-left: 1px solid rgba(201, 150, 63, 0.35);
+.researchThread + .researchThread {
+  padding-top: 30px;
+  border-top: 1px solid rgba(201, 150, 63, 0.45);
 }
 .researchThread h3 {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   font-family: var(--font-garamond);
-  font-size: 25px;
+  font-size: clamp(25px, 2.4vw, 32px);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
   text-wrap: balance;
   color: var(--text);
 }
 .researchThread p {
   margin-bottom: 0;
 }
-/* the turn from building the system to judging it: the one sentence in the text's own colour */
-.pivot {
-  font-weight: 500;
+/* the turn from building the system to judging it, and where the work stands */
+.standing {
+  margin-top: 44px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(201, 150, 63, 0.45);
+}
+.closing .pivot {
+  font-family: var(--font-garamond);
+  font-style: italic;
+  font-size: clamp(19px, 1.7vw, 22px);
+  line-height: 1.45;
   color: var(--text);
 }
-/* where the work stands, under a fine brass rule, with the way to its evidence */
-.standing {
-  margin-top: 30px;
-  padding-top: 26px;
-  border-top: 1px solid rgba(201, 150, 63, 0.35);
+.standing p:last-child {
+  margin-bottom: 0;
 }
-.standing p {
-  margin-bottom: 22px;
+/* a phone keeps the question, the problem, the two threads, the turn and the way to the case
+   study; the project's aim and where the work stands are the wide screen's (owner, 2026-10-18) */
+@media (max-width: 700px) {
+  .wideOnly {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .research {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .researchLead {
+    display: contents;
+  }
+  .researchThreads {
+    margin-top: 18px;
+  }
+  /* stacked, the way to the case study follows the threads */
+  .researchLink {
+    order: 3;
+    align-self: flex-start;
+    margin-top: 30px;
+  }
 }
 
 /* ---------- latest games ---------- */
@@ -251,17 +407,47 @@
   margin-top: 18px;
 }
 
+/* the way on to the whole archive, under the latest games (owner, 2026-10-18) */
 .allGames {
-  display: inline-block;
-  margin-top: 22px;
-  font-size: 15px;
+  margin-top: 24px;
 }
 
-/* on a phone the hero is short and the glow behind the tags reached the name: half of it there
-   (owner, 2026-10-16: the hero read too bright) */
+/* a phone: the board takes two rows, the words start under it, and the passengers stand in the
+   picture's lower part under them (the hero fills the first screen, owner 2026-10-18) */
 @media (max-width: 860px) {
-  .hero::after {
-    opacity: 0.5;
+  .hero {
+    --nav-foot: 154px;
+    justify-content: flex-start;
+    padding: 34px 0 14px;
+  }
+  .name {
+    font-size: clamp(40px, 12vw, 56px);
+  }
+  /* the words at the top, the purse and the guide at the screen's foot on the platform, the
+     passengers left clear between them (owner, 2026-10-18) */
+  .heroText {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  /* at least the passengers' height above it: a short screen grows the hero past the fold
+     rather than lay the guide over them */
+  .heroFoot {
+    margin-top: auto;
+    padding-top: 104px;
+  }
+  .heroGuide {
+    margin-top: 8px;
+  }
+  /* the carriage's sign starts below the first screen, after a breath of dark */
+  .first {
+    margin-top: 56px;
+  }
+}
+/* a screen taller than wide shows the tall picture: its passengers right of centre, its foot kept */
+@media (max-aspect-ratio: 1/1) {
+  .scene img {
+    object-position: 55% 100%;
   }
 }
 @media (max-width: 700px) {
@@ -271,19 +457,12 @@
   .promise {
     font-size: 16px;
   }
-  .prologue {
-    margin-bottom: 80px;
+  .tagline {
+    margin-bottom: 22px;
+    font-size: 21px;
   }
-  /* the two stubs side by side (HangTag), as tall as each other */
-  .seatRail {
-    flex-wrap: nowrap;
-    align-items: stretch;
+  .tickets {
     gap: 10px;
-    margin-top: 32px;
-    padding-top: 0;
-  }
-  .rail {
-    display: none;
   }
   .first {
     padding-bottom: 48px;

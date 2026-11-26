@@ -127,7 +127,7 @@ optional second example, only where records trace the exact transformation.
   tick's snapshot keeps the synthesis log (`4a32fdf0`). No migration is needed: memory records are
   stored as whole JSON.
 - **Credit data.** Ten-seat credit needs memory-on games, with retrieval on and extraction off, plus
-  the credit port. The v7 run (`evidence/v7_final/runs/v2_full/`) kept per-generation stores, the
+  the credit port. The v7 run (`evidence/memory_system/v7/runs/v2_full/`) kept per-generation stores, the
   `distilled_from` lineage and prune events, so it likely holds a traceable credit example
   (nine-seat, no wills, zero reasoning). The trace is deferred (owner KIV).
 - **The v7 blind spot.** Credit rewarded town concealment and abstain advice it could not see the
@@ -141,7 +141,7 @@ optional second example, only where records trace the exact transformation.
   (`e5763cd1`), checked by hand against one pilot game. The owner ruled the Chanteuse's fellow-wolves
   rule and the Sentinel, Trailseer and Sigilist proxies.
 - **Credit.** It needs its own port, set out in plan §9.6: side-based decision grades, the pack's
-  chat graded by that night's kill (ruled), no conversion channel, unscored missing baselines, its
+  chat graded by that night's kill (ruled; changed 2026-10-28, §18), no conversion channel, unscored missing baselines, its
   own database, memory-on data, and validated thresholds. It runs after launch, as a diagnostic.
 
 ## 9. v8
@@ -235,7 +235,8 @@ failure, exposing oneself). Four principles came out of applying it role by role
   that it is not a find).
 
 Harsh "bad" grades do not bias credit. A lesson is credited by lift: its followed outcomes against the
-memory-off outcomes of the same turn kind (the 12 seeding games, graded by the same table). A role whose
+memory-off outcomes of the same turn kind (the 12 seeding games, graded by the same table; a lesson
+followed in the pack's chat is graded and compared by the move it is about, §18). A role whose
 turns are mostly "bad" simply has a low baseline.
 
 **Left unscored.** The Necromancer: its borrowed actions interact in ways one grade cannot capture (a
@@ -256,7 +257,7 @@ are dumped to a file (restorable with one `pg_restore`; the store is also on dis
 
 ## 13. The verdict halo measured; observations name their decision (owner, 2026-10-13)
 
-`evidence/case_studies/observation_extraction.md` (2026-07-26) showed the extraction judge's
+`evidence/extraction/observation_quality/outcome_halo_case_study.md` (2026-07-26, then `case_studies/`) showed the extraction judge's
 `net_verdict` grading the result, not the decision, and named the test that would settle it: compare
 the judge's verdicts with deterministic grades on agent-only games. v8 kept the verdict and added the
 de-halo pass, which had only been spot-checked (one smoke game, four reader-flagged halos). With the
@@ -283,6 +284,13 @@ Repeated per observation once each named its decision (tagged, then graded; `--g
 `data/halo/observation_summary.json`): 1,472 graded observations of all 40 games, every phase, each
 verdict against its own decision's grade. Same picture: side won +0.80 against grade +0.40 as extracted,
 +0.53 against +0.36 after de-halo; the vote and discussion verdicts follow the result most (+0.84 each).
+
+> **Correction (2026-10-28).** "On one side only" holds for the 482-observation fit above, which
+> compares all of a side's verdicts, not moves of the same grade. On the 1,472 observations, split by
+> each move's own grade, de-halo also worked on the winning side: their bad moves called positive fell
+> from 18% to 9%, mostly in discussion and votes. The current account, with a table by phase, is
+> `evidence/extraction/observation_quality/report.md` §4; the case study's note was corrected the same
+> way on 2026-10-26.
 
 The owner's rulings:
 
@@ -315,3 +323,100 @@ owner's rulings:
   record rebuilt from its events, the verdicts from its `memory_consulted` events), so credit reads both.
 - **A merged duplicate's credit follows its survivor**: when the point dedup discards a lesson as a
   duplicate, the follows recorded against its key count for the lesson kept.
+
+## 15. Credit reads games with a human seat; extraction stays AI-only (owner, 2026-10-26)
+
+Until now only games with no human seat could teach the store (the poisoning rule: a human could steer a
+game to plant bad lessons). Most served games will have a human seat, so under that rule the credit pass
+would see almost no served games. The owner's ruling splits the rule by what each route can do:
+
+- **Credit reads games with a human seat, and grades only their AI seats' decisions.** Credit can only
+  prune, evict or protect lessons that already exist, by fixed rules against the true roles; a human can
+  make an AI seat's day harder but cannot make a bad AI vote grade as good, and a prune needs at least
+  eight follows. The human seat's own decisions are dropped, from the ledger and from the memory-off
+  baseline alike; a game whose human seats are not named is dropped whole.
+- **Extraction stays AI-only.** It writes new lesson text from what happened, which is the route a human
+  could use to plant advice; the offline job keeps skipping human-seat games.
+- **Publish still replaces the live counters.** The credit pass recounts each game once from its records
+  and sets the counters; adding the counters the seats bump during served games would count those games
+  twice.
+
+Code: `Agents/memory/consolidation/credit_rules.py` (`_human_seats`, `_iter_game_records`,
+`iter_eval_cases`), `Agents/memory/consolidation/sources.py::games_from_db`; tests in
+`tests/memory/test_consolidation_graduation.py`.
+
+## 16. Served games feed the store; extraction stays a hand-run batch (owner, 2026-10-26, later)
+
+The same day, planning the pipeline's move to the database, the owner revised §15 and set how the
+pipeline runs:
+
+- **Games with a human seat may feed the store, the human's own moves included.** Few games will be
+  AI-only, so §15's AI-only extraction would leave the store almost nothing to learn from. Contamination
+  is a real risk but not an observed one; the ruling is to be revisited. It is reversible without new
+  code: every observation records its `game_id` and every lesson its `source_observations`. One gap: a
+  discarded duplicate observation only raises its survivor's count and records neither its key nor its
+  game.
+- **Extraction stays offline and run by the owner,** never automatic. The batch command reads served
+  games from the database and writes its results back; which games it takes (memory on or off, with or
+  without a human, a sample, or named games) is a setting chosen per run, not a fixed rule. Batch-run
+  games stay files.
+- **Credit runs automatically after each memory-on game,** pruning and evicting by its rules. Each removed
+  lesson's full record is kept in the pass's log so a wrong removal can be restored.
+- **Counters come from credit alone.** Served games stop bumping counters during play; the credit pass
+  recounts them from the game records, as publish already assumed (§15).
+- **The learning tick stays a command the owner runs,** with a status command that says when it is due;
+  automation waits until a few ticks have been read.
+- **Memory stays off by default** for players: its benefit on ten seats is untested, and testing it needs
+  new labelling and runs. Memory on is for demonstration.
+
+## 17. Town votes are served; town discussion stays out of play (owner, 2026-10-27)
+
+§5 kept all of the town's day lessons out of play, discussion and vote alike, after v7's credit had
+rewarded town advice to withhold and abstain without seeing its cost. The owner revisited it: there is
+no good reason to serve every other side's vote lessons and not the town's.
+
+- **Town vote lessons are served.** The ten-seat vote rules already grade an abstention on a day that
+  ended with no lynch as bad (the v7 fix), and a town vote for an enemy or a townsperson as good or bad,
+  so the cost that v7's credit missed is now graded. The published store already holds them (76 town
+  vote lessons, extracted and synthesized under §5 but never served); they enter play unreviewed, as
+  every other side's lessons do, and credit is their check.
+- **Town discussion stays out of play.** Its main harm is information a town player keeps back, which a
+  per-decision grade cannot see, and talk is hard to grade by rule at all. Its lessons are still
+  extracted and synthesized for the owner to review into role prompts (§5).
+
+Code: `Agents/memory/retrieval/plan_gating.py` (`TOWN_UNSERVED_PHASES`, skip reason `town_discussion`);
+test `tests/memory/test_memory_plan_gating.py`. Served once the server is redeployed.
+
+## 18. A lesson followed in the pack's chat is graded by the move it is about (owner, 2026-10-28)
+
+Until now a wolf night lesson followed in the pack's chat took that night's kill grade (§8, plan §9.6
+item 2). The chat decides nothing itself, so the kill grade judged every chat-followed lesson by a move it
+might not be about. The attribution hand-check showed the case
+(`evidence/credit/attribution_check_ten_seat/`, c020): the lesson "spend a conceal only when the victim's
+role is still unclaimed…" was followed in the chat, the wolf said there it would carry and conceal, and
+credit scored the kill. That lesson was among the four the 2026-10-14 demo pass pruned.
+
+- **The move decides the grade.** A kill lesson takes the pack kill's grade, a conceal lesson the
+  Illusionist's conceal that night (a declined turn included), a block lesson the Chanteuse's block. When
+  no living wolf holds the skill, the follow is unscored.
+- **And the baseline.** A kill lesson is compared with memory-off chats (graded by the kill, as before); a
+  conceal or block lesson with the memory-off skill turns of the wolf who holds it.
+- **The tag.** Wolf night lessons carry `pack_move` (kill / conceal / block). Synthesis writes it on every
+  new one; the 38 lessons already stored were tagged by hand from their advice
+  (`scripts/backfill_pack_move.py`). A lesson without the tag falls back to the kill.
+- **Observations of the chat too.** An observation tagged `pack_turn` chat is graded by its `pack_move` when
+  it has one, and is ungraded without one, like a "several" (`observation_grade`). The decision tagger
+  writes no move, so all 3 chat-tagged observations of the 2026-10-12 runs become ungraded. Re-checked
+  without them, the halo fit (§13) is unchanged at the precision it is reported: 1,469 observations
+  instead of 1,472, a good move called positive 23% of the time when its side lost and 83% when it won,
+  coefficients within 0.004. The archived `grades.jsonl` and `data/halo/` stay as computed.
+- **Unchanged.** The scopes (a night's chat and its act each give a lesson one verdict) and the act's
+  grading.
+
+Results credited before this ruling (the demo pass's 4 pruned, 4 evicted, 50 protected) were graded by
+the kill; a rerun may move the wolf night lessons among them.
+
+Code: `Agents/memory/consolidation/grading.py` (`pack_move_grade`, `pack_move_channel`),
+`credit_rules.py` (`build_ledger`, `chat_follow_credit`), `credit.py` (`_pack_moves`),
+`Agents/schemas/memory.py` (the strategy cell's `pack_move`); tests
+`tests/memory/test_ten_seat_grading.py`, `tests/memory/test_strategy_synthesis.py`.

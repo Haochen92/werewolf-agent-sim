@@ -104,7 +104,7 @@ function Crop({
   );
 }
 
-/** The vote: five seats and the empty plate; choose, confirm, and the ballot is in. */
+/** The vote: five seats and the blank chip; choose, confirm, and the ballot is in. */
 export function VoteDemo() {
   const [chosen, setChosen] = useState<string | null>(null);
   const [sent, setSent] = useState(false);

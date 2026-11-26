@@ -49,8 +49,10 @@ def _drawn(line: str) -> str:
 
 
 def test_the_lot_is_another_living_player():
+    # Act
     line = night_one_lot(_payload("player_4", "investigator"))
 
+    # Assert
     assert line.startswith("Night 1:")
     drawn = _drawn(line)
     assert drawn in SEATED
@@ -65,12 +67,14 @@ def test_the_lot_is_the_same_on_a_retry():
 
 
 def test_the_lots_differ_across_players_and_games():
+    # Act: draw the lot for every seat, and for one seat in four different games
     drawn = set()
     for seat in SEATED:
         drawn.add(_drawn(night_one_lot(_payload(seat, "healer"))))
     for game in ("game-a", "game-b", "game-c", "game-d"):
         drawn.add(_drawn(night_one_lot(_payload("player_4", "healer", game_id=game))))
 
+    # Assert
     assert len(drawn) > 1
 
 
@@ -102,11 +106,15 @@ def test_no_lot_for_the_vigilante_or_the_neutrals():
 
 
 def test_the_pack_draws_one_lot_among_the_non_wolves():
+    # Arrange: the two pack roles in this game
     pack_roles = [role for role in roles if ROLE_SPECS[role].pack]
     assert pack_roles == ["chanteuse", "illusionist"]
+
+    # Act
     first_wolf = night_one_lot(_payload("player_2", "chanteuse"))
     second_wolf = night_one_lot(_payload("player_6", "illusionist"))
 
+    # Assert
     assert "drawn for the pack" in first_wolf
     assert first_wolf == second_wolf
     assert _drawn(first_wolf) not in ("player_2", "player_6")
@@ -114,22 +122,27 @@ def test_the_pack_draws_one_lot_among_the_non_wolves():
 
 def test_the_pack_chat_puts_the_lot_forward_as_a_pick_and_the_carrier_takes_it():
     # A human ally never sees the lot, so "Agreed, player_10" answered no one (owner, 2026-10-17).
+
+    # Act: the lot as the carrier sees it and as the pack chat sees it
     carrier = night_one_lot(_payload("player_2", "chanteuse"))
     chat = night_one_lot(dict(_payload("player_2", "chanteuse"), pack_chat=True))
     drawn = _drawn(carrier)
 
+    # Assert
     assert _drawn(chat) == drawn
     assert f"Suggest {drawn} for the kill as your own pick" in chat
     assert "Take it unless" in carrier and "Suggest" not in carrier
 
 
 def test_the_night_prompts_carry_the_lot_on_night_one_only():
+    # Act
     night_one = INVESTIGATOR_NIGHT.invoke(build_agent_prompt_input(_payload("player_4", "investigator"))).to_string()
     night_two = INVESTIGATOR_NIGHT.invoke(
         build_agent_prompt_input(_payload("player_4", "investigator", day=2))
     ).to_string()
     pack = PACK_CHAT.invoke(build_agent_prompt_input(_payload("player_2", "chanteuse"))).to_string()
 
+    # Assert
     assert "a lot has been drawn for you" in night_one
     assert "a lot has been drawn" not in night_two
     assert "a lot has been drawn for the pack" in pack
@@ -137,7 +150,13 @@ def test_the_night_prompts_carry_the_lot_on_night_one_only():
 
 def test_a_wolfs_own_skill_turn_draws_its_own_lot():
     # The chanteuse's block is not the pack's kill: its night 1 lot is its own, among the non-wolves.
+
+    # Arrange
     skill = dict(_payload("player_2", "chanteuse"), pack_turn=False)
+
+    # Act
     line = night_one_lot(skill)
+
+    # Assert
     assert "drawn for you" in line and _drawn(line) in skill["surviving_villagers"]
     assert night_one_lot(dict(_payload("player_6", "illusionist"), pack_turn=False)) == ""

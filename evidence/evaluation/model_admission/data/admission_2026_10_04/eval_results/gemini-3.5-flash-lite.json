@@ -1,0 +1,137 @@
+{
+ "model": "gemini-3.5-flash-lite",
+ "run_at": "2026-10-04T08:36:59.510929+00:00",
+ "runtime_fingerprint": {
+  "git_commit": "34c5e1bf68dfccb19dc90ead37fcd382621f6ff0",
+  "git_dirty": true,
+  "prompt_bundle_hash": "e3583ba5dce175cf",
+  "llm_backend": "vertex",
+  "game_model": "gemini-3.5-flash-lite",
+  "temperature": 1.0,
+  "game_thinking_level": "medium",
+  "summary_thinking_level": "medium",
+  "judge_thinking_level": "minimal",
+  "pro_model": "gemini-2.5-pro",
+  "pro_backup_model": "gemini-3.5-flash",
+  "embedding_model": "gemini-embedding-2",
+  "embedding_dims": 1536,
+  "vertex_location": "global"
+ },
+ "thinking_level": "medium",
+ "structured": [
+  {
+   "mode": "native",
+   "passed": "27/27",
+   "all_passed": true,
+   "failures": [],
+   "mean_per_call": {
+    "input": 884.1,
+    "cached": 0.0,
+    "output": 840.1,
+    "reasoning": 611.4,
+    "seconds": 4.0
+   }
+  }
+ ],
+ "recommended_mode": "native",
+ "recommended_mode_why": "passed every call and reasons (611.4 tokens a call)",
+ "cache_floor": {
+  "floor_tokens": null,
+  "sizes": [
+   {
+    "target_tokens": 256,
+    "input_tokens": 265,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 512,
+    "input_tokens": 491,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 1024,
+    "input_tokens": 954,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 2048,
+    "input_tokens": 1845,
+    "cached_tokens": 0,
+    "sends": 3
+   },
+   {
+    "target_tokens": 4096,
+    "input_tokens": 3636,
+    "cached_tokens": 0,
+    "sends": 3
+   }
+  ]
+ },
+ "real_prompts": [
+  {
+   "case_id": "0ece415707f54b5f",
+   "first": {
+    "input": 5237,
+    "cached": 0,
+    "output": 1671,
+    "reasoning": 1133,
+    "seconds": 6.68,
+    "error": null
+   },
+   "next_turn": {
+    "input": 5258,
+    "cached": 0,
+    "output": 2193,
+    "reasoning": 1667,
+    "seconds": 8.2,
+    "error": null,
+    "shared_prefix_est": 4393
+   },
+   "other_seat": {
+    "input": 5148,
+    "cached": 0,
+    "output": 2113,
+    "reasoning": 1659,
+    "seconds": 7.65,
+    "error": null,
+    "shared_prefix_est": 1429
+   }
+  },
+  {
+   "case_id": "16264558dedf748b",
+   "first": {
+    "input": 4155,
+    "cached": 0,
+    "output": 1118,
+    "reasoning": 569,
+    "seconds": 4.79,
+    "error": null
+   },
+   "next_turn": {
+    "input": 4176,
+    "cached": 0,
+    "output": 885,
+    "reasoning": 317,
+    "seconds": 3.9,
+    "error": null,
+    "shared_prefix_est": 3275
+   },
+   "other_seat": {
+    "input": 4248,
+    "cached": 0,
+    "output": 1658,
+    "reasoning": 1122,
+    "seconds": 6.18,
+    "error": null,
+    "shared_prefix_est": 1067
+   }
+  }
+ ],
+ "cached_share": {
+  "next_turn": 0.0,
+  "other_seat": 0.0
+ }
+}

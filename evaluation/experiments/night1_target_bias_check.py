@@ -27,7 +27,7 @@ from Agents.schemas.game_events import DaySummary
 from Agents.turn.agent_player import run_agent
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-OUT_DIR = REPO_ROOT / "evidence" / "game_play_enhancement" / "data" / "night1_target_bias"
+OUT_DIR = REPO_ROOT / "evidence" / "gameplay" / "data" / "night1_target_bias"
 
 ROLES = {
     "investigator": (INVESTIGATOR_NIGHT, InvestigatorOutput, "investigator_target"),
@@ -54,7 +54,7 @@ def load_boards() -> list[tuple[str, dict[str, str]]]:
                 continue
             record = json.loads(line)
             boards.append((str(record.get("game_id", ""))[:8], record["roles"]))
-    step8_files = sorted(glob.glob(str(REPO_ROOT / "evidence" / "game_play_enhancement" / "data"
+    step8_files = sorted(glob.glob(str(REPO_ROOT / "evidence" / "gameplay" / "data"
                                        / "phase2_step8_games" / "game*.record.json")))
     for path in step8_files:
         record = json.load(open(path))

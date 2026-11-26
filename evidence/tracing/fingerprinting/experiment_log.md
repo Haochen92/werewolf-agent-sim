@@ -262,6 +262,11 @@ rules while it also constructed callbacks, tracing metadata, IDs, and framework 
 The old `build_game_config()` entry point remains as a compatibility wrapper. That is useful during
 migration, but the conceptual ownership is now clearer:
 
+> *Note 2026-10-26.* The wrapper is gone: no code calls or defines `build_game_config()`. Entry points
+> compose `build_runnable_config(run, callbacks=..., metadata=...)` themselves
+> (`Agents/main.py::run_game`, the capture scripts); the server's `GameSession` passes no fingerprint
+> at all ([`report.md`](report.md) §2).
+
 - configuration owns requested behavior;
 - fingerprinting owns execution identity;
 - tracing transports and observes both.
@@ -319,6 +324,61 @@ simpler and stronger than trying to serialize arbitrary working-tree changes.
 exists. A reference report must still be refreshed against the implementation, because reasonable
 later refactors can invalidate an earlier guarantee.
 
+## 11. The prompt hash covers the whole prompt tree (2026-11-16)
+
+A count on 2026-11-16 showed the hash covered 14 of the 41 `.py` files under `Agents/prompts/`. The
+role cards (`roles/`, 14 files) were outside it, as were the extraction prompts (`extraction/`, 7)
+and the memory prompts (`memory/`, 4). So two runs with the same `prompt_bundle_hash` may have read
+different role cards. The owner called this the one critical gap.
+
+What changed in `Agents/run_fingerprint.py`:
+
+- `prompt_bundle_hash()` now lists `.py` files in every folder under `Agents/prompts/`, skipping
+  `__pycache__/`.
+- Each file is keyed by its path inside the prompts folder, such as `roles/healer.py`, not by its bare
+  name, so same-named files in different folders hash apart.
+- `goldens/` is left out. It holds the stored texts of a prompt snapshot test and the script that
+  writes them; only `tests/engine/test_game_rules_render.py` imports it, and no game code reads it.
+- `runtime_fingerprint()` gained a first field, `fingerprint_schema: 2`. A record with no such field
+  is schema 1.
+
+On the same tree the old definition gave `6876d34cb388c496` over 14 files, and the new one gives
+`4f1fb31086c1c5a6` over 39 files. No prompt text changed between the two.
+
+**Transition note for old records.** Every record stamped before this date carries a schema-1 hash,
+over the top-level files only. A schema-1 hash and a schema-2 hash differ for that reason alone. Compare
+prompt hashes only within one schema; across schemas, compare the commit. The old records are not
+re-stamped. A learning-loop run resumed across the change stops at its drift guard, which compares
+whole fingerprints; that is intended.
+
+The first focused tests for the hash came with the change (`tests/engine/test_run_fingerprint.py`).
+They run on a temporary prompts folder: the hash is stable over one tree, changes when a nested file
+changes, tells same-named files in different folders apart, ignores `__pycache__/` and `goldens/`, and
+the fingerprint carries its schema field first.
+
+The other gaps were left as they are and are listed in [`report.md`](report.md) §10: the backend
+field is wrong for non-Google models (fixed later the same day, §12), the rescue model is not recorded, a dirty run cannot be
+recovered, a served game carries no fingerprint, the shared artifact manifest carries only the git
+fields, and provider drift cannot be seen.
+
+## 12. The backend field follows the game model (2026-11-16)
+
+`llm_backend` was computed as `"vertex" if _use_vertex() else "google"`, a line from the time every
+model was Gemini. It never read the model's id, so a Claude game was stamped `vertex`. The field is
+now the game model's provider family, the same reading `create_chat_model` uses to route a call: the
+id's prefix, or for a bare Gemini id `vertex` or `google`. `vertex_location` is still written only
+when the backend is `vertex`, so it no longer appears on a Claude game.
+
+The field's meaning changed for non-Google models, so `FINGERPRINT_SCHEMA` went from 2 to 3. Old
+records are not re-stamped; for them the model name stays the field to read. A learning-loop run
+resumed across this change stops on the drift guard, which is the intended behaviour.
+
+The field describes the game model only. The extraction and embedding models can be served by other
+providers, and their ids carry that.
+
+Tests: four cases in `tests/engine/test_run_fingerprint.py` (Claude, an OpenRouter id, Gemini on
+Vertex, Gemini on the Google API).
+
 ## Sources
 
 - Runtime fingerprint implementation: `Agents.run_fingerprint`
@@ -331,4 +391,5 @@ later refactors can invalidate an earlier guarantee.
 - Original analysis commit: `6011dd1`
 - Rendering-layer move: `b206747`
 - Prompt-package splits: `815f014`, `c871e80`
+- Recursive prompt hash, `fingerprint_schema` and the backend field (2026-11-16): `26959b87`
 

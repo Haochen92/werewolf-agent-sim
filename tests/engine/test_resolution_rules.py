@@ -70,14 +70,20 @@ def test_multi_killer_target_resolves_exactly_once():
 # ---- tally_day_vote --------------------------------------------------------------------
 
 def test_unique_plurality_lynches():
+    # Act
     tally = tally_day_vote(["a", "a", "b"])
+
+    # Assert
     assert tally.lynched == "a"
     assert tally.outcome == "lynched"
     assert tally.vote_counts == {"a": 2, "b": 1}
 
 
 def test_tie_is_a_no_lynch_with_both_candidates():
+    # Act
     tally = tally_day_vote(["a", "b"])
+
+    # Assert
     assert tally.lynched is None
     assert tally.outcome == "tie"
     assert sorted(tally.candidates) == ["a", "b"]
@@ -96,7 +102,10 @@ def test_abstain_votes_count_but_do_not_shield_a_real_plurality():
 
 
 def test_no_ballots_is_no_vote():
+    # Act
     tally = tally_day_vote([])
+
+    # Assert
     assert tally.outcome == "no_vote"
     assert tally.lynched is None
     assert tally.candidates == []

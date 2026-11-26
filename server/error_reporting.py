@@ -11,6 +11,7 @@ the plan's monthly quota."""
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
@@ -55,8 +56,8 @@ def init_error_reporting() -> bool:
 
 
 def report_game_failure(exc: BaseException, *, game_id: str, model: str, byok: bool,
-                        secret: str = "", after_game_over: bool = False) -> None:
-    """Send one game's failure, tagged with the game, with ``secret`` (its key) scrubbed."""
+                        secrets: Sequence[str] = (), after_game_over: bool = False) -> None:
+    """Send one game's failure, tagged with the game, with ``secrets`` (its keys) scrubbed."""
     if not sentry_sdk.get_client().is_active():
         return
     with sentry_sdk.new_scope() as scope:
@@ -64,8 +65,8 @@ def report_game_failure(exc: BaseException, *, game_id: str, model: str, byok: b
         scope.set_tag("model", model or "server-default")
         scope.set_tag("byok", "yes" if byok else "no")
         scope.set_tag("stage", "post_game" if after_game_over else "in_game")
-        if secret:
-            scope.add_event_processor(lambda event, _hint: _scrub(event, secret))
+        for secret in filter(None, secrets):
+            scope.add_event_processor(lambda event, _hint, secret=secret: _scrub(event, secret))
         sentry_sdk.capture_exception(exc)
 
 

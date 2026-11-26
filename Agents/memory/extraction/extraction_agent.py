@@ -2,7 +2,7 @@
 finished game into structured memory. Prompt construction and input formatting live in inputs.py.
 
 Entry points:
-  extract_postgame_per_cell — v6 (LIVE): fan out over (role, phase) cells concurrently, each a dual
+  extract_postgame_per_cell — v6 (the offline job's Gemini path): fan out over (role, phase) cells concurrently, each a dual
                               {observations, strategy_points} call in the v6 cell schema, merged.
   extract_postgame_per_role — v5: fan out the six roles over a shared cacheable prefix
                               (GameStrategyOutput); kept for the offline store-builders / experiments.
@@ -38,8 +38,6 @@ from Agents.llm_factory.providers.google import create_prefix_cache
 
 logger = getLogger(__name__)
 
-# Fixed 9-player casting → every game contains all six role types, so the fan-out
-# always covers the full set (no need to read which roles are present).
 # Every role of the pool; a role with no memory cells (ROLE_UNITS) extracts nothing, and the
 # retired roles are not in the pool.
 EXTRACTION_ROLES: tuple[str, ...] = tuple(roles)

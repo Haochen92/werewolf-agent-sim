@@ -1,0 +1,58 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/shared_prefix_luna_2026_10_13/eval_results/judged_luna_shared_enforced.jsonl",
+  "config": {
+    "arms": [
+      {
+        "env": {},
+        "label": "luna_today",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      },
+      {
+        "env": {
+          "WW_PROMPT_LAYOUT": "shared_prefix"
+        },
+        "label": "luna_shared_enforced",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      },
+      {
+        "env": {
+          "LLM_STRUCTURED_MODE": "json_mode",
+          "WW_PROMPT_LAYOUT": "shared_prefix"
+        },
+        "label": "luna_shared_unenforced",
+        "memory": "none",
+        "model": "openai/gpt-6-luna"
+      }
+    ],
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "label": "shared_prefix_luna_2026_10_13",
+    "n": 5,
+    "note": "Does the shared-prefix prompt layout, and an unenforced schema on top of it, change how often GPT-6 Luna misstates the game? All 18 ten-seat Phase 3 discussion turns (pinned, control, f02_rule and sentinel_rule slices, each with a written golden), 5 samples per arm, reads-first schemas. Arm 1 is today's layout with the enforced schema (json_schema, the catalogue mode); arm 2 changes only the layout; arm 3 also removes enforcement. Judges are the defaults, Claude Haiku 5.5 (the golden judge as a Message Batch), so these numbers compare within this run only, not with the earlier Gemini-judged bench runs. evidence/caching/experiment_log.md \u00a712-13.",
+    "slices": [
+      "pinned",
+      "control",
+      "f02_rule",
+      "sentinel_rule"
+    ],
+    "workers": 3
+  },
+  "config_sha256": "7a6ba0cd99da6e5a4393c8e4ca2f59ad50d7a2db9e24ccdbf4e8d8e057795882",
+  "config_source": "evaluation/config/hallucination_bench_shared_prefix_luna.json",
+  "created_at": "2026-10-23T01:56:38.349809",
+  "created_from": "eval-hallucination-bench run 'shared_prefix_luna_2026_10_13' (summary.json embeds the config and run_at)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/hallucination_bench/shared_prefix_luna_2026_10_13/judged_luna_shared_enforced.jsonl",
+  "inputs": [
+    {
+      "count": 18,
+      "path": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+      "sha256": "4d9688fb54a34a7c5676d59ccee6d2261c09aa2a4afe114374a613e262a7c107"
+    }
+  ],
+  "models": [
+    "openai/gpt-6-luna"
+  ]
+}

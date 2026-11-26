@@ -100,6 +100,8 @@ def test_a_voluntary_pass_carries_no_accusation():
 def test_a_line_held_by_the_echo_gate_does_not_count_its_accuser():
     # Ruling 2026-10-07 after the step 8 games: the table never heard a held line, so its author
     # is not named as an accuser (before this, held echoes counted).
+
+    # Arrange
     held = DayChannel(day=2, seq=1, player="player_4", message="", passed=True,
                       pass_reason=DiscussionPassReason.NOVELTY_GATED, gated=True,
                       gated_candidate="player_5 is lying too.",
@@ -107,8 +109,10 @@ def test_a_line_held_by_the_echo_gate_does_not_count_its_accuser():
                       firing_reason=FiringReason(tier="proactive", sweep=1))
     day = [said(0, "player_2", [accusation("player_5")]), held]
 
+    # Act
     result = closing_speakers(day, 2, ALIVE)
 
+    # Assert
     # one spoken accuser only: nobody is on trial
     assert accusers_by_player(result) == {}
 
@@ -116,6 +120,7 @@ def test_a_line_held_by_the_echo_gate_does_not_count_its_accuser():
 # --- the order and the limit ----------------------------------------------------------------
 
 def test_more_accusers_first_and_at_most_two_players():
+    # Arrange
     day = [
         said(0, "player_1", [accusation("player_6")]),
         said(1, "player_2", [accusation("player_6")]),
@@ -126,8 +131,10 @@ def test_more_accusers_first_and_at_most_two_players():
         said(6, "player_3", [accusation("player_2")]),
     ]
 
+    # Act
     result = closing_speakers(day, 2, ALIVE)
 
+    # Assert
     called = []
     for trial in result:
         called.append(trial.player)
@@ -137,6 +144,7 @@ def test_more_accusers_first_and_at_most_two_players():
 
 
 def test_accusers_are_listed_in_the_order_they_first_accused():
+    # Arrange
     day = [
         said(0, "player_7", [accusation("player_5")]),
         said(1, "player_2", [accusation("player_5")]),
@@ -144,8 +152,10 @@ def test_accusers_are_listed_in_the_order_they_first_accused():
         said(3, "player_4", [accusation("player_5")]),
     ]
 
+    # Act
     (trial,) = closing_speakers(day, 2, ALIVE)
 
+    # Assert
     assert trial.accusers == ("player_7", "player_2", "player_4")
     assert trial.latest_seq == 3
 

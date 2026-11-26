@@ -1,22 +1,22 @@
 'use client';
 
 /**
- * The vote (handoff §4.3, beat sheet §3, bench 64): the trap's first act. The puppet drops
- * behind the stand and the stand goes; the car goes to dusk and the shutter comes down; the
- * trap's leaves open and stand, and the table rises through it on the lift with the glass jar
- * on it; the lid comes down on its string and lifts off. The ballots go in anonymous, backs up
+ * The vote (handoff §4.3, beat sheet §3, bench 64). The puppet drops behind the stand and the
+ * stand goes; the car goes to dusk and the shutter comes down; the table comes up on the lift
+ * from below the frame and stands on the floor with the glass jar on it; the lid comes down on
+ * its string and lifts off. The ballots go in anonymous, backs up
  * (the vote is blind and parallel: in the replay they all drop at once), the lid goes back on,
  * and the count begins: the lid flies out, the shot pushes in, the jar tips over at the back
  * rail and the plates come out along the front edge. One chip at a time rolls out of the jar,
  * turns face up and lands on its plate, the one that settles it last; the winner's plate is
- * lit; the lift takes the table down with the count on it. A lynch leaves the trap open for
- * the lynch scene; a day with no one voted out folds the leaves, pulls back, and gathers the
- * shutter up on the night.
+ * lit; the lift takes the table down with the count on it, out of the frame. A day with no one
+ * voted out pulls back and gathers the shutter up on the night.
  *
  * The seated human votes from a row of the candidates' chips (`vote.your-ballot`): tap one,
  * confirm on the plate; their own chip drops into the jar face up, on their screen only.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { SPRITES } from '@/assets/manifest';
 import type { GameView } from '@/game/types';
 import { Camera, Layer } from '../Stage';
 import { Puppet, puppetBox } from '../cast/Puppet';
@@ -33,7 +33,7 @@ import {
   plateSpots,
   voteGeometry,
 } from '../instruments/vote-geometry';
-import type { LidState } from '../instruments/Jar';
+import { JarLid, type LidState } from '../instruments/Jar';
 import { useMotionScale, useSteps } from '../motion';
 import type { Special } from '../paint/draw';
 import { seatNumber, seatify } from '../roles';
@@ -47,9 +47,20 @@ import {
   landOrder,
   lastLine,
   litPlates,
-  resultWords,
-  tally,
+  outcomeWords,
+  tallyLines,
 } from './vote-count';
+import { useSmall } from '../set';
+
+/** An svg over the whole world, in its units. */
+const SVG_FILL = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  overflow: 'visible',
+  pointerEvents: 'none',
+} as const;
 
 /**
  * The vote's body under the car's host (CarScene.tsx). It stays up from beat to beat and plays
@@ -81,6 +92,22 @@ function VoteBeat({
   slot: slotInput,
   stop,
 }: SceneProps) {
+  const small = useSmall();
+  // the count's pictures, decoded from the ballot's open and held while the vote is on (owner,
+  // 2026-10-19: on a first vote the counted chips came up as their drawn faces, the ring not yet
+  // decoded); a phone's copies, as FlatChip draws them
+  useEffect(() => {
+    if (typeof Image === 'undefined') return;
+    const p = small ? SPRITES.small.props : SPRITES.props;
+    const held = [p.chipRing, p.chipHidden, p.plate].map(({ src }) => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = src;
+      img.decode().catch(() => {});
+      return img;
+    });
+    return () => void held.splice(0);
+  }, [small]);
   const { hud, xray, animate, cast } = presentation;
   const k = useMotionScale();
   const step = useSteps();
@@ -94,7 +121,6 @@ function VoteBeat({
   const ballots = vote?.ballots ?? [];
   const order = landOrder(ballots);
   const cands = candidatesOf(ballots);
-  const counts = tally(ballots);
 
   const prompt = id === 'vote.your-ballot';
   const opening = id === 'vote.opens' || prompt;
@@ -164,10 +190,8 @@ function VoteBeat({
         : undefined;
   const winner = resolved && vote ? litPlates(vote) : null;
   const tableShown = !(id === 'vote.table-down' && !animate);
-  const travel = v.holeBot - J.top + 0.03 * STAGE_H;
-  // going down, the table fades from when its cloth's hem meets the lip to when the back of
-  // its top does, so nothing on it is left standing over the hole once the table has gone in
-  const sinkFade = [v.topY + v.drop, v.topY - v.depth] as const;
+  // up from wholly under the frame's foot, the jar's top and all
+  const travel = STAGE_H - J.top + 0.03 * STAGE_H;
 
   // the shot: wide while the ballots go in, pushed in for the count, back out if night follows
   const shot = countShot(v);
@@ -185,7 +209,7 @@ function VoteBeat({
   const specials: Special[] = [];
   if (!counting && tableShown) specials.push([v.cx, 0, J.top, 0.03 * STAGE_W, 0.8]);
   if (id === 'vote.result' && winner)
-    for (const p of plateSpots(v, cands, counts))
+    for (const p of plateSpots(v, cands))
       if (winner.includes(p.c)) specials.push([p.x, 0, p.y, p.rx * 1.3, 1]);
   const pool = { x: v.cx, y: v.topY - 0.3 * g.ph, rx: v.tw * 0.62, ry: 0.56 * g.ph };
 
@@ -203,7 +227,23 @@ function VoteBeat({
   const myCard = me ? (view.me.role?.role ?? null) : null;
   const words =
     resolved && vote
-      ? resultWords(vote, vote.outcome === 'tie' ? gmVoteLine(view, day) : null)
+      ? outcomeWords(
+          vote,
+          me ?? null,
+          vote.outcome === 'tie' ? gmVoteLine(view, day) : null,
+        )
+      : null;
+  // the board's tally: each plate's seat (its face) or abstain, and its chips
+  const lines =
+    words && vote
+      ? tallyLines(vote).map((t) => ({
+          key: t.votee,
+          chip: t.votee === 'abstain' ? null : cast[seatNumber(t.votee) - 1],
+          label: t.votee === 'abstain' ? 'Abstained' : `Seat ${seatNumber(t.votee)}`,
+          count:
+            t.votee === 'abstain' ? `${t.n}` : `${t.n} ${t.n === 1 ? 'vote' : 'votes'}`,
+          lit: t.lit,
+        }))
       : null;
 
   return (
@@ -219,10 +259,6 @@ function VoteBeat({
           state: nightFalls ? 'open' : 'closed',
           animate: animate && (id === 'vote.opens' || nightFalls),
           delay: nightFalls ? 2.5 : undefined,
-        }}
-        trap={{
-          state: nightFalls ? 'closed' : 'open',
-          animate: animate && (id === 'vote.opens' || nightFalls),
         }}
         light={{ pool, specials, dark: 30 }}
         wing={{
@@ -289,12 +325,23 @@ function VoteBeat({
       ) : null}
 
       <Layer name="instruments">
+        {tableShown && (!counting || lidFrom) ? (
+          // the lid's string, from above the frame: not on the lift with the lid (Jar.tsx `part`)
+          <svg viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} style={SVG_FILL} aria-hidden="true">
+            <JarLid
+              v={v}
+              state={lid}
+              from={lidFrom}
+              arriving={animate && id === 'vote.opens'}
+              part="string"
+            />
+          </svg>
+        ) : null}
         {tableShown ? (
           <Lift
             g={g}
             travel={travel}
-            slab
-            fade={id === 'vote.table-down' ? sinkFade : undefined}
+            cut={STAGE_H}
             move={
               animate && id === 'vote.opens'
                 ? 'rise'
@@ -302,12 +349,12 @@ function VoteBeat({
                   ? 'sink'
                   : null
             }
-            // the table with its plates, the jar and the lid's string from above the frame
+            // the table with its plates and the jar, the lid flying up out of the frame
             box={{
               x: v.cx - v.tw * 0.7,
               y: -STAGE_H,
               w: v.tw * 1.4,
-              h: STAGE_H + v.holeBot,
+              h: 2 * STAGE_H,
             }}
           >
             <VoteTable
@@ -317,17 +364,16 @@ function VoteBeat({
               ballotsIn={ballotsIn}
               mine={myIndex != null && myIndex >= 0 ? myIndex : null}
               lid={lid}
-              tipped={counting}
+              counting={counting}
               counted={counted}
               order={order}
               candidates={cands}
-              counts={counts}
               winner={winner}
               play={{
                 lidFrom,
                 arriving: animate && id === 'vote.opens',
                 falling,
-                tipping: animate && id === 'vote.count-begins',
+                countBegins: animate && id === 'vote.count-begins',
                 platesIn: animate && id === 'vote.count-begins',
                 landing: animate && id === 'vote.chip-counted',
                 lighting: animate && id === 'vote.result',
@@ -340,7 +386,7 @@ function VoteBeat({
       <Layer name="hud">
         <NoticeZone
           hud={hud}
-          side={bandNarrows(presentation, beat)}
+          side={bandNarrows(presentation, small)}
           aside={side}
           hidden={presentation.footHidden}
         >
@@ -397,12 +443,13 @@ function VoteBeat({
               kind="paper"
               head={`Day ${day} · The vote`}
               chip={lynched ? cast[seatNumber(lynched) - 1] : null}
-              title={lynched === me && lynched ? `${words.title} (you)` : words.title}
+              title={words.title}
+              aside={words.body}
+              out={words.out}
+              tally={lines}
               arrive={animate && id === 'vote.result'}
               delay={0.7}
-            >
-              {words.body}
-            </Notice>
+            />
           ) : null}
         </NoticeZone>
       </Layer>

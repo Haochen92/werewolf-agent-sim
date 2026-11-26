@@ -7,7 +7,7 @@ Wires the previously à-la-carte pieces into a single config-driven CLI:
     CONSOLIDATE  vote(model + human voters)        → consensus_golden.json + ties.json
 
 ``run`` chains LABEL → CONSOLIDATE for the no-human fast path. The human points
-(copy/paste labelling via EXPORT; resolving ``ties.json``; the unbuilt CALIBRATE
+(copy/paste labelling via EXPORT; resolving ``ties.json``; the CALIBRATE
 stage) are *stage boundaries* — which is why this is a staged CLI, not one call.
 
 CONSOLIDATE votes directly across each engine entry's per-model ``model_scores``
@@ -22,6 +22,10 @@ Usage::
     poetry run python -m evaluation.src.labeling.pipeline label       --config run.json
     poetry run python -m evaluation.src.labeling.pipeline export      --config run.json
     poetry run python -m evaluation.src.labeling.pipeline consolidate --config run.json
+    poetry run python -m evaluation.src.labeling.pipeline calibrate   --config calib.json
+
+``calibrate`` takes a ``CalibrationConfig`` instead: it compares model label
+sources with a person's labels (``calibration.py``) and writes one report each.
 """
 from __future__ import annotations
 
@@ -32,7 +36,8 @@ from pathlib import Path
 
 from evaluation.src.core.settings import load_project_env
 from evaluation.src.labeling.adapters import get_adapter
-from evaluation.src.labeling.config import ExportConfig, LabelingPipelineConfig
+from evaluation.src.labeling.anchor import read_stratum_file
+from evaluation.src.labeling.config import CalibrationConfig, ExportConfig, LabelingPipelineConfig
 from evaluation.src.labeling.engine import label_items
 from evaluation.src.labeling.exporter import export_for_manual
 from evaluation.src.labeling.voter import agreement_stats, vote
@@ -42,7 +47,7 @@ load_project_env()
 Key = tuple[int, str]
 
 
-def _load_voters(
+def load_voters(
     path: Path,
 ) -> tuple[dict[str, dict[Key, object]], dict[Key, str], dict[Key, dict]]:
     """Load one label file into per-voter columns.
@@ -125,7 +130,7 @@ def stage_consolidate(config: LabelingPipelineConfig) -> Path:
     item_type: dict[Key, str] = {}
     details: dict[Key, dict] = {}
     for src in sources:
-        v, it, det = _load_voters(src)
+        v, it, det = load_voters(src)
         for name, col in v.items():
             voters.setdefault(name, {}).update(col)
         item_type.update(it)
@@ -171,15 +176,62 @@ def stage_consolidate(config: LabelingPipelineConfig) -> Path:
     return config.consensus_path
 
 
+def stage_calibrate(config: CalibrationConfig) -> list[Path]:
+    """CALIBRATE: compare each listed model source with the person's labels and write the reports.
+
+    Args:
+        config: the calibration config. When it names a stratum file, that file's keys are the
+            keys the person must have labelled.
+
+    Returns:
+        The written report paths, a markdown and a JSON file per model source. Raises ValueError
+        if the person's label file has problems (all listed) or a model source is not found.
+    """
+    # Imported here because calibration imports load_voters from this module.
+    from evaluation.src.labeling.calibration import (
+        calibrate,
+        load_model_labels,
+        read_human_labels,
+        write_calibration_report,
+    )
+
+    stratum_by_key = read_stratum_file(config.stratum_path) if config.stratum_path else None
+    expected_keys = sorted(stratum_by_key) if stratum_by_key is not None else None
+    human_labels = read_human_labels(
+        config.human_labels_path, expected_keys, config.allowed_labels
+    )
+    print(f"CALIBRATE: {len(human_labels)} human labels from {config.human_labels_path}")
+
+    report_paths: list[Path] = []
+    for model_source in config.model_sources:
+        model_labels = load_model_labels(config.model_label_paths, model_source)
+        report = calibrate(human_labels, model_labels, stratum_by_key, model_source, config)
+        markdown_path, json_path = write_calibration_report(report, config.output_dir)
+        report_paths += [markdown_path, json_path]
+        verdict = "ACCEPT" if report.accepted else "REJECT"
+        print(
+            f"  {model_source}: {verdict} · agreement {report.agreement_rate:.1%} "
+            f"[{report.agreement_ci[0]:.1%}, {report.agreement_ci[1]:.1%}] · "
+            f"kappa {report.cohens_kappa:.2f} · n={report.items} → {markdown_path}"
+        )
+        for condition in report.gate:
+            if condition.status == "failed":
+                print(f"    failed: {condition.explanation}")
+    return report_paths
+
+
 def _load_config(path: Path) -> LabelingPipelineConfig:
     return LabelingPipelineConfig.model_validate_json(Path(path).read_text())
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Assembled labeling pipeline (staged).")
-    parser.add_argument("stage", choices=["label", "export", "consolidate", "run"])
+    parser.add_argument("stage", choices=["label", "export", "consolidate", "run", "calibrate"])
     parser.add_argument("--config", type=Path, required=True)
     args = parser.parse_args()
+    if args.stage == "calibrate":
+        stage_calibrate(CalibrationConfig.model_validate_json(args.config.read_text()))
+        return
     config = _load_config(args.config)
 
     if args.stage == "label":

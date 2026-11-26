@@ -18,7 +18,7 @@
  * hidden (another tab, a locked phone), the preview's and the whole replay's alike.
  *
  * `mini` makes it a preview (the landing's carriage): the same stage and the same reducer,
- * playing one window of the cut round and round (`loop` in replay-state.ts), with no keys (the
+ * playing a reel of the game round and round (`loop` in replay-state.ts), with no keys (the
  * page around it keeps its arrows and space). Its controls are the caller's choice: none; the
  * replay's own on the stage (the strip's Reveal, File and Transcript, the side slot, the band
  * over the window); or, where the stage is too small to read (an upright
@@ -32,7 +32,6 @@ import {
   useReducer,
   useRef,
   useState,
-  type PointerEvent,
   type ReactNode,
 } from 'react';
 import { useReducedMotion } from 'motion/react';
@@ -48,11 +47,11 @@ import { winnerKey } from '../roles';
 import { DecodeAhead } from '../cast/DecodeAhead';
 import { beatsFor } from '../beats/beatsFor';
 import { useDrawerFilters } from '../drawer/use-drawer-filters';
-import { useNoteEditing } from '../notebook';
+import { SideSlot } from '../SideSlot';
 import { StageMotion } from '../motion';
 import type { SceneBeat } from '../beats/types';
 import type { MotionSpeed, Presentation, SlotInput, StopInput } from '../scenes/types';
-import { atRail, slotOf } from '../slot';
+import { slotOf } from '../slot';
 import { Stage } from '../Stage';
 import { SCENES } from '../scenes';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
@@ -64,6 +63,7 @@ import {
   type ReplayState,
 } from './replay-state';
 import { visitedOn } from './stops';
+import { WARM_CAP_MS, decodeAll, picturesOn, settled, warmBeats } from './warm-reel';
 import { holdFor, transportLabel } from './transport';
 import { TransportBand } from './TransportBand';
 import type { FileChoice } from '../film/case-file';
@@ -77,11 +77,12 @@ export interface ReplayTheatreProps {
   /** The way out, at the strip's left: where the viewer came from. Absent: the replays list.
    *  A preview has none (its way to the whole game is the caller's). */
   back?: { href: string; label: string };
-  /** A preview: plays `from`..`to` (indices into the public cut) on a loop when `autoplay`,
-   *  else rests on `from`. The frame is the caller's. */
+  /** A preview: plays `reel` (indices into the cut `xray` picks, in order) on a loop when
+   *  `autoplay`, else rests on its first beat. The frame is the caller's. */
   mini?: {
-    from: number;
-    to: number;
+    reel: readonly number[];
+    /** The reel is the X-ray's cut, played with the X-ray on; else the public cut's. */
+    xray?: boolean;
     autoplay: boolean;
     speed?: MotionSpeed;
     /** 'stage': the replay's own controls on the stage, over the window. 'under': none on
@@ -89,6 +90,12 @@ export interface ReplayTheatreProps {
     controls?: 'stage' | 'under';
     under?: (u: MiniUnder) => ReactNode;
     underEl?: HTMLElement | null;
+    /**
+     * Called once the first beat's pictures are in, and with `warm` every scene's on the reel
+     * (warm-reel.ts): until then the reel does not play, and the caller's cover stays up.
+     */
+    onWarm?: () => void;
+    warm?: boolean;
   };
   /**
    * The theatre waits out of sight under the replay page's cover (TheaterClient), its pictures
@@ -104,7 +111,7 @@ export interface MiniUnder {
   /** The view past the beat (the whole log), for the case file: see `SlotInput.ahead`. */
   ahead: GameView | null;
   cast: readonly Character[];
-  /** The window's beats, and the cursor's place among them. */
+  /** The reel's beats, and the cursor's place among them. */
   beats: readonly SceneBeat[];
   index: number;
   label: string;
@@ -151,9 +158,6 @@ function useHold(key: string, ms: number | null, running: boolean, done: () => v
   }, [key, ms, running, done]);
 }
 
-const isSpeech = (el: EventTarget | null) =>
-  el instanceof Element && el.closest('[data-speech]') !== null;
-
 const TO_LIST = { href: '/replays', label: 'Replays' };
 
 export function ReplayTheatre({
@@ -180,20 +184,61 @@ export function ReplayTheatre({
   const autoplay = !!mini?.autoplay && !stillPlease;
   const [state, dispatch] = useReducer(reduce, undefined, () =>
     mini
-      ? initialLoopState(all.public, mini, {
+      ? initialLoopState(mini.xray ? all.xray : all.public, mini.reel, {
           playing: autoplay,
           speed: mini.speed ?? 'fast',
+          xray: mini.xray,
         })
       : initialReplayState(defaultSlot()),
   );
   // the preview's caller turns the play on and off (scrolled away, a phone held upright)
   const isMini = !!mini;
   const controls = mini ? (mini.controls ?? null) : 'stage';
+  // a preview's pictures first: its reel's scenes visited once, still, under the caller's
+  // cover, every picture fetched and decoded, then the play (warm-reel.ts); with less motion
+  // asked for, only the first scene's, as nothing will play
+  const root = useRef<HTMLDivElement>(null);
+  const onWarm = mini?.onWarm;
+  const warmAll = !!mini?.warm && !stillPlease;
+  const [warmed, setWarmed] = useState(!onWarm);
+  useEffect(() => {
+    const el = root.current;
+    const reel = state.loop;
+    if (warmed || !onWarm || !el || !reel) return;
+    let live = true;
+    void (async () => {
+      const until = Date.now() + WARM_CAP_MS;
+      const srcs = new Set<string>();
+      const visits = warmAll
+        ? warmBeats(reel, state.xray ? all.xray : all.public, state.speed)
+        : [];
+      for (const i of visits) {
+        if (!live || Date.now() > until) break;
+        dispatch({ type: 'seek', index: i });
+        await settled(el, until);
+        picturesOn(el, srcs);
+      }
+      if (!live) return;
+      if (visits.length) dispatch({ type: 'seek', index: reel[0] });
+      await settled(el, until);
+      picturesOn(el, srcs);
+      await decodeAll(srcs, until);
+      if (!live) return;
+      setWarmed(true);
+      onWarm();
+    })();
+    return () => {
+      live = false;
+    };
+    // once, from the theatre's first render: the reel and its cut are fixed for a preview
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // a viewer who paused a preview keeps it paused when it scrolls away and back
   const paused = useRef(false);
   useEffect(() => {
-    if (isMini) dispatch({ type: autoplay && !paused.current ? 'play' : 'pause' });
-  }, [isMini, autoplay]);
+    if (isMini)
+      dispatch({ type: autoplay && warmed && !paused.current ? 'play' : 'pause' });
+  }, [isMini, autoplay, warmed]);
   const togglePlay = useCallback(() => {
     paused.current = state.playing;
     dispatch({ type: 'toggle-play' });
@@ -231,8 +276,6 @@ export function ReplayTheatre({
   // the claim ledger for the file's Record, asked once (a preview does without: its Record
   // shows the summaries' own claims)
   const ledger = useLedger(game.game_id, 'final', !mini);
-  // the seat notebook's open editor (a replay has no notebook today: kept as the live game's)
-  const noteEditing = useNoteEditing();
   const onXray = useCallback(() => dispatch({ type: 'xray' }), []);
   // the landing's two buttons under a preview are the older pair, Transcript and X-ray: its
   // X-ray turns the X-ray on and brings the film, or, with the film up, turns it off and
@@ -255,7 +298,6 @@ export function ReplayTheatre({
       recordPick,
       onRecordPick: setRecordPick,
       onShowRecord: () => dispatch({ type: 'show-record' }),
-      notebook: noteEditing,
       ahead,
       onTranscript: () => dispatch({ type: 'transcript' }),
       onFile: () => dispatch({ type: 'file' }),
@@ -279,7 +321,6 @@ export function ReplayTheatre({
       fileSeat,
       ledger,
       recordPick,
-      noteEditing,
       ahead,
       onXray,
       isMini,
@@ -317,26 +358,14 @@ export function ReplayTheatre({
     [controls, state.xray, state.loop, state.visited, beat, beats],
   );
 
-  // playing: the beat's hold, paused while the speech is held or the page is hidden
-  // the scene host is memoised: a hover (`held`) redraws this page, not the stage under it
+  // playing: the beat's hold, paused only while the page is hidden. A pointer resting on the
+  // line no longer holds it: the hold showed nowhere, and Pause is the way to stop (owner,
+  // 2026-10-21: the play stopped on a page whenever the pointer was left on the board)
   const turnPage = useCallback(() => dispatch({ type: 'step', dir: 1 }), []);
-  const [held, setHeld] = useState(false);
   const visible = usePageVisible();
   const tick = useCallback(() => dispatch({ type: 'tick' }), []);
   const hold = beat ? holdFor(beat, state.speed) : null;
-  useHold(
-    `${state.xray}:${index}:${state.speed}`,
-    hold,
-    state.playing && visible && (controls !== 'stage' || !held),
-    tick,
-  );
-  const onPointerOver = (e: PointerEvent) => setHeld(isSpeech(e.target));
-  const onPointerOut = (e: PointerEvent) => setHeld(isSpeech(e.relatedTarget));
-  // a beat change can take the speech out from under a resting pointer
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    setHeld(root.current?.querySelector('[data-speech]:hover') != null);
-  }, [index, state.xray]);
+  useHold(`${state.xray}:${index}:${state.speed}`, hold, state.playing && visible, tick);
 
   // the keys: arrows step, space plays or pauses, the brackets jump chapters (not a preview's,
   // nor a theatre still waiting under the cover, out of sight)
@@ -388,14 +417,19 @@ export function ReplayTheatre({
     [state.xray, state.slot, state.speed, controls, cast, state.cursor.animate],
   );
 
-  // a preview's band and pane see only its window
-  const from = state.loop?.from ?? 0;
-  const shown = state.loop ? beats.slice(from, state.loop.to + 1) : beats;
+  // a preview's band and pane see only its reel: `at` is the cursor's place on it, and a seek
+  // to the nth of its beats goes to that beat
+  const reel = state.loop;
+  const shown = useMemo(() => (reel ? reel.map((i) => beats[i]) : beats), [reel, beats]);
+  const at = reel ? Math.max(0, reel.indexOf(index)) : index;
+  const seekShown = useCallback(
+    (i: number) => dispatch({ type: 'seek', index: reel ? (reel[i] ?? index) : i }),
+    [reel, index],
+  );
 
   const Scene = beat ? SCENES[beat.scene] : null;
-  // the drawer runs to the foot of the stage (not on a prompt, not beside the epilogue)
-  const besideDrawer =
-    !!beat && slotOf(state) === 'drawer' && !atRail(beat) && beat.id !== 'over.epilogue';
+  // the drawer runs to the foot of the stage (not beside the epilogue)
+  const besideDrawer = !!beat && slotOf(state) === 'drawer' && beat.id !== 'over.epilogue';
   return (
     <div
       ref={root}
@@ -404,8 +438,6 @@ export function ReplayTheatre({
       data-beat={beat?.id}
       data-playing={state.playing}
       data-mini={isMini || undefined}
-      onPointerOver={controls === 'stage' ? onPointerOver : undefined}
-      onPointerOut={controls === 'stage' ? onPointerOut : undefined}
     >
       <Stage fit="contain">
         {beat && view ? <DecodeAhead beats={beats} index={index} cast={cast} /> : null}
@@ -422,13 +454,21 @@ export function ReplayTheatre({
               // a tap on the speech box turns the page (a preview's box is only read)
               onNext={controls === 'stage' ? turnPage : undefined}
             />
+            <SideSlot
+              view={view}
+              beat={beat}
+              me={ME}
+              presentation={presentation}
+              slot={slotInput}
+              stop={stopInput}
+            />
           </StageMotion>
         ) : null}
         {controls === 'stage' ? (
           <TransportBand
             hud="replay"
             beats={shown}
-            index={index - from}
+            index={at}
             playing={state.playing}
             speed={state.speed}
             label={transportLabel(beats, index)}
@@ -436,7 +476,7 @@ export function ReplayTheatre({
             onChapter={(dir) => dispatch({ type: 'chapter', dir })}
             onStep={(dir) => dispatch({ type: 'step', dir })}
             onTogglePlay={togglePlay}
-            onSeek={(i) => dispatch({ type: 'seek', index: from + i })}
+            onSeek={seekShown}
             onSpeed={(speed) => dispatch({ type: 'speed', speed })}
           />
         ) : null}
@@ -449,7 +489,7 @@ export function ReplayTheatre({
               ahead,
               cast,
               beats: shown,
-              index: index - from,
+              index: at,
               label: transportLabel(beats, index),
               playing: state.playing,
               xray: state.xray,
@@ -457,7 +497,7 @@ export function ReplayTheatre({
               filmTab,
               onFilmTab: setFilmTab,
               onTogglePlay: togglePlay,
-              onSeek: (i) => dispatch({ type: 'seek', index: from + i }),
+              onSeek: seekShown,
               onTranscript: () => dispatch({ type: 'transcript' }),
               onXray: underXray,
             }),

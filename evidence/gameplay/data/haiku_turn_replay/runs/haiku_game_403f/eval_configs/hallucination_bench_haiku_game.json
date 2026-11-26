@@ -1,0 +1,15 @@
+{
+  "label": "haiku_game_403f",
+  "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+  "n": 5,
+  "workers": 3,
+  "arms": [
+    {"label": "haiku_committed", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none",
+     "checkout": "/home/ubuntu/projects/ww-pre-haiku-fixes"},
+    {"label": "haiku_fixed", "model": "anthropic/claude-haiku-5-5",
+     "env": {"GOOGLE_GENAI_THINKING_LEVEL": "low", "LLM_STRUCTURED_MODE": "json_schema"}, "memory": "none"}
+  ],
+  "golden_model": "anthropic/claude-sonnet-5-5",
+  "note": "The owner's first Haiku 5.5 game (403f4dbc, 2026-10-12): 18 turns frozen from its checkpoints (evaluation/experiments/haiku_game_turn_cases.py), slices visit / repeat / vote_reason. haiku_committed runs the code before the three fixes (a worktree at 746197c4: git worktree add ../ww-pre-haiku-fixes 746197c4, .env linked; remove after); haiku_fixed the working tree with the visit-direction rule, the reactive answer-what-is-new line and the town vote-reason line. The golden judge is Sonnet 5.5, batched. The vote_reason slice is read for pass rate and spoken reasons; its golden only guards the facts."
+}

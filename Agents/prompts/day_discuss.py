@@ -86,9 +86,12 @@ PROACTIVE_ROUND_RULES = """
 You have the floor because you have not spoken since the day began (or since the floor last went
 round). Make one or two useful points: a concrete observation or read with the evidence it rests
 on, a contradiction you noticed, or a proposal for what to test. Build on what is already in the
-transcript rather than repeating it: a point the table has already heard is held back and nobody
-hears it. If you have nothing new to add, set pass_turn=true; a pass costs nothing here.
+transcript rather than repeating it: a point the table has already heard, or a line that adds
+nothing, is held back and nobody hears it.
 """
+# No "a pass costs nothing here" (owner, 2026-10-18): that sentence alone halved open-floor speech,
+# holding back new readings as often as repeats; the echo gate does the sorting instead
+# (evidence/gameplay/data/silence_calibration/).
 
 # Town only, on a voting day, after the open-floor block (owner, 2026-10-12: in the first Haiku game
 # half the votes came from players who had not spoken that day). Not for evil seats, for whom
@@ -134,8 +137,9 @@ _DISCUSSION_STAGE_RULES = """
 # (compose.preamble).
 
 # The two examples, in the schema's field order; the verdict lines are slots, empty on a turn shown no
-# memory (prompts/common.py, VERDICT_EXAMPLES). The example read and the example claim name no
-# role and no seat, since a named one gets copied (discussion_evidence.md section 7.5).
+# memory (prompts/common.py, VERDICT_EXAMPLES). The example read, the example claim and the example
+# claimed night action name no role and no seat, since a named one gets copied (discussion_evidence.md
+# section 7.5).
 DAY_DISCUSS_RESPONSE_FORMAT = """
 You must respond with a valid JSON.
 
@@ -146,6 +150,7 @@ When speaking:
     "pass_turn": false,
     "message": "your discussion message",
     "claim": "<the role this message claims you hold, or none>",
+    "claimed_night_actions": [{{"night": <night number>, "action": "<what you say you did>", "target": "<exact player_id>", "result": "<what you say came of it, or not_said>", "seen": []}}],
     "addressed_targets": [{{"target": "<exact player_id>", "addressed_form": "response", "stance": "defense"}}]
 }}
 
@@ -156,6 +161,7 @@ When declining to speak (only if you were NOT directly addressed):
     "pass_turn": true,
     "message": "",
     "claim": "none",
+    "claimed_night_actions": [],
     "addressed_targets": []
 }}
 """
@@ -169,7 +175,10 @@ def day_discuss_template(role: str) -> ChatPromptTemplate:
     # everything else that differs by seat or call type.
     human = (
         PUBLIC_RECORD + BOARD
-        + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION, DAY_DISCUSS_RESPONSE_FORMAT)
+        # {persona_paragraph}: the seat's voice when the game has voices on (Agents/prompts/voices.py),
+        # else "", which leaves the prompt as it was.
+        + build_system_prompt(card.playstyle, words.framing, TONE_INSTRUCTION.strip() + "{persona_paragraph}",
+                              DAY_DISCUSS_RESPONSE_FORMAT)
         + "\n" + "{tell_book}" + READS_COMMIT_INSTRUCTION
         + _DISCUSS_HEADER + words.context + _DISCUSSION_STAGE_RULES
         + words.trailer + _FIRING_BRIEF + DAY_DISCUSSION_MEMORY_CONTEXT

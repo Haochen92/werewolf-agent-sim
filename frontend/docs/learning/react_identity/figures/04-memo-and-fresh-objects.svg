@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620" width="980" height="620" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="620" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">memo compares props by reference: fresh objects defeat it</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">LiveTheatre renders the scene. memo(Child) skips its render only if every prop is the same object as last time.</text>
+<rect x="24" y="84" width="452" height="330" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="44" y="114" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">Before (lessons 6 and 33)</text>
+<rect x="44" y="134" width="412" height="34" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="250.0" y="156.0" font-size="13.5" fill="#1f2937" text-anchor="middle">turnInput, onCard: built anew each render</text>
+<text x="250" y="190" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">render n:   object A</text>
+<text x="250" y="212" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">render n+1: object B</text>
+<text x="250" y="238" font-size="13.5" font-weight="bold" fill="#991b1b" text-anchor="middle">Object.is(A, B) is false, so memo fails</text>
+<rect x="64" y="256" width="372" height="32" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="250.0" y="277.0" font-size="13.5" fill="#1f2937" text-anchor="middle">CarScene host, CarSetSheet, SideSlot</text>
+<rect x="64" y="300" width="372" height="32" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="250.0" y="321.0" font-size="13.5" fill="#1f2937" text-anchor="middle">every seat tile, every transcript row</text>
+<text x="250" y="368" font-size="13" fill="#991b1b" text-anchor="middle">41 typed letters: the set drawn 82 times,</text>
+<text x="250" y="388" font-size="13" fill="#991b1b" text-anchor="middle">738 seat tiles, 1,394 transcript rows</text>
+<rect x="504" y="84" width="452" height="330" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="524" y="114" font-size="15" font-weight="bold" fill="#111827" text-anchor="start">After (2026-10-15)</text>
+<rect x="524" y="134" width="412" height="34" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="730.0" y="156.0" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">const turnInput = useMemo(() =&gt; ..., deps)</text>
+<text x="730" y="190" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">render n:   object A</text>
+<text x="730" y="212" font-size="13" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="middle">render n+1: object A</text>
+<text x="730" y="238" font-size="13.5" font-weight="bold" fill="#14532d" text-anchor="middle">same reference, so memo holds</text>
+<rect x="544" y="256" width="372" height="32" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="730.0" y="277.0" font-size="13.5" fill="#1f2937" text-anchor="middle">CarScene host, CarSetSheet, SideSlot</text>
+<text x="730" y="304" font-size="12.5" fill="#4b5563" text-anchor="middle">skipped: not called at all</text>
+<rect x="544" y="314" width="372" height="32" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="730.0" y="335.0" font-size="13.5" fill="#1f2937" text-anchor="middle">TurnDock and its composer</text>
+<text x="730" y="368" font-size="13" fill="#14532d" text-anchor="middle">41 typed letters: the dock and its</text>
+<text x="730" y="388" font-size="13" fill="#14532d" text-anchor="middle">composer, 41 renders each, nothing else</text>
+<rect x="24" y="430" width="932" height="170" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="44" y="458" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Three ways to keep a prop&#x27;s identity, all in this code</text>
+<text x="44" y="484" font-size="14.5" fill="#1f2937" text-anchor="start">useMemo and useCallback: the same object until a dependency changes</text>
+<text x="44" y="507" font-size="14.5" fill="#1f2937" text-anchor="start">    (LiveTheatre.tsx: turnInput, dock, wayOut; onCard, onNext).</text>
+<text x="44" y="530" font-size="14.5" fill="#1f2937" text-anchor="start">Compare by value: Camera, Backdrop and Paint key on JSON.stringify of a plain description,</text>
+<text x="44" y="553" font-size="14.5" fill="#1f2937" text-anchor="start">    so a new-but-equal object changes nothing.</text>
+<text x="44" y="576" font-size="14.5" fill="#1f2937" text-anchor="start">Move the changing state down: the typed text now lives in TurnDock (section 6).</text>
+</svg>

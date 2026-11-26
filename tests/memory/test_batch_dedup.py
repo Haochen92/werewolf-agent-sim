@@ -288,6 +288,22 @@ def test_a_strategy_point_from_another_stage_is_never_discarded():
     assert _apply_strategy_operation(store, NS, only_other_stages, set(items), items, apply=True) == ("kept", 0)
 
 
+def test_the_stage_backstop_blocks_a_cross_stage_discard_when_one_side_lacks_a_fact():
+    # An ungated cluster (gate_enabled=False) can hand the judge a point missing the partner fact beside
+    # one that has it; the check skips the missing fact but still blocks on the alive bucket.
+    store = FakeStore()
+    items = {
+        "keep": _item("keep", situation="s", action="a", dimensions={"players_alive": 9, "ally_revealed": True}),
+        "late": _item("late", situation="s2", action="a2", dimensions={"players_alive": 4}),
+        "early": _item("early", situation="s3", action="a3", dimensions={"players_alive": 8}),
+    }
+    operation = StrategyBatchOperation(action="DISCARD", reasoning="dup",
+                                       source_keys=["keep", "late", "early"], survivor_key="keep")
+
+    assert _apply_strategy_operation(store, NS, operation, set(items), items, apply=True) == ("discarded", 1)
+    assert (NS, "early") in store.deleted and (NS, "late") not in store.deleted
+
+
 def test_strategy_discard_preserves_survivor_structured_fields():
     # Regression: the survivor rewrite used to whitelist situation/action/metadata only, silently
     # dropping direction/honesty/dimensions + verdict counters on every absorbed survivor.

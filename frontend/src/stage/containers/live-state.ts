@@ -584,7 +584,12 @@ function advance(state: LiveState, ctx: LiveCtx): LiveState {
       { ...state, cursor: still(next.index), holding: false, step: state.step + 1 },
       ctx,
     );
-  return play(state, next.index, next.speed);
+  const played = play(state, next.index, next.speed);
+  // a beat with no hold that waits for nothing (a prompt answered or gone) is passed at once: no
+  // timer and maybe no event will come to move the stage on (a reload in night 1 sat on the
+  // answered day-1 prompt while the server waited for the night pick, 2026-10-21)
+  const landed = played.beats[next.index];
+  return played.holding || waitsHere(landed, ctx) ? played : advance(played, ctx);
 }
 
 /**

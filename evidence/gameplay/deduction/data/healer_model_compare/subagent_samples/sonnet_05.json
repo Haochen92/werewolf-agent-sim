@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "trailseer claim fits: player_7 really did go to me last night", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "investigator claim, nothing contradicts it yet", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked useful questions, no tell", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "I was roleblocked, only the chanteuse can do that and a block is a visit; player_7 admits going to me", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "only player_5's claimed Suspicious read; the other wolf is probably not player_7's partner by this alone", "suspected_role": "illusionist", "confidence": "low"},
+    {"player": "player_10", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so the Chanteuse (a wolf) visited me, and player_7 admitted going to me, so player_7 is very likely the Chanteuse. I stated I was roleblocked without naming my role. Push the vote on player_7 and keep my healer role hidden unless forced. Watch whether player_3 and player_5 hold up, and protect a confirmed Town claimant tonight.",
+  "pass_turn": false,
+  "message": "Last night I got told I was roleblocked. Only the chanteuse can do that, she's a wolf, and a block is a visit. player_7 just said they went to me, and player_3 says they followed player_7 to me too. That fits player_7 being the chanteuse. I'd vote player_7.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

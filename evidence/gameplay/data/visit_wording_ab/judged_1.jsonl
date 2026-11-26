@@ -1,0 +1,48 @@
+{"id": "v001", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v005", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v009", "mech": 1, "chew": 0, "clear": null, "note": "Says watch and follow can't both be right; implies a follow cannot show the follower was visited."}
+{"id": "v013", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report its own follow result."}
+{"id": "v017", "mech": 1, "chew": 0, "clear": null, "note": "Denies visiting while watching; treats empty watch as contradicting player_4's follow."}
+{"id": "v021", "mech": 0, "chew": 0, "clear": 0, "note": "Passed."}
+{"id": "v025", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v029", "mech": 1, "chew": 0, "clear": null, "note": "Treats 'player_3 visited me' as inconsistent with a follow showing where player_3 went."}
+{"id": "v033", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v037", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v041", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report its own follow result."}
+{"id": "v045", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v049", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report its own follow result."}
+{"id": "v053", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report its own watch result."}
+{"id": "v057", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v061", "mech": 1, "chew": 0, "clear": null, "note": "Claims player_3 and player_4 can't both be truthful; both results are compatible."}
+{"id": "v065", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v069", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v073", "mech": 0, "chew": 0, "clear": 0, "note": "Passed."}
+{"id": "v077", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v081", "mech": 1, "chew": 0, "clear": null, "note": "Says only a fake follow reconciles them; the watcher is never in its own result."}
+{"id": "v085", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v089", "mech": 1, "chew": 0, "clear": null, "note": "Treats follow (player_3 came) vs empty watch as a conflict to vote on."}
+{"id": "v093", "mech": 1, "chew": 0, "clear": null, "note": "Says one of follow/watch results must be wrong; both are true."}
+{"id": "v097", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v101", "mech": 1, "chew": 0, "clear": null, "note": "Asks sentinel who came to itself; watch shows visitors to target, not watcher."}
+{"id": "v105", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v109", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v113", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v117", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v121", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v125", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v129", "mech": 1, "chew": 0, "clear": null, "note": "Says a Sentinel is never told of its own watch; claims both can't be right."}
+{"id": "v133", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v137", "mech": 1, "chew": 0, "clear": 1, "note": "Says empty watch means player_4's follow can't be right; watcher itself visited."}
+{"id": "v141", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v145", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v149", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v153", "mech": 1, "chew": 0, "clear": null, "note": "Says watching made it not the visitor player_4's follow saw; the watch was that visit."}
+{"id": "v157", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v161", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v165", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v169", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report its own follow result."}
+{"id": "v173", "mech": 0, "chew": 0, "clear": 0, "note": "Only hints at a reason; never states its watch result."}
+{"id": "v177", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v181", "mech": 1, "chew": 0, "clear": null, "note": "Claims player_3 and player_4 can't both be right about the door."}
+{"id": "v185", "mech": 0, "chew": 0, "clear": 0, "note": "Passed."}
+{"id": "v189", "mech": 1, "chew": 0, "clear": null, "note": "Says watching is not visiting; 'whatever you saw was not me' is false."}

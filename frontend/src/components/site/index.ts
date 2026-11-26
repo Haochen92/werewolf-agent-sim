@@ -2,9 +2,9 @@
 export { Button, type ButtonProps } from './Button';
 export { Flapword } from './Flapword';
 export { Book, GuideSign } from './GuideSign';
-export { HangTag } from './HangTag';
 export { Icon } from './Icon';
 export { IconSprite, type IconName } from './IconSprite';
+export { PageGate, usePageOpen } from './PageGate';
 export { Paper, type PaperProps } from './Paper';
 export { SiteFooter } from './SiteFooter';
 export { StationWall, wallPage } from './StationWall';

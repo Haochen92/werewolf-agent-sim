@@ -1,0 +1,22 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "No claims or actions yet.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "Claims trailseer; the follow on player_7 is untested and one of the two role claims is likely false.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_4", "why": "Silent so far; no evidence either way.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "Investigator claim and the Suspicious read on player_9 are unverified; pushed back on player_3.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_6", "why": "Asked for role claims; no evidence yet.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "Says they visited me; that visit fits a Chanteuse block as well as a town visit.", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "Named by player_5 as Suspicious; that is a claim only.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "Not yet heard from; no evidence.", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results, and the only blocker in this game is the Chanteuse, a wolf, who visited me. player_3 and player_5 both claim roles, so one of them is likely lying, and player_7's visit to me is the only hard thing on the table. Keep my role hidden and stay quiet unless addressed. Protect a Town claimant who is attacked, and never claim a save I did not make.",
+  "pass_turn": false,
+  "message": "I was roleblocked last night, so I got no result. The Chanteuse is the only blocker in this game and a block is a visit, so player_7's visit to me fits a wolf's block as well as a town visit. player_7, did you block anyone last night, or only visit?",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "neutral"}
+  ]
+}

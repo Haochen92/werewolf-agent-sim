@@ -1,0 +1,202 @@
+{
+ "q00": {
+  "case_id": "c52500274ffeccf0",
+  "persona": "blunt",
+  "first": "plain"
+ },
+ "q01": {
+  "case_id": "d5e95385c7f81b2e",
+  "persona": "warm",
+  "first": "other"
+ },
+ "q02": {
+  "case_id": "5ea00eb8bef16f52",
+  "persona": "dry",
+  "first": "plain"
+ },
+ "q03": {
+  "case_id": "c52500274ffeccf0",
+  "persona": "warm",
+  "first": "plain"
+ },
+ "q04": {
+  "case_id": "5e89fc884aaeddb3",
+  "persona": "blunt",
+  "first": "plain"
+ },
+ "q05": {
+  "case_id": "d5e95385c7f81b2e",
+  "persona": "plain",
+  "first": "other"
+ },
+ "q06": {
+  "case_id": "95b5dedc19716269",
+  "persona": "plain",
+  "first": "other"
+ },
+ "q07": {
+  "case_id": "e5072bd5a8fd1130",
+  "persona": "dry",
+  "first": "plain"
+ },
+ "q08": {
+  "case_id": "0bd0be3d5fc5a036",
+  "persona": "plain",
+  "first": "other"
+ },
+ "q09": {
+  "case_id": "c52500274ffeccf0",
+  "persona": "plain",
+  "first": "other"
+ },
+ "q10": {
+  "case_id": "5ea00eb8bef16f52",
+  "persona": "blunt",
+  "first": "plain"
+ },
+ "q11": {
+  "case_id": "5e89fc884aaeddb3",
+  "persona": "warm",
+  "first": "other"
+ },
+ "q12": {
+  "case_id": "95b5dedc19716269",
+  "persona": "warm",
+  "first": "plain"
+ },
+ "q13": {
+  "case_id": "5e89fc884aaeddb3",
+  "persona": "dry",
+  "first": "plain"
+ },
+ "q14": {
+  "case_id": "e277350f9017a2a7",
+  "persona": "dry",
+  "first": "other"
+ },
+ "q15": {
+  "case_id": "c52500274ffeccf0",
+  "persona": "dry",
+  "first": "other"
+ },
+ "q16": {
+  "case_id": "558de3b1bd6f2a26",
+  "persona": "warm",
+  "first": "plain"
+ },
+ "q17": {
+  "case_id": "e5072bd5a8fd1130",
+  "persona": "warm",
+  "first": "plain"
+ },
+ "q18": {
+  "case_id": "0bd0be3d5fc5a036",
+  "persona": "warm",
+  "first": "plain"
+ },
+ "q19": {
+  "case_id": "d5e95385c7f81b2e",
+  "persona": "dry",
+  "first": "plain"
+ },
+ "q20": {
+  "case_id": "e5072bd5a8fd1130",
+  "persona": "blunt",
+  "first": "other"
+ },
+ "q21": {
+  "case_id": "e277350f9017a2a7",
+  "persona": "blunt",
+  "first": "plain"
+ },
+ "q22": {
+  "case_id": "0bd0be3d5fc5a036",
+  "persona": "blunt",
+  "first": "other"
+ },
+ "q23": {
+  "case_id": "93481d933551fe1b",
+  "persona": "plain",
+  "first": "other"
+ },
+ "q24": {
+  "case_id": "93481d933551fe1b",
+  "persona": "blunt",
+  "first": "other"
+ },
+ "q25": {
+  "case_id": "95b5dedc19716269",
+  "persona": "dry",
+  "first": "other"
+ },
+ "q26": {
+  "case_id": "558de3b1bd6f2a26",
+  "persona": "blunt",
+  "first": "plain"
+ },
+ "q27": {
+  "case_id": "93481d933551fe1b",
+  "persona": "warm",
+  "first": "other"
+ },
+ "q28": {
+  "case_id": "e5072bd5a8fd1130",
+  "persona": "plain",
+  "first": "plain"
+ },
+ "q29": {
+  "case_id": "5e89fc884aaeddb3",
+  "persona": "plain",
+  "first": "other"
+ },
+ "q30": {
+  "case_id": "93481d933551fe1b",
+  "persona": "dry",
+  "first": "other"
+ },
+ "q31": {
+  "case_id": "0bd0be3d5fc5a036",
+  "persona": "dry",
+  "first": "plain"
+ },
+ "q32": {
+  "case_id": "5ea00eb8bef16f52",
+  "persona": "warm",
+  "first": "plain"
+ },
+ "q33": {
+  "case_id": "558de3b1bd6f2a26",
+  "persona": "dry",
+  "first": "other"
+ },
+ "q34": {
+  "case_id": "e277350f9017a2a7",
+  "persona": "warm",
+  "first": "other"
+ },
+ "q35": {
+  "case_id": "e277350f9017a2a7",
+  "persona": "plain",
+  "first": "plain"
+ },
+ "q36": {
+  "case_id": "d5e95385c7f81b2e",
+  "persona": "blunt",
+  "first": "other"
+ },
+ "q37": {
+  "case_id": "558de3b1bd6f2a26",
+  "persona": "plain",
+  "first": "plain"
+ },
+ "q38": {
+  "case_id": "95b5dedc19716269",
+  "persona": "blunt",
+  "first": "other"
+ },
+ "q39": {
+  "case_id": "5ea00eb8bef16f52",
+  "persona": "plain",
+  "first": "plain"
+ }
+}

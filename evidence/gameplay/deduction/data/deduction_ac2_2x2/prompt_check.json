@@ -1,0 +1,113 @@
+{
+ "same_system_both_placements": true,
+ "same_schema_key_targets_both_placements": true,
+ "legal_vote_targets": [
+  "player_2",
+  "player_4",
+  "player_6",
+  "player_8",
+  "player_10",
+  "abstain"
+ ],
+ "live_render_equals_n10_file": {
+  "before_note": true,
+  "after_note": true
+ },
+ "system_chars": 12306,
+ "system_sha256": "016c791eaeff2a0c9e792767e3ffa2095f88639f1ce3ed6e18f9461a19a492ca",
+ "removed_strings": [
+  " player_2 says player_8 came to you on night 2, and player_8 says it protected you that night. These agree; the sighting does not show which action player_8 took.",
+  " player_3's will shows player_7, the Chanteuse, went to player_8 on night 1. The pack's kill that night was on player_1, so that visit was her block on player_8."
+ ],
+ "removed_chars": [
+  162,
+  161
+ ],
+ "arms": [
+  {
+   "arm": "current_before_note",
+   "chars": 11115,
+   "chars_removed": 0,
+   "occurrences_before_removal": [],
+   "occurrences_in_seat_block": [],
+   "occurrences_after_removal": [],
+   "equals_sum_of_removals": true,
+   "seat_block_chars": 1470,
+   "seat_block_in_prompt_once": true,
+   "sha256": "0b6e189475bea7261a965f8c58ae59a4de6953851172eaca36063dc0f2805815"
+  },
+  {
+   "arm": "current_after_note",
+   "chars": 11115,
+   "chars_removed": 0,
+   "occurrences_before_removal": [],
+   "occurrences_in_seat_block": [],
+   "occurrences_after_removal": [],
+   "equals_sum_of_removals": true,
+   "seat_block_chars": 1470,
+   "seat_block_in_prompt_once": true,
+   "sha256": "382ca07439b41143abd8f1fb0fbd44e73ebbf51cccb2bbba24fe2b0bb38350b1"
+  },
+  {
+   "arm": "trimmed_before_note",
+   "chars": 10792,
+   "chars_removed": 323,
+   "occurrences_before_removal": [
+    1,
+    1
+   ],
+   "occurrences_in_seat_block": [
+    1,
+    1
+   ],
+   "occurrences_after_removal": [
+    0,
+    0
+   ],
+   "equals_sum_of_removals": true,
+   "seat_block_chars": 1147,
+   "seat_block_in_prompt_once": true,
+   "sha256": "6f214ca5ae2a9581f6f441e6623bf87d336b211f79e47322a265c1ecf55acb34"
+  },
+  {
+   "arm": "trimmed_after_note",
+   "chars": 10792,
+   "chars_removed": 323,
+   "occurrences_before_removal": [
+    1,
+    1
+   ],
+   "occurrences_in_seat_block": [
+    1,
+    1
+   ],
+   "occurrences_after_removal": [
+    0,
+    0
+   ],
+   "equals_sum_of_removals": true,
+   "seat_block_chars": 1147,
+   "seat_block_in_prompt_once": true,
+   "sha256": "994e8f8eb182799003c9c85cb713003cc367131788fefa63f04660462c76470d"
+  }
+ ],
+ "placement_pairs": [
+  {
+   "block": "current",
+   "same_seat_block": true,
+   "only_the_block_moves": true,
+   "same_multiset_of_chars": true,
+   "block_before_note_in_before": true,
+   "block_after_note_in_after": true
+  },
+  {
+   "block": "trimmed",
+   "same_seat_block": true,
+   "only_the_block_moves": true,
+   "same_multiset_of_chars": true,
+   "block_before_note_in_before": true,
+   "block_after_note_in_after": true
+  }
+ ],
+ "all_ok": true
+}

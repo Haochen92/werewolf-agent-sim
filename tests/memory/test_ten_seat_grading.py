@@ -124,6 +124,23 @@ def test_illusionist_conceals():
     assert view(landed).night_grade(night_case("p8", 2, "declined")) == "neutral"
 
 
+def test_a_chat_lesson_is_graded_by_the_move_it_is_about():
+    # the kill lands on a town role (positive), the conceal hides a body with no record (negative),
+    # the block cancels a vigilante who held fire (negative)
+    n = night(2, [rec("wolves", "kill", "p1", "killed"), rec("p8", "conceal", None, "concealed"),
+                  rec("p7", "block", "p4", "blocked")],
+              [kill_choice("p7", "p1"), {"actor": "p4", "kind": "hold_fire", "role": "vigilante", "target": None}],
+              deaths=["p1"], concealed=["p1"])
+    v = view(n)
+    assert v.pack_move_grade(2, "kill") == "positive"
+    assert v.pack_move_grade(2, "conceal") == "negative"
+    assert v.pack_move_grade(2, "block") == "negative"
+    no_conceal = night(2, [rec("wolves", "kill", "p1", "killed")], deaths=["p1"])
+    assert view(no_conceal).pack_move_grade(2, "conceal") == "neutral"  # the illusionist declined
+    illusionist_dead = night(1, [rec("wolves", "kill", "p2", "killed")], deaths=["p8"])
+    assert view(illusionist_dead, no_conceal).pack_move_grade(2, "conceal") is None  # no one holds it
+
+
 # --- town ---
 
 @pytest.mark.parametrize("record, grade", [
@@ -308,6 +325,11 @@ def test_observation_grade_finds_the_named_decision():
     assert v.observation_grade("investigator", "night_action", 2) == "positive"
     assert v.observation_grade("chanteuse", "night_action", 2, "kill") == "positive"
     assert v.observation_grade("chanteuse", "night_action", 2, "several") is None  # no single decision
+    assert v.observation_grade("chanteuse", "night_action", 2, "chat") is None  # talk names no move
+    assert v.observation_grade("chanteuse", "night_action", 2, "chat", "kill") == "positive"
+    assert v.observation_grade("chanteuse", "night_action", 2, "chat", "block") is None  # lynched on day 2
+    alive = view(pack_night("killed", extra=[rec("p7", "block", "p4", "blocked")]))
+    assert alive.observation_grade("chanteuse", "night_action", 2, "chat", "block") == "negative"  # nothing to cancel
     assert v.observation_grade("illusionist", "night_action", 2, "skill") == "neutral"  # declined: no will
     assert v.observation_grade("sentinel", "night_action", 2) == "neutral"  # no record: a declined watch
     assert v.observation_grade("investigator", "day_vote", 2) == "positive"
@@ -390,6 +412,28 @@ def test_a_served_games_decisions_come_from_its_memory_consulted_events():
     assert chat["agent_night_action"]["kind"] == "chat" and chat["strategy_index_to_key"] == {"1": "k1"}
     assert skill["agent_night_action"]["kind"] == "declined"  # round 5 with no block of its own
     assert vote["agent_vote"] == {"votee": "p8"} and vote["memory_enabled"]
+
+
+def test_lessons_followed_in_the_chat_are_credited_by_their_move(tmp_path):
+    case = {**night_case("p7", 2, "chat"), "memory_enabled": True,
+            "strategy_index_to_key": {"1": "k_kill", "2": "k_conceal", "3": "k_untagged"},
+            "strategy_verdicts": [{"strategy_index": i, "verdict": "follow"} for i in (1, 2, 3)]}
+    n = night(2, [rec("wolves", "kill", "p1", "killed"), rec("p8", "conceal", None, "concealed")],
+              [kill_choice("p7", "p1")], deaths=["p1"], concealed=["p1"])
+    on = _window(tmp_path, [case], {"night_resolutions": [n], "day_resolutions": []})
+    sp = tmp_path / "strategy_points.json"
+    cell = "chanteuse/night_action"
+    sp.write_text(json.dumps({"namespaces": {f"strategy_points/{cell}": [
+        strategy_point("k_kill", cell=cell, pack_move="kill"),
+        strategy_point("k_conceal", cell=cell, pack_move="conceal"),
+        strategy_point("k_untagged", cell=cell)]}}))
+    credit_apply(sp, on, base_rates={"chanteuse/night_action/chat": [0.1, 10],
+                                     "illusionist/night_action/skill": [-0.3, 10]}, by_day=False)
+    got = {r["key"]: r["value"] for r in json.loads(sp.read_text())["namespaces"][f"strategy_points/{cell}"]}
+    assert (got["k_kill"]["positive_count"], got["k_kill"]["credit_base"]) == (1, 0.1)
+    # the conceal hid a body with no record: graded by the conceal, against the conceal's base
+    assert (got["k_conceal"]["negative_count"], got["k_conceal"]["credit_base"]) == (1, -0.3)
+    assert got["k_untagged"]["positive_count"] == 1  # no move recorded: the night's kill, as before
 
 
 def test_a_merged_duplicates_credit_counts_for_its_survivor(tmp_path):

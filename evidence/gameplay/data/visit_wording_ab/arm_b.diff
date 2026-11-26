@@ -1,0 +1,1506 @@
+diff --git a/Agents/deduction/candidates/wording.py b/Agents/deduction/candidates/wording.py
+index 3a7939aa..0edd2a37 100644
+--- a/Agents/deduction/candidates/wording.py
++++ b/Agents/deduction/candidates/wording.py
+@@ -75,7 +75,7 @@ DEEDS = {
+     "roleblocked": "it roleblocked {target} on night {night}",
+     "roleblocked_the_carrier": "it roleblocked the wolf carrying the kill on night {night}",
+     "protected": "it protected {target} on night {night}",
+-    "went_to": "it went to {target} on night {night}",
++    "went_to": "it targeted {target} on night {night}",
+     "attacked": "it attacked {target} on night {night}",
+     "picked": "it picked a side on night {night}",
+ }
+diff --git a/Agents/deduction/comparisons/block_visits.py b/Agents/deduction/comparisons/block_visits.py
+index e8f8e142..05d86047 100644
+--- a/Agents/deduction/comparisons/block_visits.py
++++ b/Agents/deduction/comparisons/block_visits.py
+@@ -32,7 +32,7 @@ from Agents.schemas.deduction import (
+     Source,
+ )
+ 
+-VERB = {"watch": "came to", "follow": "went to"}
++VERB = {"watch": "targeted", "follow": "targeted"}
+ 
+ 
+ def chanteuse_block_items(view: SeatView, record: PublicRecord, possible: Possible) -> list[DeductionItem]:
+@@ -52,9 +52,9 @@ def chanteuse_block_items(view: SeatView, record: PublicRecord, possible: Possib
+             continue
+         said.add((night, target))
+         source = "Your" if visit.holder is None else f"{visit.holder}'s will shows"
+-        how = "" if visit.holder is not None else f" {visit.how} shows"
++        how = "" if visit.holder is not None else f" {'track' if visit.how == 'follow' else visit.how} shows"
+         text = (f"{source}{how} {chanteuse}, the Chanteuse, {VERB[visit.how]} {target} on night {night}. "
+-                f"The pack's {victim[1]} that night was on {victim[0]}, so that visit was her block on {target}.")
++                f"The pack's {victim[1]} that night was on {victim[0]}, so that was her block on {target}.")
+         block = ChoseAction(chanteuse, "block", target, went_ahead=True)
+         conclusion: tuple = (block,)
+         first = Source("own_record", night) if visit.holder is None else Source("will", night, visit.holder)
+diff --git a/Agents/deduction/comparisons/conflicts.py b/Agents/deduction/comparisons/conflicts.py
+index 319b384d..eccc6f91 100644
+--- a/Agents/deduction/comparisons/conflicts.py
++++ b/Agents/deduction/comparisons/conflicts.py
+@@ -115,7 +115,7 @@ def _item(view: SeatView, n: wording.Names, statement: VisitStatement, account:
+         if account.kind == "none_by" and account.claim.blocked:
+             reason = wording.blocked_goes_nowhere()
+         elif statement.block:
+-            reason = "A roleblock is a visit." if not only else wording.only_blocker_sentence(n, statement.visitors[0])
++            reason = "A roleblock targets the player blocked." if not only else wording.only_blocker_sentence(n, statement.visitors[0])
+         text = wording.cannot_both(_statement_clause(n, statement, night, True), _account_clause(n, account, night, False),
+                                    reason)
+         conclusion = NotAllTrue((*statement.facts, *account.facts))
+diff --git a/Agents/deduction/comparisons/wording.py b/Agents/deduction/comparisons/wording.py
+index 281ee7d0..6c89cbf7 100644
+--- a/Agents/deduction/comparisons/wording.py
++++ b/Agents/deduction/comparisons/wording.py
+@@ -13,7 +13,7 @@ from __future__ import annotations
+ from Agents.deduction.joins.wording import DEED
+ from Agents.deduction.wording import ROLE_TITLES
+ 
+-DOES = {"investigate": "checks", "protect": "protects", "watch": "watches", "follow": "follows",
++DOES = {"investigate": "checks", "protect": "protects", "watch": "watches", "follow": "tracks",
+         "shoot": "shoots at", "sigil": "sets a sigil on"}
+ """What a role's one action a night does, in the present (a player who does it visits no one else)."""
+ 
+@@ -53,8 +53,7 @@ def _at(text: str, night_words: str) -> str:
+ 
+ def sighting(n: Names, claimant: str, how: str, visitor: str, target: str, night_words: str) -> str:
+     """A claimed watch or follow that saw a visit: "player_2 says player_7 came to player_5 on night 1"."""
+-    verb = "came to" if how == "watch" else "went to"
+-    return _at(f"{claimant} says {n(visitor)} {verb} {n(target)}", night_words)
++    return _at(f"{claimant} says {n(visitor)} targeted {n(target)}", night_words)
+ 
+ 
+ def own_visit(n: Names, claimant: str, action: str, target: str, night_words: str) -> str:
+@@ -68,21 +67,21 @@ def roleblocked(claimant: str, night_words: str) -> str:
+ 
+ def saw_no_one_come(n: Names, claimant: str, target: str, night_words: str) -> str:
+     """A claimed watch that saw no one (AC4, line 5)."""
+-    return _at(f"{claimant} says no one came to {n(target)}", night_words)
++    return _at(f"{claimant} says no one targeted {n(target)}", night_words)
+ 
+ 
+ def saw_visit_no_one(n: Names, claimant: str, followed: str, night_words: str) -> str:
+     """A claimed follow that saw the followed player visit no one."""
+-    return _at(f"{claimant} says {n(followed)} visited no one", night_words)
++    return _at(f"{claimant} says {n(followed)} targeted no one", night_words)
+ 
+ 
+ def visited_no_one(claimant: str, night_words: str) -> str:
+     """A player's own denial (AC3, line 3): "player_6 says it visited no one on night 2"."""
+-    return _at(f"{claimant} says it visited no one", night_words)
++    return _at(f"{claimant} says it targeted no one", night_words)
+ 
+ 
+ def did_not_go_to(n: Names, claimant: str, target: str, night_words: str) -> str:
+-    return _at(f"{claimant} says it did not go to {n(target)}", night_words)
++    return _at(f"{claimant} says it did not target {n(target)}", night_words)
+ 
+ 
+ # --- an engine source, as the evidence of a line --------------------------------------------------
+@@ -101,29 +100,29 @@ def you_saw(n: Names, holder: str | None, how: str, visitor: str, target: str) -
+     """A visit the seat's (or a will's) watch or follow saw: "your watch saw player_7 come to player_3
+     that night"."""
+     whose = "your" if holder is None else f"{holder}'s"
+-    verb = "come to" if how == "watch" else "go to"
+-    return f"{_holder_shows(holder)}{whose} {how} saw {n(visitor)} {verb} {n(target)} that night"
++    noun = "track" if how == "follow" else how
++    return f"{_holder_shows(holder)}{whose} {noun} showed {n(visitor)} targeting {n(target)} that night"
+ 
+ 
+ def you_were_blocked(holder: str | None) -> str:
+     """A roleblock is a visit to the blocked player (catalogue L3)."""
+     if holder is None:
+-        return "you were roleblocked that night, and a block is a visit to you"
+-    return f"{holder}'s will shows {holder} was roleblocked that night, and a block is a visit to {holder}"
++        return "you were roleblocked that night, and a block targets the player blocked"
++    return f"{holder}'s will shows {holder} was roleblocked that night, and a block targets the player blocked"
+ 
+ 
+ def watch_saw_everyone(n: Names, holder: str | None, target: str, missing: str) -> str:
+     """An engine watch's whole list (catalogue L12: every visitor but the watcher's own)."""
+     whose = "your" if holder is None else f"{holder}'s"
+     watcher = "you" if holder is None else holder
+-    return (f"{_holder_shows(holder)}{whose} watch on {n(target)} saw everyone who came to {n(target)} that night "
++    return (f"{_holder_shows(holder)}{whose} watch on {n(target)} showed everyone who targeted {n(target)} that night "
+             f"but {watcher}, and {missing}")
+ 
+ 
+ def follow_saw_everywhere(n: Names, holder: str | None, followed: str, missing: str) -> str:
+     """An engine follow's whole list: every place the followed player went that night."""
+     whose = "your" if holder is None else f"{holder}'s"
+-    return (f"{_holder_shows(holder)}{whose} follow of {n(followed)} saw everywhere {n(followed)} went that night, "
++    return (f"{_holder_shows(holder)}{whose} track of {n(followed)} showed everyone {n(followed)} targeted that night, "
+             f"and {missing}")
+ 
+ 
+@@ -137,7 +136,7 @@ def no_blocker_among() -> str:
+ 
+ def you_did_not_go(n: Names, target: str) -> str:
+     """The seat's own movements: it knows every visit it made."""
+-    return f"you did not go to {n(target)} that night"
++    return f"you did not target {n(target)} that night"
+ 
+ 
+ 
+@@ -159,17 +158,17 @@ def blocked_goes_nowhere() -> str:
+ 
+ def one_visit_a_night(action: str) -> str:
+     """E2a for a role that makes one visit a night."""
+-    return f"A player who {DOES[action]} a player goes nowhere else that night."
++    return f"A player who {DOES[action]} a player targets no one else that night."
+ 
+ 
+ def only_if_chanteuse(visitor: str) -> str:
+     """E2a (catalogue wording): two places in one night."""
+-    return (f"These can both be true only if {visitor} visited two players that night, which only the Chanteuse "
++    return (f"These can both be true only if {visitor} targeted two players that night, which only the Chanteuse "
+             f"does when she carries the pack's kill.")
+ 
+ 
+ def not_the_chanteuse(visitor: str) -> str:
+-    return f"Only the Chanteuse visits two players in one night, and {visitor} cannot be the Chanteuse."
++    return f"Only the Chanteuse targets two players in one night, and {visitor} cannot be the Chanteuse."
+ 
+ 
+ def two_places_false(evidence: str, claim: str, reason: str) -> str:
+@@ -186,13 +185,13 @@ def agree(first: str, second: str, visitor: str, bare: bool) -> str:
+ 
+ def directions(outgoing: str, player: str, incoming_source: str) -> str:
+     """E17 (AC3, line 3): where a player went and who came to it are different questions."""
+-    return (f"{outgoing}. That is about where {player} went. {incoming_source} is about who came to {player}. "
++    return (f"{outgoing}. That is about whom {player} targeted. {incoming_source} is about who targeted {player}. "
+             f"The two do not conflict.")
+ 
+ 
+ def no_one_came_is_not_inaction(claim: str, target: str) -> str:
+     """E17 (AC4, line 5)."""
+-    return f"{claim}. That is about who came to {target}, not about whether {target} acted."
++    return f"{claim}. That is about who targeted {target}, not about whether {target} acted."
+ 
+ 
+ def incoming_source(n: Names, claimant: str | None, holder: str | None) -> str:
+@@ -308,7 +307,7 @@ def visitor_already_dead(claim: str, visitor: str, how: str, necromancer: bool)
+     """E14: a dead name visits only as the Necromancer's body, and that body could not be used (or the
+     cast has no Necromancer)."""
+     why = (f"the Necromancer could not act through {visitor}'s body that night" if necromancer
+-           else "no one visits in a dead player's name in this game")
++           else "no one targets in a dead player's name in this game")
+     return f"{claim}, but {visitor} was already dead by then ({how}), and {why}: that report is false."
+ 
+ 
+@@ -442,8 +441,8 @@ def _told(role: str, deeds: list, spent: int | None) -> str:
+     if deeds:
+         told = _story(deeds)
+     else:  # a neutral: its action is not a visit
+-        told = ("you made no visit, and the Fortune Teller's bets are not visits" if role == "fortune_teller"
+-                else f"you made no visit, and {title(role)}'s pick is not a visit")
++        told = ("you targeted no one, and the Fortune Teller's bets target no one" if role == "fortune_teller"
++                else f"you targeted no one, and {title(role)}'s pick targets no one")
+     if spent is not None:
+         told += f" (all {spent} of {title(role)}'s {_USE_NOUN[role]})"
+     return told
+@@ -460,7 +459,7 @@ def covers(n: Names, fitting: list[tuple[str, list, int | None]],
+     these nights."; for a seat that claimed a role with no story left: "As the Investigator, the role
+     you claim, no story fits night 3: you visited a player on each night, and the Investigator has 2
+     checks for the whole game."."""
+-    sentences = [f"{_joined(players, 'and')} {'says it' if len(players) == 1 else 'say they'} saw your visit on night {night}."
++    sentences = [f"{_joined(players, 'and')} {'says it' if len(players) == 1 else 'say they'} saw you target a player on night {night}."
+                  for night, players in sorted(reported.items())]
+     if fitting:
+         told = "; ".join(f"as {title(role)}, {_told(role, deeds, spent)}" for role, deeds, spent in fitting)
+@@ -476,7 +475,7 @@ def covers(n: Names, fitting: list[tuple[str, list, int | None]],
+     if stuck is not None:
+         role, nights, uses = stuck
+         when = f"night {nights[0]}" if len(nights) == 1 else f"nights {_joined([str(x) for x in nights], 'and')}"
+-        reason = (f"you visited a player on {when}, and {title(role)} has {uses} {_USE_NOUN[role]} for the whole game, "
++        reason = (f"you targeted a player on {when}, and {title(role)} has {uses} {_USE_NOUN[role]} for the whole game, "
+                   f"counting those you have already told" if uses is not None
+                   else "each story would contradict the record or a claim so far")
+         sentences.append(f"As {title(role)}, the role you claim, no story fits {when}: {reason}.")
+@@ -516,7 +515,7 @@ def own_record(night: int) -> str:
+ 
+ def own_protection_false(target: str, night: int) -> str:
+     """E4b, on a protection the seat could claim at a door its own visit went to."""
+-    return (f"On night {night} you went to {target}, and {target} died that night: a claim that you protected "
++    return (f"On night {night} you targeted {target}, and {target} died that night: a claim that you protected "
+             f"{target} then would be false, since a protection that goes ahead stops every attack.")
+ 
+ 
+@@ -526,16 +525,16 @@ def own_dead_targets(dead: list[tuple[str, str]], night: int) -> str:
+     if len(dead) == 1:
+         player, how = dead[0]
+         return (f"{player} was already dead when night {night} began ({how}): a claim that you checked, watched, "
+-                f"followed or protected {player} on night {night} would be false.")
++                f"tracked or protected {player} on night {night} would be false.")
+     names = _joined([player for player, _ in dead], "and")
+     hows = ", ".join(f"{player} {how}" for player, how in dead)
+     which = "either" if len(dead) == 2 else "any"
+     return (f"{names} were already dead when night {night} began ({hows}): a claim that you checked, watched, "
+-            f"followed or protected {which} of them on night {night} would be false.")
++            f"tracked or protected {which} of them on night {night} would be false.")
+ 
+ 
+ def own_two_visits(first: str, second: str, night: int) -> str:
+     """E2a's rule on the Chanteuse's own night: the pack's kill and a block elsewhere (L4)."""
+-    return (f"On night {night} you went to {first} and {second}, and neither visit was hidden: a follow of you that "
+-            f"night, or a watch on each of them, shows two visits, and only the Chanteuse visits two players in a "
++    return (f"On night {night} you targeted {first} and {second}, and neither was hidden: a track of you that "
++            f"night, or a watch on each of them, shows you targeting two players, and only the Chanteuse targets two players in a "
+             f"night.")
+diff --git a/Agents/deduction/conditionals/wording.py b/Agents/deduction/conditionals/wording.py
+index c5749fe7..0497823c 100644
+--- a/Agents/deduction/conditionals/wording.py
++++ b/Agents/deduction/conditionals/wording.py
+@@ -11,9 +11,9 @@ from Agents.deduction.wording import ROLE_TITLES
+ from Agents.schemas.deduction import Premise
+ 
+ DONE = {"investigate": "checked", "protect": "protected", "shoot": "shot at", "kill": "attacked",
+-        "sigil": "set a sigil on", "block": "blocked", "visit": "gone to", "watch": "watched", "follow": "followed"}
++        "sigil": "set a sigil on", "block": "blocked", "visit": "targeted", "watch": "watched", "follow": "tracked"}
+ """What a claim says was done to its target, after "to have"."""
+-NAMED_BY_NOUN = {"watch": "watch", "follow": "follow", "investigate": "check"}
++NAMED_BY_NOUN = {"watch": "watch", "follow": "track", "investigate": "check"}
+ """Claimed actions a line names by their noun ("player_2's watch"); the others by what they say."""
+ 
+ 
+@@ -91,7 +91,7 @@ def player_is(player: str, roles: list[str], hidden: bool, wolf: bool) -> str:
+ 
+ def no_other_visitor(whom: str, night: int) -> str:
+     """The reason a visit pins its visitor (catalogue AC2, line 4)."""
+-    return f"no other role still in play could have come to {whom} on night {night}"
++    return f"no other role still in play could have targeted {whom} on night {night}"
+ 
+ 
+ def conditional(wording: Wording, clauses: list[str], reason: str | None = None) -> str:
+diff --git a/Agents/deduction/explanations/wording.py b/Agents/deduction/explanations/wording.py
+index b64dd9e5..ba6c139d 100644
+--- a/Agents/deduction/explanations/wording.py
++++ b/Agents/deduction/explanations/wording.py
+@@ -91,18 +91,18 @@ B3–B5, B11)."""
+ def came_and_shows(deed: str, target: str) -> str:
+     """A visit the morning shows went to the watched player: "the Serial Killer attacked player_5 that
+     night, and a watch shows that visit"."""
+-    return f"{deed} {target} that night, and a watch shows that visit"
++    return f"{deed} {target} that night, and a watch shows that"
+ 
+ 
+ def came_through_body(body: str, target: str) -> str:
+     """The Necromancer's visit through a body shows the body's name (catalogue L4)."""
+-    return f"the Necromancer went to {target} that night under {body}'s name, and a watch shows that visit"
++    return f"the Necromancer targeted {target} that night under {body}'s name, and a watch shows that"
+ 
+ 
+ def conceal_visit(target: str) -> str:
+     """The living Illusionist's conceal is a visit to the pack's victim, hidden only when it carried the
+     kill itself (catalogue L4, R5)."""
+-    return (f"the living Illusionist went to {target} that night to hide their role, a visit a watch shows "
++    return (f"the living Illusionist targeted {target} that night to hide their role, which a watch shows "
+             f"unless the Illusionist made the kill itself")
+ 
+ 
+diff --git a/Agents/deduction/joins/wording.py b/Agents/deduction/joins/wording.py
+index ec9971df..fc36d7f5 100644
+--- a/Agents/deduction/joins/wording.py
++++ b/Agents/deduction/joins/wording.py
+@@ -12,12 +12,12 @@ DEED = {
+     "investigate": "checked",
+     "protect": "protected",
+     "watch": "watched",
+-    "follow": "followed",
++    "follow": "tracked",
+     "shoot": "shot at",
+     "kill": "attacked",
+     "sigil": "set a sigil on",
+     "block": "blocked",
+-    "visit": "went to",
++    "visit": "targeted",
+ }
+ """What a record or a claim says was done to its target, as a verb in the past."""
+ 
+@@ -25,15 +25,15 @@ ACTION_NOUN = {
+     "investigate": "a check",
+     "protect": "a protection",
+     "watch": "a watch",
+-    "follow": "a follow",
++    "follow": "a track",
+     "shoot": "a shot",
+     "kill": "an attack",
+     "sigil": "a sigil",
+     "block": "a block",
+ }
+ 
+-SIGHTING_VERB = {"watch": "came to", "follow": "went to"}
+-"""A watch sees who came to its target; a follow sees where its target went."""
++SIGHTING_VERB = {"watch": "targeted", "follow": "targeted"}
++"""A watch shows who targeted its target; a track shows whom its target targeted."""
+ 
+ 
+ def _whom(holder: str | None) -> str:
+@@ -48,16 +48,15 @@ def _role(role: str) -> str:
+ 
+ def you_did_as_reported(claimant: str, sighting: str, target: str, night: int, action: str, role: str) -> str:
+     """The seat's own action, seen by the claimant's watch on the target or follow of the seat."""
+-    said = "came to" if sighting == "watch" else "went to"
+-    return (f"{claimant} says you {said} {target} on night {night}. You did: you {DEED[action]} {target} that "
++    return (f"{claimant} says you targeted {target} on night {night}. You did: you {DEED[action]} {target} that "
+             f"night. This confirms that part of {claimant}'s report, not that {claimant} is {_role(role)}.")
+ 
+ 
+ def holder_did_as_reported(holder: str, target: str, night: int, action: str, claimant: str, sighting: str,
+                            role: str) -> str:
+     """A will's own action, seen by the claimant's watch or follow."""
+-    return (f"{holder}'s will shows {holder} {DEED[action]} {target} on night {night}, so {holder} went to "
+-            f"{target} that night, as {claimant}'s {sighting} reported. This confirms that part of the report, "
++    return (f"{holder}'s will shows {holder} {DEED[action]} {target} on night {night}, so {holder} targeted "
++            f"{target} that night, as {claimant}'s {'track' if sighting == 'follow' else sighting} reported. This confirms that part of the report, "
+             f"not that {claimant} is {_role(role)}.")
+ 
+ 
+@@ -65,8 +64,8 @@ def seen_by_you(how: str, visitor: str, target: str, holder: str | None = None)
+     """What the seat's (or a will's) watch or follow saw, as the evidence of a line."""
+     whose = "Your" if holder is None else f"{holder}'s will shows {holder}'s"
+     if how == "watch":
+-        return f"{whose} watch saw {visitor} come to {target} that night."
+-    return f"{whose} follow saw {visitor} go to {target} that night."
++        return f"{whose} watch showed {visitor} targeting {target} that night."
++    return f"{whose} track showed {visitor} targeting {target} that night."
+ 
+ 
+ def sighting_as_reported(claimant: str, sighting: str, visitor: str, target: str, night: int, evidence: str,
+@@ -85,11 +84,11 @@ def own_claim_as_reported(visitor: str, action: str, target: str, night: int, ev
+         if role:
+             hedge += f" or that {visitor} is {_role(role)}"
+     elif role:
+-        hedge = f"not that {visitor} is {_role(role)} or that the visit was {ACTION_NOUN[action]}"
++        hedge = f"not that {visitor} is {_role(role)} or that it was {ACTION_NOUN[action]}"
+     else:
+-        hedge = f"not that the visit was {ACTION_NOUN[action]}"
++        hedge = f"not that it was {ACTION_NOUN[action]}"
+     return (f"{visitor} says it {DEED[action]} {target} on night {night}. {evidence} This confirms that "
+-            f"{visitor} went to {target}, {hedge}.")
++            f"{visitor} targeted {target}, {hedge}.")
+ 
+ 
+ def chanteuse_as_reported(claimant: str, chanteuse: str, night: int, dead: bool, role: str,
+@@ -98,8 +97,8 @@ def chanteuse_as_reported(claimant: str, chanteuse: str, night: int, dead: bool,
+     blocked player's door is true (catalogue AC2, line 2)."""
+     whom = _whom(holder)
+     opening = "You were" if holder is None else f"{holder} was"
+-    return (f"{opening} roleblocked on night {night}, so the Chanteuse came to {whom}, and {chanteuse} "
+-            f"{'was' if dead else 'is'} the Chanteuse. {claimant}'s report that {chanteuse} came to {whom} that "
++    return (f"{opening} roleblocked on night {night}, so the Chanteuse targeted {whom}, and {chanteuse} "
++            f"{'was' if dead else 'is'} the Chanteuse. {claimant}'s report that {chanteuse} targeted {whom} that "
+             f"night is true. This does not show that {claimant} is {_role(role)}.")
+ 
+ 
+@@ -109,8 +108,8 @@ def body_as_reported(claimant: str, body: str, night: int, role: str, holder: st
+     whom = _whom(holder)
+     opening = "You were" if holder is None else f"{holder} was"
+     return (f"{opening} roleblocked on night {night} through the dead Chanteuse's body, so a watch on {whom} "
+-            f"would have shown {body}. {claimant}'s report that {body} came to {whom} that night is true in "
+-            f"name: the Necromancer, not {body}, made that visit. This does not show that {claimant} is "
++            f"would have shown {body}. {claimant}'s report that {body} targeted {whom} that night is true in "
++            f"name: the Necromancer, not {body}, did the targeting. This does not show that {claimant} is "
+             f"{_role(role)}.")
+ 
+ 
+@@ -120,13 +119,13 @@ def claimed_visitor(reporters: list[str], visitor: str, agrees: bool, night: int
+     """The premise: who says `visitor` came to the blocked player (one or two named claims)."""
+     whom = _whom(holder)
+     if not reporters:
+-        return f"{visitor} says it came to {whom} on night {night}."
++        return f"{visitor} says it targeted {whom} on night {night}."
+     said = f"{reporters[0]} says" if len(reporters) == 1 else f"{reporters[0]} and {reporters[1]} say"
+     agreement = f", and {visitor} agrees" if agrees else ""
+-    return f"{said} {visitor} came to {whom} on night {night}{agreement}."
++    return f"{said} {visitor} targeted {whom} on night {night}{agreement}."
+ 
+ 
+ def chanteuse_or_both(premise: str, visitor: str, holder: str | None = None) -> str:
+     """Catalogue AC1, line 2: never "the visitor is the Chanteuse", since a second visitor is possible."""
+     return (f"{premise} If that is true, either {visitor} is the Chanteuse, or {visitor} and the Chanteuse both "
+-            f"came to {_whom(holder)}.")
++            f"targeted {_whom(holder)}.")
+diff --git a/Agents/deduction/public/wording.py b/Agents/deduction/public/wording.py
+index ded004e0..d8d06833 100644
+--- a/Agents/deduction/public/wording.py
++++ b/Agents/deduction/public/wording.py
+@@ -22,23 +22,23 @@ VISITOR = {
+ 
+ def went_there_and_was_shown(doer: str, target: str, night: int) -> str:
+     who, verb = VISITOR[doer]
+-    return (f"{who} went to {target} on night {night} to {verb} them, and a watch on {target} that night "
+-            "would have shown that visit.")
++    return (f"{who} targeted {target} on night {night} to {verb} them, and a watch on {target} that night "
++            "would have shown it.")
+ 
+ 
+ def healer_went_there(target: str, night: int) -> str:
+     return (f"The living Healer protected {target} on night {night}: it was alive and not roleblocked that "
+-            f"night, and a watch on {target} would have shown its visit.")
++            f"night, and a watch on {target} would have shown it targeting {target}.")
+ 
+ 
+ def killer_went_there_unseen(target: str, night: int) -> str:
+-    return (f"The wolf who killed {target} on night {night} went to {target} unseen: the living "
+-            "Illusionist's conceal hides that visit from every watch and follow.")
++    return (f"The wolf who killed {target} on night {night} targeted {target} without being shown: the living "
++            "Illusionist's conceal hides that targeting from every watch and track.")
+ 
+ 
+ def illusionist_was_alive(target: str, night: int) -> str:
+     return (f"{target}'s role was hidden by the living Illusionist, so the Illusionist was alive at the start "
+-            f"of night {night} and went to {target} that night.")
++            f"of night {night} and targeted {target} that night.")
+ 
+ 
+ def no_protection(target: str, night: int) -> str:
+@@ -70,8 +70,8 @@ def conceals_used_up(target: str) -> str:
+ 
+ 
+ def reanimated_conceal_hides_no_visit(target: str, night: int) -> str:
+-    return (f"{target}'s role was hidden through the dead Illusionist's body, which hides no visit: every "
+-            f"visit to {target} on night {night} would have shown on a watch or a follow.")
++    return (f"{target}'s role was hidden through the dead Illusionist's body, which hides no one's targeting: "
++            f"everyone who targeted {target} on night {night} would have shown on a watch or a track.")
+ 
+ 
+ # --- what an attacked player can be (B2, B7, B9–B12, B33) ---------------------------------------
+@@ -196,8 +196,8 @@ def will_shows(holder: str, night: int, deed: str) -> str:
+ 
+ 
+ def holder_blocked_by_living_chanteuse(holder: str) -> str:
+-    return (f"Only the Chanteuse could roleblock that night, and a block is a visit, so the Chanteuse, a wolf, "
+-            f"came to {holder} that night.")
++    return (f"Only the Chanteuse could roleblock that night, and a block targets the player, so the Chanteuse, a wolf, "
++            f"targeted {holder} that night.")
+ 
+ 
+ def holder_blocked_through_chanteuse_body(holder: str) -> str:
+@@ -211,9 +211,9 @@ def holder_held_fire(holder: str) -> str:
+ 
+ def will_has_nothing_for(holder: str, night: int) -> str:
+     return (f"{holder}'s will has nothing for night {night}, so {holder} made no choice that night: it used "
+-            "no ability and went to no one.")
++            "no ability and targeted no one.")
+ 
+ 
+ def revealed_with_nothing_on_record(holder: str, role: str, night: int) -> str:
+     return (f"{holder} was revealed as {ROLE_TITLES[role]} with nothing on record, so {holder} made no choice "
+-            f"on night {night}: it used no ability and went to no one.")
++            f"on night {night}: it used no ability and targeted no one.")
+diff --git a/Agents/deduction/wording.py b/Agents/deduction/wording.py
+index 19b5e80c..764c9405 100644
+--- a/Agents/deduction/wording.py
++++ b/Agents/deduction/wording.py
+@@ -32,7 +32,7 @@ BLOCKED_ACTION = {
+     "protect": "your protection of {target}",
+     "shoot": "your shot at {target}",
+     "watch": "your watch on {target}",
+-    "follow": "your follow of {target}",
++    "follow": "your track of {target}",
+     "sigil": "your sigil on {target}",
+ }
+ 
+@@ -47,12 +47,12 @@ def what_was_blocked(action: str, target: str | None) -> str:
+ 
+ def blocked_by_living_chanteuse(blocked: str) -> str:
+     return (f"You were roleblocked: {blocked}. Only the Chanteuse could roleblock that night, and a "
+-            "block is a visit, so the Chanteuse, a wolf, came to you that night.")
++            "block targets the player, so the Chanteuse, a wolf, targeted you that night.")
+ 
+ 
+ def blocked_through_chanteuse_body(blocked: str) -> str:
+     return (f"You were roleblocked: {blocked}. The Chanteuse was already dead, so the Necromancer "
+-            "blocked you through her body; a watcher at your door would have seen the Chanteuse's "
++            "blocked you through her body; a watch on you would have shown the Chanteuse's "
+             "name, not the Necromancer's.")
+ 
+ 
+@@ -194,8 +194,8 @@ def not_suspicious(target: str, still_possible: list[str]) -> str:
+ # --- watches and follows (A26, A27, A32–A35) ----------------------------------------------------
+ 
+ NEVER_VISITS_UNDER_OWN_NAME = {
+-    "under_body": "{title} visits only under a dead player's name",
+-    "never": "{title} never visits",
++    "under_body": "{title} targets only under a dead player's name",
++    "never": "{title} never targets anyone",
+ }
+ """Why a role's visits never show its name, by its `visits` trait."""
+ 
+@@ -204,7 +204,7 @@ BORROWED_VERB = {role: traits.borrowed_verb for role, traits in ROLE_TRAITS.item
+ 
+ 
+ def visit_does_not_show_the_action() -> str:
+-    return "A visit does not show which action was taken."
++    return "Targeting does not show which action was taken."
+ 
+ 
+ def not_roles_that_never_visit_in_own_name(names: list[str], roles: list[str]) -> str:
+@@ -218,14 +218,14 @@ def acted_through_body(body: str, body_role: str, target: str) -> str:
+ 
+ 
+ def no_one_else_visited(target: str) -> str:
+-    return (f"{target} survived, so no visit to {target} was hidden: no one attacked, protected, "
+-            f"checked, blocked, followed or set a sigil on {target} that night. This says nothing "
++    return (f"{target} survived, so no one targeting {target} was hidden: no one attacked, protected, "
++            f"checked, blocked, tracked or set a sigil on {target} that night. This says nothing "
+             f"about what {target} did.")
+ 
+ 
+ def visited_two_so_chanteuse(target: str, destinations: list[str]) -> str:
+     first, second = destinations
+-    return ("Only a wolf who carries the pack's kill and also blocks someone visits two players, so "
++    return ("Only a wolf who carries the pack's kill and also blocks someone targets two players, so "
+             f"{target} is the Chanteuse and carried the kill that night: one of {first} and {second} "
+             "was the pack's target, the other the player she tried to block.")
+ 
+@@ -239,7 +239,7 @@ def visited_no_one(target: str, not_serial_killer: bool, healer: str) -> str:
+         ruled_out.append(f"the Healer unless {target} was roleblocked")
+     elif healer == "certain":
+         ruled_out.append("the Healer")
+-    return (f"No visit was made in {target}'s name that night, so {target} is not "
++    return (f"No one was targeted in {target}'s name that night, so {target} is not "
+             f"{', and not '.join(ruled_out)}. This does not show that {target} did nothing.")
+ 
+ 
+@@ -353,32 +353,32 @@ def _names_with_or(names: list[str]) -> str:
+ 
+ def every_attack_was_a_visit(target: str, with_healer: bool, holder: str | None = None) -> str:
+     who = f"Everyone who attacked {target}" + (" and the Healer who saved them" if with_healer else "")
+-    return f"{who} came to {target}, and {_whose(holder)} watch saw every visitor but {_whom(holder)}."
++    return f"{who} targeted {target}, and {_whose(holder)} watch showed everyone who targeted {target} but {_whom(holder)}."
+ 
+ 
+ def reanimated_conceal_hides_no_visit(target: str, holder: str | None = None) -> str:
+-    return (f"{target}'s role was hidden through the dead Illusionist's body, which hides no visit: "
+-            f"everyone who attacked {target} came to {target}, and {_whose(holder)} watch saw every "
+-            f"visitor but {_whom(holder)}.")
++    return (f"{target}'s role was hidden through the dead Illusionist's body, which hides no one's targeting: "
++            f"everyone who attacked {target} targeted {target}, and {_whose(holder)} watch showed "
++            f"everyone who targeted {target} but {_whom(holder)}.")
+ 
+ 
+ def living_conceal_hides_the_killer(target: str, holder: str | None = None) -> str:
+     return (f"{target}'s role was hidden by the living Illusionist, whose conceal also hides the "
+-            f"visit of the wolf who made the kill: {_whose(holder)} watch could not see that wolf.")
++            f"targeting by the wolf who made the kill: {_whose(holder)} watch could not show that wolf.")
+ 
+ 
+ def illusionist_made_the_kill(target: str, holder: str | None = None) -> str:
+-    return (f"The Illusionist's conceal is a visit to {target}, and none of the players {_whom(holder)} saw "
++    return (f"The Illusionist's conceal targets {target}, and none of the players {_whom(holder)} saw "
+             "can be the Illusionist, so the Illusionist made the kill itself.")
+ 
+ 
+ def illusionist_made_the_kill_or_was_seen(target: str, names: list[str]) -> str:
+-    return (f"The Illusionist's conceal is a visit to {target}, so either the Illusionist made the "
++    return (f"The Illusionist's conceal targets {target}, so either the Illusionist made the "
+             f"kill itself, or it is {_names_with_or(names)}.")
+ 
+ 
+ def other_attacks_were_seen(target: str, holder: str | None = None) -> str:
+-    return f"Everyone else who attacked {target} came to {target}, and {_whose(holder)} watch saw them."
++    return f"Everyone else who attacked {target} targeted {target}, and {_whose(holder)} watch showed them."
+ 
+ 
+ def only_one_seen_can_be(doer: str, target: str, player: str, holder: str | None = None) -> str:
+diff --git a/Agents/prompts/game_rules.py b/Agents/prompts/game_rules.py
+index a7be98ae..15730df8 100644
+--- a/Agents/prompts/game_rules.py
++++ b/Agents/prompts/game_rules.py
+@@ -15,10 +15,10 @@ SIDES = {
+         "rules": (
+             "The wolves know each other and each other's roles, and talk privately at night. Each night one of them, the carrier, "
+             "kills one player; the carrier rotates through the living wolves in seat order (a lone wolf always "
+-            "carries), and is the only wolf who visits for the kill. Every wolf knows the pack's kill. A wolf may carry the kill and use its own "
+-            "ability on the same night. When an illusionist conceals the pack's victim, the carrier's visit to "
+-            "that victim is hidden as well: whoever watched the victim or followed the carrier does not see it. "
+-            "An illusionist that carries the kill itself and conceals that victim is not seen there at all."
++            "carries), and is the only wolf who targets the victim. Every wolf knows the pack's kill. A wolf may carry the kill and use its own "
++            "ability on the same night. When an illusionist conceals the pack's victim, the carrier's targeting of "
++            "that victim is hidden as well: a watch on the victim or a track on the carrier does not show it. "
++            "An illusionist that carries the kill itself and conceals that victim is not shown targeting it at all."
+         ),
+         "win": "The wolves win when the lone killer is gone and they equal or outnumber everyone else still alive.",
+     },
+@@ -63,15 +63,15 @@ Night, the actions:
+     night 1 included, and a role with no uses left, or nothing to act through, does not act at all.
+     Holding spends no use. A night with no action has no result, so no player owes a result for every
+     night: "I held" is not a missing result or a result kept secret. It is a claim that can be tested against other evidence, not proof
+-    that the claimant is truthful or lying. A night action carried out on a player is a visit, unless
+-    the role's rules say it is not; an action that was blocked is not carried out and is
+-    not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
+-    concealed, which leaves no trace.
+-- A visit goes one way, from the visitor to the player visited. A watch on a player shows who came to
+-    them, never where they went or whether they acted; a follow on a player shows whom they went to,
+-    never who came to them. "I visited no one" and "no one visited me" are different claims, and a watch
+-    that saw no one does not mean the watched player stayed home. When you speak of a visit, say which
+-    way it went: "I went to X", "X came to me".
++    that the claimant is truthful or lying. A night action carried out on a player targets that player,
++    unless the role's rules say it does not; an action that was blocked is not carried out and targets
++    no one. Roles that watch or track see who targeted whom, except the pack's kill on a victim an
++    illusionist concealed, which leaves no trace.
++- Targeting goes one way, from the actor to its target. A watch on a player shows who targeted them,
++    never whom they targeted or whether they acted; a track on a player shows whom they targeted, never
++    who targeted them. "I targeted no one" and "no one targeted me" are different claims, and a watch
++    that showed no one does not mean the watched player did not act. When you speak of a night action,
++    say who targeted whom: "I targeted X", "X targeted me".
+ - An attack kills its target unless the target is protected that night (a save, announced in the
+     morning) or cannot be killed at night (nothing announced, unless that role's rules above say the
+     attack is announced). A player attacked by more than one attacker still dies once.
+@@ -91,8 +91,8 @@ Morning, the report:
+     attacked and saved. A night where no one died and no one was saved is announced as "No one died last
+     night."
+ - Nothing else about the night is announced, beyond what a role's rules above say is announced: not a
+-    protection where no attack came, not an ability held back, not who did what, not who visited whom:
+-    only a watch, a follow or a will shows a visit, so the report's silence neither confirms nor
++    protection where no attack came, not an ability held back, not who did what, not who targeted whom:
++    only a watch, a track or a will shows who targeted whom, so the report's silence neither confirms nor
+     contradicts a claimed sighting. Only Town wills are read out, and a hidden role has none. Once read out, a will is
+     announced fact; anything a player says about the night is a claim.
+ 
+diff --git a/Agents/prompts/goldens/rules_necromancer_fortune_teller.txt b/Agents/prompts/goldens/rules_necromancer_fortune_teller.txt
+index b219abc9..f78b1814 100644
+--- a/Agents/prompts/goldens/rules_necromancer_fortune_teller.txt
++++ b/Agents/prompts/goldens/rules_necromancer_fortune_teller.txt
+@@ -1,8 +1,8 @@
+ Team composition (10 players, four sides):
+ Town (wins as a side):
+ - 1 Investigator: has 2 checks; a check on a player learns "Suspicious" or "Not suspicious".
+-- 1 Sentinel: has 2 watches; a watch on a player learns who visited them that night.
+-- 1 Trailseer: each night follows one player and learns whom they visited.
++- 1 Sentinel: has 2 watches; a watch on a player learns who targeted them that night.
++- 1 Trailseer: each night tracks one player and learns whom they targeted.
+ - 1 Vigilante: may shoot one player at night, with only a few bullets for the whole game.
+ - 1 Sigilist: has 2 sigils; a sigil placed on a player strikes them if they attack anyone that night.
+ - 1 Healer: each night protects one other player from any night attack; never used up.
+@@ -17,68 +17,70 @@ Neutral (has no side; wins by meeting its own win condition):
+ How each side and role works:
+ - Investigator: The Investigator has 2 checks for the whole game. At night it may check one player, or
+     keep its checks, and privately learns "Suspicious" or "Not suspicious". Wolves read Suspicious;
+-    everyone else reads Not suspicious, unless a role's rules below say otherwise. The check is a visit.
++    everyone else reads Not suspicious, unless a role's rules below say otherwise. Checking targets the
++    player.
+ - Sentinel: The Sentinel has 2 watches for the whole game. At night it may watch one player, or keep its
+-    watches, and privately learns the names of everyone who visited them that night, or that no one did.
+-    Watching is a visit, but the Sentinel is not among the visitors it is told of: its own watch never
+-    appears in its result.
+-- Trailseer: Each night the Trailseer follows one player and privately learns whom they visited that
+-    night, or that they visited no one. "Visited no one" means only that no visit was made in their name
+-    that night, not that they did nothing. Following is a visit.
++    watches, and privately learns the names of everyone who targeted them that night, or that no one
++    did. Watching targets the player, but the Sentinel is not among the names it is told of: its own
++    watch never appears in its result.
++- Trailseer: Each night the Trailseer tracks one player and privately learns whom they targeted that
++    night, or that they targeted no one. "Targeted no one" means only that no player was targeted in
++    their name that night, not that they did nothing. Tracking targets the player.
+ - Vigilante: The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot
+-    one player or hold its fire; a shot is an attack and a visit, and spends a bullet even if it does
+-    not kill. A shot at a player who cannot be killed at night does not kill them, but the Vigilante is
+-    told the target was immune; when that player's role says the attack is announced, it is told what
+-    saved them instead.
++    one player or hold its fire; a shot is an attack and targets the player, and spends a bullet even if
++    it does not kill. A shot at a player who cannot be killed at night does not kill them, but the
++    Vigilante is told the target was immune; when that player's role says the attack is announced, it is
++    told what saved them instead.
+ - Sigilist: The Sigilist has 2 sigils for the whole game. At night it may place one on a player, or keep
+     its sigils. If that player attacks anyone that night, the sigil strikes them: an attack of its own,
+     resolved after theirs, which protection or night immunity can stop; their original attack resolves
+     as normal either way. A death by sigil is announced as struck down by a sigil. The Sigilist is told
+     whether the sigil struck, or the healer saved its target from it; otherwise only that the sigil had
+     no effect, which is what both a target who did not attack and an attacker night immunity protected
+-    look like. A sigil is spent when placed, whether or not it triggers. Placing a sigil is a visit.
++    look like. A sigil is spent when placed, whether or not it triggers. Placing a sigil targets the
++    player.
+ - Healer: Each night the Healer protects one other player, never itself, from any night attack;
+     protection is never used up. A protected player who was attacked survives, and the morning report
+     says so ("X was attacked by the wolves but was saved by the healer"). An attack on a player who
+     cannot be killed at night is never announced, protected or not, and the Healer learns nothing of it,
+-    unless that player's role says the attack is announced. Protecting is a visit.
++    unless that player's role says the attack is announced. Protecting targets the player.
+ - The wolves: The wolves know each other and each other's roles, and talk privately at night. Each night
+     one of them, the carrier, kills one player; the carrier rotates through the living wolves in seat
+-    order (a lone wolf always carries), and is the only wolf who visits for the kill. Every wolf knows
++    order (a lone wolf always carries), and is the only wolf who targets the victim. Every wolf knows
+     the pack's kill. A wolf may carry the kill and use its own ability on the same night. When an
+-    illusionist conceals the pack's victim, the carrier's visit to that victim is hidden as well:
+-    whoever watched the victim or followed the carrier does not see it. An illusionist that carries the
+-    kill itself and conceals that victim is not seen there at all.
++    illusionist conceals the pack's victim, the carrier's targeting of that victim is hidden as well: a
++    watch on the victim or a track on the carrier does not show it. An illusionist that carries the kill
++    itself and conceals that victim is not shown targeting it at all.
+ - Chanteuse: Each night the Chanteuse also blocks one player's night action; the same player may be
+     blocked again on later nights. A blocked player who chose a night action is told "You were
+-    roleblocked", does nothing that night and makes no visit; one who chose none is told nothing. Her
++    roleblocked", does nothing that night and targets no one; one who chose none is told nothing. Her
+     block works on Town players (she cannot block her own pack); the lone killer and the neutral cannot
+-    be blocked, and the Chanteuse is told when a block did not take. Blocking is a visit.
++    be blocked, and the Chanteuse is told when a block did not take. Blocking targets the player.
+ - Illusionist: Twice per game the Illusionist may hide the role of the player the wolves killed that
+     night. The morning report then says "Their role is hidden by an illusionist" instead of the role,
+     that player has no will, and every wolf privately learns the role. Hiding the body also hides the
+-    attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the victim or
+-    a Trailseer following the carrier. The carrier's other visit that night is still seen, and so is the
+-    Illusionist's own visit to hide the body, unless the Illusionist carried the kill itself: then it
+-    leaves no trace at that door at all. If the wolves' victim survived, nothing is hidden, the use is
+-    kept, and every visit to the victim is seen.
++    attacking trace: the carrier's targeting of that victim is not shown to a Sentinel watching the
++    victim or a Trailseer tracking the carrier. The carrier's other target that night is still shown,
++    and so is the Illusionist's own targeting of the victim to hide the body, unless the Illusionist
++    carried the kill itself: then nothing shows it targeting the victim at all. If the wolves' victim
++    survived, nothing is hidden, the use is kept, and everyone who targeted the victim is shown.
+ - Necromancer: The Necromancer works alone against everyone. On the first night it does nothing. It
+     cannot be killed on the first two nights; from the third night on it can be killed like anyone else.
+     Each night from the second, it may pick a dead player whose role was announced and use that role's
+-    night ability on a target, or stay put. The same body may be used night after night; a body whose
++    night ability on a target, or not act. The same body may be used night after night; a body whose
+     role was hidden cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a
+     Chanteuse's body; such a block works on wolves too); an attack through the Illusionist's body also
+     hides the victim's role if they die, and the Necromancer learns it, while the Illusionist has
+     conceals left (the two it started with, less those it spent); through a dead Vigilante it shoots;
+     through a dead Healer it protects; through a dead Sigilist it places a sigil; through a dead
+     Investigator, Sentinel or Trailseer it learns what that role would have learned. The dead player's
+-    name, not the Necromancer's, is what a Sentinel or Trailseer sees at the door, and a sigil cannot
+-    punish an attack made through a body. The morning names an attack made through a body by the body's
+-    kind, reanimated ("killed by a reanimated wolf", "shot by a reanimated vigilante", "struck down by a
++    name, not the Necromancer's, is what a Sentinel or Trailseer is shown, and a sigil cannot punish an
++    attack made through a body. The morning names an attack made through a body by the body's kind,
++    reanimated ("killed by a reanimated wolf", "shot by a reanimated vigilante", "struck down by a
+     reanimated sigil"), so the town learns a Necromancer struck, though not who; a save through a dead
+     Healer's body is announced as made by a reanimated healer. On a night it kills through a body, it
+     reads Suspicious to the Investigator; on any other night (a block, protection, sigil or check
+-    through a body, or staying put), Not suspicious. It cannot be blocked, and it can be removed by a
++    through a body, or not acting), Not suspicious. It cannot be blocked, and it can be removed by a
+     daytime vote or, from the third night, by a night attack.
+ - Fortune Teller: The Fortune Teller has no side: it never counts as a member of any side, but it is a
+     living player who votes. Every night it places a bet on who will die that night, by any cause,
+@@ -89,7 +91,7 @@ How each side and role works:
+     ("X was attacked by the wolves but survived: the fortune teller's self-bet saved them"), so it shows
+     who the Fortune Teller is. A self-bet with no attack on it is not announced. Bets are placed when
+     the night starts and settled when it ends, when the Fortune Teller is told the result; a vote during
+-    the day never scores. A bet is not a visit, the Fortune Teller cannot be blocked, and it reads Not
++    the day never scores. A bet targets no one, the Fortune Teller cannot be blocked, and it reads Not
+     suspicious to the Investigator. It has no will: its record is never read out.
+ 
+ How a day and a night run, in order (the Game Master narrates and manages the flow):
+@@ -118,15 +120,15 @@ Night, the actions:
+     night 1 included, and a role with no uses left, or nothing to act through, does not act at all.
+     Holding spends no use. A night with no action has no result, so no player owes a result for every
+     night: "I held" is not a missing result or a result kept secret. It is a claim that can be tested against other evidence, not proof
+-    that the claimant is truthful or lying. A night action carried out on a player is a visit, unless
+-    the role's rules say it is not; an action that was blocked is not carried out and is
+-    not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
+-    concealed, which leaves no trace.
+-- A visit goes one way, from the visitor to the player visited. A watch on a player shows who came to
+-    them, never where they went or whether they acted; a follow on a player shows whom they went to,
+-    never who came to them. "I visited no one" and "no one visited me" are different claims, and a watch
+-    that saw no one does not mean the watched player stayed home. When you speak of a visit, say which
+-    way it went: "I went to X", "X came to me".
++    that the claimant is truthful or lying. A night action carried out on a player targets that player,
++    unless the role's rules say it does not; an action that was blocked is not carried out and targets
++    no one. Roles that watch or track see who targeted whom, except the pack's kill on a victim an
++    illusionist concealed, which leaves no trace.
++- Targeting goes one way, from the actor to its target. A watch on a player shows who targeted them,
++    never whom they targeted or whether they acted; a track on a player shows whom they targeted, never
++    who targeted them. "I targeted no one" and "no one targeted me" are different claims, and a watch
++    that showed no one does not mean the watched player did not act. When you speak of a night action,
++    say who targeted whom: "I targeted X", "X targeted me".
+ - An attack kills its target unless the target is protected that night (a save, announced in the
+     morning) or cannot be killed at night (nothing announced, unless that role's rules above say the
+     attack is announced). A player attacked by more than one attacker still dies once.
+@@ -146,8 +148,8 @@ Morning, the report:
+     attacked and saved. A night where no one died and no one was saved is announced as "No one died last
+     night."
+ - Nothing else about the night is announced, beyond what a role's rules above say is announced: not a
+-    protection where no attack came, not an ability held back, not who did what, not who visited whom:
+-    only a watch, a follow or a will shows a visit, so the report's silence neither confirms nor
++    protection where no attack came, not an ability held back, not who did what, not who targeted whom:
++    only a watch, a track or a will shows who targeted whom, so the report's silence neither confirms nor
+     contradicts a claimed sighting. Only Town wills are read out, and a hidden role has none. Once read out, a will is
+     announced fact; anything a player says about the night is a claim.
+ 
+diff --git a/Agents/prompts/goldens/rules_serial_killer_speculator.txt b/Agents/prompts/goldens/rules_serial_killer_speculator.txt
+index 94fafeb1..95533001 100644
+--- a/Agents/prompts/goldens/rules_serial_killer_speculator.txt
++++ b/Agents/prompts/goldens/rules_serial_killer_speculator.txt
+@@ -1,8 +1,8 @@
+ Team composition (10 players, four sides):
+ Town (wins as a side):
+ - 1 Investigator: has 2 checks; a check on a player learns "Suspicious" or "Not suspicious".
+-- 1 Sentinel: has 2 watches; a watch on a player learns who visited them that night.
+-- 1 Trailseer: each night follows one player and learns whom they visited.
++- 1 Sentinel: has 2 watches; a watch on a player learns who targeted them that night.
++- 1 Trailseer: each night tracks one player and learns whom they targeted.
+ - 1 Vigilante: may shoot one player at night, with only a few bullets for the whole game.
+ - 1 Sigilist: has 2 sigils; a sigil placed on a player strikes them if they attack anyone that night.
+ - 1 Healer: each night protects one other player from any night attack; never used up.
+@@ -17,61 +17,63 @@ Neutral (has no side; wins by meeting its own win condition):
+ How each side and role works:
+ - Investigator: The Investigator has 2 checks for the whole game. At night it may check one player, or
+     keep its checks, and privately learns "Suspicious" or "Not suspicious". Wolves read Suspicious;
+-    everyone else reads Not suspicious, unless a role's rules below say otherwise. The check is a visit.
++    everyone else reads Not suspicious, unless a role's rules below say otherwise. Checking targets the
++    player.
+ - Sentinel: The Sentinel has 2 watches for the whole game. At night it may watch one player, or keep its
+-    watches, and privately learns the names of everyone who visited them that night, or that no one did.
+-    Watching is a visit, but the Sentinel is not among the visitors it is told of: its own watch never
+-    appears in its result.
+-- Trailseer: Each night the Trailseer follows one player and privately learns whom they visited that
+-    night, or that they visited no one. "Visited no one" means only that no visit was made in their name
+-    that night, not that they did nothing. Following is a visit.
++    watches, and privately learns the names of everyone who targeted them that night, or that no one
++    did. Watching targets the player, but the Sentinel is not among the names it is told of: its own
++    watch never appears in its result.
++- Trailseer: Each night the Trailseer tracks one player and privately learns whom they targeted that
++    night, or that they targeted no one. "Targeted no one" means only that no player was targeted in
++    their name that night, not that they did nothing. Tracking targets the player.
+ - Vigilante: The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot
+-    one player or hold its fire; a shot is an attack and a visit, and spends a bullet even if it does
+-    not kill. A shot at a player who cannot be killed at night does not kill them, but the Vigilante is
+-    told the target was immune; when that player's role says the attack is announced, it is told what
+-    saved them instead.
++    one player or hold its fire; a shot is an attack and targets the player, and spends a bullet even if
++    it does not kill. A shot at a player who cannot be killed at night does not kill them, but the
++    Vigilante is told the target was immune; when that player's role says the attack is announced, it is
++    told what saved them instead.
+ - Sigilist: The Sigilist has 2 sigils for the whole game. At night it may place one on a player, or keep
+     its sigils. If that player attacks anyone that night, the sigil strikes them: an attack of its own,
+     resolved after theirs, which protection or night immunity can stop; their original attack resolves
+     as normal either way. A death by sigil is announced as struck down by a sigil. The Sigilist is told
+     whether the sigil struck, or the healer saved its target from it; otherwise only that the sigil had
+     no effect, which is what both a target who did not attack and an attacker night immunity protected
+-    look like. A sigil is spent when placed, whether or not it triggers. Placing a sigil is a visit.
++    look like. A sigil is spent when placed, whether or not it triggers. Placing a sigil targets the
++    player.
+ - Healer: Each night the Healer protects one other player, never itself, from any night attack;
+     protection is never used up. A protected player who was attacked survives, and the morning report
+     says so ("X was attacked by the wolves but was saved by the healer"). An attack on a player who
+     cannot be killed at night is never announced, protected or not, and the Healer learns nothing of it,
+-    unless that player's role says the attack is announced. Protecting is a visit.
++    unless that player's role says the attack is announced. Protecting targets the player.
+ - The wolves: The wolves know each other and each other's roles, and talk privately at night. Each night
+     one of them, the carrier, kills one player; the carrier rotates through the living wolves in seat
+-    order (a lone wolf always carries), and is the only wolf who visits for the kill. Every wolf knows
++    order (a lone wolf always carries), and is the only wolf who targets the victim. Every wolf knows
+     the pack's kill. A wolf may carry the kill and use its own ability on the same night. When an
+-    illusionist conceals the pack's victim, the carrier's visit to that victim is hidden as well:
+-    whoever watched the victim or followed the carrier does not see it. An illusionist that carries the
+-    kill itself and conceals that victim is not seen there at all.
++    illusionist conceals the pack's victim, the carrier's targeting of that victim is hidden as well: a
++    watch on the victim or a track on the carrier does not show it. An illusionist that carries the kill
++    itself and conceals that victim is not shown targeting it at all.
+ - Chanteuse: Each night the Chanteuse also blocks one player's night action; the same player may be
+     blocked again on later nights. A blocked player who chose a night action is told "You were
+-    roleblocked", does nothing that night and makes no visit; one who chose none is told nothing. Her
++    roleblocked", does nothing that night and targets no one; one who chose none is told nothing. Her
+     block works on Town players (she cannot block her own pack); the lone killer and the neutral cannot
+-    be blocked, and the Chanteuse is told when a block did not take. Blocking is a visit.
++    be blocked, and the Chanteuse is told when a block did not take. Blocking targets the player.
+ - Illusionist: Twice per game the Illusionist may hide the role of the player the wolves killed that
+     night. The morning report then says "Their role is hidden by an illusionist" instead of the role,
+     that player has no will, and every wolf privately learns the role. Hiding the body also hides the
+-    attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the victim or
+-    a Trailseer following the carrier. The carrier's other visit that night is still seen, and so is the
+-    Illusionist's own visit to hide the body, unless the Illusionist carried the kill itself: then it
+-    leaves no trace at that door at all. If the wolves' victim survived, nothing is hidden, the use is
+-    kept, and every visit to the victim is seen.
++    attacking trace: the carrier's targeting of that victim is not shown to a Sentinel watching the
++    victim or a Trailseer tracking the carrier. The carrier's other target that night is still shown,
++    and so is the Illusionist's own targeting of the victim to hide the body, unless the Illusionist
++    carried the kill itself: then nothing shows it targeting the victim at all. If the wolves' victim
++    survived, nothing is hidden, the use is kept, and everyone who targeted the victim is shown.
+ - Serial Killer: The Serial Killer works alone against everyone. Each night it kills one player; the
+-    kill is an attack and a visit. It cannot be killed at night by any attack (an attack on it fails,
+-    and nothing is announced), it cannot be blocked, it reads Not suspicious to the Investigator, and it
+-    can only be removed by a daytime vote.
++    kill is an attack and targets the player. It cannot be killed at night by any attack (an attack on
++    it fails, and nothing is announced), it cannot be blocked, it reads Not suspicious to the
++    Investigator, and it can only be removed by a daytime vote.
+ - Speculator: The Speculator belongs to no side: it never counts as a member of any side, but it is a
+     living player who votes. On any night it may privately pick the side it expects to win: Town, the
+     Wolves, the lone killer, or itself. The next morning the Game Master announces the pick but not who
+     made it. The pick is made once and cannot be changed. Picking early gives the Speculator a side for
+     more of the game; picking late gives it more to go on, but if it dies before picking it has lost.
+-    The pick is not a visit, and the Speculator cannot be blocked. It has no will: its record is never
++    The pick targets no one, and the Speculator cannot be blocked. It has no will: its record is never
+     read out.
+ 
+ How a day and a night run, in order (the Game Master narrates and manages the flow):
+@@ -100,15 +102,15 @@ Night, the actions:
+     night 1 included, and a role with no uses left, or nothing to act through, does not act at all.
+     Holding spends no use. A night with no action has no result, so no player owes a result for every
+     night: "I held" is not a missing result or a result kept secret. It is a claim that can be tested against other evidence, not proof
+-    that the claimant is truthful or lying. A night action carried out on a player is a visit, unless
+-    the role's rules say it is not; an action that was blocked is not carried out and is
+-    not a visit. Roles that watch or follow see visits, except the pack's kill on a victim an illusionist
+-    concealed, which leaves no trace.
+-- A visit goes one way, from the visitor to the player visited. A watch on a player shows who came to
+-    them, never where they went or whether they acted; a follow on a player shows whom they went to,
+-    never who came to them. "I visited no one" and "no one visited me" are different claims, and a watch
+-    that saw no one does not mean the watched player stayed home. When you speak of a visit, say which
+-    way it went: "I went to X", "X came to me".
++    that the claimant is truthful or lying. A night action carried out on a player targets that player,
++    unless the role's rules say it does not; an action that was blocked is not carried out and targets
++    no one. Roles that watch or track see who targeted whom, except the pack's kill on a victim an
++    illusionist concealed, which leaves no trace.
++- Targeting goes one way, from the actor to its target. A watch on a player shows who targeted them,
++    never whom they targeted or whether they acted; a track on a player shows whom they targeted, never
++    who targeted them. "I targeted no one" and "no one targeted me" are different claims, and a watch
++    that showed no one does not mean the watched player did not act. When you speak of a night action,
++    say who targeted whom: "I targeted X", "X targeted me".
+ - An attack kills its target unless the target is protected that night (a save, announced in the
+     morning) or cannot be killed at night (nothing announced, unless that role's rules above say the
+     attack is announced). A player attacked by more than one attacker still dies once.
+@@ -128,8 +130,8 @@ Morning, the report:
+     attacked and saved. A night where no one died and no one was saved is announced as "No one died last
+     night."
+ - Nothing else about the night is announced, beyond what a role's rules above say is announced: not a
+-    protection where no attack came, not an ability held back, not who did what, not who visited whom:
+-    only a watch, a follow or a will shows a visit, so the report's silence neither confirms nor
++    protection where no attack came, not an ability held back, not who did what, not who targeted whom:
++    only a watch, a track or a will shows who targeted whom, so the report's silence neither confirms nor
+     contradicts a claimed sighting. Only Town wills are read out, and a hidden role has none. Once read out, a will is
+     announced fact; anything a player says about the night is a claim.
+ 
+diff --git a/Agents/prompts/prompt_formatters.py b/Agents/prompts/prompt_formatters.py
+index db0c9ea4..32150547 100644
+--- a/Agents/prompts/prompt_formatters.py
++++ b/Agents/prompts/prompt_formatters.py
+@@ -26,6 +26,26 @@ from Agents.schemas.game_events import (
+     WolfChannel,
+ )
+ 
++import re
++
++# Visit-wording A/B (arm B): records and announcements stored by games played on the "visit"
++# wording, rewritten into the "targeted" wording as they are rendered (night_record.py templates).
++_RETARGET = [
++    (re.compile(r"Tonight (player_\d+) was visited by "), r"Tonight \1 was targeted by "),
++    (re.compile(r"No one visited (player_\d+) tonight\."), r"No one targeted \1 tonight."),
++    (re.compile(r"Tonight (player_\d+) visited "), r"Tonight \1 targeted "),
++    (re.compile(r"(player_\d+) visited no one tonight\."), r"\1 targeted no one tonight."),
++    (re.compile(r"(watched player_\d+; saw (?:player_\d+(?:, | and )?)+) visit them"), r"\1 target them"),
++    (re.compile(r"followed (player_\d+); they visited "), r"tracked \1; they targeted "),
++]
++
++
++def retarget(text: str) -> str:
++    """Old "visit" wording in an engine-written text, as the "targeted" wording."""
++    for pattern, repl in _RETARGET:
++        text = pattern.sub(repl, text)
++    return text
++
+ 
+ def format_dead_roster(roster: list[DeathRecord]) -> str:
+     """Render the public dead roster as one compact line: who is dead, their revealed role, and
+@@ -82,7 +102,8 @@ def format_day_channel(messages: list[DayChannel]) -> str:
+     """The public transcript: published lines only, the same for every reader. Passes are hidden,
+     held-back drafts included; a held-back turn's note is dropped instead (audit 2026-10-03, finding
+     2: a line nobody heard must not survive as a belief that it was said)."""
+-    lines = [f"{m.player}: {m.message}" for m in messages if not m.passed]
++    lines = [f"{m.player}: {retarget(m.message) if m.player == 'game_master' else m.message}"
++             for m in messages if not m.passed]
+     return "\n".join(lines) if lines else "No messages yet."
+ 
+ 
+@@ -112,7 +133,7 @@ def format_day_summaries(summaries: list[DaySummary], before_day: int | None = N
+     discussion = [s for s in selected if s.source != "game_master"]
+     blocks = [
+         "-- The game master's record (exact; it outranks anything a player or a summary says) --\n"
+-        + ("\n".join(f"[Day {s.day}] {s.summary.strip()}" for s in record) or "Nothing announced yet.")
++        + ("\n".join(f"[Day {s.day}] {retarget(s.summary.strip())}" for s in record) or "Nothing announced yet.")
+     ]
+     spoken = [m for m in messages or [] if before_day is None or m.day < before_day]
+     claims = format_claims_on_record(selected, dead_roster, cast_role_counts, spoken)
+@@ -205,15 +226,15 @@ def format_night_actions(records: list[NightActionRecord], current_day: int | No
+     if not records and not quiet:
+         return "Nothing yet."
+     verbs = {"protect": "you protected", "shoot": "you shot", "kill": "you attacked",
+-             "investigate": "you checked", "watch": "you watched", "follow": "you followed",
++             "investigate": "you checked", "watch": "you watched", "follow": "you tracked",
+              "sigil": "you set a sigil on", "block": "you blocked", "bet": "you bet on"}
+     lines = []
+     for i, r in enumerate(records):
+         night = f"Night {r.day}" + (" (last night)" if current_day is not None and r.day == current_day - 1 else "")
+         implied = implications[i] if implications else None
+-        outcome = r.outcome
++        outcome = retarget(r.outcome)
+         if implied is not None:
+-            outcome = implied.text if implied.replaces_outcome else f"{r.outcome} {implied.text}"
++            outcome = implied.text if implied.replaces_outcome else f"{outcome} {implied.text}"
+         if r.result == "roleblocked":
+             lines.append(f"{night}: {outcome}")
+             continue
+diff --git a/Agents/prompts/roles/chanteuse.py b/Agents/prompts/roles/chanteuse.py
+index d01303d2..dc587458 100644
+--- a/Agents/prompts/roles/chanteuse.py
++++ b/Agents/prompts/roles/chanteuse.py
+@@ -6,9 +6,9 @@ from Agents.schemas.role_card import NightWords, RoleCard
+ RULES = """
+ Each night the Chanteuse also blocks one player's night action; the same player may be blocked
+ again on later nights. A blocked player who chose a night action is told "You were roleblocked",
+-does nothing that night and makes no visit; one who chose none is told nothing. Her block works on Town players (she cannot block her own pack); the lone
+-killer and the neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking is a
+-visit.
++does nothing that night and targets no one; one who chose none is told nothing. Her block works on Town players (she cannot block her own pack); the lone
++killer and the neutral cannot be blocked, and the Chanteuse is told when a block did not take. Blocking targets
++the player.
+ """
+ 
+ PLAYSTYLE = """
+diff --git a/Agents/prompts/roles/fortune_teller.py b/Agents/prompts/roles/fortune_teller.py
+index dd0229e0..086ed5b9 100644
+--- a/Agents/prompts/roles/fortune_teller.py
++++ b/Agents/prompts/roles/fortune_teller.py
+@@ -12,7 +12,7 @@ points are scored. An attack a self-bet stopped is announced in the morning, nam
+ ("X was attacked by the wolves but survived: the fortune teller's self-bet saved them"), so it
+ shows who the Fortune Teller is. A self-bet with no attack on it is not announced. Bets are
+ placed when the night starts and settled when it ends, when the Fortune Teller is told the
+-result; a vote during the day never scores. A bet is not a visit, the
++result; a vote during the day never scores. A bet targets no one, the
+ Fortune Teller cannot be blocked, and it reads Not suspicious to the Investigator. It has no
+ will: its record is never read out.
+ """
+diff --git a/Agents/prompts/roles/healer.py b/Agents/prompts/roles/healer.py
+index 24c02a31..0c9730dc 100644
+--- a/Agents/prompts/roles/healer.py
++++ b/Agents/prompts/roles/healer.py
+@@ -8,7 +8,7 @@ is never used up. A protected player who was attacked survives, and the morning
+ ("X was attacked by the wolves but was saved by the healer"). An attack on a player who cannot
+ be killed at night is never announced, protected or not, and the Healer learns nothing of it,
+ unless that player's role says the attack is announced.
+-Protecting is a visit.
++Protecting targets the player.
+ """
+ 
+ PLAYSTYLE = """
+diff --git a/Agents/prompts/roles/illusionist.py b/Agents/prompts/roles/illusionist.py
+index e03f8f71..84ee777b 100644
+--- a/Agents/prompts/roles/illusionist.py
++++ b/Agents/prompts/roles/illusionist.py
+@@ -7,11 +7,11 @@ RULES = """
+ Twice per game the Illusionist may hide the role of the player the wolves killed that night. The
+ morning report then says "Their role is hidden by an illusionist" instead of the role, that
+ player has no will, and every wolf privately learns the role. Hiding the body also hides the
+-attacking trace: the carrier's visit to that victim is not seen by a Sentinel watching the victim
+-or a Trailseer following the carrier. The carrier's other visit that night is still seen, and so is
+-the Illusionist's own visit to hide the body, unless the Illusionist carried the kill itself: then it
+-leaves no trace at that door at all. If the wolves' victim survived, nothing is hidden, the use is
+-kept, and every visit to the victim is seen.
++attacking trace: the carrier's targeting of that victim is not shown to a Sentinel watching the
++victim or a Trailseer tracking the carrier. The carrier's other target that night is still shown, and
++so is the Illusionist's own targeting of the victim to hide the body, unless the Illusionist carried
++the kill itself: then nothing shows it targeting the victim at all. If the wolves' victim survived,
++nothing is hidden, the use is kept, and everyone who targeted the victim is shown.
+ """
+ 
+ PLAYSTYLE = """
+diff --git a/Agents/prompts/roles/investigator.py b/Agents/prompts/roles/investigator.py
+index 57fe94e4..3ffc0764 100644
+--- a/Agents/prompts/roles/investigator.py
++++ b/Agents/prompts/roles/investigator.py
+@@ -5,7 +5,7 @@ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWor
+ RULES = """
+ The Investigator has 2 checks for the whole game. At night it may check one player, or keep its
+ checks, and privately learns "Suspicious" or "Not suspicious". Wolves read Suspicious; everyone
+-else reads Not suspicious, unless a role's rules below say otherwise. The check is a visit.
++else reads Not suspicious, unless a role's rules below say otherwise. Checking targets the player.
+ """
+ 
+ PLAYSTYLE = """
+diff --git a/Agents/prompts/roles/necromancer.py b/Agents/prompts/roles/necromancer.py
+index 669d97cf..cda79272 100644
+--- a/Agents/prompts/roles/necromancer.py
++++ b/Agents/prompts/roles/necromancer.py
+@@ -7,20 +7,20 @@ RULES = """
+ The Necromancer works alone against everyone. On the first night it does nothing. It cannot be
+ killed on the first two nights; from the third night on it can be killed like anyone else. Each
+ night from the second, it may pick a dead player whose role was announced and use that role's night ability on a
+-target, or stay put. The same body may be used night after night; a body whose role was hidden
++target, or not act. The same body may be used night after night; a body whose role was hidden
+ cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a
+ Chanteuse's body; such a block works on wolves too); an attack through the Illusionist's body also hides the victim's role if they
+ die, and the Necromancer learns it, while the Illusionist has conceals left (the two it started
+ with, less those it spent); through a dead Vigilante it shoots; through a dead
+ Healer it protects; through a dead Sigilist it places a sigil; through a dead Investigator,
+ Sentinel or Trailseer it learns what that role would have learned. The dead player's name, not
+-the Necromancer's, is what a Sentinel or Trailseer sees at the door, and a sigil cannot punish
++the Necromancer's, is what a Sentinel or Trailseer is shown, and a sigil cannot punish
+ an attack made through a body. The morning names an attack made through a body by the body's kind,
+ reanimated ("killed by a reanimated wolf", "shot by a reanimated vigilante", "struck down by a
+ reanimated sigil"), so the town learns a Necromancer struck, though not who; a save through a dead
+ Healer's body is announced as made by a reanimated healer. On a night it kills through a body, it
+ reads Suspicious to the Investigator; on any other night (a block, protection, sigil or check
+-through a body, or staying put), Not suspicious. It cannot be blocked, and it can be removed by a daytime vote
++through a body, or not acting), Not suspicious. It cannot be blocked, and it can be removed by a daytime vote
+ or, from the third night, by a night attack.
+ """
+ 
+@@ -45,7 +45,7 @@ dominate the conversation nor vanish from it. Your aim is to be read as harmless
+ Claiming a role: You may claim any role in the game that is not your own, a town role or a
+ neutral one. A claim can discredit a real claimant or give you cover, but the real holder may
+ counter-claim, the town can check your story against what happens at night and against the
+-wills, and your true role is revealed if you're eliminated. Your visits show your bodies' names,
++wills, and your true role is revealed if you're eliminated. A watch or a track shows your bodies' names,
+ not yours, so no sighting names you; but a player with no role is the one the town votes out, and
+ a player who denies a sighting is read as lying. Plan a cover before you need it: your worked-out
+ lines list the roles you can claim without contradicting the public record, and a role no living
+diff --git a/Agents/prompts/roles/pack.py b/Agents/prompts/roles/pack.py
+index 6a4865a3..03b702a9 100644
+--- a/Agents/prompts/roles/pack.py
++++ b/Agents/prompts/roles/pack.py
+@@ -22,15 +22,15 @@ Communication: Actively blend in — pure silence or blatant deflection stands o
+ genuinely plausible, specific reasoning the way a town player would, and engage with the
+ discussion rather than leaning on empty deflection.
+ 
+-Your night actions are never public. If a Sentinel or Trailseer says you visited someone, never
++Your night actions are never public. If a Sentinel or Trailseer says you targeted someone, never
+ explain it with what you really did: a block, a conceal or the pack's kill names your role.
+ Never deny it either: a denied sighting reads as a lie and gets you voted out. Claim a role
+-whose night action explains the visit, and keep that story the same every time you are asked.
++whose night action explains the targeting, and keep that story the same every time you are asked.
+ 
+ Plan your cover before you need it. Your worked-out lines list the roles you can claim without
+ contradicting the public record, and a role no living player holds, or one whose holder died with
+ its role hidden, cannot be counter-claimed truthfully. Choose one and claim it when it helps you:
+-when someone says you visited a player, when an information role is close to exposing you, or to
++when someone says you targeted a player, when an information role is close to exposing you, or to
+ discredit a real claimant. Rarely, revealing your true role to bargain with a neutral player is the
+ better play.
+ 
+@@ -101,7 +101,7 @@ to find a wolf.
+ # Read on both night turns about the kill: the chat and the carrier's choice.
+ NIGHT_STRATEGY = """
+ Night Strategy: At night, you and your ally choose who to eliminate; the carrier names the
+-target and is the only wolf who visits for it, so a watcher at the victim's door sees the
++target and is the only wolf who targets the victim, so a watch on the victim shows the
+ carrier. Removing whoever most threatens the pack — usually an effective or well-trusted town
+ player — keeps the opposition disorganized; weigh that against drawing a pattern that points
+ back to you. A dead town player's will is read out in the morning, so what a victim had learned
+@@ -143,8 +143,8 @@ CHAT_CLOSING = (
+ # The carrier's turn after the chat: one wolf names the pack's target.
+ CARRIER_ABILITY = """
+ You are {player_id}, a {player_role}, and tonight's carrier.
+-The wolf discussion is over — name the pack's target now. Your choice binds the pack: you make
+-the visit, and every wolf learns the target. Follow the consensus from the chat history unless
++The wolf discussion is over — name the pack's target now. Your choice binds the pack: you are
++the one who targets the victim, and every wolf learns the target. Follow the consensus from the chat history unless
+ you have a strong reason to defect.
+ You may only target surviving non-wolf players, not yourself or your allies.
+ """ + NIGHT_STRATEGY
+diff --git a/Agents/prompts/roles/sentinel.py b/Agents/prompts/roles/sentinel.py
+index 5239da6a..74a3b222 100644
+--- a/Agents/prompts/roles/sentinel.py
++++ b/Agents/prompts/roles/sentinel.py
+@@ -4,16 +4,16 @@ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWor
+ 
+ RULES = """
+ The Sentinel has 2 watches for the whole game. At night it may watch one player, or keep its
+-watches, and privately learns the names of everyone who visited them that night, or that no one
+-did. Watching is a visit, but the Sentinel is not among the visitors it is told of: its own watch
+-never appears in its result.
++watches, and privately learns the names of everyone who targeted them that night, or that no one
++did. Watching targets the player, but the Sentinel is not among the names it is told of: its own
++watch never appears in its result.
+ """
+ 
+ PLAYSTYLE = """
+ ## SENTINEL (Core Strategy)
+ 
+-Identity & Goal: You are the Sentinel, on the town's side. A visitor is evidence, not a verdict:
+-a kill, a protection, a check, a block and a sigil all look the same at the door.
++Identity & Goal: You are the Sentinel, on the town's side. A name in a watch is evidence, not a verdict:
++a kill, a protection, a check, a block and a sigil all show the same in a watch.
+ """
+ 
+ DISCUSS_FRAMING = """
+@@ -64,7 +64,7 @@ Your night actions so far (private; recorded by the game master):
+ CARD = RoleCard(
+     side="town",
+     name="Sentinel",
+-    lineup="has 2 watches; a watch on a player learns who visited them that night.",
++    lineup="has 2 watches; a watch on a player learns who targeted them that night.",
+     rules=RULES,
+     playstyle=PLAYSTYLE,
+     day_discuss=DiscussWords(framing=DISCUSS_FRAMING, context=DISCUSS_CONTEXT),
+diff --git a/Agents/prompts/roles/serial_killer.py b/Agents/prompts/roles/serial_killer.py
+index effce84c..1293fd18 100644
+--- a/Agents/prompts/roles/serial_killer.py
++++ b/Agents/prompts/roles/serial_killer.py
+@@ -5,7 +5,7 @@ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWor
+ 
+ RULES = """
+ The Serial Killer works alone against everyone. Each night it kills one player; the kill is an
+-attack and a visit. It cannot be killed at night by any attack (an attack on it fails, and
++attack and targets the player. It cannot be killed at night by any attack (an attack on it fails, and
+ nothing is announced), it cannot be blocked, it reads Not suspicious to the Investigator, and it
+ can only be removed by a daytime vote.
+ """
+@@ -33,15 +33,15 @@ neutral one. A claim can discredit a real claimant or give you cover, but the re
+ counter-claim, the town can check your story against what happens at night and against the
+ wills, and your true role is revealed if you're eliminated.
+ 
+-Your night actions are never public. If a Sentinel or Trailseer says you visited someone, never
++Your night actions are never public. If a Sentinel or Trailseer says you targeted someone, never
+ explain it with what you really did: your attack names your role.
+ Never deny it either: a denied sighting reads as a lie and gets you voted out. Claim a role
+-whose night action explains the visit, and keep that story the same every time you are asked.
++whose night action explains the targeting, and keep that story the same every time you are asked.
+ 
+ Plan your cover before you need it. Your worked-out lines list the roles you can claim without
+ contradicting the public record, and a role no living player holds, or one whose holder died with
+ its role hidden, cannot be counter-claimed truthfully. Choose one and claim it when it helps you:
+-when someone says you visited a player, when an information role is close to exposing you, or to
++when someone says you targeted a player, when an information role is close to exposing you, or to
+ discredit a real claimant. Rarely, revealing your true role to bargain with a neutral player is the
+ better play.
+ 
+diff --git a/Agents/prompts/roles/sigilist.py b/Agents/prompts/roles/sigilist.py
+index b2564587..27af3434 100644
+--- a/Agents/prompts/roles/sigilist.py
++++ b/Agents/prompts/roles/sigilist.py
+@@ -10,7 +10,7 @@ resolves as normal either way. A death by sigil is announced as struck down by a
+ Sigilist is told whether the sigil struck, or the healer saved its target from it; otherwise only
+ that the sigil had no effect, which is what both a target who did not attack and an attacker
+ night immunity protected look like. A sigil is spent when placed, whether or not it triggers.
+-Placing a sigil is a visit.
++Placing a sigil targets the player.
+ """
+ 
+ PLAYSTYLE = """
+diff --git a/Agents/prompts/roles/speculator.py b/Agents/prompts/roles/speculator.py
+index 70757171..8b17d191 100644
+--- a/Agents/prompts/roles/speculator.py
++++ b/Agents/prompts/roles/speculator.py
+@@ -8,7 +8,7 @@ player who votes. On any night it may privately pick the side it expects to win:
+ Wolves, the lone killer, or itself. The next morning the Game Master announces the pick but not
+ who made it. The pick is made once and cannot be changed. Picking early gives the Speculator a
+ side for more of the game; picking late gives it more to go on, but if it dies before picking it
+-has lost. The pick is not a visit, and the Speculator cannot be blocked. It has no will: its
++has lost. The pick targets no one, and the Speculator cannot be blocked. It has no will: its
+ record is never read out.
+ """
+ 
+diff --git a/Agents/prompts/roles/trailseer.py b/Agents/prompts/roles/trailseer.py
+index 988b14d9..e1d673ce 100644
+--- a/Agents/prompts/roles/trailseer.py
++++ b/Agents/prompts/roles/trailseer.py
+@@ -3,15 +3,15 @@
+ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWords
+ 
+ RULES = """
+-Each night the Trailseer follows one player and privately learns whom they visited that night,
+-or that they visited no one. "Visited no one" means only that no visit was made in their name that
+-night, not that they did nothing. Following is a visit.
++Each night the Trailseer tracks one player and privately learns whom they targeted that night,
++or that they targeted no one. "Targeted no one" means only that no player was targeted in their
++name that night, not that they did nothing. Tracking targets the player.
+ """
+ 
+ PLAYSTYLE = """
+ ## TRAILSEER (Core Strategy)
+ 
+-Identity & Goal: You are the Trailseer, on the town's side. A visit is evidence, not a verdict:
++Identity & Goal: You are the Trailseer, on the town's side. A target is evidence, not a verdict:
+ the morning report and the claims tell you what it was.
+ """
+ 
+@@ -44,13 +44,13 @@ Your night actions (private; recorded by the game master, and only you know them
+ 
+ NIGHT_ABILITY = """
+ You are {player_id}, a {player_role}.
+-Tonight you follow one player. You cannot follow yourself.
++Tonight you track one player. You cannot track yourself.
+ 
+-Night Strategy: Whom to follow is your own judgment.
++Night Strategy: Whom to track is your own judgment.
+ """
+ 
+ NIGHT_CONTEXT = """
+-Surviving players you can follow: {surviving_players}
++Surviving players you can track: {surviving_players}
+ Your night actions so far (private; recorded by the game master):
+ {night_actions}
+ """
+@@ -58,7 +58,7 @@ Your night actions so far (private; recorded by the game master):
+ CARD = RoleCard(
+     side="town",
+     name="Trailseer",
+-    lineup="each night follows one player and learns whom they visited.",
++    lineup="each night tracks one player and learns whom they targeted.",
+     rules=RULES,
+     playstyle=PLAYSTYLE,
+     day_discuss=DiscussWords(framing=DISCUSS_FRAMING, context=DISCUSS_CONTEXT),
+@@ -70,7 +70,7 @@ CARD = RoleCard(
+     night=NightWords(
+         ability=NIGHT_ABILITY,
+         context=NIGHT_CONTEXT,
+-        closing="Choose a player to follow tonight.",
++        closing="Choose a player to track tonight.",
+         target_field="trailseer_target",
+         lot=True,
+     ),
+diff --git a/Agents/prompts/roles/vigilante.py b/Agents/prompts/roles/vigilante.py
+index 33be3855..67ec488a 100644
+--- a/Agents/prompts/roles/vigilante.py
++++ b/Agents/prompts/roles/vigilante.py
+@@ -4,7 +4,7 @@ from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWor
+ 
+ RULES = """
+ The Vigilante has a few bullets for the whole game and cannot reload. At night it may shoot one
+-player or hold its fire; a shot is an attack and a visit, and spends a bullet even if it does
++player or hold its fire; a shot is an attack and targets the player, and spends a bullet even if it does
+ not kill. A shot at a player who cannot be killed at night does not kill them, but the Vigilante
+ is told the target was immune; when that player's role says the attack is announced, it is told
+ what saved them instead.
+diff --git a/Agents/rules/claim_ledger.py b/Agents/rules/claim_ledger.py
+index 89dfeaab..551be6cb 100644
+--- a/Agents/rules/claim_ledger.py
++++ b/Agents/rules/claim_ledger.py
+@@ -40,15 +40,15 @@ _SELF_BET_SAVE = re.compile(r"(\S+) was attacked by [^!.]*? but survived: the fo
+ _NIGHT = re.compile(r"^Night of day (\d+):")
+ 
+ _VERBS = {"no_action": "did not act", "investigate": "checked", "protect": "protected", "shoot": "shot", "kill": "attacked",
+-          "watch": "watched", "follow": "followed", "sigil": "set a sigil on", "block": "blocked",
+-          "conceal": "concealed", "bet": "bet on", "pick": "picked", "visit": "went to"}
++          "watch": "watched", "follow": "tracked", "sigil": "set a sigil on", "block": "blocked",
++          "conceal": "concealed", "bet": "bet on", "pick": "picked", "visit": "targeted"}
+ _NOUNS = {"investigate": "check", "protect": "protection", "shoot": "shot", "kill": "kill",
+-          "watch": "watch", "follow": "trail", "sigil": "sigil", "block": "block",
++          "watch": "watch", "follow": "track", "sigil": "sigil", "block": "block",
+           "conceal": "conceal", "bet": "bet", "pick": "pick"}
+ # Claimed actions on oneself that only make sense as something done TO the speaker.
+ _DONE_TO_ONESELF = {"block", "watch", "follow", "investigate", "sigil", "kill", "shoot", "conceal", "visit"}
+ PLAN_VERBS = {"investigate": "check", "protect": "protect", "shoot": "shoot", "kill": "attack",
+-              "watch": "watch", "follow": "follow", "sigil": "set a sigil on", "block": "block",
++              "watch": "watch", "follow": "track", "sigil": "set a sigil on", "block": "block",
+               "conceal": "conceal", "bet": "bet on", "pick": "pick"}
+ _KEPT = {"held_fire": "held fire", "kept_check": "kept a check unused", "kept_watch": "kept a watch unused",
+          "kept_sigil": "kept a sigil unused"}
+@@ -330,13 +330,13 @@ def action_text(a: ClaimedAction) -> str:
+         return f"{night}: {a.target} {a.result}"
+     if a.action == "no_action":
+         if a.result in _KEPT:  # "held fire" names the Vigilante: kept, not folded into "did not act"
+-            return f"{night}: says they {_KEPT[a.result]}" + (f" and did not visit {a.target}" if a.target else "")
+-        return f"{night}: says they did not visit {a.target}" if a.target else f"{night}: says they did not act"
++            return f"{night}: says they {_KEPT[a.result]}" + (f" and did not target {a.target}" if a.target else "")
++        return f"{night}: says they did not target {a.target}" if a.target else f"{night}: says they did not act"
+     if a.result == "roleblocked":  # tried and blocked: an attempt, not a denial
+         tried = f"{PLAN_VERBS.get(a.action, a.action)} {a.target}".strip()
+         return f"{night}: says they tried to {tried} and were roleblocked"
+     if a.result == "no_visitors" and a.action in ("watch", "follow"):
+-        said = "says no one visited them" if a.action == "watch" else "says they visited no one"
++        said = "says no one targeted them" if a.action == "watch" else "says they targeted no one"
+         return f"{night}: {_VERBS[a.action]} {a.target}; {said}"
+     text = f"{night}: {_VERBS[a.action]} {a.target}"
+     if a.action == "investigate" and (a.result in ROLES or a.result == "not_a_wolf"):
+@@ -346,9 +346,9 @@ def action_text(a: ClaimedAction) -> str:
+     # A claimed sighting stays the claimant's word, and the ledger says what it does not establish
+     # (review 2026-10-09: a visit was taken as proof of the visitor's role and result).
+     if a.action == "watch" and a.seen:
+-        text += f"; says {_join(a.seen)} visited them (a visit alone does not establish a visitor's role or what they did)"
++        text += f"; says {_join(a.seen)} targeted them (targeting alone does not establish a player's role or what they did)"
+     elif a.action == "follow" and a.seen:
+-        text += f"; says they visited {_join(a.seen)} (a visit alone does not establish what they did there)"
++        text += f"; says they targeted {_join(a.seen)} (targeting alone does not establish what they did to that player)"
+     return text
+ 
+ 
+diff --git a/Agents/rules/night_record.py b/Agents/rules/night_record.py
+index f324e19c..d36c73e3 100644
+--- a/Agents/rules/night_record.py
++++ b/Agents/rules/night_record.py
+@@ -189,17 +189,17 @@ def _record_of(choice: NightChoice, outcome: NightOutcome, roles: dict[str, str]
+         result = "seen"
+         seen = [v for v in visitors_of(outcome, target) if v != (choice.via or choice.actor)]
+         if seen:
+-            outcome_text = f"Tonight {target} was visited by {_join(seen)}."
++            outcome_text = f"Tonight {target} was targeted by {_join(seen)}."
+         else:
+-            outcome_text = f"No one visited {target} tonight."
++            outcome_text = f"No one targeted {target} tonight."
+ 
+     elif choice.kind == "follow":
+         result = "seen"
+         seen = visited_by(outcome, target)
+         if seen:
+-            outcome_text = f"Tonight {target} visited {_join(seen)}."
++            outcome_text = f"Tonight {target} targeted {_join(seen)}."
+         else:
+-            outcome_text = f"{target} visited no one tonight."
++            outcome_text = f"{target} targeted no one tonight."
+ 
+     elif choice.kind == "sigil":
+         if target in outcome.attackers:
+@@ -344,12 +344,12 @@ def _disclosed(record: NightActionRecord) -> str:
+         return f"checked {target}: Not suspicious"
+     if record.action == "watch":
+         if record.seen:
+-            return f"watched {target}; saw {_join(record.seen)} visit them"
++            return f"watched {target}; saw {_join(record.seen)} target them"
+         return f"watched {target}; saw no one"
+     if record.action == "follow":
+         if record.seen:
+-            return f"followed {target}; they visited {_join(record.seen)}"
+-        return f"followed {target}; they visited no one"
++            return f"tracked {target}; they targeted {_join(record.seen)}"
++        return f"tracked {target}; they targeted no one"
+     if record.action == "sigil":
+         if record.result == "hit":
+             return f"set a sigil on {target}, who attacked and was struck down"
+diff --git a/Agents/rules/public_prose.py b/Agents/rules/public_prose.py
+index acf35237..29d4d457 100644
+--- a/Agents/rules/public_prose.py
++++ b/Agents/rules/public_prose.py
+@@ -138,6 +138,10 @@ CLAUSES = [
+     (re.compile(r"watched " + TARGET + r"; saw no one"), "watch", "seen"),
+     (re.compile(r"followed " + TARGET + r"; they visited " + NAMES), "follow", "seen"),
+     (re.compile(r"followed " + TARGET + r"; they visited no one"), "follow", "seen"),
++    # The "targeted" wording (visit-wording A/B arm B); the lines above read older records.
++    (re.compile(r"watched " + TARGET + r"; saw " + NAMES + r" target them"), "watch", "seen"),
++    (re.compile(r"tracked " + TARGET + r"; they targeted " + NAMES), "follow", "seen"),
++    (re.compile(r"tracked " + TARGET + r"; they targeted no one"), "follow", "seen"),
+     (re.compile(r"set a sigil on " + TARGET + r", who attacked and was struck down"), "sigil", "hit"),
+     (re.compile(r"set a sigil on " + TARGET + r", who attacked and was saved"), "sigil", "saved"),
+     (re.compile(r"set a sigil on " + TARGET + r"; it had no effect"), "sigil", "miss"),
+diff --git a/Agents/schemas/lineup_output.py b/Agents/schemas/lineup_output.py
+index 041b0f22..6be815c0 100644
+--- a/Agents/schemas/lineup_output.py
++++ b/Agents/schemas/lineup_output.py
+@@ -108,18 +108,18 @@ class NightActionClaim(LineupModel):
+     night: int = Field(description="The night number; on day D, last night is night D-1. 0 if you did not say which night.")
+     action: SpokenAction = Field(
+         description=(
+-            "What you say you already did that night; visit when you say you went to the target without "
+-            "saying what you did there (result not_said); no_action when you say you did not act or visited "
+-            "no one (held fire, kept a watch or a sigil, stayed home)."
++            "What you say you already did that night (follow is a Trailseer's track); visit when you say you "
++            "targeted the player without saying what you did (result not_said); no_action when you say you did "
++            "not act or targeted no one (held fire, kept a watch or a sigil, did nothing)."
+         ),
+     )
+-    target: str = Field(description="The exact player_id the action was on; for no_action, the player you say you did not visit, or empty string.")
++    target: str = Field(description="The exact player_id the action was on; for no_action, the player you say you did not target, or empty string.")
+     result: SpokenResult = Field(
+         description=(
+             "What you say came of it. investigate: suspicious or not_suspicious. protect: saved_from_attack "
+             "or no_attack. shoot / kill: died or survived. sigil: died if you say it struck them down, "
+             "survived if you say they were saved, no_effect if you say it had no effect. watch: no_visitors "
+-            "if you say no one visited; follow: no_visitors if you say they visited no one. Any action: "
++            "if you say no one targeted them; follow: no_visitors if you say they targeted no one. Any action: "
+             "roleblocked if you say you were blocked. no_action: held_fire if you say you held fire, "
+             "kept_check / kept_watch / kept_sigil if you say you kept a check, a watch or a sigil unused. "
+             "not_said if you do not say."
+@@ -127,8 +127,8 @@ class NightActionClaim(LineupModel):
+     )
+     seen: list[str] = Field(
+         description=(
+-            "watch / follow only: the exact player_ids you say you saw (the visitors, or where the player "
+-            "went). Empty list otherwise, or if you say you saw no one."
++            "watch / follow only: the exact player_ids you say were shown (who targeted the watched player, "
++            "or whom the tracked player targeted). Empty list otherwise, or if you say no one was shown."
+         ),
+     )
+ 

@@ -91,9 +91,14 @@ def test_side_counts_default_on_empty_state():
 # --- remove_from_buckets: a death is one removal --------------------------------------------
 
 def test_remove_from_buckets_takes_the_dead_out_of_both_buckets():
+    # Arrange
     st = state(wolves=2, town=2, killer=True)
     update: dict = {}
+
+    # Act
     remove_from_buckets(update, st, ["w1", "k"])
+
+    # Assert
     assert update == {"surviving_wolves": ["w0"], "surviving_villagers": ["t0", "t1"]}
     assert st["surviving_wolves"] == ["w0", "w1"]  # the state itself is untouched
 
@@ -183,11 +188,16 @@ def test_game_continues_balanced():
 # --- the draw and the neutral's result ------------------------------------------------------
 
 def test_a_draw_is_won_only_by_a_self_picked_speculator():
+    # Arrange
     # The last wolf and the last town player killed each other: no side is alive.
     board = state(wolves=0, town=0, neutral=True, speculator_pick="self")
+
+    # Round 1: the speculator picked itself
     assert is_draw(board)
     assert determine_winner(board) is None
     assert neutral_result(board, None, POINTS_TO_WIN) == "won"
+
+    # Round 2: the speculator picked town
     picked_town = {**board, "speculator_pick": "town"}
     assert neutral_result(picked_town, None, POINTS_TO_WIN) == "lost"
 
@@ -283,19 +293,23 @@ def _lynch_state() -> dict:
 
 
 def test_lynching_the_lone_killer_takes_it_out_of_the_bucket():
-    with patch("Agents.nodes.orchestrator.langfuse", _fake_langfuse()):
+    # Act
+    with patch("Agents.nodes.orchestrator.get_langfuse", _fake_langfuse):
         update = day_resolution(_lynch_state(), _lynch_runtime())
 
+    # Assert
     assert update["voted_player"] == "k"
     assert update["surviving_villagers"] == ["t0"]
     assert update["surviving_wolves"] == ["w0"]
 
 
 def test_winner_resolves_after_the_lone_killer_lynch():
+    # Round 1: before the lynch
     # Before the lynch: W=1 >= town=1 but the killer is alive -> the game continues.
     assert determine_winner(_lynch_state()) is None
 
-    with patch("Agents.nodes.orchestrator.langfuse", _fake_langfuse()):
+    # Round 2: after the lynch
+    with patch("Agents.nodes.orchestrator.get_langfuse", _fake_langfuse):
         update = day_resolution(_lynch_state(), _lynch_runtime())
 
     # The killer gone, W=1 >= town=1 -> wolves win.

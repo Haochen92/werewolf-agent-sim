@@ -1,5 +1,9 @@
 # De-lucked Proxy Metrics — system hub
 
+*2026-10-24: the plain account of these scores, and how far each can be trusted, is now
+[`../evaluation/metrics/report.md`](../evaluation/metrics/report.md). This folder is the June–July 2026
+design record: how the proxies were built, all 48 candidates, and the July audit logs.*
+
 **What this is.** The one-page assembly of the de-lucked proxy-metrics system, which spans ~7
 locations. Read this first if you want everything needed to judge the system's reliability from a
 single page.
@@ -20,7 +24,7 @@ This measurement core is what both eval tiers rest on.
 | Trust verdict | `../evaluation/metrics/report.md` | The per-basket ✅/🟡/⚠️/🔴 instrument-trust report. |
 | Finalized shape | this folder's `report.md` | The how-it-works doc and the **A/B ruler**: the finalized metric shape (the 11-proxy validated basket + supporting tiers), the per-cell coverage map, the collection architecture, and the per-decision v7-credit cousin. Read this to *use or audit* the metrics. |
 | Candidate ledger | this folder's `candidate_ledger.md` | The full field the basket was selected from — all 48 win-tested proxies, by tier then role, each with its definition, opportunity denominator, both campaigns' figures, and why it landed in its tier. `report.md` §4 keeps only a stub. |
-| Credit-system instrument (tagged) | `../discussion_tagger/` (report.md + experiment_log.md) | The v7-compounding credit signal, *not* an A/B ruler: the omniscient LLM tagger for discussion + unresolvable night cells. Its per-signal inventory and trust status live there; trust verdict at `../evaluation/discussion_tagger/`. |
+| Credit-system instrument (tagged) | `../credit/discussion_tagger/` (report.md + experiment_log.md) | The v7-compounding credit signal, *not* an A/B ruler: the omniscient LLM tagger for discussion + unresolvable night cells. Its per-signal inventory and trust status live there; trust verdict at `../evaluation/llm_judge/discussion_tagger.md`. |
 | Design journey | this folder's `experiment_log.md` + design docs (`design/town_metric_refinement.md`, `design/deceiver_metric_refinement.md`, `design/score_tier_design.md`, `design/discussion_scoring_plan.md`) | How the v2 de-lucking was reasoned out. |
 | Discovery logs | `metrics_audit/proxy_discovery_log.md` · `metrics_audit/scheduler_bias_log.md` | The 2026-07-02 $0 audit: proxy rescue/discovery + scheduler-bias falsification. |
 
@@ -44,5 +48,5 @@ The trust report's top line summarizes: *Verdict by basket: ✅ Town · 🟡 Inv
 🔴→🟡 Discussion* (the 🔴→🟡 reflects the town-side discussion proxy discovered in the 2026-07-02 audit).
 
 *Note: the variance-reduction levers audit (A/B methodology, not a metric) was relocated 2026-07-07 to
-[`../evaluation/methodology/variance_reduction_levers.md`](../evaluation/methodology/variance_reduction_levers.md),
+[`../evaluation/experimental_controls/variance_reduction_levers.md`](../evaluation/experimental_controls/variance_reduction_levers.md),
 completing the trust report's colocation call.*

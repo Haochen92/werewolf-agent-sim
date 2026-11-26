@@ -11,7 +11,8 @@ above the reads instruction (evidence before belief — the book is the how-to-r
 list is the output it should improve). Deliberately symmetric (owner ruling 2026-07-14, no
 role-revealing exclusion): the same shared book lets wolves hunt an investigator, the healer protect
 one, and the investigator conceal the pattern. No retrieval, no exploration slot: selection happened
-at build time (evaluation/src/loop/tell_credit.build_book — subject-role concentration, support floor,
+at build time (``tell_credit.build_book`` in the v7 research loop, removed on 2026-11-18 and kept in
+the git tag pre-test-cut-2026-11-18 — subject-role concentration, support floor,
 ~3 per (subject role, channel)); the only per-turn logic here is the roles-alive filter (a wolf-marker
 is dead weight once both wolves are revealed dead — a free lookup on the public dead roster).
 

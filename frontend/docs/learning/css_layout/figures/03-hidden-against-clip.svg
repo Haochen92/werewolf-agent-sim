@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">overflow: hidden against overflow: clip, round a page with a sticky rail</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The archive&#x27;s filter rail is position: sticky; top: 24px, inside the site layout&#x27;s .station</text>
+<text x="40" y="98" font-size="14" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">.station { overflow: hidden }</text>
+<rect x="40" y="116" width="380" height="230" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+<text x="48" y="134" font-size="12.5" fill="#4b5563" text-anchor="start">the viewport, scrolled down</text>
+<rect x="54" y="146" width="352" height="186" rx="4" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="66" y="174.0" font-size="13.5" fill="#c2410c" text-anchor="start">.station is now a scroll container:</text>
+<text x="66" y="193.575" font-size="13.5" fill="#c2410c" text-anchor="start">the rail sticks inside it, and</text>
+<text x="66" y="213.15" font-size="13.5" fill="#c2410c" text-anchor="start">it never scrolls (it is as tall as</text>
+<text x="66" y="232.725" font-size="13.5" fill="#c2410c" text-anchor="start">what it holds)</text>
+<rect x="54" y="360" width="120" height="50" rx="4" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="62" y="390" font-size="13" fill="#b91c1c" text-anchor="start">the rail, gone</text>
+<text x="190" y="390" font-size="13" fill="#b91c1c" text-anchor="start">scrolled off with the page</text>
+<text x="40" y="446.0" font-size="13.5" fill="#374151" text-anchor="start">both cut the wall at the station&#x27;s foot;</text>
+<text x="40" y="465.575" font-size="13.5" fill="#374151" text-anchor="start">hidden also makes a scroll box</text>
+<text x="540" y="98" font-size="14" font-family="Menlo, Consolas, monospace" font-weight="bold" fill="#1f2937" text-anchor="start">.station { overflow: clip }</text>
+<rect x="540" y="116" width="380" height="230" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="2"/>
+<text x="548" y="134" font-size="12.5" fill="#4b5563" text-anchor="start">the viewport, scrolled down</text>
+<rect x="554" y="146" width="120" height="50" rx="4" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="562" y="176" font-size="13" fill="#1f2937" text-anchor="start">the rail</text>
+<text x="684" y="168" font-size="13" fill="#15803d" text-anchor="start">held 24 px under the</text>
+<text x="684" y="186" font-size="13" fill="#15803d" text-anchor="start">viewport&#x27;s top</text>
+<text x="566" y="238.0" font-size="13.5" fill="#374151" text-anchor="start">no scroll container is made:</text>
+<text x="566" y="257.575" font-size="13.5" fill="#374151" text-anchor="start">the rail&#x27;s nearest one is still</text>
+<text x="566" y="277.15" font-size="13.5" fill="#374151" text-anchor="start">the viewport</text>
+<text x="540" y="446.0" font-size="13.5" fill="#374151" text-anchor="start">cuts the wall the same way</text>
+<text x="540" y="465.575" font-size="13.5" fill="#374151" text-anchor="start">and makes no scroll box</text>
+</svg>

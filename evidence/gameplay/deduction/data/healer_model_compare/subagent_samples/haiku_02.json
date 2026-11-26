@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "No claims or statements yet.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "Claims trailseer; the follow on player_7 is backed by player_7's own statement, still unproven.", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "Silent so far; no evidence either way.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "Claims investigator and a Suspicious read on player_9; unverified.", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "Pushed for role claims; has not claimed a role.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "Says they visited me on night 1 and claims no role; the only visit on the table so far.", "suspected_role": "chanteuse", "confidence": "low"},
+    {"player": "player_9", "why": "Named Suspicious by player_5 only; a claim.", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "No claims or statements yet.", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results to share and I am not revealing my role. Player_7's visit to me is the only visit anyone has put on the table, and it may be the Chanteuse; watch whether player_7 explains it. Keep quiet unless addressed. Save my protection for a Town claimant who is attacked, and note the first vote.",
+  "pass_turn": false,
+  "message": "player_7, you and player_3 both put a visit from you to me on night 1, so that is the one thing two claims agree on. You said you're not claiming a role, but that visit is yours to explain. What did you go to me for? I'd vote player_7 for now, because the only visit we can trace runs through you and you won't say what it was.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "question", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "neutral"}
+  ]
+}

@@ -10,7 +10,9 @@ import { Button } from '@/components/site';
 import { FactionMark } from '@/stage/instruments/FactionMark';
 import {
   DRAW_NAME,
+  ROLE_NAME,
   WINNER_NAME,
+  neutralWinner,
   winnerFaction,
   winnerKey,
   type WinnerKey,
@@ -24,6 +26,8 @@ const WON: Record<WinnerKey, { name: string; hue: string }> = {
   wolves: { name: WINNER_NAME.wolves, hue: 'var(--wolf)' },
   serial_killer: { name: WINNER_NAME.serial_killer, hue: 'var(--sk)' },
   necromancer: { name: WINNER_NAME.necromancer, hue: 'var(--sk)' },
+  speculator: { name: ROLE_NAME.speculator, hue: 'var(--benign)' },
+  fortune_teller: { name: ROLE_NAME.fortune_teller, hue: 'var(--benign)' },
   draw: { name: DRAW_NAME, hue: 'var(--muted)' },
 };
 
@@ -68,8 +72,13 @@ export function ArchiveTable({
         </Table.Thead>
         <Table.Tbody>
           {rows.map((r) => {
-            const won = WON[winnerKey(r.winner)];
-            const side = winnerFaction(r.winner);
+            // a game no side won is the neutral's when it won it
+            const key = winnerKey(
+              r.winner,
+              neutralWinner(r.cast_role_counts, r.neutral_result),
+            );
+            const won = WON[key];
+            const side = winnerFaction(key);
             const ended = endedLabel(r.ended_phase, r.days);
             return (
               <Table.Tr key={r.game_id}>

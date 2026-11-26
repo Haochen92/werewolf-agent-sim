@@ -1,0 +1,46 @@
+/* A site page comes up whole (PageGate.tsx): while `html[data-gate]` the page under the nav is
+   hidden behind the loader (the gate is the first box in its `<main>`, the page the boxes after
+   it; the footer hides with it, SiteFooter.module.css); while `html[data-gate-lift]` they fade
+   in, one opacity each, as the loader fades off. The nav never changes. */
+:global(html[data-gate]) .cover ~ * {
+  opacity: 0;
+  /* should the page's script never run, the page shows anyway */
+  animation: gate-failsafe 0s 10s forwards;
+}
+@keyframes gate-failsafe {
+  to {
+    opacity: 1;
+  }
+}
+:global(html[data-gate-lift]) .cover ~ * {
+  transition: opacity 0.4s ease-out;
+}
+
+/* the screen under the nav (the nav's board stands over it, `.hang` z-index 3) */
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  transition: opacity 0.4s ease-in;
+}
+/* the train comes up 1 s after the page was asked for, not the loader's own 0.3 s (PageGate.tsx
+   `SHOW_MS`, `--show`: what is left of that second when the page mounts) */
+.cover > :not([data-at-once]) {
+  animation-delay: var(--show, 1s);
+}
+/* carrying on a train already up (the site loader's): there at once, no fade in */
+.cover > [data-at-once][role='status'] {
+  animation: none;
+  opacity: 1;
+}
+/* the wait is over: the loader fades off (before React is up, so the stylesheet does it) */
+:global(html:not([data-gate])) .cover {
+  opacity: 0;
+  pointer-events: none;
+}
+/* a page ready before the loader came up is simply there: a fade off a loader not yet seen
+   would show the train arriving as it goes, a blink */
+:global(html[data-gate-lift='quick']) .cover,
+:global(html[data-gate-lift='quick']) .cover ~ * {
+  transition: none;
+}

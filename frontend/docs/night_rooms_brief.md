@@ -1,6 +1,6 @@
 # Night rooms brief: the new roles' compartments (draft 2026-10-07)
 
-Status: DRAFT, revised 2026-10-07 with the owner's rulings: the Speculator's pick is a night
+Status (2026-10-26): Shipped 2026-10-07 (§5). Nothing open. Drafted and revised 2026-10-07 with the owner's rulings: the Speculator's pick is a night
 action, so it gets a room; the Necromancer's light matches his figure; the Fortune teller's
 crystal ball is her room's light. The owner also ruled that the wolves keep their
 existing room: the Chanteuse and the Illusionist play in the pack's red-lit "Grandma's things",

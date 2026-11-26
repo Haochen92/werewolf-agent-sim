@@ -14,7 +14,8 @@ their own (planned_actions), so the ledger can set them beside what the player l
 Each written accusation field is capped at 30 words.
 
 2026-10-16: record_check is gone. The summariser's check of an accusation against the record was wrong
-in all 27 it wrote across 36 replayed summaries (evidence/reasoning_failures/experiment_log.md §3),
+in all 27 it wrote across 66 summaries, 60 replayed for the test and the 6 the games had used
+(evidence/gameplay/deduction/experiment_log.md §3),
 and the claim ledger already checks claims against the record in code.
 """
 
@@ -41,7 +42,8 @@ Rules:
 - A night action is one the player says already happened. A plan for tonight ("I'll check player_2 tonight") is not a night action: record it in planned_actions. If the player gave no result, or only a vague one ("got nothing useful"), the result is not_said.
 - A player who states a night plan without claiming a role is claiming the role that does that action: record the claim with the plan.
 - Being roleblocked is not a denial: a player who says they were roleblocked tried to act. Record the action they say they tried (with its target if they name one) with the result roleblocked, never as no_action.
-- A denial is a claim too: a player saying they did not act or visited no one on a night ("I held my fire", "I kept my second watch", "I didn't visit anyone last night", "I didn't visit player_7") is a night action no_action for that night, with the player they say they did not visit as the target if they name one. Record it under role_claims, with claimed_role none if they claim no role.
+- A denial is a claim too: a player saying they did not act or visited no one on a night ("I held my fire", "I kept my second watch", "I didn't visit anyone last night", "I didn't visit player_7") is a night action no_action for that night, with the player they say they did not visit as the target if they name one, and the result held_fire, kept_check, kept_watch or kept_sigil when they say what they held back. Record it under role_claims, with claimed_role none if they claim no role.
+- A visit is a claim too: a player saying they went to a player on a night without saying what they did there ("yes, I went to player_8 last night") is a night action visit on that player, result not_said. Record it under role_claims, with claimed_role none if they claim no role.
 - Keep every rebuttal: whoever argued against an accusation goes in disputed_by with their argument. Never keep an accusation and drop the reply to it.
 - Something done TO a player is not a claim by them: "I was roleblocked", "I was protected", "someone visited me" claims no role. Record a role claim only when the player says they are that role or describes doing its action themselves.
 - Do not include the formal vote tally or night event outcomes (these are recorded separately). However, DO include when players reference past votes or declare current voting intentions during discussion.

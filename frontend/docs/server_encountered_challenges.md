@@ -1,5 +1,21 @@
 # Server: encountered challenges
 
+Status (2026-10-26): Journey log, kept as written. §1 to §6 were written 2026-08-19, §7 on
+2026-08-24, and §8 on 2026-10-26 from a finding of 2026-09-12. The LangGraph behaviour they rest
+on was observed on LangGraph 1.1.10 with langgraph-checkpoint 4.2.0, still the pinned versions on
+2026-10-26, and every fix is still in the code.
+
+| § | Date | What broke |
+|---|---|---|
+| 1 | 2026-08-19 | Every interrupt arrived once per nesting level |
+| 2 | 2026-08-19 | The server's vote tally disagreed with the engine's |
+| 3 | 2026-08-19 | Why the engine re-runs the AI votes after a human answers |
+| 4 | 2026-08-19 | Caching the re-run, and why a human turn must never be cached |
+| 5 | 2026-08-19 | The cache key that missed exactly when it was needed |
+| 6 | 2026-08-19 | A class missing from the checkpoint allowlist |
+| 7 | 2026-08-24 | A seat cookie the browser never sent back behind the proxy |
+| 8 | 2026-09-12 | The events table runs ahead of the checkpoint |
+
 > Plain-language records of the hard problems we hit while making the game server able to
 > host real human players, what each one turned out to be, and how it was solved. Written to
 > be read cold, without the chat history or the code open. Each entry: the story, the fix,
@@ -8,6 +24,8 @@
 ---
 
 ## 1) Every interrupt arrived twice (and, nested deeper, three times)
+
+*2026-08-19, LangGraph 1.1.10 (commit `e4fbcfd1`).*
 
 **The story.** When a game needs a human's input, the engine "interrupts" — it pauses and
 surfaces a request that the server turns into an `input_request` event for the browser. While
@@ -31,6 +49,8 @@ expose. When in doubt about which copy of anything is authoritative: root.
 ---
 
 ## 2) The vote count that wouldn't add up
+
+*2026-08-19 (commit `e4fbcfd1`).*
 
 **The story.** In our first real two-human test game, the server crashed at a day resolution
 with a self-protection error: the server's own tally of the votes said "player_5 was lynched"
@@ -67,6 +87,8 @@ safety-check working. Without it we'd have silently broadcast a wrong lynch.
 
 ## 3) Why the engine redoes work after a human answers
 
+*2026-08-19, LangGraph 1.1.10.*
+
 **The story.** Issue 2 raised the obvious question: *why* does the engine discard and redo
 the AI votes at all? The documentation — and our own earlier experiments — said the opposite:
 when a round pauses, finished players' work is saved, and on resume only the paused player
@@ -101,6 +123,8 @@ the privacy boundary is enforced. We chose a cheaper route instead — see issue
 
 ## 4) Making the redone work free (caching), and why humans must never be cached
 
+*2026-08-19, LangGraph 1.1.10, the "pinned version" below (commit `d06d7179`).*
+
 **The story.** If the engine insists on re-running the AI voters after every human answer,
 the next best thing is making the re-run cost nothing. LangGraph has a per-node result cache:
 if a node runs again with the same input, the recorded result is replayed instead of calling
@@ -126,6 +150,8 @@ the uncached door is for the seat whose answer comes from a person.
 ---
 
 ## 5) The cache that never hit
+
+*2026-08-19 (commit `d06d7179`).*
 
 **The story.** With the cache wired, we ran a verification game — and the cache achieved
 **zero hits**. The game stayed correct (issue 2's fix absorbed the re-runs, exactly as
@@ -159,6 +185,8 @@ original, and completed cleanly. The re-billing is gone.
 
 ## 6) A warning in the logs: "Blocked deserialization of DiscussionPassReason"
 
+*2026-08-19 (commit `e382d5b2`).*
+
 **The story.** During the first two-human game, the log showed LangGraph refusing to
 reconstruct one of our own classes when reloading a checkpoint. Background: reconstructing
 arbitrary classes named inside stored data is a code-execution risk (the same reason unpickling
@@ -180,6 +208,8 @@ class ever sits directly in state. Treat the warning as a to-do, not noise.
 ---
 
 ## 7) The human turn that looked like an AI thinking forever
+
+*2026-08-24 (commit `81c6bb0a`).*
 
 **The story.** The first production game served through Caddy stopped at "player_2 is
 thinking." Langfuse showed no model trace, which initially made the new model selection look
@@ -208,3 +238,44 @@ namespaces. Any browser-interpreted response metadata—cookie paths, redirects,
 links—must describe the public namespace unless the proxy explicitly rewrites that metadata
 on the way back. Here the application owns the cookie policy, so the deployment supplies its
 public mount prefix and Caddy remains responsible only for routing.
+
+---
+
+## 8) The events table runs ahead of the checkpoint
+
+*2026-09-12, read in LangGraph 1.1.10's source; recorded in the translator on 2026-09-13 (commit
+`889a1371`) and written up here on 2026-10-26.*
+
+**The story.** A running game is written down in two places. Each event the server sends is
+appended to the events table as soon as its chunk is translated (`GameSession._persist_tail`,
+called after every chunk), and LangGraph writes its own checkpoint of the game state. After a
+restart the game resumes from the checkpoint, and browsers replay the events table. For a day we
+believed the checkpoint always led, so a crash could only lose events the engine would produce
+again, never send one twice. Reading LangGraph's loop showed the reverse. A task's output is
+streamed the moment that task finishes, while the step's checkpoint is written only after every
+task in the step has finished, and in the background. So the events table can lead the
+checkpoint by up to one step: a crash in that window restarts the engine from a checkpoint that
+does not yet hold work whose events were already sent and saved.
+
+**The solution.** Mostly machinery that already existed. On the next boot the step re-runs from
+its last checkpoint, as after a human's answer (issue 3): work that was committed comes back on
+the stream tagged `cached`, and the translator drops it whole, for every kind of event
+(`server/game/translate.py::is_cached`; cached ballots only refill the vote buffers). The step
+in progress re-executes, and the vote cache (issue 4), the ballot buffers and the guards that
+stop a line being sent twice absorb it as they do in a running process; at boot those guards are
+rebuilt from the saved events (`Translator.hydrate`). A test re-delivers every state-update chunk of a
+real recorded game as cached and checks that nothing is sent or even numbered
+(`tests/server/test_translator.py::test_every_real_chunk_re_delivered_as_cached_sends_nothing`).
+What none of this covers, as recorded on 2026-09-12, is a re-executed sequential node whose
+events had already been written: they would be sent twice.
+
+A blanket dedup was left out on purpose. A key on an event's content, or on (day, player), would
+catch that last case and also drop real turns, because `turn_started` and `input_request`
+legitimately repeat within a day with identical fields. The remaining window is one database
+write wide and needs a hard crash, so it was accepted.
+
+**What to know.** Two records of the same game do not agree just because both are "the state":
+LangGraph's stream runs ahead of its checkpoint. It is the same fact that makes the translator
+keep its own copy of the state instead of asking the graph (design notes §1). Before trusting an
+ordering between two stores, read where each one is written. And before adding a dedup key,
+check it against the events that legitimately repeat.

@@ -15,9 +15,12 @@ from langchain_core.runnables import RunnableConfig
 from Agents.schemas.roles import ROLE_SPECS, TOWN
 from Agents.state import DayActorState
 
-# Town's day lessons are extracted and synthesized for the owner to review, never retrieved in play
-# (plan 2026-10-11 §9.1): advice the owner approves becomes fixed role-prompt text instead.
-TOWN_DAY_PHASES = frozenset({"day_discussion", "day_vote"})
+# Town's discussion lessons are extracted and synthesized for the owner to review, never retrieved in
+# play: their main harm is information a player withholds, which the credit rules cannot grade, so advice
+# the owner approves becomes fixed role-prompt text instead (plan 2026-10-11 §9.1). Town votes are served
+# like every other side's since the vote rules grade an abstention that leaves a day without a lynch
+# (v8 decisions §17).
+TOWN_UNSERVED_PHASES = frozenset({"day_discussion"})
 
 _DayPayload = DayActorState
 
@@ -28,7 +31,7 @@ class RetrievalPlan:
     pipeline executes it. ``skip_reason`` set ⇒ retrieval is skipped entirely this turn."""
 
     skip_reason: str | None
-    """Why retrieval is skipped (day_1 / no_store / memory_disabled_for_role), or None to proceed."""
+    """Why retrieval is skipped (day_1 / no_store / memory_disabled_for_role / town_discussion), or None to proceed."""
     store_dir: str
     """The seeded store directory = the store identity (provenance), for the trace record."""
     retrieve_observations: bool
@@ -81,8 +84,8 @@ def retrieval_plan(
         skip_reason = "no_store"
     elif not _memory_enabled_for_role(config, role):
         skip_reason = "memory_disabled_for_role"
-    elif action_phase in TOWN_DAY_PHASES and ROLE_SPECS.get(role) and ROLE_SPECS[role].side == TOWN:
-        skip_reason = "town_day"
+    elif action_phase in TOWN_UNSERVED_PHASES and ROLE_SPECS.get(role) and ROLE_SPECS[role].side == TOWN:
+        skip_reason = "town_discussion"
     else:
         skip_reason = None
 

@@ -30,7 +30,8 @@ def ledger_days(events: list[ev.DurableEvent]) -> list[LedgerDay]:
             mornings.add(e.day)
         elif e.type == "speech":
             spoken.append(DayChannel(day=e.day, seq=e.channel_seq, player=e.player, message=e.message,
-                                     claim=e.claim))
+                                     claim=e.claim,
+                                     claimed_night_actions=[a.model_dump() for a in e.claimed_night_actions]))
         elif e.type == "game_started":
             cast = dict(e.cast_role_counts)
         elif e.type == "gm_message":

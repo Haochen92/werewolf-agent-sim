@@ -1,6 +1,6 @@
 /**
  * Typography slice, from the landing mockup: Outfit for everything on dark (titles at 800 with
- * tight tracking), IM Fell English for what is printed on paper (the `Paper` and `HangTag`
+ * tight tracking), IM Fell English for what is printed on paper (the `Paper` and the paper tickets
  * components set it themselves). The faces are loaded in `theme/fonts.ts`; the stacks carry a
  * fallback so a failed load degrades to a plain sans, never to the browser's serif.
  *

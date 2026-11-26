@@ -2,8 +2,10 @@
  * The guide's composer demo answers Draft with sample lines, written here, never a model's: the
  * guide calls no model and sends nothing. The line follows what the reader did, as an agent's
  * would: a steer naming a seat or asking for a tone, the line in the box (a redraft revises
- * it), and, with "Use my seat notes" ticked, their note or guess on a seat in the demo above.
+ * it), and, with "Use my seat notes" ticked, their file on a seat in the demo above: a guess,
+ * a claim, a line.
  */
+import type { NotebookState } from '@/stage/notebook';
 import { ROLE_NAME } from '@/stage/roles';
 
 export interface SampleAsk {
@@ -12,10 +14,7 @@ export interface SampleAsk {
   /** The line in the box. */
   current: string;
   /** The notebook, when "Use my seat notes" is ticked and it holds anything. */
-  book: {
-    notes: Readonly<Record<number, string>>;
-    guesses?: Readonly<Record<number, string>>;
-  } | null;
+  book: Partial<Pick<NotebookState, 'guesses' | 'claims' | 'lines'>> | null;
   /** Drafts already taken this turn: the plain openers take turns. */
   taken: number;
 }
@@ -26,18 +25,25 @@ const OPENERS = [
   'I will be open: I am not claiming a role yet. Seat 3, you agreed with everyone so far. Why?',
 ];
 
-/** The seat the reader wrote on or guessed at, its note cut short, and the guessed role. */
+/** The seat the reader keeps a file on: their latest line cut short, the guess, the claim. */
 function noted(book: SampleAsk['book']) {
   if (!book) return null;
-  const guesses = book.guesses ?? {};
-  const seats = [...Object.keys(guesses), ...Object.keys(book.notes)].map(Number);
-  const seat = seats.find((n) => guesses[n] || book.notes[n]?.trim());
+  const { guesses = {}, claims = {}, lines = {} } = book;
+  const latest = (n: number) =>
+    Object.entries(lines[n] ?? {})
+      .sort(([a], [b]) => Number(b) - Number(a))
+      .map(([, t]) => t.trim())
+      .find(Boolean) ?? '';
+  const seats = [guesses, claims, lines].flatMap((m) => Object.keys(m)).map(Number);
+  const seat = seats.find((n) => guesses[n] || claims[n] || latest(n));
   if (seat === undefined) return null;
-  const note = book.notes[seat]?.trim() ?? '';
+  const note = latest(seat);
+  const word = (r?: string) => (r ? (ROLE_NAME[r] ?? r).toLowerCase() : null);
   return {
     seat,
     note: note.length > 60 ? `${note.slice(0, 57).trimEnd()}…` : note,
-    role: guesses[seat] ? (ROLE_NAME[guesses[seat]] ?? guesses[seat]).toLowerCase() : null,
+    role: word(guesses[seat]),
+    claim: word(claims[seat]),
   };
 }
 
@@ -60,6 +66,8 @@ export function sampleDraft({ steer, current, book, taken }: SampleAsk): string 
       return `Put another way: seat ${seat} has not given us a single read today. Seat ${seat}, who do you suspect, and why?`;
   }
   // the reader's own notes, shared for this draft
+  if (from?.role && from.claim && from.role !== from.claim)
+    return `Seat ${from.seat}, you claim ${from.claim}, and I am not buying it. I think you are the ${from.role}. Walk us through your nights again.`;
   if (from?.role)
     return `I think seat ${from.seat} could be the ${from.role}. Seat ${from.seat}, if I am right, tell us what you saw last night; if I am wrong, tell us what you are.`;
   if (from?.note)

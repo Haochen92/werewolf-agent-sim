@@ -7,10 +7,14 @@
  * component bodies that also render on the server.
  */
 
+import { PROVIDERS, keyProvider, type Provider } from './key-provider';
+
 const KEYS = {
   seat: (gameId: string) => `seat_${gameId}`,
   host: (gameId: string) => `host_${gameId}`,
-  byok: 'byok_key',
+  /** One saved key per company (2026-10-21); `byok_key` alone was the single slot before. */
+  byok: (provider: string) => `byok_key:${provider}`,
+  byokLegacy: 'byok_key',
   ghost: (gameId: string) => `ghost_${gameId}`,
   notes: (gameId: string) => `notes_${gameId}`,
   live: (gameId: string) => `live_${gameId}`,
@@ -77,13 +81,29 @@ export const hostKey = {
 };
 
 /**
- * BYOK key, OPT-IN only: never written unless the player ticks "remember on this device".
- * The key's only wire appearance is the create-request body — the server never stores it.
+ * BYOK keys, OPT-IN only: never written unless the player ticks "remember on this device".
+ * One per company, so a key saved for one model is never sent with another company's. The
+ * key's only wire appearance is the create-request body; the server keeps it for that game only.
  */
-export const byokKey = {
-  get: () => read(KEYS.byok),
-  set: (key: string) => write(KEYS.byok, key),
-  clear: () => remove(KEYS.byok),
+export const byokKeys = {
+  get: (provider: Provider) => read(KEYS.byok(provider)),
+  set: (provider: Provider, key: string) => write(KEYS.byok(provider), key),
+  clear: (provider: Provider) => remove(KEYS.byok(provider)),
+  /** Every saved key, in the menu's company order. */
+  all: (): { provider: Provider; key: string }[] =>
+    (Object.keys(PROVIDERS) as Provider[]).flatMap((provider) => {
+      const key = read(KEYS.byok(provider));
+      return key ? [{ provider, key }] : [];
+    }),
+  /** Move a key saved in the old single slot to its company's, `fallback` when its prefix names none. */
+  migrate: (fallback: Provider | null) => {
+    const old = read(KEYS.byokLegacy);
+    if (!old) return;
+    const provider = keyProvider(old) ?? fallback;
+    if (!provider) return; // kept until a model says whose it is
+    if (!read(KEYS.byok(provider))) write(KEYS.byok(provider), old);
+    remove(KEYS.byokLegacy);
+  },
 };
 
 /**

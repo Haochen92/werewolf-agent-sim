@@ -23,22 +23,26 @@
   top: 0;
   bottom: 0;
 }
-/* the painted front (props/stand-front.webp) as a 9-slice: the gallery, the rail, the marquetry
-   corners and the bottom rail keep their size, the flame panel and the plain border stretch; a
-   pixel is 0.407682u (605u over the body's 1484 px); the rail's top is on the box's top */
+/* the painted front (props/stand-front.webp, the felt set of 2026-10-17) as a 9-slice: the
+   rails, the riveted stile blocks and the panel's stitched corners keep their size, the felt
+   panel and the plain stiles stretch; a pixel is 0.431076u (605u over the body's 1403 px, the
+   stiles' outer edges); the rail's top is on the box's top */
 .box::before {
   content: '';
   position: absolute;
   z-index: 1;
-  left: calc(-8.561 * var(--u));
-  right: calc(-8.154 * var(--u));
-  top: calc(-11.823 * var(--u));
-  bottom: calc(-1.631 * var(--u));
+  left: calc(-18.232 * var(--u));
+  right: calc(-17.928 * var(--u));
+  top: calc(-1.724 * var(--u));
+  bottom: calc(-2.586 * var(--u));
   box-sizing: border-box;
   border-style: solid;
-  border-width: calc(71.752 * var(--u)) calc(85.613 * var(--u)) calc(52.591 * var(--u))
-    calc(85.613 * var(--u));
-  border-image: var(--front) 176 210 129 210 fill stretch;
+  border-width: calc(72.852 * var(--u)) calc(90.957 * var(--u)) calc(62.075 * var(--u))
+    calc(90.957 * var(--u));
+  /* the slices in the picture's own pixels: the phone's copy is smaller (Stand.tsx `--slice`) */
+  border-image-source: var(--front);
+  border-image-slice: var(--slice) fill;
+  border-image-repeat: stretch;
 }
 
 /* the key light's shadow (the rooms' atmosphere): off the box's right side, over the boards

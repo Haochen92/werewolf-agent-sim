@@ -22,6 +22,32 @@ def test_a_model_id_with_a_slash_is_served_through_openrouter_on_pinned_hosts(mo
     assert provider == {"order": emb.OPENROUTER_EMBEDDING_PROVIDERS, "allow_fallbacks": False}
 
 
+def test_an_openrouter_embedding_request_is_timed_and_retried_at_one_layer_only(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test")
+    monkeypatch.setenv("EMBED_TIMEOUT_S", "12")
+    model = emb.create_embeddings("qwen/qwen3-embedding-8b", output_dimensionality=1536)
+    sdk_client = model.client._client
+    assert sdk_client.timeout == 12.0
+    assert sdk_client.max_retries == 0
+
+
+def test_a_timed_out_embedding_request_is_asked_again_by_the_retry_loop(monkeypatch):
+    import httpx
+    import openai
+
+    monkeypatch.setenv("EMBED_RETRY_INITIAL_DELAY", "0")
+    calls = []
+
+    def call():
+        calls.append(1)
+        if len(calls) == 1:
+            raise openai.APITimeoutError(request=httpx.Request("POST", "https://openrouter.ai/api/v1"))
+        return [[0.0]]
+
+    assert emb._embed_with_retries(call, op="embed_query") == [[0.0]]
+    assert len(calls) == 2
+
+
 def test_every_embedding_model_has_the_same_threshold_names():
     names = {frozenset(t) for t in emb.SIMILARITY_THRESHOLDS.values()}
     assert len(names) == 1

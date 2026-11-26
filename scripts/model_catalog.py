@@ -168,9 +168,9 @@ def cmd_sync_langfuse(conn, args) -> None:
     langfuse_prices.py). Runs after every price change; run it by hand after editing the table directly."""
     from Agents.llm_factory.catalog import load_from_database
     from Agents.observability.langfuse_prices import sync
-    from Agents.tracing import langfuse
+    from Agents.tracing import get_langfuse
 
-    counts = sync(langfuse.api, load_from_database(args.dsn).prices)
+    counts = sync(get_langfuse().api, load_from_database(args.dsn).prices)
     print(f"Langfuse: {counts['definitions']} prices, {counts['created']} written, "
           f"{counts['removed']} stale removed, {counts['unchanged']} already right.")
 

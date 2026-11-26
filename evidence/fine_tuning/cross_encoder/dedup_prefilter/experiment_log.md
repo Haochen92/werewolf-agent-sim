@@ -40,7 +40,7 @@ Only the `dedup` mode produces a valid apples-to-apples comparison against the p
 
 Scored all 65 golden set cases (`dedup_v2_golden_labels.json`) with the cross-encoder using the same field inputs as the production auto-dedup. Compared threshold sweeps directly against the Gemini field-specific similarity baseline.
 
-Gemini baseline loaded from `evidence/dedup/golden_eval/embedding_cache.json` (action_sim for SP, content_sim for obs).
+Gemini baseline loaded from `evidence/dedup/embedding_prefilter/data/golden_embedding_cache.json` (action_sim for SP, content_sim for obs).
 
 ### Strategy Points (25 cases: 10D, 15K)
 
@@ -226,7 +226,7 @@ Only 38 unique games exist across all datasets; 34 are already used. To reach 10
 
 | File | Description |
 |------|-------------|
-| `evaluation/training/` (`modal_runner --adapter dedup`) | Cross-encoder training on Modal (L4 GPU) — replaces the removed `train_modal.py` |
+| `training/` (`modal_runner --adapter dedup`) | Cross-encoder training on Modal (L4 GPU) — replaces the removed `train_modal.py` |
 | `eval_modal.py` | Golden set eval with Gemini baseline comparison (kept — distinct from the module's train/eval-split metrics) |
 | `models/cross_encoder/ce_minilm_dedup_run1/` | Fine-tuned MiniLM weights (gitignored; fetch from Modal) |
 | `../../embedding/pairs_dedup.jsonl` | Training pairs matching production auto-dedup fields |

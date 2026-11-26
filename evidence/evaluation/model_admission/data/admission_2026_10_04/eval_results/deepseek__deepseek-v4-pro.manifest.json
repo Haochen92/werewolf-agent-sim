@@ -1,0 +1,40 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/admission_2026_10_04/eval_results/deepseek__deepseek-v4-pro.json",
+  "config": {
+    "caching": {
+      "cases": 2,
+      "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "floor_sizes": [
+        256,
+        512,
+        1024,
+        2048,
+        4096
+      ],
+      "wait_s": 8
+    },
+    "label": "admission_2026_10_04",
+    "models": [
+      "deepseek/deepseek-v4-pro"
+    ],
+    "notes": "First admission run (Sunday, DeepSeek off-peak all day). Thinking medium: tests whether DeepSeek can think under the auto_tool/json_mode calling modes. DeepSeek V4.1 Flash was started and stopped on request (not needed); Gemini 3.5 flash-lite runs from admission_2026_10_04_flashlite.json into the same folder.",
+    "samples_per_schema": 3,
+    "thinking_level": "medium",
+    "workers": 4
+  },
+  "config_sha256": "035488bdfe39af5d5b05ef522f45a8b2af6ad7361aab0e68b02a514a96af5a93",
+  "config_source": "evaluation/config/model_admission/admission_2026_10_04.json",
+  "created_at": "2026-10-23T01:56:37.835750",
+  "created_from": "eval-model-admission run 'admission_2026_10_04' (record carries its own run_at + runtime_fingerprint)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/model_admission/admission_2026_10_04/deepseek__deepseek-v4-pro.json",
+  "inputs": [
+    {
+      "count": 129,
+      "path": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "sha256": "a486da3b76062b2bc4f766e4d319af4414df5021b9cab4ffa465ba5146b2b376"
+    }
+  ],
+  "models": []
+}

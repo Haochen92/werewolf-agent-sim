@@ -1,0 +1,91 @@
+{
+  "label": "summary_v4_flashlite35",
+  "run_at": "2026-10-04T04:26:28.100137+00:00",
+  "config": {
+    "label": "summary_v4_flashlite35",
+    "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+    "n": 3,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "v3",
+        "model": "gemini-3.5-flash-lite",
+        "checkout": "../ww-summary-v3",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      },
+      {
+        "label": "v4",
+        "model": "gemini-3.5-flash-lite",
+        "env": {
+          "WW_DISCUSSION_PROMPT": "v2"
+        },
+        "memory": "none",
+        "resummarize": true
+      }
+    ],
+    "recall_model": "gemini-3.1-flash-lite",
+    "precision_model": "gemini-3.5-flash",
+    "golden_model": "gemini-3.1-flash-lite",
+    "slices": [
+      "curated",
+      "pinned",
+      "control"
+    ],
+    "notes": "Day summary v4 and the code-checked claim ledger (discussion_evidence.md \u00a76.6). v3 = the summary-v3-baseline tag (= e53cb1e; git worktree add ../ww-summary-v3 summary-v3-baseline to regenerate); its generations and re-summarised days are the fidelity_pass_flashlite35 run's after_resum arm, made by the same code, copied in rather than regenerated. v4 = main, earlier days re-summarised by summary v4. Both arms judged in this run."
+  },
+  "n_cases": 89,
+  "arms": {
+    "v3": {
+      "bad": {
+        "all": "82/267 (31%)",
+        "phase:day_discussion": "78/204 (38%)",
+        "phase:day_vote": "4/63 (6%)",
+        "role:healer": "7/36 (19%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "6/39 (15%)",
+        "role:vigilante": "35/78 (45%)",
+        "role:villager": "27/63 (43%)",
+        "role:wolf": "7/27 (26%)",
+        "slice:control": "3/120 (2%)",
+        "slice:curated": "70/132 (53%)",
+        "slice:pinned": "9/15 (60%)",
+        "source:census": "73/252 (29%)",
+        "source:checkpoint": "9/15 (60%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    },
+    "v4": {
+      "bad": {
+        "all": "85/267 (32%)",
+        "phase:day_discussion": "80/204 (39%)",
+        "phase:day_vote": "5/63 (8%)",
+        "role:healer": "7/36 (19%)",
+        "role:investigator": "0/24 (0%)",
+        "role:serial_killer": "8/39 (21%)",
+        "role:vigilante": "31/78 (40%)",
+        "role:villager": "33/63 (52%)",
+        "role:wolf": "6/27 (22%)",
+        "slice:control": "5/120 (4%)",
+        "slice:curated": "71/132 (54%)",
+        "slice:pinned": "9/15 (60%)",
+        "source:census": "76/252 (30%)",
+        "source:checkpoint": "9/15 (60%)"
+      },
+      "deception": 0,
+      "invalid": 0
+    }
+  },
+  "paired_vs_first": {
+    "v4": {
+      "cases": 89,
+      "better": 11,
+      "worse": 11,
+      "two_sided_sign_p": 1.0
+    }
+  }
+}

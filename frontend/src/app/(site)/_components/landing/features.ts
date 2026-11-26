@@ -13,7 +13,18 @@
 export const LESSON = {
   game: '2f19d908-a6b3-4faf-8f16-c2a009bb0428',
   /** The game's recorded cast, index 0 = seat 1. */
-  cast: ['hare', 'polarBear', 'cat', 'dragon', 'shade', 'onion', 'mushroom', 'owl', 'kitsune', 'whale'],
+  cast: [
+    'hare',
+    'polarBear',
+    'cat',
+    'dragon',
+    'shade',
+    'onion',
+    'mushroom',
+    'owl',
+    'kitsune',
+    'whale',
+  ],
   seat: 4,
   lesson:
     'With both sigils left and no hard leads, place one sigil each night on the player most plausibly carrying a night attack (a suspected wolf or killer), and keep the second in reserve…',
@@ -44,18 +55,21 @@ export const ROOM_PEOPLE = ['You', 'Mei', 'Sam'] as const;
 export const PLATES = ['Memory', 'Your agent', 'Friends'] as const;
 
 /**
- * The replay section's moment: game 68c26e83 (Gemini 3.5 Flash-Lite, ten seats, the carriage's
- * game), day 2. Seat 10, the Chanteuse, claims the Investigator (`speech` seq 161) and writes
- * down the lie it is keeping (`strategy_update` seq 164); seat 8, the real Investigator, calls
- * it a fake claim, and the table votes seat 8 out, 6 to 2 (`lynch_result`, day 2).
+ * The replay section's moment: game e45eda20 (DeepSeek Flash, ten seats, the carriage's game;
+ * owner's pick, 2026-10-22), day 3. Seat 10, the Illusionist and the last wolf, has claimed the
+ * Investigator since day 2; it calls the real one's claim a story built to fit (`speech` seq
+ * 335) and writes down the cover it is keeping (`strategy_update` seq 338, trimmed where the
+ * "…" are: its plans for the SK and the night). Seat 1, the real Investigator, had checked it
+ * and found it Suspicious; the table votes seat 1 out with 3 of the 5 votes (`lynch_result`,
+ * day 3).
  */
 export const BLUFF = {
-  game: '68c26e83-f5c9-50d5-92b7-3589312a0cb9',
-  day: 2,
+  game: 'e45eda20-ccbf-4d38-8be0-c18ccacd028f',
+  day: 3,
   seat: 10,
-  role: 'Chanteuse',
-  said: "I used my investigator check on player_5 during night one to secure an early read. Player_1's watch accurately catches that visit, and the check result came back not suspicious.",
-  note: "Public cover: investigator. Public account: checked player_5 on night 1 and found them not suspicious. Do not disclose: my block on player_5, the pack's kill on player_4.",
-  victim: 8,
-  votes: '6 to 2',
+  role: 'Illusionist',
+  said: "player_1, by the book: I published my Investigator claim on day 2 with an empty night to show. You sat silent and surfaced yours only after the chanteuse was confirmed wolf. That's not two investigators at dawn — that's one man correcting his story. I'll be voting player_1; the SK hunt can wait until the liar is off the board.",
+  note: "Lone wolf. Public cover: Investigator, held nights 1 and 2. player_1 counter-claims Investigator, so the day's fight is his word against mine — lean on the fact his block story mirrors the dead chanteuse's and that he surfaced the claim only after mine. … vote player_1 today. … Do not disclose the conceal or the pack kill.",
+  victim: 1,
+  votes: '3 of the 5 votes',
 } as const;

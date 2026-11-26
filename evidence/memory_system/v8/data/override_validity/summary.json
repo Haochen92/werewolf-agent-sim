@@ -1,0 +1,177 @@
+{
+  "games_glob": "batch_results/v8_demo/games_*.jsonl",
+  "games": 20,
+  "verdict_counts_by_phase": {
+    "day_discussion": {
+      "follow": 544,
+      "not_relevant": 1052,
+      "override": 177
+    },
+    "day_vote": {
+      "not_relevant": 283,
+      "follow": 135,
+      "override": 74
+    },
+    "night_action": {
+      "follow": 475,
+      "not_relevant": 1040,
+      "override": 342
+    }
+  },
+  "grade_by_group": {
+    "follow_only": {
+      "n": 248,
+      "mean": 0.238
+    },
+    "mixed": {
+      "n": 148,
+      "mean": 0.068
+    },
+    "override_only": {
+      "n": 106,
+      "mean": 0.17
+    }
+  },
+  "channels": [
+    {
+      "channel": "chanteuse/day_vote",
+      "follow_only_n": 21,
+      "follow_only_mean": 0.714,
+      "override_only_n": 11,
+      "override_only_mean": 0.091
+    },
+    {
+      "channel": "chanteuse/night_action/chat",
+      "follow_only_n": 6,
+      "follow_only_mean": 0.333,
+      "override_only_n": 11,
+      "override_only_mean": 0.545
+    },
+    {
+      "channel": "chanteuse/night_action/kill",
+      "follow_only_n": 6,
+      "follow_only_mean": 0.333,
+      "override_only_n": 8,
+      "override_only_mean": 0.0
+    },
+    {
+      "channel": "chanteuse/night_action/skill",
+      "follow_only_n": 5,
+      "follow_only_mean": -0.2,
+      "override_only_n": 7,
+      "override_only_mean": -0.714
+    },
+    {
+      "channel": "fortune_teller/night_action",
+      "follow_only_n": 5,
+      "follow_only_mean": -0.6,
+      "override_only_n": 1,
+      "override_only_mean": -1.0
+    },
+    {
+      "channel": "healer/night_action",
+      "follow_only_n": 24,
+      "follow_only_mean": 0.167,
+      "override_only_n": 3,
+      "override_only_mean": 0.0
+    },
+    {
+      "channel": "illusionist/day_vote",
+      "follow_only_n": 14,
+      "follow_only_mean": 0.571,
+      "override_only_n": 9,
+      "override_only_mean": -0.111
+    },
+    {
+      "channel": "illusionist/night_action/chat",
+      "follow_only_n": 6,
+      "follow_only_mean": 0.167,
+      "override_only_n": 13,
+      "override_only_mean": 0.385
+    },
+    {
+      "channel": "illusionist/night_action/kill",
+      "follow_only_n": 12,
+      "follow_only_mean": 0.083,
+      "override_only_n": 5,
+      "override_only_mean": -0.4
+    },
+    {
+      "channel": "illusionist/night_action/skill",
+      "follow_only_n": 6,
+      "follow_only_mean": -0.5,
+      "override_only_n": 2,
+      "override_only_mean": 0.0
+    },
+    {
+      "channel": "investigator/night_action",
+      "follow_only_n": 12,
+      "follow_only_mean": 0.583,
+      "override_only_n": 4,
+      "override_only_mean": 0.5
+    },
+    {
+      "channel": "necromancer/day_vote",
+      "follow_only_n": 16,
+      "follow_only_mean": 0.75,
+      "override_only_n": 7,
+      "override_only_mean": 1.0
+    },
+    {
+      "channel": "sentinel/night_action",
+      "follow_only_n": 17,
+      "follow_only_mean": 0.0,
+      "override_only_n": 1,
+      "override_only_mean": 1.0
+    },
+    {
+      "channel": "serial_killer/day_vote",
+      "follow_only_n": 19,
+      "follow_only_mean": 0.737,
+      "override_only_n": 7,
+      "override_only_mean": 1.0
+    },
+    {
+      "channel": "serial_killer/night_action",
+      "follow_only_n": 7,
+      "follow_only_mean": 0.0,
+      "override_only_n": 7,
+      "override_only_mean": -0.143
+    },
+    {
+      "channel": "sigilist/night_action",
+      "follow_only_n": 14,
+      "follow_only_mean": 0.071,
+      "override_only_n": 2,
+      "override_only_mean": -1.0
+    },
+    {
+      "channel": "speculator/day_vote",
+      "follow_only_n": 3,
+      "follow_only_mean": 0.333,
+      "override_only_n": 4,
+      "override_only_mean": 0.0
+    },
+    {
+      "channel": "trailseer/night_action",
+      "follow_only_n": 10,
+      "follow_only_mean": 0.0,
+      "override_only_n": 2,
+      "override_only_mean": 0.5
+    },
+    {
+      "channel": "vigilante/night_action",
+      "follow_only_n": 37,
+      "follow_only_mean": 0.0,
+      "override_only_n": 2,
+      "override_only_mean": 0.0
+    }
+  ],
+  "within_channel_gap_override_minus_follow": -0.182,
+  "within_channel_weight": 89,
+  "ungraded_decisions_by_phase": {
+    "day_discussion": 524,
+    "day_vote": 25,
+    "night_action": 28
+  }
+}

@@ -26,9 +26,11 @@ const DIR = path.join(root, 'src/assets/sprites');
 
 // [source under sprites/, scale]
 const LIST = [
-  ['props/jar-glass.webp', 0.5],
-  ['props/jar-lid.webp', 0.35],
+  ['props/jar-glass.webp', 0.56],
+  ['props/jar-lid.webp', 0.375],
   ['props/plate.webp', 0.45],
+  // the podium front: at most ~980 physical px wide (932×430 ×3, 2026-10-17)
+  ['props/stand-front.webp', 0.66],
   // the deal's small cards (Card.tsx SmallCard): 86 units wide, 720×960 → 180×240
   ...[
     'villager',
@@ -50,19 +52,23 @@ const LIST = [
   ['window/night-far.webp', 0.65],
   ['window/night-near.webp', 0.75],
 ];
-for (const character of (await readdir(path.join(DIR, 'day'))).sort())
+for (const character of (await readdir(path.join(DIR, 'characters'))).sort())
   for (const state of ['base', 'talking', 'thinking', 'out']) {
-    const rel = `day/${character}/${state}.webp`;
+    const rel = `characters/${character}/${state}.webp`;
     if (await stat(path.join(DIR, rel)).catch(() => null)) LIST.push([rel, 0.8]);
   }
-for (const character of (await readdir(path.join(DIR, 'day'))).sort()) {
-  const rel = `day/${character}/head.webp`;
+for (const character of (await readdir(path.join(DIR, 'characters'))).sort()) {
+  const rel = `characters/${character}/head.webp`;
   if (await stat(path.join(DIR, rel)).catch(() => null)) LIST.push([rel, 224 / 384]);
 }
 const only = process.argv[2];
 
 function optionsFor(rel) {
-  if (rel.split('/')[0] === 'day') return { quality: 82, alphaQuality: 100, effort: 6 };
+  // the felt podium front: quality 75, as its source (fit_felt_props.py)
+  if (rel === 'props/stand-front.webp')
+    return { quality: 75, alphaQuality: 100, effort: 6 };
+  if (rel.split('/')[0] === 'characters')
+    return { quality: 82, alphaQuality: 100, effort: 6 };
   return { quality: 85, alphaQuality: 100, effort: 6 };
 }
 

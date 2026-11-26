@@ -1,0 +1,441 @@
+# Memory area log: the progression piece, kept whole
+
+> **What this is.** The "Memory Store Progression" synthesis, first written 2026-06-22 and patched on
+> 2026-10-15 (the v8 addendum) and 2026-10-22 (the correction box). It was this folder's `report.md`
+> until 2026-10-26, when the hub was rewritten as an area overview ([report.md](report.md)). It is kept
+> here unchanged as the record of how the memory story was told at the time: its claim table, the
+> "+17→+33pp" range and the "compounding open" status are superseded, and its correction box says how.
+> Links inside it are as they were.
+
+---
+
+# Memory Store Progression: `old_strateg_archive` → v8
+
+A cross-experiment synthesis of how the episodic-memory store evolved across ~8 versions, grouped into
+**five eras**. This is a **portfolio progression piece**, not a new experiment: every number here is
+sourced from a dated evidence folder (cited inline), and the value is the *narrative that connects
+them*. If you read one thing, read the arc below — it turns eight store versions into a single story.
+
+> **Correction (2026-10-22).** Three claims below are out of date or stronger than the evidence. Read
+> them as corrected here; the eras are otherwise left as written.
+>
+> 1. **The June A/B (v5_0) improved the town's decisions, not significantly its wins.** On 30 paired
+>    boards with plain retrieval, the healer saved the real target 37% → 60% (p = 0.005), and town
+>    lynches hit an enemy 47% → 64% (p = 0.028). The town win rate rose 27% → 43%, which was not
+>    significant (p = 0.27). The "+17→+33pp" below joins two arms: +33 points (27% → 60%, p = 0.013) is
+>    the reranked arm, which carries a model-drift caveat. Wolves and the lone killer gained nothing.
+>    Six days later, on the v6 store, the town gain did not repeat (+6 points, p = 0.77).
+> 2. **Compounding was tested, not proven, and the test leaned negative for a cause that was found.**
+>    v6 had shown that lessons were retrieved and followed, yet decisions did not improve. So the limit
+>    was the content: lessons mined from the agents' own mediocre play. Learning from results was the
+>    one lever left to improve it, which is what the v7 loop does: credit each followed lesson by the
+>    decisions it led to, then rewrite and prune the store. In July 2026 a pre-registered paired test
+>    of the finished v7 store found no compounding. With memory, the town's decision score was 0.147
+>    lower, and memory did worse on 19 of 30 boards (p ≈ 0.06, not significant). As committed, it was
+>    reported as "no compounding detected", leaning toward harm.
+>
+>    The cause was traced to credit. To keep a lucky win from making a move look good (the halo, met
+>    earlier in v7), credit grades each decision apart from the game's result. That same choice left
+>    it blind to abstaining: every town abstain was graded neutral, and a lesson without a memory-off
+>    comparison was compared with zero. So a lesson telling the vigilante to abstain scored 0.00 and
+>    was never pruned. In the memory games, 111 of 117 town abstains fell on days that ended with
+>    nobody voted out. Counter-lessons against caution had begun to appear but were outnumbered about
+>    ten to one when the run ended, so whether a longer run would have corrected itself is open. The
+>    scoring was fixed afterwards and checked on recorded games, but the fixed loop was never played.
+>    Sources: [`v7/execution_plan/report.md`](v7/execution_plan/report.md) §5;
+>    [`../credit/report.md`](../credit/report.md) §6;
+>    [`../credit/blindspot_fix/experiment_log.md`](../credit/blindspot_fix/experiment_log.md).
+> 3. **"The clean test that says memory works"** (v5_0 heading) should read "the clean test that
+>    showed memory improving the town's decisions", per point 1.
+>
+> All of these games ran on players that did not reason (zero reasoning tokens; see the Era 6 scope
+> note). v8 has not been tested for its effect on play.
+
+> **Addendum (2026-10-15).** This synthesis was written on 2026-06-22 and ends at v7. v8, the memory
+> system rebuilt for the ten-seat game, is [Era 6](#era-6--the-ten-seat-game-v8-addendum-2026-10-15)
+> at the end, with a scope note on the results of Eras 3–5 found since. v8 has not been tested for
+> its effect on play.
+
+## The arc: the bottleneck kept moving
+
+Each version is best understood not as "a better store" but as a **response to where the binding
+constraint had moved**. Once a version exhausted one bottleneck, the next bottleneck became visible and
+defined the next version. The five eras (and the one structural reset that interrupts the sequence):
+
+```
+  Era 1 · Architecture    monolithic → modular RAG        bottleneck: overfitting
+  Era 2 · Store hygiene    dedup + action-phase namespace  bottleneck: redundancy (content gap surfaces)
+  Era 3 · The rebuild      new game + new extraction        structural RESET — v4 baselines don't transfer
+  Era 4 · Retrieval prec.  per-cell dimension schema        bottleneck: is retrieval the lever? → NO
+  Era 5 · Content          the compounding loop             bottleneck: content quality → self-updating store
+```
+
+The most important thing this progression demonstrates is **diagnostic discipline**: v5's clean paired
+A/B established the **positive anchor** (static memory measurably helps town — Era 3's v5_0 A/B), and
+the later versions (v6, v7) return *negative and open* results that are the most informative in the set
+— they are what relocated the bottleneck from "retrieve better" to "the content itself is the limit." A
+reader should come away understanding that both the positive anchor and the negative findings were
+*earned*, not accidents.
+
+---
+
+## Era 1 — Architecture: monolithic → modular RAG
+
+*How memory is represented and surfaced — from a single overfit document to situation-retrieved RAG.*
+
+### Phase 0 — `old_strateg_archive`: monolithic strategy injection
+
+**What it was.** The earliest system extracted "learnings" from postgame transcripts and accumulated
+them into a single strategy document per role (228 items across 4 role namespaces), injected wholesale
+as a system prompt at game start.
+
+**Driver to leave it.** Over 10+ iterations, transcript inspection showed genuinely increasing
+sophistication — so the *idea* (cross-game learning) was sound. But the failure mode was
+**overfitting**: a single doc accumulated every lesson including contradictory edge cases, recent
+games dominated the text, and agents rigidly applied advice from a specific past situation to a
+current one where it didn't hold. This is the only transition in the whole progression driven by a
+qualitative architecture failure rather than a measured metric.
+
+*Source: `effectiveness/report.md` §System Evolution (Phase 0).*
+
+### Phase 1 — modular RAG (v1–v3): retrieve the situation, not the doc
+
+**What changed.** Decompose memory into two retrievable types — **observations** (factual accounts of
+past events) and **strategy points** (prescriptive advice) — stored in a vector store, namespaced by
+role, retrieved per turn by semantic match on the agent's current situation summary.
+
+**Why.** Directly targets overfitting: surface only situation-relevant memories instead of dumping the
+whole strategy doc. Retrieval *is* the anti-overfitting mechanism.
+
+**What it exposed.** The new bottleneck was **store hygiene**. As games accumulated, the raw store
+filled with near-duplicates — by v3, retrieval showed ~52% observation redundancy and ~77% strategy-
+point redundancy. Retrieval slots were being spent on copies.
+
+*Source: `effectiveness/report.md` §Phase 1; `dedup/store_retrieval_impact/experiment_log.md`.*
+
+## Era 2 — Store hygiene: dedup + action-phase namespacing
+
+*With retrieval working, the binding constraint became keeping the store clean — redundant slots
+crowd out signal.*
+
+### Phase 2 — dedup + action-phase namespacing (v3_deduped → v4 → v4_deduped → v4_deduped_v2)
+
+**What changed.** Two moves: (a) a **batch deduplication pipeline** — agglomerative clustering then an
+LLM judges each cluster KEEP / MERGE (observations only) / DISCARD; (b) **action-phase namespace
+segregation** (discussion vs vote vs night), so a night-action lesson can't surface during day
+discussion. The v4 store (522 items, pre-dedup) is the noisier, larger store that anchors Batch B of
+the effectiveness study.
+
+**What happened — dedup is a Goldilocks problem.** The first dedup prompts (v0) merged too
+aggressively: a 39% store reduction that *hurt* observation relevance at n=39 (it crossed from
+removing redundancy into removing distinct lessons). Tuned prompts (v3: anti-over-merge calibration,
+indexed cluster keys, a pre-merge verification checklist) settled on a conservative ~17% reduction
+that gave the best efficiency and unique-lesson counts while holding relevance. **The tradeoff named
+here:** dedup trades recall of rare-but-distinct lessons for precision of the retrieval slate, and the
+break-even is prompt-sensitive, not a fixed similarity threshold.
+
+**The finding that foreshadows everything after.** Strategy-point redundancy *never responded to
+dedup* — it stayed ~59–77% across every store. That ruled out "dedup harder" and reframed it as a
+**content-coverage gap**: the store simply lacked entries for some situations. This is the first
+signal that the eventual bottleneck would be content, not plumbing.
+
+*Source: `dedup/store_retrieval_impact/experiment_log.md`; `dedup/README.md`; `effectiveness/report.md` Batch B.*
+
+> **Interlude — the effectiveness study (v3_deduped vs v4).** The headline A/B on these stores showed
+> memory *can* move outcomes dramatically (Batch A all-enabled **70%→97%, Fisher p=0.012**) but that
+> the *same* condition collapsed to baseline on the v4 store + action-phase config (73.3%, p=1.0).
+> Configuration sensitivity — not a stable memory effect — was the dominant factor. That unresolved
+> sensitivity is precisely what motivated rebuilding from scratch.
+> *Source: `effectiveness/report.md` §Results/Decision. (Independently re-verified: every p-value and
+> CI in that report reproduces exactly from the raw JSONLs via a separate code path.)*
+
+## Era 3 — The rebuild: new game + new extraction (the one structural discontinuity)
+
+*Not a store tweak but a full-system rebuild that resets the measurement frame. **Three** things
+changed at once: the **game** (9-player / 3-faction casting + sequential scheduler), the **extraction
+pipeline** (per-role concurrent fan-out + Vertex prefix caching), and a whole-store dedup. Because the
+game itself changed, v4 baselines* **do not transfer** *— every later number stands on a fresh v5
+baseline. This era also produced the project's* **positive anchor** *(memory helps town) and the
+confound that nearly hid it.*
+
+### v5.0 — the rebuild (a discontinuity, not an increment)
+
+**What changed.** A full-system rebuild underneath the store: **sequential discussion scheduler**
+(replacing concurrent), **9-player / 3-faction casting** (serial killer added), and **per-role
+extraction with Vertex prefix caching**, plus a final whole-store dedup pass.
+
+**Why this is a hard version boundary, not a tweak.** Per the project's variant-versioning policy, a
+structural redesign is a fresh-generation A/B, not a replayable config flag. v4 win-rates *do not
+transfer* to v5 — it is a different game (different player count, role set, and turn order). Every
+result after v5 stands on a fresh baseline; comparing a v5 number to a v4 number is a category error.
+
+**Result.** Re-established memory-off baselines on the new foundation (villagers 67% / SK 27% /
+wolves 7%), which become the reference point for all subsequent A/Bs.
+
+*Source: `effectiveness/v5_seeding_plan.md`; `effectiveness/v5_baseline_proxy_analysis.md`.*
+
+### v5_1 — the compounding pilot that named the real problem
+
+**What changed.** Memory-ON build games seeded from v5.0, run with **raw retrieval (top_k=3,
+rerank/filter OFF)** and a growing store — deliberately the *uncurated* condition.
+
+**What happened (the pivotal hypothesis).** Town play got *worse* with memory (villagers −32pp;
+mislynches, correct-elimination, and wolf-catching all degraded), while wolves' own deception proxies
+*also* dropped. So wolves' +33pp win lift came from **degraded town decision-making, not better wolf
+deception** — memory was *distracting* the town. This is a confounded pilot (unpaired, growing store,
+raw retrieval, small unequal N) and is labelled directional-only — but it produced the hypothesis that
+drove v6: the problem is **regime-mismatched lessons** (endgame town retrieving mid-game strategy),
+and the lever is retrieval precision.
+
+*Source: `effectiveness/v5_baseline_proxy_analysis.md` §Key read.* **The pilot's negative did not
+survive a clean test — the v5_0 A/B below refuted it.**
+
+### v5_0 paired A/B — the clean test that says memory *works* (the positive anchor)
+
+**What changed.** No new store — the **frozen v5_0 store** put to the deciding experiment (2026-06-11).
+Because the v5_1 pilot was confounded, its "memory distracts town" claim was re-run as a clean **paired
+A/B**: 30 shared boards (identical role draws, memory the only variable), memory-ON vs memory-OFF
+against a **same-epoch fresh baseline**, with both raw and reranked retrieval arms.
+
+**Result — the pilot was refuted; static memory HELPS town.** Town win rose on *every* arm — **+17pp
+raw (p=0.267, NS), +33pp reranked (p=0.013), +23pp all-on** — and, more decisively than the underpowered
+win-rate, the pre-registered town decision-quality basket moved significantly on the clean interleaved
+raw arm (correct-elimination +0.17 **p=0.028**, healer-save +0.23 **p=0.005**, mislynch-rate −0.17
+**p=0.036**; paired Wilcoxon). This is the project's **positive anchor** — the strongest evidence memory
+works — and the result the v7 report cites. It is a **v5_0** finding, *not* v6 or v7.
+
+**Two side-findings here shaped every later version:**
+- **Null for the deceivers** (wolf/SK unmoved): memory helped inference-heavy *town* play but not
+  deception. This split seeded the two-tier procedural-memory framing and, downstream, the v7 credit
+  design (de-lucking matters most exactly where outcome ≠ decision quality — the deceiver cells).
+- **Reranking ≈ raw**: retrieval *ranking* is not the lever. This pointed v6 at *structured* criticality
+  gating rather than better fuzzy ranking, and foreshadowed v6_1's verdict that retrieval was never the
+  bottleneck.
+
+*Source: `effectiveness/paired_ab/{report,experiment_log}.md`. Win-rates and the proxy basket were
+independently re-verified against the raw JSONLs.*
+
+## Era 4 — Retrieval precision: the dimension store
+
+*With memory shown to help town but* reranking ≈ raw*, the open question was whether* retrieval
+precision *was the lever. This era rebuilds the store around a structured situation schema to test that
+— and answers* **no**.
+
+### v6 — the dimension-schema store: attack retrieval precision
+
+**What changed.** A **per-cell structured situation schema** (11 cells = role × {day, night}; day
+merges discussion+vote because their validity boundary is the same, night is gated separately because
+it genuinely differs). Crucially, **criticality numerics** (players-alive, distance-to-parity,
+is-swing, bullets-left) were pulled *out* of the free-text embedding — where a bi-encoder mangles
+magnitude — and exposed to an **exact structured reranker gate**. Extraction guidance is auto-generated
+from one schema (single source of truth), closing prompt-field drift across extraction / query /
+embedding / dedup.
+
+**Why.** With the v5_0 A/B (Era 3) showing memory already helps town but that *fuzzy* reranking ≈ raw
+(ranking isn't the lever), v6 tests the remaining retrieval hypothesis: that **structured** criticality
+gating (not fuzzy embedding similarity) is what sharpens the regime-mismatched cases the v5_1 pilot
+flagged.
+
+**Result — HOLD, not GO.** The full store built cleanly (919 observations / 17 namespaces; a
+consensus-direction hindsight leak was found and driven to 0%). But the criticality screen validated
+only weakly — the headline endgame-concentration effect rested on a held-out subset of **n=7**, too
+underpowered to call a clean win. The honest call was HOLD.
+
+*Source: `extraction/situation_dimensions/dimension_schema_build_spec.md`;
+`extraction/situation_dimensions/v6_full_store.md`;
+`extraction/situation_dimensions/criticality_screen/experiment_log.md`.*
+
+### v6_1 — the *second* paired A/B (on the dimension store): the content reframe
+
+**What changed.** A clean **paired A/B** on 30 shared boards (identical role draws, memory the only
+variable), 6 arms (town/SK × observations/strategy-points/both), retrieval pinned raw for comparability.
+
+**Result — the reframe.** No outcome reached p<0.05, but the *pattern* was decisive and consistent:
+
+- Town memory **did not replicate** the earlier benefit (town-obs +6pp, NS; decision-quality Δ≈0).
+- **Strategy-point-form memory trended *harmful*** for both town and the deceiver; observations were
+  neutral; only **synergy** (observations cross-checking strategy points) rescued it.
+- Memory was faithfully retrieved and followed (~99% follow-rate on applicable strategy points) — yet
+  **following it did not improve decisions.**
+
+That last line is the whole progression's hinge. If memory is retrieved correctly and followed
+faithfully and *still* doesn't help, the bottleneck is **not retrieval precision** — it is the
+**content quality** of lessons mined from a system's own capped play, which mirror mediocre play and
+carry no decision-improving signal. v6's premise (fix retrieval) was disproven by its own clean test.
+
+**An honest bound.** This null is a clean *same-epoch* result, but it does **not** overturn the v5_0
+A/B (Era 3). That A/B and this run sit in **different epochs** — a prompt-bundle fix had raised the
+no-memory town baseline to roughly the level v5 memory lifted town *to* — and the only same-epoch
+v5-store-vs-v6-store control shows the two stores a wash. So the flatness reflects a **risen baseline +
+capped-play content**, not a degraded dimension schema: the content-quality diagnosis stands, but
+"the v6 store broke the town benefit" does not.
+
+*Source: `effectiveness/v6_sp_ab/experiment_log.md`; the cross-epoch analysis was re-verified against
+the raw batch JSONLs.*
+
+## Era 5 — Content: the compounding loop (the largest new *subsystem*, added on top — not a rebuild)
+
+*The biggest addition of new machinery in the arc — but* additive*, bolted on top of the unchanged v6
+store and v5 game, not a v5-style throw-and-rebuild. With retrieval exonerated and content named as the
+limit, the store stops being a static index and becomes* **self-updating**.
+
+### v7 — the compounding loop: make the store improve its own content
+
+**What changed.** The store stops being a static index and becomes **self-updating**. Across
+generations it runs a closed loop: **de-lucked credit assignment** (grade each *followed* directive by
+the realized decision quality against a memory-off baseline — never win/loss, which is luck-laden) →
+**credit-aware synthesis** (rewrite directives to condition on their actual track record) → **prune /
+evict / decay** (drop stably-harmful, never-followed, or stale-and-rare items).
+
+**Why.** The v6_1 reframe left exactly one lever: content quality can only improve via realized-outcome
+feedback, and a static index cannot do that. The loop is the direct, and only, response to that
+diagnosis. The frontier question it was built to answer: *does memory that compounds across games help
+more over time?* — distinct from *does having memory help?*
+
+**Results, honestly bounded:**
+
+| Claim | Status | Evidence |
+|---|---|---|
+| Static memory helps town | ✅ **valid** | **+17→+33pp win across arms** (N=30, frozen v5_0); decision-quality basket significant (correct-elim p=0.028, healer-save p=0.005, mislynch-rate p=0.036); reranked win +33pp p=0.013 — paired same-epoch A/B, a *different* experiment from the loop |
+| The system demonstrably learns | ✅ **valid** | Credit fires, synthesis engages, prune/decay cull — mechanism, outcome-independent |
+| Compounding *improves play* | ❓ **open** | Both paid loop runs invalid (below) |
+
+**Why the compounding answer is open — two invalid runs, two causes.** Run-1's de-lucked baseline was
+drawn from a biased subset of decisions, distorting the very lift that drives credit and the slope.
+The rerun *looked* clean (paired, cost-capped, replicated) but silently executed `all_enabled` instead
+of the intended `town_only` — so the town signal sits inside a wolf/SK **arms race**, and a first-pass
+analysis even rationalized its null against a "null control" that didn't exist. A by-product of the
+slip: a *tentative, underpowered* positive compounding signal for **wolf** memory (+0.086 slope over
+gens 2–6) — direction worth believing, magnitude not, at 4 games/gen.
+
+**The durable deliverable is the eval instrument.** The headline of v7 is as much the *rigor* as the
+memory system: the instrument caught two invalid runs and a halo in the first-pass analysis, and the
+`--expect-factions` arm guard now makes the config slip crash on generation 1 (~$0.50) instead of
+surviving to a $65 null. Honest negatives and a retracted claim beat a fragile positive.
+
+*Source: `memory_system/v7/report.md`; `memory_system/v7/experiment_log.md` §11–12; `evaluation/src/loop/`.*
+
+---
+
+## Summary table
+
+| Version | Era | The change | Driver (prior version's exhausted bottleneck) | Result |
+|---|---|---|---|---|
+| `old_strateg_archive` | Era 1 · architecture | Monolithic strategy doc/role (228 items), injected wholesale | — | Sophistication up, but **overfitting** |
+| v1–v3 (RAG) | Era 1 · architecture | Observations + strategy-points, vector retrieval by role+phase | Kill overfitting → situation-specific retrieval | Works; store grows **noisy** (~52%/~77% redundancy) |
+| v3_deduped → v4_deduped_v2 | Era 2 · hygiene | Batch dedup + action-phase namespacing | Redundant slots crowd out signal | Dedup is **Goldilocks**; SP redundancy is a **content gap**, not a dedup gap |
+| v5.0 | Era 3 · the rebuild | Sequential scheduler, 9p/3-faction, **per-role extraction rebuild**, whole-store dedup | v4 baselines no longer transfer | Fresh baselines (67/27/7) |
+| v5_1 | Era 3 · the rebuild | Raw memory-ON build games | Explore compounding | **Raw memory distracts town**; hypothesis = regime-mismatch (confounded — later refuted) |
+| v5_0 A/B | Era 3 · the rebuild | Frozen store, memory-ON vs OFF, raw + reranked arms, same-epoch baseline | Refute the pilot's confound | ⭐**Static memory HELPS town +17→+33pp** (basket sig: correct-elim p=.028, healer-save p=.005); **null deceivers; rerank≈raw** — the positive anchor |
+| v6 / v6_0 | Era 4 · retrieval precision | Per-cell schema; criticality → structured reranker gate | Fuzzy rerank≈raw → try structured precision | 919 obs / 17 cells; criticality gating **weakly validated → HOLD** |
+| v6_1 | Era 4 · retrieval precision | 6-arm paired A/B, raw retrieval | Isolate obs vs SP | Memory followed but **doesn't improve decisions** → **content bottleneck**, not retrieval (same-epoch null; the v5→v6 non-replication is **cross-epoch**, not a store regression) |
+| v7 | Era 5 · content (loop) | Self-updating store: credit→synthesize→prune→decay (largest new *subsystem*, additive) | Content can only improve via outcome feedback | Static **+17→+33pp (valid)**; learns **(valid)**; **compounding = open** (runs invalid) |
+
+## Lessons (transferable)
+
+- **In a learning system, the bottleneck migrates — and naming where it currently sits is the real
+  work.** Exhausting one constraint (architecture → hygiene → retrieval precision → content) repeatedly
+  made the next visible; the v4→v5 rebuild sits between hygiene and precision as a **structural reset**,
+  not a new bottleneck. A version that doesn't relocate the bottleneck isn't progress, even if its store
+  is "cleaner."
+- **Faithful retrieval + faithful following + no improvement = a content problem, not a retrieval
+  problem.** The ~99%-follow / Δ≈0-decision result (v6_1) is the cleanest possible disproof of a
+  retrieval-precision thesis, and it could only be seen because the A/B was paired and the follow-rate
+  was instrumented. Measure adherence separately from outcome.
+- **A store mined from a system's own capped play reproduces that system's ceiling.** Self-distilled
+  memory regresses toward mediocre play unless an outside signal (realized de-lucked outcomes) grades
+  it. This is why v7 had to become a *loop*, not a bigger index.
+- **The eval harness is the deliverable when the system is hard to measure.** Two invalid runs and a
+  retracted halo, each caught by an added invariant, are worth more to the portfolio than a fragile
+  positive — and cheap guards (`--expect-factions`) convert a class of silent confounds into loud,
+  generation-1 crashes.
+- **Structural rebuilds reset the measurement frame.** v4→v5 numbers are not comparable; treating a
+  redesign as a fresh A/B (not a replay) is what keeps the comparisons honest.
+
+## What this enables / blocks
+
+- **Open:** the town compounding question — answerable by a single **town-only** loop rerun (now arm-
+  guarded), *or* deliberately deferred if the demonstrable-learning capability (v7 Claim 2) is judged
+  sufficient for the product story.
+- **Ship-ready now:** static memory's +17→+33pp town benefit and the *visible* learning loop (a memory
+  inspector showing an agent retrieve and act on a specific past-game lesson) are the differentiated,
+  demo-able capabilities that don't depend on resolving the compounding magnitude.
+
+## Provenance
+
+- **Synthesized at:** repo `a317c92` (2026-06-22), branch `feature-dimension-schema`.
+- **This document produces no new data** — it is a pointer-and-narrative layer over existing records.
+  Authoritative numbers and their provenance live in the cited source folders:
+  `evidence/memory_system/effectiveness/` (Phase 0–2, v5, v6_1), `evidence/dedup/` (Phase 2),
+  `evidence/extraction/situation_dimensions/` (v6), `evidence/memory_system/v7/` (v7), and the loop code at
+  `evaluation/src/loop/`.
+- Where this synthesis restates a statistic (e.g. 70%→97% p=0.012; v7 town +17→+33pp win, reranked +33pp p=0.013), the figure is
+  quoted from those folders, not recomputed here; the effectiveness A/B and v5 pilot figures were
+  independently re-verified against the raw JSONLs during this synthesis.
+
+---
+
+## Era 6 — The ten-seat game (v8, addendum 2026-10-15)
+
+*Added after this synthesis was written. The eras above are left as they were; this section says
+what has changed since. The record is `v8/` (`plan.md`, `decisions.md`, `experiment_log.md`).*
+
+### A scope note on Eras 3–5, found afterwards
+
+Every memory game behind Eras 3–5 (the June A/B, the v7 loop runs and its endpoint games) played on
+`gemini-3.1-flash-lite` at thinking level "minimal", which with the game's structured output gives
+zero reasoning tokens. The arms were matched, so each memory-on against memory-off comparison still
+stands on its own terms. But every result above, the +17→+33pp town gain and the v7 null alike, is
+a result for players that did not reason.
+
+*Source: `gameplay/discussion_evidence.md` §6.7; `memory_system/v7/report.md`, scope addendum.*
+
+### v8 — memory rebuilt for the ten-seat game
+
+**What changed.** The game changed underneath memory: ten seats dealt from twelve roles, with new
+night mechanics (a pack of two with its own skills, blocks, conceals, sigils, limited uses). Every
+stage of memory was rebuilt for it, and several of the changes answer what Eras 3–5 found:
+
+- **Verdicts that follow the winner.** An observation's verdict leaned on which side won the game,
+  the halo v7's de-lucked credit was built against. Extraction now asks for the evidence behind a
+  verdict; a separate pass (Claude Haiku 5.5) re-reads each verdict for that lean; and each
+  observation names the decision it is about, graded by a fixed per-role table of ideal, neutral and
+  undesirable outcomes. Synthesis can read either the verdict or the grade.
+- **Lessons served by role, not by stage.** Retrieval matched a seat's role and ignored where the
+  game stood, so a seat on day 2 with nine alive could be shown a lesson for the last three players.
+  Each lesson keeps the board it was learned on, and a stage filter (off by default) uses it.
+- **Strategies that state a wrong rule.** Synthesis moved to Claude Sonnet 5.5, and its points are
+  screened against the rules; flagged points and duplicates are left out of the store.
+- **The loop, carried over.** v7's credit, prune and evict were ported to ten seats and the new
+  grading.
+- **Extraction leaves the game.** A game saves its extraction input, and extraction runs offline as
+  a batch.
+- **Players that reason.** The twelve seeding games played on Gemini 3.5 Flash-Lite at medium
+  thinking, the lowest level at which it reasons.
+
+**Measured: the mechanism, not play.**
+
+| What | Before | v8 |
+|---|---|---|
+| Lessons shown that fit the decision (96 lookups, read by four Sonnet readers) | 15% (12-game store, no filter) | 24–27% (40-game store, stage filter) |
+| Lookups shown at least one fitting lesson | 36 of 96 | 52 of 96 |
+| Synthesized points that state a wrong rule | 11% | 6.1% |
+| Weight of the side winning in a verdict, against the decision's own grade | +0.74 against +0.33 | +0.50 after the re-read (one-sided: losers' negatives 53% → 27%) |
+| Observations tagged with the right decision (blind read, bar set at 90%) | — | 96.1% |
+
+A demonstration run of 20 memory-on games then took the loop through one credit pass: 148 of 498
+lessons were followed and credited, 4 pruned, 4 evicted and 50 proven. Twenty games give a few dozen
+follows per lesson at most, so these show the pass working; they are not estimates.
+
+**Not measured: whether v8's memory improves play.** No controlled run of memory on against memory
+off has been made on v8; one needs about 35–60 games per arm (`v8/plan.md` §9.6 item 9). The question
+the progression ends on is therefore open for the current system, not answered: v8 changed most of
+what v7 was tested on, including whether the players reason.
+
+**Where the bottleneck sits.** Still content, now with its next step named. Most lessons a seat is
+shown still do not fit its decision, and the readers name the remaining misfit the same way: lessons
+keyed to an event the seat does not have (a rival claim, a victim's door, the room turning on a
+partner). The stage fields record the board, not events.
+
+*Source: `v8/experiment_log.md` (2026-10-13, "The 40-game store read" and "Where v8 stands";
+2026-10-14, "The demo run"); `v8/decisions.md` §12–14.*

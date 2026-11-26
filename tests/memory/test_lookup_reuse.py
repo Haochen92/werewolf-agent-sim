@@ -17,7 +17,7 @@ def calls(monkeypatch):
     lookup_cache.clear()
     made = []
 
-    def fake_situations(payload, action_phase):
+    def fake_situations(payload, action_phase, models=None):
         made.append((payload["player_id"], payload["current_day"], action_phase))
         return [f"situation {len(made)}"], []
 
@@ -27,7 +27,7 @@ def calls(monkeypatch):
 
     monkeypatch.setattr(pipeline, "_generate_situations_for_agent", fake_situations)
     monkeypatch.setattr(pipeline, "_retrieve", lambda *a, **k: ([], []))
-    monkeypatch.setattr(tracing.langfuse, "start_as_current_observation", span)
+    monkeypatch.setattr(tracing.get_langfuse(), "start_as_current_observation", span)
     yield made
     lookup_cache.clear()
 

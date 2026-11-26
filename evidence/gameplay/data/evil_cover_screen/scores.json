@@ -1,0 +1,62 @@
+{
+ "samples": {
+  "before": {
+   "n": 82,
+   "passed": 9,
+   "claim_field_set": 12
+  },
+  "card": {
+   "n": 82,
+   "passed": 14,
+   "claim_field_set": 33
+  }
+ },
+ "answer": {
+  "before": {
+   "claims_role": 13,
+   "deflects": 38,
+   "denies": 21,
+   "other": 1
+  },
+  "card": {
+   "claims_role": 33,
+   "deflects": 32,
+   "denies": 3
+  }
+ },
+ "claim_fits": {
+  "before": "12/13",
+  "card": "33/33"
+ },
+ "contested": {
+  "before": "0/13",
+  "card": "3/33"
+ },
+ "town_would_catch": {
+  "before": "1/13",
+  "card": "0/33"
+ },
+ "explains_sighting": {
+  "before": "29/73",
+  "card": "42/68"
+ },
+ "claimed_roles": {
+  "before": {
+   "healer": 2,
+   "investigator": 5,
+   "sentinel": 1,
+   "sigilist": 2,
+   "trailseer": 3
+  },
+  "card": {
+   "fortune teller": 1,
+   "healer": 7,
+   "investigator": 9,
+   "sentinel": 3,
+   "sigilist": 6,
+   "speculator": 3,
+   "trailseer": 1,
+   "vigilante": 3
+  }
+ }
+}

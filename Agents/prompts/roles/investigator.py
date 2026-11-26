@@ -29,6 +29,7 @@ against the risk to yourself.
 
 DISCUSS_CONTEXT = """
 Surviving players: {surviving_players}
+Checks left: {checks_left}
 Your night actions (private; recorded by the game master, and only you know them):
 {night_actions}
 """
@@ -42,6 +43,7 @@ how events actually played out, by your own judgment.
 
 VOTE_CONTEXT = """
 Here are the surviving players: {surviving_players}
+Checks left: {checks_left}
 Your night actions (private; recorded by the game master, and only you know them):
 {night_actions}
 """

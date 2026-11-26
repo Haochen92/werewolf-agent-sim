@@ -101,6 +101,14 @@ def json_safe(value: Any) -> Any:
     return value
 
 
+def _deductions_by_side(raw: str) -> dict[str, str]:
+    """"town=full,wolves=record" -> {"town": "full", "wolves": "record"}; RunConfig validates the names."""
+    pairs = [part.split("=", 1) for part in raw.split(",") if part.strip()]
+    if any(len(pair) != 2 for pair in pairs):
+        raise argparse.ArgumentTypeError(f"expected side=mode pairs, got {raw!r}")
+    return {side.strip(): mode.strip() for side, mode in pairs}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run Werewolf games across memory configurations."
@@ -127,7 +135,8 @@ def parse_args() -> argparse.Namespace:
             "JSON file: a list of game_ids (or an object with a 'game_ids' key). "
             "Pins the per-game seed so every selected config plays the SAME role "
             "draws — the paired A/B design. Overrides --runs-per-config to the "
-            "length of the list."
+            "length of the list. One config per process: arms on the same ids must run "
+            "as separate run_batch processes."
         ),
     )
     parser.add_argument(
@@ -279,9 +288,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--deductions",
-        choices=("off", "record", "full"),
+        choices=("off", "record", "public", "full"),
         default="full",
-        help="How much of the deduction engine the AI seats get (RunConfig.deduction_mode).",
+        help="How much of the deduction engine the AI seats get (RunConfig.deduction_mode): difficulty "
+             "level 1 = record, 2 = public, 3 = full.",
+    )
+    parser.add_argument(
+        "--deductions-by-side",
+        type=_deductions_by_side,
+        default={},
+        help="A side's own level, overriding --deductions for its seats (RunConfig.deduction_by_side), "
+             "e.g. town=full,wolves=record. Sides: town, wolves, lone_killer, neutral.",
+    )
+    parser.add_argument(
+        "--persona-voices",
+        action="store_true",
+        help="Give each AI seat a speaking voice, fixed for the game (RunConfig.persona_voices).",
     )
     parser.add_argument(
         "--skip-embedding-canary",
@@ -465,6 +487,16 @@ def run_batch(args: argparse.Namespace) -> int:
     # game_config seam is kept (recorded + passed to run_game) for future overrides.
     game_config = None
     game_ids = load_game_ids(args.game_ids_file)
+    if game_ids and len(config_names) > 1:
+        # The checkpointer's thread and the node-cache key are both the game id, and both live
+        # for the whole process: a second arm on the same id would resume on top of the first
+        # arm's finished game (the add-reduced transcripts accumulate) and replay its cached turns.
+        print(
+            "error: --game-ids-file pairs arms by game id, so run one process per config "
+            f"(got {len(config_names)}: {', '.join(config_names)})",
+            file=sys.stderr,
+        )
+        return 2
     runs_per_config = len(game_ids) if game_ids else args.runs_per_config
     session_prefix = args.session_prefix or datetime.now().strftime(
         "batch_%Y%m%d_%H%M%S"
@@ -555,6 +587,8 @@ def run_batch(args: argparse.Namespace) -> int:
             "retrieval_types_config": retrieval_types_config,
             "stage_filter": args.stage_filter,
             "deduction_mode": args.deductions,
+            "deduction_by_side": args.deductions_by_side,
+            "persona_voices": args.persona_voices,
             "memory_persistence_config": memory_persistence_config,
             "game_config": game_config,
         }
@@ -614,6 +648,8 @@ def run_batch(args: argparse.Namespace) -> int:
                     retrieval_types_config=retrieval_types_config,
                     stage_filter=args.stage_filter,
                     deduction_mode=args.deductions,
+                    deduction_by_side=args.deductions_by_side,
+                    persona_voices=args.persona_voices,
                     game_id=game_id,
                 )
             )

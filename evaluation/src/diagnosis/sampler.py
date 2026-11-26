@@ -2,7 +2,7 @@
 
 Picks WHICH decision cases a reviewer reads, so the review is representative and recorded instead of
 convenient and ephemeral. Four steps, each reusing a part that already exists
-(``evidence/evaluation/sampled_human_review/plan.md`` is the spec):
+(``evidence/evaluation/labeling/sampled_reads/plan.md`` is the spec):
 
   1. SELECT — two combinable, OUTCOME-BLIND signals:
        a. score-outliers — the DEFAULT source is a deterministic per-case decision score
@@ -48,7 +48,7 @@ from pydantic import BaseModel, Field
 from Agents.schemas.evaluation import EvalCase
 from evaluation.src.data.sampling import classify_game_phase, sample_cases
 from evaluation.src.data.sources.sidecar import LocalCaseSource
-from evaluation.src.loop.decision_scoring import (
+from Agents.memory.consolidation.decision_scoring import (
     REPLAYABLE_DECEIVER_ROLES,
     query_criticality,
     score_night_target,

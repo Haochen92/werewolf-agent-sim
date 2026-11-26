@@ -61,6 +61,11 @@ const SET_MARKS = [
   '[data-layer=paint] [data-room] img',
 ];
 const TILE_MARK = '[data-layer=hud] [data-cols] img';
+/**
+ * The wing is the Stage's, kept from the platform to the game's end (set.ts `WingHost`): it
+ * must survive every step, a new room and the night's hub giving way to one included.
+ */
+const WING_MARK = `${SET_MARKS[0]} (`;
 
 declare global {
   interface Window {
@@ -212,9 +217,16 @@ async function walk(page: Page, scene: string, viewer: 'spectator' | 'xray') {
       !!prev &&
       prev.room === r.room &&
       !(beat.startsWith('rnight.') && prev.beat !== beat && beat !== 'rnight.spoke');
-    if (sameSet && r.remounted.length) {
-      const what = `the set is rebuilt by this beat: ${r.remounted.join(', ')}`;
-      const tilesOnly = r.remounted.every((m) => m.startsWith(TILE_MARK));
+    if (r.remounted.some((m) => m.startsWith(WING_MARK)))
+      findings.push({
+        beat: `${scene}#${i} ${beat}`,
+        kind: 'remount',
+        what: 'the wing is built again by this step',
+      });
+    const rest = r.remounted.filter((m) => !m.startsWith(WING_MARK));
+    if (sameSet && rest.length) {
+      const what = `the set is rebuilt by this beat: ${rest.join(', ')}`;
+      const tilesOnly = rest.every((m) => m.startsWith(TILE_MARK));
       if (KEYED_WHOLE.has(scene) || tilesOnly)
         scrollers.add(`${scene}#${i} ${beat}: ${what}`);
       else findings.push({ beat: `${scene}#${i} ${beat}`, kind: 'remount', what });

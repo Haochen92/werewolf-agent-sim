@@ -6,16 +6,19 @@ not know graph channel names or reducer shapes: registered actor nodes own the f
 resolved-turn -> graph-delta conversion.
 """
 
+import re
 from logging import getLogger
 from typing import Any
 
 from pydantic import BaseModel
 
+from Agents.llm_factory import GameModels
 from Agents.schemas.game_events import (
     AddressedTarget,
     DayChannel,
     DayVote,
     DiscussionPassReason,
+    SpokenNightAction,
     WolfChannel,
 )
 from Agents.schemas.night import NightChoice
@@ -44,12 +47,15 @@ def resolve_decision(
     output_key: str,
     payload: dict[str, Any],
     valid_targets: list[str],
+    *,
+    models: GameModels | None = None,
 ):
     """Resolve a player's decision into a legal, typed domain action.
 
     The decision states an intent — speak, vote, or target a player. Resolution applies pass
     handling, the sweep turns' echo gate, and target validation, then returns a ``Resolved*`` turn.
     Returns RETRY when a target is illegal; the agent caller regenerates and the human caller raises.
+    ``models`` reaches the echo gate's judge; None takes the accessors' models.
     """
     player_id = payload.get("player_id", "")
 
@@ -124,7 +130,7 @@ def resolve_decision(
 
         addressed_targets = getattr(result, "addressed_targets", [])
 
-        # The echo gate: a sweep turn that makes a point already made today is held, not
+        # The echo gate: a sweep turn that adds nothing to today's discussion is held, not
         # published. Reactive turns are never gated (the answer is owed), nor is a human seat,
         # nor a player answering someone who named them (the ruling that a player confirming or
         # denying what was said about themselves is never a duplicate, decided from the tags, so
@@ -136,9 +142,9 @@ def resolve_decision(
             if _answers_someone_who_named_me(addressed_targets, player_id, earlier_today):
                 echo_of = ""
             else:
-                echo_of = line_echo_of(message, player_id, earlier_today)
+                echo_of = line_echo_of(message, player_id, earlier_today, models=models)
             if echo_of:
-                logger.info("[echo gate] day=%d %s held: same point as %s", current_day, player_id, echo_of)
+                logger.info("[echo gate] day=%d %s held: repeats %s", current_day, player_id, echo_of)
                 entry = DayChannel(
                     day=current_day,
                     seq=seq,
@@ -162,6 +168,7 @@ def resolve_decision(
             message=message,
             addressed_targets=addressed_targets,
             claim=_claim_of(result),  # a held line's claim was never heard, so only a spoken one
+            claimed_night_actions=_claimed_actions_of(result, message, player_id),
             firing_reason=firing_reason,
         )
         return ResolvedDayDiscussion(entry=entry, effects=effects)
@@ -215,6 +222,24 @@ def resolve_decision(
 
 def _claim_of(result: BaseModel) -> str:
     return getattr(result, "claim", None) or "none"
+
+
+_PLAYER_ID = re.compile(r"\bplayer_\d+\b", re.IGNORECASE)
+
+
+def _claimed_actions_of(result: BaseModel, message: str, player_id: str) -> list[SpokenNightAction]:
+    # The field is public, so it keeps only what the line itself says: an entry whose target or
+    # sighting the message does not name is dropped, or a seat's own true action, filled in but
+    # never said, would reach every seat's ledger. A human's decision has no field.
+    named = {name.lower() for name in _PLAYER_ID.findall(message)}
+    kept = []
+    for a in getattr(result, "claimed_night_actions", None) or []:
+        names = [a.target, *a.seen] if a.target else list(a.seen)
+        if any(name.lower() not in named for name in names):
+            logger.info("[claimed actions] %s: dropped %s on %r, not named in the line", player_id, a.action, a.target)
+            continue
+        kept.append(SpokenNightAction(night=a.night, action=a.action, target=a.target, result=a.result, seen=list(a.seen)))
+    return kept
 
 
 def night_choice(role: str, actor: str, result: Any, payload: dict[str, Any], valid_targets: list[str]):

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" width="980" height="640" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="640" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">A cursor held across a recut</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">Day 2 in live-state.test.ts. Seq 107 (seat 5&#x27;s turn starts) says seat 4 passed too.</text>
+<text x="24" y="118" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">old cut</text>
+<rect x="130" y="96" width="170" height="44" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="215.0" y="115" font-size="14" fill="#1f2937" text-anchor="middle">speech · seat 1</text>
+<text x="215.0" y="132" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">seq 102</text>
+<rect x="320" y="96" width="170" height="44" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="405.0" y="115" font-size="14" fill="#1f2937" text-anchor="middle">pass · seat 2</text>
+<text x="405.0" y="132" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">seq 103</text>
+<rect x="510" y="96" width="170" height="44" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="595.0" y="115" font-size="14" fill="#1f2937" text-anchor="middle">thinking · seat 4</text>
+<text x="595.0" y="132" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">seq 105</text>
+<path d="M587,80 L603,80 L595,92 z" fill="#b91c1c"/>
+<text x="690" y="112" font-size="13" fill="#b91c1c" text-anchor="start">the stage is here,</text>
+<text x="690" y="129" font-size="13" fill="#b91c1c" text-anchor="start">reading seat 4&#x27;s turn</text>
+<path d="M490,150 L490,186" stroke="#374151" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="500" y="174" font-size="13" fill="#4b5563" text-anchor="start">seq 107 arrives: beatsFor cuts the whole log again</text>
+<text x="24" y="222" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">new cut</text>
+<rect x="130" y="200" width="170" height="44" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="215.0" y="219" font-size="14" fill="#1f2937" text-anchor="middle">speech · seat 1</text>
+<text x="215.0" y="236" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">seq 102</text>
+<rect x="320" y="200" width="170" height="44" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="405.0" y="219" font-size="14" fill="#1f2937" text-anchor="middle">pass · seats 2, 4</text>
+<text x="405.0" y="236" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">from seq 103</text>
+<rect x="510" y="200" width="170" height="44" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="595.0" y="219" font-size="14" fill="#1f2937" text-anchor="middle">thinking · seat 5</text>
+<text x="595.0" y="236" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">seq 107</text>
+<text x="215" y="264" font-size="12.5" fill="#4b5563" text-anchor="middle">kept: the old object</text>
+<text x="215" y="280" font-size="12.5" fill="#4b5563" text-anchor="middle">(keepSame)</text>
+<text x="405" y="264" font-size="12.5" fill="#15803d" text-anchor="middle">a run of passes:</text>
+<text x="405" y="280" font-size="12.5" fill="#15803d" text-anchor="middle">one beat, new object</text>
+<rect x="24" y="306" width="456" height="190" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="44" y="334" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Rule A: the same beat, else the next one after it</text>
+<text x="44" y="362" font-size="14.5" fill="#1f2937" text-anchor="start">thinking · seat 4 is not in the new cut.</text>
+<text x="44" y="385" font-size="14.5" fill="#1f2937" text-anchor="start">The next beat at or after its seq is thinking · seat 5.</text>
+<text x="44" y="408" font-size="14.5" fill="#1f2937" text-anchor="start">The run that swallowed seat 4 is skipped: the viewer</text>
+<text x="44" y="431" font-size="14.5" fill="#1f2937" text-anchor="start">never sees that seat 4 passed. (A cursor on the pass</text>
+<text x="44" y="454" font-size="14.5" fill="#1f2937" text-anchor="start">lands on the run still, and moves on at once.)</text>
+<rect x="500" y="306" width="456" height="190" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="520" y="334" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Rule B, as built: runOf, then carryAcross</text>
+<text x="520" y="362" font-size="14.5" fill="#1f2937" text-anchor="start">A pass or thinking turn taken into a run of passes</text>
+<text x="520" y="385" font-size="14.5" fill="#1f2937" text-anchor="start">moves the cursor to that run, and the run plays from</text>
+<text x="520" y="408" font-size="14.5" fill="#1f2937" text-anchor="start">its start: a new hold, animated (cursor on seats 2, 4).</text>
+<text x="520" y="431" font-size="14.5" fill="#1f2937" text-anchor="start">Any other beat: the same beat wherever it now is,</text>
+<text x="520" y="454" font-size="14.5" fill="#1f2937" text-anchor="start">else the next at or after it, landed still.</text>
+<path d="M397,184 L413,184 L405,196 z" fill="#15803d"/>
+<rect x="24" y="516" width="932" height="100" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="44" y="544" font-size="16" font-weight="bold" fill="#111827" text-anchor="start">Why there is a rule at all</text>
+<text x="44" y="570" font-size="14.5" fill="#1f2937" text-anchor="start">The list is derived, and a new event can change beats before the end of it. So the cursor is held by</text>
+<text x="44" y="593" font-size="14.5" fill="#1f2937" text-anchor="start">which beat it is on, never by its index, and each kind of merge says where the cursor goes and whether it plays.</text>
+</svg>

@@ -81,8 +81,8 @@ describe('sprite manifest', () => {
       expect([img.width, img.height]).toEqual([720, 960]);
   });
 
-  it('has the dining car by day and by night, fitted to the stage', () => {
-    expect(Object.keys(SPRITES.car).sort()).toEqual(['day', 'night']);
+  it('has the dining car at each hour, fitted to the stage', () => {
+    expect(Object.keys(SPRITES.car).sort()).toEqual(['dawn', 'day', 'dusk', 'night']);
     for (const img of Object.values(SPRITES.car))
       expect([img.width, img.height]).toEqual([1600, 900]);
   });
@@ -92,7 +92,6 @@ describe('sprite manifest', () => {
       'boards',
       'cork',
       'ink',
-      'velvet',
       'walnut',
     ]);
     for (const img of Object.values(SPRITES.textures)) hasSize(img);
@@ -100,19 +99,28 @@ describe('sprite manifest', () => {
 
   it('has the painted props, the two late ones at their painted sizes', () => {
     expect(Object.keys(SPRITES.props).sort()).toEqual(
-      ['jarGlass', 'jarLid', 'plate', 'shutter', 'stand', 'voteTable'].sort(),
+      [
+        'chipHidden',
+        'chipRing',
+        'jarGlass',
+        'jarLid',
+        'plate',
+        'shutter',
+        'stand',
+        'voteTable',
+      ].sort(),
     );
     for (const img of Object.values(SPRITES.props)) hasSize(img);
-    // the plate is squashed to ry = 0.3 rx; the shutter is 8:3
+    // the plate is squashed to ry = 0.3 rx; the blind is the size window.ts measured its rod on
     expect([SPRITES.props.plate.width, SPRITES.props.plate.height]).toEqual([900, 270]);
     expect([SPRITES.props.shutter.width, SPRITES.props.shutter.height]).toEqual([
-      1640, 615,
+      1499, 673,
     ]);
   });
 
   it('has the station’s pictures', () => {
     expect(Object.keys(SPRITES.station).sort()).toEqual(
-      ['blind', 'floor', 'lamp', 'post', 'sky', 'train'].sort(),
+      ['beam', 'blind', 'platform', 'platformFront', 'train'].sort(),
     );
     for (const img of Object.values(SPRITES.station)) hasSize(img);
   });
@@ -143,5 +151,17 @@ describe('sprite manifest', () => {
       const { s, y } = HEAD_FRAME[character];
       expect(s / 2 + y).toBeGreaterThanOrEqual(0.5);
     }
+  });
+
+  it('has the HUD’s kit: the riveted frame and three tiles', () => {
+    expect(Object.keys(SPRITES.hud).sort()).toEqual([
+      'bronzeDark',
+      'bronzeLight',
+      'frame',
+      'paper',
+    ]);
+    expect([SPRITES.hud.frame.width, SPRITES.hud.frame.height]).toEqual([130, 130]);
+    for (const k of ['bronzeDark', 'bronzeLight', 'paper'] as const)
+      expect([SPRITES.hud[k].width, SPRITES.hud[k].height]).toEqual([512, 512]);
   });
 });

@@ -7,7 +7,7 @@ import { CAR_PICTURE, diningCarPlan } from './dining-car';
 import { light, lightHoles, type LightOpts } from './light';
 import { PHASES_IN_ORDER } from './materials';
 import { photoTwine, roomChoice, roomLight, roomPlan, ROOMS } from './compartment';
-import { stationBack, stationFront, stationPlan } from './station';
+import { stationPlan } from './station';
 import { darkness, softHoles } from './holes';
 import { shutter } from './window';
 import { ANY_ID } from '../Stage';
@@ -65,28 +65,6 @@ const CASES: [string, (id: string) => string][] = [
     ),
   ),
   ['bleed station', (id: string) => bleed({ id, room: 'station' })],
-  ...HUDS.flatMap((hud) => [
-    [`stationBack ${hud}`, (id: string) => stationBack({ id, hud, sky: '/sky.webp' })] as [
-      string,
-      (id: string) => string,
-    ],
-    [
-      `stationFront ${hud}`,
-      (id: string) =>
-        stationFront({
-          id,
-          hud,
-          post: '/post.webp',
-          lamp: '/lamp.webp',
-          wood: '/wood.webp',
-          stone: '/stone.webp',
-        }),
-    ] as [string, (id: string) => string],
-    [`stationFront ${hud} flat`, (id: string) => stationFront({ id, hud })] as [
-      string,
-      (id: string) => string,
-    ],
-  ]),
   ['light bleed', (id: string) => light({ id, bleed: BLEED })],
   [
     'light lamps',
@@ -146,7 +124,7 @@ describe('fidelity to kits/stage-kit.js', () => {
     'utf8',
   );
   // The painting's departure (2026-09-29): the car is a painting (SPRITES.car), so nothing of the
-  // kit's drawing is compared, only where things are. Its wall clock is gone (the owner ruled it
+  // kit's drawing is compared, only where things are, and its window is the painting's glass. Its wall clock is gone (the owner ruled it
   // out), and the lantern's special and glow sit on the painted lantern rather than in the slot
   // right of the window; the painting's two table lamps glow as the lantern does. The painting's
   // lamps are measured in its own pixels at the layout it was fitted to (CAR_PICTURE.fit), so the
@@ -156,7 +134,14 @@ describe('fidelity to kits/stage-kit.js', () => {
   const tableGlows = CAR_PICTURE.tableLamps
     .map((p) => `[${at(p)}, c.lit ? 0.3 * H : 0.06 * H, "#ffb35c"]`)
     .join(', ');
+  const G = CAR_PICTURE.glass;
   const pieces: [string, string][] = [
+    // the owner's car (2026-10-19): the window is the painting's glass, following the puppet
+    // and the rail, not the kit's
+    [
+      'ww = Math.min(0.5 * W, x1 - x0 - 0.3 * W), wx = cx - ww / 2, wy = 0.12 * H, wh = dado - 0.04 * H - wy',
+      `ww = ${G.x1 - G.x0}, wx = cx - ww / 2, wy = sh.B - ${CAR_PICTURE.fit.railY} + ${G.y0}, wh = ${G.y1 - G.y0}`,
+    ],
     // the seat rail (HUD pass 2, 2026-09-29): the wing is WING_N wide, not the kit's 5.5%
     [
       'const wingN = on ? W * (phone ? 0.049 : 0.055) : 0',
@@ -455,23 +440,14 @@ describe('station', () => {
     expect(S.train.x + S.pull).toBeGreaterThan(STAGE_W);
   });
 
-  it('draws the pictures it is given, and none without them', () => {
-    expect(stationBack({ id: 'k', sky: '/sky.webp' })).toContain('href="/sky.webp"');
-    expect(stationBack({ id: 'k' })).not.toContain('<image');
-    const front = stationFront({
-      id: 'k',
-      post: '/p.webp',
-      lamp: '/l.webp',
-      wood: '/w.webp',
-      stone: '/s.webp',
-    });
-    // two posts (one mirrored), two lanterns, the beam's walnut and the edge's stone
-    expect(front.match(/href="\/p\.webp"/g)).toHaveLength(2);
-    expect(front).toContain('scale(-1 1)');
-    expect(front.match(/href="\/l\.webp"/g)).toHaveLength(2);
-    expect(front).toContain('href="/w.webp"');
-    expect(front).toContain('href="/s.webp"');
-    expect(stationFront({ id: 'k' })).not.toContain('<image');
+  it('stands the platform picture on the room, its ledge at the platform’s top', () => {
+    const S = stationPlan('live');
+    expect(S.picture.x + S.picture.w / 2).toBe(S.cx);
+    // the ledge's top is 590 of the master's 941 rows (scripts/fit_platform.py)
+    expect(Math.abs((590 / 941) * S.picture.h - S.floorY)).toBeLessThan(25);
+    // its left edge stays under the wing, its right reaches the world's edge
+    expect(S.picture.x).toBeLessThan(WING_N);
+    expect(S.picture.x + S.picture.w).toBeGreaterThan(STAGE_W);
   });
 
   it('carries the platform into the bleed from its own darkened sides', () => {
@@ -479,7 +455,6 @@ describe('station', () => {
     expect(html).toContain(`<rect x="${-BLEED}" y="0" width="${BLEED}"`);
     expect(html).toContain(`<rect x="${STAGE_W}" y="0" width="${BLEED}"`);
     expect(html).toContain('stop-opacity="0.85"');
-    expect(stationFront({ id: 'k' })).toContain('stop-opacity=".85"');
   });
 });
 

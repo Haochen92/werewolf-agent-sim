@@ -1,0 +1,42 @@
+{
+  "artifact": "evidence/evaluation/model_admission/data/admission_2026_10_04/eval_results/openrouter__minimax__minimax-m3.json",
+  "config": {
+    "caching": {
+      "cases": 2,
+      "dataset": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "floor_sizes": [
+        256,
+        512,
+        1024,
+        2048,
+        4096,
+        8192
+      ],
+      "wait_s": 8
+    },
+    "label": "admission_2026_10_04",
+    "models": [
+      "openrouter/z-ai/glm-5.3-flash",
+      "openrouter/minimax/minimax-m3"
+    ],
+    "notes": "GLM-5.3 Flash and MiniMax M3 rerun: the candidate run crashed on GLM's cache floor (it refuses reasoning off; the floor now sends no thinking level).",
+    "samples_per_schema": 3,
+    "thinking_level": "medium",
+    "workers": 4
+  },
+  "config_sha256": "dd988fb9e7e3342c3fd189e02b3f736d4d8b95b10793bbf3a8a246e97303b640",
+  "config_source": "evaluation/config/model_admission/admission_2026_10_04_glm_minimax.json",
+  "created_at": "2026-10-23T01:56:37.939124",
+  "created_from": "eval-model-admission run 'admission_2026_10_04' (record carries its own run_at + runtime_fingerprint)",
+  "git_commit": "1a5c0da1b9c89552bde93a5ac22f0ca1dea4368b",
+  "git_dirty": true,
+  "graduated_from": "evaluation/eval_results/model_admission/admission_2026_10_04/openrouter__minimax__minimax-m3.json",
+  "inputs": [
+    {
+      "count": 129,
+      "path": "evaluation/frozen_eval_sets/hallucination_bench_v2.jsonl",
+      "sha256": "a486da3b76062b2bc4f766e4d319af4414df5021b9cab4ffa465ba5146b2b376"
+    }
+  ],
+  "models": []
+}

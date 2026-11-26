@@ -1,6 +1,6 @@
 {
   "label": "haiku_game_403f",
-  "dataset": "evidence/game_play_enhancement/data/haiku_turn_replay/cases.jsonl",
+  "dataset": "evidence/gameplay/data/haiku_turn_replay/cases.jsonl",
   "n": 5,
   "workers": 3,
   "arms": [

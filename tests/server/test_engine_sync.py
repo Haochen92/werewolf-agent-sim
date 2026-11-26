@@ -27,6 +27,7 @@ GRAPH_STATES = (OrchestratorGraph, DayGraphState, PackNightGraph)
 INPUT_ONLY = {
     "cast_role_counts", "player_id", "player_role", "previous_strategy",
     "strategy_points", "surviving_players", "carrier",
+    "game_id",  # copied into the subgraph's input by its wrapper, for the node-cache key
 }
 
 

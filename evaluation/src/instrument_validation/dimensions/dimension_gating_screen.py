@@ -12,6 +12,9 @@ config) on each. Headline = does GATED have a lower `does_not_apply` rate than U
 Held-out: town day-votes from a v6ab batch (NOT in v6_1's 20 source games); same-game candidates
 excluded at retrieval. Reuses criticality_screen (pools/retrieve/select) + forced_schema_screen (judge).
 
+Does not import since 2026-11-18: ``evaluation/src/studies/`` and ``evaluation/src/replay/decision_screen/``,
+whose helpers it reuses, were removed then. Run it from the git tag pre-test-cut-2026-11-18.
+
   poetry run python -m evaluation.src.instrument_validation.dimensions.dimension_gating_screen \
       --batch batch_results/v6ab_townsp.jsonl --store memory_stores/v6_1 --n 24
 """
@@ -28,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 from Agents.llm_factory.embeddings import create_embeddings  # noqa: E402
 from Agents.memory.retrieval.situation_agent import _generate_situations_for_agent  # noqa: E402
 from Agents.memory.retrieval.dimension_gating import WEIGHT, alignment  # noqa: E402
-from evaluation.src.loop.decision_scoring import allow_abstain_for  # noqa: E402
+from Agents.memory.consolidation.decision_scoring import allow_abstain_for  # noqa: E402
 from evaluation.src.replay.situation_summary import eval_case_to_agent_payload  # noqa: E402
 from evaluation.src.studies.criticality_screen import (  # noqa: E402
     _RolePool, _cosine_matrix, _retrieved, load_candidates_by_role, load_source_games, select_spread,

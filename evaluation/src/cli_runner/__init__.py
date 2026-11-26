@@ -5,8 +5,7 @@
   ``diagnosis/``             the case-sampler CLI (command wiring over the ``evaluation.src.diagnosis``
                              logic package — mirrors the ``regen_replay/judge`` ↔ ``judges/`` split)
   ``graduate_run``           promote a keeper eval run from scratch into the ``evidence/`` record
-  ``discussion_tagger_eval`` validate the deceiver-side discussion tagger (accuracy / skill / deleak)
 
 These are thin: each wires config → data → a ``replay/``/``judges/``/``audits/`` primitive → JSONL,
-holding no eval logic itself. Concluded one-shot apparatus lives off this surface in ``../studies/``.
+holding no eval logic itself. Single-study runners live off this surface in ``evaluation/experiments/``.
 """

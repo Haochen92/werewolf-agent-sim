@@ -1,0 +1,95 @@
+{
+  "label": "healer_silence",
+  "run_at": "2026-10-16T11:46:12.376529+00:00",
+  "config": {
+    "label": "healer_silence",
+    "dataset": "evidence/reasoning_failures/data/deduction_injection/silence_cases.jsonl",
+    "n": 10,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "card_as_is",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "card_no_survival",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none",
+        "checkout": "/home/ubuntu/projects/ww-healer-card"
+      }
+    ],
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "note": "Case R1 follow-up (evidence/reasoning_failures/experiment_log.md): why the healer stays silent once it knows the Chanteuse visited it. The injected turn after player_7's admission (2f19d908 day 2, entry 16), 2x2: the healer's own note as played ('Stay quiet on day 2 unless addressed ... do not reveal my role without need') or neutral (same facts, no stance), by the healer card as is or without its survival sentence ('Staying alive matters a great deal ...'; worktree ../ww-healer-card at fea44f57 with healer.py edited, remove after). Thinking low (live), memory off. Measures as R1: spoke, claimed healer, read of player_7, message names player_7 as the blocker."
+  },
+  "n_cases": 2,
+  "arms": {
+    "card_as_is": {
+      "bad": {
+        "all": "1/20 (5%)",
+        "phase:day_discussion": "1/20 (5%)",
+        "role:healer": "1/20 (5%)",
+        "slice:note_as_played": "1/10 (10%)",
+        "slice:note_neutral": "0/10 (0%)",
+        "source:live_checkpoint": "1/20 (5%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 8969.5,
+        "cached": 6106.5,
+        "output": 1109.2,
+        "reasoning": 524.5,
+        "seconds": 5.8
+      },
+      "generation_samples_measured": 20
+    },
+    "card_no_survival": {
+      "bad": {
+        "all": "0/20 (0%)",
+        "phase:day_discussion": "0/20 (0%)",
+        "role:healer": "0/20 (0%)",
+        "slice:note_as_played": "0/10 (0%)",
+        "slice:note_neutral": "0/10 (0%)",
+        "source:live_checkpoint": "0/20 (0%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 8922.5,
+        "cached": 6785.0,
+        "output": 1012.4,
+        "reasoning": 433.1,
+        "seconds": 5.4
+      },
+      "generation_samples_measured": 20
+    }
+  },
+  "paired_vs_first": {
+    "card_no_survival": {
+      "cases": 2,
+      "better": 1,
+      "worse": 0,
+      "two_sided_sign_p": 1.0
+    }
+  },
+  "judge_usage": {
+    "calls": 0,
+    "batched_calls": 92,
+    "unvalidated_replies": 0,
+    "input_tokens": 29591,
+    "output_tokens": 30253,
+    "cache_read_input_tokens": 55844,
+    "cache_creation_input_tokens": 0,
+    "cache_creation_1h_input_tokens": 0,
+    "cost_usd": 0.1836482
+  }
+}

@@ -3,8 +3,9 @@
 /**
  * The carriage on the landing (redesign handoff 2026-10-14 §3): a game from the archive
  * playing in the big window of a railway carriage standing at the platform. It is the replay
- * theatre itself in its mini mode, playing one window round and round: day 3's vote through the
- * lynched seat's card going to the wing (`featuredWindow`). No second engine.
+ * theatre itself in its mini mode, playing a reel of the game round and round with Reveal on:
+ * the deal done, the first night's pack, its morning, the featured lines and the vote they lead to
+ * (`featuredReel`). No second engine.
  *
  * On a desktop (over 860px) the whole carriage stands centred, both ends in view: end, door,
  * the game's window, door, end, under a roof board that names the game (its ID in split-flap
@@ -14,10 +15,11 @@
  * Nothing on the carriage's body is interactive.
  *
  * The carriage is painted with pieces cut from the waiting room's train (`SPRITES.carriage`,
- * scripts/cut-carriage.mjs), laid over a CSS stand-in once the carriage comes near.
+ * scripts/cut-carriage.mjs), laid over a CSS stand-in once the carriage comes near and its
+ * picture is in.
  *
  * The game is `SITE.featuredReplay`; if the archive no longer has it, the newest game plays
- * instead, with its own window. It plays while it is on screen; it rests on the window's first
+ * instead, with its own reel. It plays while it is on screen; it rests on the reel's first
  * beat for a viewer who asked for reduced motion, and with `?still=1` (the goldens).
  *
  * The carriage sits below the fold, so nothing of the preview is fetched at load (audit
@@ -42,11 +44,12 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { SPRITES } from '@/assets/manifest';
-import { Button } from '@/components/site';
+import { Button, usePageOpen } from '@/components/site';
 import { TrainLoader } from '@/components/TrainLoader';
+import { useDecoded } from '@/hooks/useDecoded';
 import { useModelLabels } from '@/hooks/useModelLabels';
 import { getReplay, listReplaysWithTotal } from '@/lib/api';
-import { featuredWindow } from '@/lib/featured-window';
+import { FEATURED, featuredReel } from '@/lib/featured-reel';
 import { formatDate } from '@/lib/format';
 import { queryKeys } from '@/lib/queryKeys';
 import { ApiError } from '@/lib/request';
@@ -54,8 +57,7 @@ import { SITE } from '@/lib/site';
 import { beatsFor } from '@/stage/beats/beatsFor';
 import type { MiniUnder } from '@/stage/containers/ReplayTheatre';
 import { stageFonts } from '@/stage/fonts';
-import { picturesOf } from '@/stage/pictures-of';
-import { winnerKey, type WinnerKey } from '@/stage/roles';
+import { neutralWinner, winnerKey, type WinnerKey } from '@/stage/roles';
 import type { DurableGameEvent, ReplayGame } from '@/types/contracts';
 import classes from './Carriage.module.css';
 
@@ -67,6 +69,8 @@ const theatreCode = () => import('@/stage/containers/ReplayTheatre');
 const underCode = () => import('./CarriageUnder');
 /** How long the line waits on the stage's pictures before the replay plays without them. */
 const PAINT_CAP_MS = 8000;
+/** How long the scene waits, from when it is asked for, before it comes up with what it has. */
+const SCENE_CAP_MS = 10_000;
 /** The loader's fade off the window (TrainLoader.module.css, `.veil`). */
 const LIFT_MS = 400;
 const ReplayTheatre = dynamic(() => theatreCode().then((m) => m.ReplayTheatre), {
@@ -86,6 +90,8 @@ const WON: Record<WinnerKey, string> = {
   wolves: 'Wolves won',
   serial_killer: 'Serial killer won',
   necromancer: 'Necromancer won',
+  speculator: 'Speculator won',
+  fortune_teller: 'Fortune teller won',
   draw: 'A draw',
 };
 
@@ -96,7 +102,7 @@ function detailsOf(game: ReplayGame): string[] {
     game.memory ? 'Memory on' : 'Memory off',
     humans ? `${humans} human${humans > 1 ? 's' : ''} at the table` : 'All agents',
     `${game.days} ${game.days === 1 ? 'day' : 'days'}`,
-    WON[winnerKey(game.winner)],
+    WON[winnerKey(game.winner, neutralWinner(game.cast_role_counts, game.neutral_result))],
     formatDate(game.finished_at),
   ].filter(Boolean);
 }
@@ -200,7 +206,11 @@ export function FeaturedReplay() {
   const modelName = useModelLabels();
   const wide = useMediaQuery('(min-width: 861px)');
   const [screenRef, onScreen] = useOnScreen<HTMLDivElement>();
-  const near = useNear(screenRef);
+  // asked for once the page's first screen is up (the hero), a section ahead of the visitor, or
+  // when it comes near, whichever is first
+  const comesNear = useNear(screenRef);
+  const pageOpen = usePageOpen();
+  const near = comesNear || pageOpen;
   const { game, failed } = useShownGame(near);
   useEffect(() => {
     if (!near) return;
@@ -211,41 +221,76 @@ export function FeaturedReplay() {
   const under = useCallback((u: MiniUnder) => <CarriageUnder {...u} />, []);
 
   const events = game?.events as readonly DurableGameEvent[] | undefined;
+  // the featured game's own lines are its seqs: the fallback game's reel goes without them
+  const featured = game?.game_id === SITE.featuredReplay;
   const cut = useMemo(
-    () => (events ? featuredWindow(beatsFor(events, { xray: false })) : null),
-    [events],
+    () =>
+      events
+        ? featuredReel(beatsFor(events, { xray: true }), featured ? FEATURED : undefined)
+        : null,
+    [events, featured],
   );
 
   // the stage paints its dark ground at once and its pictures as they come: the house's loading
   // picture stays over it until they are in, and the replay plays from then (a first visit after
   // a deploy, every file new to Cloudflare, showed a dark window for 10 s and more, and read as
   // broken). The picture is up from when the carriage comes near (owner, 2026-10-16: the train,
-  // not "Rewinding the reels…"), then fades off the stage
+  // not "Rewinding the reels…"), then fades off the stage. The theatre says when: once every
+  // scene on its reel has its pictures in (owner, 2026-10-22: a phone stalled at each new scene
+  // while its pictures came; the cover stays a moment longer instead), or `PAINT_CAP_MS` on
   const [painted, setPainted] = useState(false);
   const [lifted, setLifted] = useState(false);
   const loaded = !!(game && cut);
+  const onWarm = useCallback(() => setPainted(true), []);
   useEffect(() => {
-    const el = screenRef.current;
-    if (!loaded || !el) return;
-    let live = true;
-    void picturesOf(el, PAINT_CAP_MS).then(() => {
-      if (live) setPainted(true);
-    });
-    return () => {
-      live = false;
-    };
-  }, [loaded, screenRef]);
+    if (!loaded) return;
+    const t = setTimeout(() => setPainted(true), PAINT_CAP_MS);
+    return () => clearTimeout(t);
+  }, [loaded]);
   useEffect(() => {
     if (!painted) return;
     const t = setTimeout(() => setLifted(true), LIFT_MS);
     return () => clearTimeout(t);
   }, [painted]);
 
+  // the painted carriage takes over from the drawn stand-in only once its picture is decoded:
+  // switched at `near`, a cold first visit (nothing cached) showed the window alone in the dark,
+  // its loader turning, until the picture came (owner, 2026-10-18)
+  const whole = useMemo(
+    () =>
+      near
+        ? [
+            (window.matchMedia('(min-width: 861px)').matches
+              ? SPRITES.carriage.whole
+              : SPRITES.carriage.wholePhone
+            ).src,
+          ]
+        : null,
+    [near],
+  );
+  const dressed = useDecoded(whole);
+
+  // the whole scene comes up at once (owner, 2026-10-18): the night, the board, the carriage and
+  // the game playing in its window, the house's loading picture over the section until then;
+  // `SCENE_CAP_MS` from when it was asked for, it comes up with what it has
+  const [capped, setCapped] = useState(false);
+  useEffect(() => {
+    if (!near) return;
+    const t = setTimeout(() => setCapped(true), SCENE_CAP_MS);
+    return () => clearTimeout(t);
+  }, [near]);
+  const ready = (dressed && (painted || failed)) || capped;
+  const [covered, setCovered] = useState(true);
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => setCovered(false), LIFT_MS);
+    return () => clearTimeout(t);
+  }, [ready]);
+
   const id = game?.game_id ?? null;
   const record = id ? id.slice(0, 7).toUpperCase() : '';
   // the theatre's way out comes back here (`from=home`, TheaterClient)
   const href = id ? `/replays/${id}?from=home` : '/replays';
-  const what = cut?.day != null ? `Day ${cut.day}` : 'The opening';
 
   const model = game ? (game.model ? modelName(game.model) : 'Model unrecorded') : null;
   // the ID's tiles, held blank until the game arrives so nothing on the board moves
@@ -254,13 +299,25 @@ export function FeaturedReplay() {
   return (
     <figure
       className={classes.depot}
-      // the painted pieces come with the theatre, when the carriage is near
-      data-art={near || undefined}
-      style={near ? ART : undefined}
+      // the painted pieces, once the carriage is near and its picture is in
+      data-art={dressed || undefined}
+      style={dressed ? ART : undefined}
       data-frame="carriage"
-      aria-label={game ? `Replay of ${what.toLowerCase()} of game ${record}` : undefined}
+      data-ready={ready || undefined}
+      aria-label={game ? `Moments from game ${record}` : undefined}
     >
+      {covered ? (
+        <div className={classes.gate}>
+          <TrainLoader leaving={ready} />
+        </div>
+      ) : null}
       <div className={classes.car}>
+        <div className={classes.night} aria-hidden="true">
+          <div className={classes.fall}>
+            <i className={classes.flakes} />
+          </div>
+        </div>
+        <div className={classes.rail} aria-hidden="true" />
         <div className={classes.rbwrap}>
           <div className={classes.rboard}>
             <div className={classes.field}>
@@ -291,6 +348,8 @@ export function FeaturedReplay() {
           <div className={classes.cantrail} aria-hidden="true" />
           <div className={classes.band}>
             <div className={classes.gwin}>
+              {/* the felt carriage, one picture round the window, under the glass */}
+              <span className={classes.paint} aria-hidden="true" />
               <div className={classes.lights} aria-hidden="true">
                 {Array.from({ length: 7 }, (_, i) => (
                   <i key={i} />
@@ -307,9 +366,14 @@ export function FeaturedReplay() {
                       key={game.game_id}
                       game={game}
                       mini={{
-                        from: cut.from,
-                        to: cut.to,
-                        autoplay: onScreen && !still && painted,
+                        reel: cut.reel,
+                        xray: true,
+                        // not under a fading cover: its fade lifted the stage onto 79 layers
+                        // (17 without it) just as the first beat moved (owner, 2026-10-22)
+                        autoplay: onScreen && !still && painted && lifted && !covered,
+                        // the goldens' still frame needs only its own pictures
+                        warm: !still,
+                        onWarm,
                         controls: wide ? 'stage' : 'under',
                         under,
                         underEl,

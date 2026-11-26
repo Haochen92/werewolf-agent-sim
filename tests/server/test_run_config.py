@@ -9,8 +9,11 @@ from server.game.run_config import game_run_config
 
 
 def test_the_switch_sets_every_role_at_once():
+    # Act
     on = game_run_config(memory=True, human_player=0)
     off = game_run_config(memory=False, human_player=1, human_role="wolf")
+
+    # Assert
     assert on.memory_config == {role: True for role in roles}
     assert off.memory_config == {role: False for role in roles}
     assert off.human_player == 1 and off.human_role == "wolf"
@@ -33,8 +36,23 @@ def test_a_served_game_never_dumps_and_never_seeds_a_file_store():
 
 
 def test_a_room_carries_the_hosts_choice_into_its_config():
+    # Arrange
     room = GameLobby(memory=True)
+
+    # Act
     run = room.run_config()
+
+    # Assert
     assert run.game_id == room.game_id  # the room link survives the swap
     assert all(run.memory_config.values())
     assert not any(GameLobby().run_config().memory_config.values())
+
+
+def test_served_games_enable_the_dealt_voices_in_the_engine_config():
+    from Agents.config import RunConfig, build_runnable_config
+
+    # Enable the hosted game without changing experiment defaults.
+    assert RunConfig().persona_voices is False
+    for run in (game_run_config(memory=False, human_player=1), GameLobby().run_config()):
+        assert run.persona_voices is True
+        assert build_runnable_config(run)["configurable"]["persona_voices"] is True

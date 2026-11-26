@@ -1,0 +1,15 @@
+{
+  "label": "smoke_shared_prefix_json_mode_2026_10_13",
+  "models": ["openai/gpt-6-luna", "anthropic/claude-haiku-5-5"],
+  "modes": ["json_mode"],
+  "samples_per_schema": 1,
+  "workers": 4,
+  "caching": {
+    "floor_sizes": [1024],
+    "wait_s": 5,
+    "dataset": "evidence/game_play_enhancement/data/phase3_turn_replay/cases.jsonl",
+    "cases": 8,
+    "real_prompt_mode": "json_mode"
+  },
+  "notes": "Smoke check of the shared-prefix layout (run with WW_PROMPT_LAYOUT=shared_prefix): the 8 real Phase 3 discussion turns, 3 variants each (first, the same seat's next turn, another seat), in json_mode. Confirms both APIs accept the requests (Claude marks; OpenAI explicit breakpoints) and reads the same-seat and other-seat cached share, against the same turns in today's layout (unenforced_field_order_2026_10_13, haiku_field_order_*_2026_10_13)."
+}

@@ -1,5 +1,9 @@
 # Per-Day Discussion Retrieval — Design Analysis + $0 Pre-Test
 
+> **Status (2026-10-26).** Per-day reuse has since shipped, as a cost decision for the ten-seat game,
+> without the A/B this log called for; see the addendum at the end. The analysis and pre-test below are
+> the record of 2026-07-07.
+>
 > **What this is.** The record of a design question that has not been built: should discussion memory be
 > retrieved **once per day** for each agent, instead of **once per discussion turn** as it is today? It runs
 > from the thought experiment through a first-principles analysis of the trade to a $0 pre-test that gated the
@@ -13,7 +17,7 @@
 > a FROZEN RECORD) and [`data/within_day_retrieval_diversity.json`](data/within_day_retrieval_diversity.json)
 > (every number below is lifted from here). The mediation finding §2.2 leans on lives in
 > [`../../metrics/report.md`](../../metrics/report.md) §3; the deceiver-discussion numbers in
-> [`../../discussion_tagger/report.md`](../../discussion_tagger/report.md). No `report.md` exists yet — the
+> [`../../credit/discussion_tagger/report.md`](../../credit/discussion_tagger/report.md). No `report.md` exists yet — the
 > log-first convention holds until the variant graduates. Guiding principle throughout: **gate a behavior
 > change on a $0 recompute before spending on a live A/B.**
 
@@ -85,7 +89,7 @@ For **town**, discussion carries no win signal beyond the vote. The metrics appa
 discussion proxy (`town_accusation_precision`) partialled on vote accuracy at **partial r = +0.02** (p=.76,
 n=175); the LLM discussion tagger, partialled on the same vote proxy, put town discussion merit at **+0.02**
 as well (N=24) — a different instrument and sample reaching the same null (both lifted from
-[`../../metrics/report.md`](../../metrics/report.md) §3 and [`../../discussion_tagger/report.md`](../../discussion_tagger/report.md)).
+[`../../metrics/report.md`](../../metrics/report.md) §3 and [`../../credit/discussion_tagger/report.md`](../../credit/discussion_tagger/report.md)).
 The structural reading is mediation: for town, the collective day vote is nearly the only actuator, so
 discussion changes the game only by *becoming votes*, and the vote sits on the causal path. This is what makes
 per-day near-free *for town*: its discussion value cashes out at the vote, and the vote keeps its own
@@ -315,5 +319,26 @@ no part of this test makes a content-level judgment: every number bounds set mem
 retrieval call sites in [`../../../Agents/turn/pipeline.py`](../../../Agents/turn/pipeline.py) and the LLM query
 composer in [`../../../Agents/memory/retrieval/situation_agent.py`](../../../Agents/memory/retrieval/situation_agent.py);
 the town-discussion mediation reading in [`../../metrics/report.md`](../../metrics/report.md) §3 and the deceiver
-partial-r numbers in [`../../discussion_tagger/report.md`](../../discussion_tagger/report.md); the config-flag-vs-worktree
+partial-r numbers in [`../../credit/discussion_tagger/report.md`](../../credit/discussion_tagger/report.md); the config-flag-vs-worktree
 policy in [`../../../CLAUDE.md`](../../../CLAUDE.md) → Versioning Design Variants.*
+
+---
+
+*Addendum 2026-10-26: per-day reuse shipped in v8 as a cost decision.* On 2026-10-12 the owner ruled
+that a seat reuse one lookup for its whole day of discussion, made at its first turn and made afresh when
+someone makes a new role claim that day; every vote looks up afresh; and every night decision of a seat
+reuses one lookup (a wolf makes two, one for the pack's chat and one for its kill and ability)
+([v8 decisions](../../memory_system/v8/decisions.md) §10; built in
+`Agents/memory/retrieval/lookup_cache.py`). The reason was cost: on the owner's first ten-seat game,
+memory on meant about 60 lookups, which reuse brings to about 38 plus one per new claim. It shipped as
+the default, not as the `retrieval_granularity` flag of §2.4, and without the paired A/B that §3.5a
+said a design change needs. The semantic-equivalence read of §5 step 1 was not run either, so this
+log's question (does per-turn churn carry real adaptation?) is still unanswered, and the pre-test's
+numbers come from nine-seat games. Of the two mitigations in §2.2, a mid-day refresh shipped with a
+different trigger: a new role claim by anyone, not an accusation aimed at the seat. Contingency-shaped
+selection was not built. The shipped design also goes further than the variant here, which left night
+actions on per-decision lookups. Two descriptions in §1 no longer hold: discussion turns after a seat's
+first one no longer run the full pipeline, and the "top 3 memories after reranking" is now three per
+situation with reranking off by default. Not checked since: whether a reused lookup fits a seat's later
+turns as well as a fresh one would ([v8 report](../../memory_system/v8/report.md), "Do the lessons a
+seat is shown fit its decision?"). Today's read path is in the [retrieval report](../report.md).

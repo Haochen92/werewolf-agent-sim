@@ -9,7 +9,7 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 
 const GITHUB = 'https://github.com/Haochen92/werewolf-agent-sim';
 
-for (const path of ['/', '/replays', '/rooms', '/play', '/rooms/new', '/guide']) {
+for (const path of ['/', '/replays', '/rooms', '/play', '/play/room', '/guide']) {
   test(`site shell: ${path}`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveTitle(/^The Ninth Express/);
@@ -249,7 +249,7 @@ test('archive: a filter narrows the list, and its chip takes it off', async ({ p
   await expect(page.locator('[data-game]')).toHaveCount(2);
   await expect(page.getByText('Showing 2 of 212 games')).toBeVisible();
 
-  await rail.getByText('Night', { exact: true }).click();
+  await rail.getByText('On', { exact: true }).click();
   await expect(page.locator('[data-game]')).toHaveCount(1);
   await expect(page.locator(`[data-game="${GAME}"]`)).toBeVisible();
 
@@ -278,7 +278,7 @@ for (const [name, viewport] of [
 }
 
 /**
- * The ticket office (`/play`, `/rooms/new`) over a mocked `GET /models`. Whether the key field
+ * The ticket office (`/play`, `/play/room`) over a mocked `GET /models`. Whether the key field
  * shows is the house's call: a purse that covers the default model folds it away, a spent purse
  * (the server flips `needs_key`) opens it and holds the ticket until a key is typed.
  */
@@ -288,6 +288,7 @@ const menuWithPurse = (remaining: number) => ({
     needs_key: remaining <= 0,
   })),
   house: { enabled: true, games_per_day: 20, remaining, reset_at: '2026-09-27T00:00:00Z' },
+  backups: { google: 'gemini-3.6-flash', deepseek: 'deepseek/deepseek-v4-pro' },
 });
 
 async function openTicket(page: Page, path: string, remaining: number) {
@@ -439,6 +440,82 @@ test('ticket: a key whose prefix names another company gets a hint, and clearing
   await expect(page.getByText(/An Anthropic key\./)).toHaveCount(0);
 });
 
+test('ticket: a remembered key is kept for its own company and deleted from the saved list', async ({
+  page,
+}) => {
+  await openTicket(page, '/play', 3);
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  const key = page.getByLabel('Your key');
+  await key.fill('AIzaSAVED1234567');
+  await page.getByRole('switch', { name: 'Remember on this device' }).check();
+  await expect(page.getByText('Saved on this device')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('byok_key:google'))).toBe(
+    'AIzaSAVED1234567',
+  );
+
+  // another company's model: the Google key is not offered for it
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /DeepSeek V4 Pro/ }).click();
+  await expect(key).toHaveValue('');
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /Gemini 3.5 Flash-Lite/ }).click();
+  await expect(key).toHaveValue('AIza••••••••4567');
+
+  await page.getByRole('button', { name: 'Delete the saved Google key' }).click();
+  await expect(key).toHaveValue('');
+  await expect(page.getByText('Saved on this device')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('byok_key:google'))).toBeNull();
+});
+
+test('ticket: a saved key of another company backs the game up, and its switch turns it off', async ({
+  page,
+}) => {
+  const sent: Record<string, unknown>[] = [];
+  await page.route('**/games', async (route) => {
+    const req = route.request();
+    if (req.resourceType() === 'document' || req.headers()['rsc']) return route.fallback();
+    const cors = {
+      'access-control-allow-origin': req.headers()['origin'] ?? '*',
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    };
+    if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    sent.push(req.postDataJSON() as Record<string, unknown>);
+    // refused, so the page stays on the ticket for the second punch
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      headers: cors,
+      body: JSON.stringify({ detail: 'held for the test' }),
+    });
+  });
+  await openTicket(page, '/play', 3);
+  // saved on an earlier visit; the saved keys are read again as the model changes
+  await page.evaluate(() => localStorage.setItem('byok_key:google', 'AIzaSAVED1234567'));
+  await page.getByRole('button', { name: 'Use my own key instead' }).click();
+  await page.getByLabel('Model', { exact: true }).click();
+  await page.getByRole('option', { name: /DeepSeek V4 Pro/ }).click();
+  await page.getByLabel('Your key').fill('sk-ds-1234567');
+
+  const backup = page.getByRole('switch', {
+    name: 'Backup: if DeepSeek V4 Pro stalls, the game goes on with Gemini 3.6 Flash on your saved Google key',
+  });
+  await expect(backup).toBeChecked();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect.poll(() => sent.length).toBe(1);
+  expect(sent[0]).toMatchObject({
+    api_key: 'sk-ds-1234567',
+    model: 'deepseek/deepseek-v4-pro',
+    backup: { company: 'google', api_key: 'AIzaSAVED1234567' },
+  });
+
+  await backup.uncheck();
+  await page.getByRole('button', { name: 'Start the game' }).click();
+  await expect.poll(() => sent.length).toBe(2);
+  expect(sent[1]).not.toHaveProperty('backup');
+});
+
 test('ticket: a refused key is said under the key field while the plate checks, then cleared by editing', async ({
   page,
 }) => {
@@ -486,7 +563,22 @@ test('ticket: any other refusal keeps the stub’s alert', async ({ page }) => {
   await expect(key).not.toHaveAttribute('aria-invalid', 'true');
 });
 
-test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
+test('ticket: opening a room is Play’s, and its old address still leads there', async ({
+  page,
+}) => {
+  await page.goto('/rooms/new');
+  await page.waitForURL('**/play/room');
+  const nav = page.getByRole('navigation').first();
+  await expect(nav.getByRole('link', { name: 'Play', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
+  await expect(nav.getByRole('link', { name: /^Rooms/ })).not.toHaveAttribute(
+    'aria-current',
+  );
+});
+
+test('ticket: /play/room opens a room and goes to it', async ({ page }) => {
   const ROOM = 'b7d1c0de-0000-4000-8000-00000000abcd';
   let sent: Record<string, unknown> | null = null;
   await page.route('**/rooms', async (route) => {
@@ -507,7 +599,7 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
       body: JSON.stringify({ game_id: ROOM, host_key: 'hk-1' }),
     });
   });
-  await openTicket(page, '/rooms/new', 3);
+  await openTicket(page, '/play/room', 3);
   await expect(page.getByText('Up to 10 people')).toBeVisible();
 
   await page.getByLabel('Room name').fill('Night shift');
@@ -529,7 +621,7 @@ test('ticket: /rooms/new opens a room and goes to it', async ({ page }) => {
 for (const [name, path, viewport] of [
   ['play-1440', '/play', { width: 1440, height: 900 }],
   ['play-390', '/play', { width: 390, height: 844 }],
-  ['rooms-new-1440', '/rooms/new', { width: 1440, height: 900 }],
+  ['play-room-1440', '/play/room', { width: 1440, height: 900 }],
 ] as const) {
   test(`ticket: ${name}`, async ({ page }) => {
     await page.setViewportSize(viewport);
@@ -541,8 +633,8 @@ for (const [name, path, viewport] of [
 
 /**
  * The departures board (`/rooms`) over a mocked `GET /rooms`: one room boarding, one locked and
- * one full. The clock is pinned so "opened … ago" is the same on every run. Board opens the
- * strip; Join posts the name and goes to the room with the seat token kept on this device.
+ * one full. The clock is pinned so "opened … ago" is the same on every run. Board goes to the
+ * room, whose boarding pass takes the name and the puppet; the board joins nobody itself.
  */
 const NOW = new Date('2026-09-26T12:00:00Z');
 const BOARDING = 'a1b2c3d4-0000-4000-8000-000000000001';
@@ -620,7 +712,10 @@ test('rooms: the board says boarding, locked and full, and why', async ({ page }
   await expect(boarding).toContainText('hosted by mira');
   await expect(boarding).toContainText('opened 4 minutes ago');
   await expect(boarding).toContainText('3 of 9 aboard, 6 places open');
-  await expect(boarding.getByRole('button', { name: 'Board' })).toBeEnabled();
+  await expect(boarding.getByRole('link', { name: 'Board' })).toHaveAttribute(
+    'href',
+    `/games/${BOARDING}`,
+  );
 
   const locked = page.locator(`[data-room="${LOCKED}"]`);
   await expect(locked).toContainText('LOCKED');
@@ -642,40 +737,23 @@ test('rooms: the board says boarding, locked and full, and why', async ({ page }
 
   await expect(page.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
     'href',
-    '/rooms/new',
+    '/play/room',
   );
 });
 
-test('rooms: Join posts the name and goes to the room', async ({ page }) => {
+test('rooms: Board goes to the room without joining it', async ({ page }) => {
   const sent = await mockJoin(page, 200, { token: 'seat-tok-1' });
   await openBoard(page);
 
-  const row = page.locator(`[data-room="${BOARDING}"]`);
-  await row.getByRole('button', { name: 'Board' }).click();
-  await row.getByLabel('Your name on the manifest').fill('sol');
-  await row.getByRole('button', { name: 'Join' }).click();
-
+  await page
+    .locator(`[data-room="${BOARDING}"]`)
+    .getByRole('link', { name: 'Board' })
+    .click();
   await page.waitForURL(`**/games/${BOARDING}`);
-  expect(sent).toHaveLength(1);
-  expect(sent[0].url).toMatch(new RegExp(`/games/${BOARDING}/join$`));
-  expect(sent[0].body).toEqual({ name: 'sol' });
-  expect(await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING)).toBe(
-    'seat-tok-1',
-  );
-});
-
-test('rooms: a refused join says the server’s words in the row', async ({ page }) => {
-  await mockJoin(page, 409, { detail: 'room is locked — ask the host to unlock it' });
-  await openBoard(page);
-
-  const row = page.locator(`[data-room="${BOARDING}"]`);
-  await row.getByRole('button', { name: 'Board' }).click();
-  await row.getByLabel('Your name on the manifest').fill('sol'); // Join stays off without a name
-  await row.getByRole('button', { name: 'Join' }).click();
-  await expect(row.getByRole('alert')).toContainText(
-    'room is locked — ask the host to unlock it',
-  );
-  await expect(page).toHaveURL(/\/rooms$/);
+  expect(sent).toHaveLength(0);
+  expect(
+    await page.evaluate((id) => localStorage.getItem(`seat_${id}`), BOARDING),
+  ).toBeNull();
 });
 
 test('rooms: an empty board says so, and the doors beside the title stay', async ({
@@ -691,7 +769,7 @@ test('rooms: an empty board says so, and the doors beside the title stay', async
   const doors = page.getByRole('navigation', { name: 'Other ways aboard' });
   await expect(doors.getByRole('link', { name: /Open a table/ })).toHaveAttribute(
     'href',
-    '/rooms/new',
+    '/play/room',
   );
   await expect(doors.getByRole('link', { name: /Play solo/ })).toHaveAttribute(
     'href',
@@ -720,14 +798,17 @@ for (const [name, viewport] of [
 /**
  * The landing (`/`) over mocked `GET /replays/{featured}` (the bundled fixture), `GET /replays`
  * (the latest games and the archive's total), `GET /rooms` (two tables boarding) and
- * `GET /models`. The carriage is the replay theatre in its mini mode, playing day 2's vote on
- * a loop with the replay's own controls; on an upright phone they sit under the stage.
+ * `GET /models`. The carriage is the replay theatre in its mini mode, playing a reel of the game
+ * (featured-reel.ts) on a loop with Reveal on and the replay's own controls; on an upright phone
+ * they sit under the stage.
  */
 const FIXTURE_BODY = readFileSync(
-  join(__dirname, '../src/stage/fixtures/replay-68c26e83.json'),
+  join(__dirname, '../src/stage/fixtures/replay-e45eda20.json'),
 );
 /** The landing's featured game (`SITE.featuredReplay`), served from the fixture above. */
-const FEATURED = '68c26e83-f5c9-50d5-92b7-3589312a0cb9';
+const FEATURED = 'e45eda20-ccbf-4d38-8be0-c18ccacd028f';
+/** The reel's length, in beats of the X-ray's cut (featured-reel.test.ts names its parts). */
+const REEL = 40;
 const TWO_ROOMS = [
   ROOMS[0],
   { ...ROOMS[0], game_id: FULL.replace(/3$/, '4'), name: 'Late car' },
@@ -771,7 +852,7 @@ async function openLanding(page: Page, query = '') {
 const carriage = (page: Page) => page.locator('[data-frame="carriage"]');
 const mini = (page: Page) => carriage(page).locator('[data-mini]');
 
-test('landing: the carriage plays day 2 of the featured game, with the replay’s controls', async ({
+test('landing: the carriage plays a reel of the featured game, with the replay’s controls', async ({
   page,
 }) => {
   test.slow(); // it presses through the band, and each press redraws the stage
@@ -785,34 +866,34 @@ test('landing: the carriage plays day 2 of the featured game, with the replay’
   // no way back to the replay list from inside the landing: the carriage links the game
   await expect(carriage(page).getByRole('link', { name: 'Replays' })).toHaveCount(0);
 
-  // it starts on day 2's vote and plays (the window is 55..75 of the public cut)
+  // it starts on the deal done, its cards face up (Reveal on), and plays on to the night
   await carriage(page).scrollIntoViewIfNeeded();
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
-  const at = Number(await mini(page).getAttribute('data-beat-index'));
-  expect(at).toBeGreaterThan(55);
-  expect(at).toBeLessThanOrEqual(75);
+  await expect(mini(page)).not.toHaveAttribute('data-beat', 'deal.face-up', {
+    timeout: 6000,
+  });
+  expect(Number(await mini(page).getAttribute('data-beat-index'))).toBeGreaterThan(2);
 
-  // the band sees the window only, and its buttons stay in it
+  // the band sees the reel only, and its buttons stay on it
   const band = carriage(page).locator('[data-transport]');
   await band.getByRole('button', { name: 'Pause' }).click();
   await expect(mini(page)).toHaveAttribute('data-playing', 'false');
   await expect(band.getByRole('slider', { name: 'Seek' })).toHaveAttribute(
     'aria-valuemax',
-    '21',
+    String(REEL),
   );
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
   await band.getByRole('button', { name: 'Back a beat' }).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
 
-  // the strip's Reveal shows the hidden roles: seat 10's band names its role, the Chanteuse
-  // (who claimed the Investigator); File brings the case file beside the stage, Transcript the
-  // drawer
+  // the strip's Reveal is on: with the cards face up, seat 10's band names its role, the
+  // Illusionist (who claimed the Investigator), until it is turned off; File brings the case
+  // file beside the stage, Transcript the drawer
   const seat10 = carriage(page).locator('[data-layer="hud"] [data-seat="10"]');
-  await expect(seat10).not.toContainText('Chanteuse');
+  await expect(seat10).toContainText('Illusionist');
   await carriage(page).getByRole('button', { name: 'Reveal', exact: true }).click();
-  await expect(seat10).toContainText('Chanteuse');
+  await expect(seat10).not.toContainText('Illusionist');
   await carriage(page).getByRole('button', { name: 'File', exact: true }).click();
   await expect(
     carriage(page).getByRole('complementary', { name: /^Case file/ }),
@@ -822,25 +903,27 @@ test('landing: the carriage plays day 2 of the featured game, with the replay’
 
   // the roof board names the game (its ID read once, not tile by tile) and its model; under
   // the platform, the way to it whole and its details
-  await expect(carriage(page)).toHaveAttribute(
-    'aria-label',
-    'Replay of day 2 of game 68C26E8',
-  );
-  await expect(carriage(page).getByRole('img', { name: '68C26E8' })).toBeVisible();
+  await expect(carriage(page)).toHaveAttribute('aria-label', 'Moments from game E45EDA2');
+  await expect(carriage(page).getByRole('img', { name: 'E45EDA2' })).toBeVisible();
   await expect(
     carriage(page).getByRole('link', { name: 'Watch the whole game' }),
   ).toHaveAttribute('href', `/replays/${FEATURED}?from=home`);
-  await expect(carriage(page)).toContainText('Gemini 3.5 Flash-Lite');
-  await expect(carriage(page)).toContainText('Town won');
+  // the mocked menu has no row for the game's model: the board shows its id
+  await expect(carriage(page)).toContainText('deepseek/deepseek-flash');
+  await expect(carriage(page)).toContainText('Serial killer won');
 
-  // the doors, the rooms boarding, the latest games and the archive's count in the footer
+  // the doors, the rooms boarding (on the nav's Rooms door alone, owner 2026-10-18), the latest
+  // games and the archive's count in the footer
   await expect(page.getByRole('link', { name: /Play solo/ }).first()).toHaveAttribute(
     'href',
     '/play',
   );
   const party = page.getByRole('link', { name: /Play with others/ }).first();
   await expect(party).toHaveAttribute('href', '/rooms');
-  await expect(party).toContainText('2 tables boarding');
+  await expect(party).not.toContainText('boarding');
+  await expect(
+    page.getByRole('link', { name: /^Rooms 2 boarding$/ }).first(),
+  ).toBeVisible();
   await expect(page.locator('[data-game]')).toHaveCount(3);
   await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
 });
@@ -856,13 +939,13 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
   await expect(carriage(page).locator('[data-layer="hud"] [data-seat]')).toHaveCount(0);
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
 
-  // the board: pause, and a sleeper per beat of the window, each one seeking
+  // the board: pause, and a sleeper per beat of the reel, each one seeking
   await carriage(page).getByRole('button', { name: 'Pause' }).click();
   await expect(mini(page)).toHaveAttribute('data-playing', 'false');
   const pips = carriage(page).getByRole('group', { name: 'Beats' }).getByRole('button');
-  await expect(pips).toHaveCount(21);
+  await expect(pips).toHaveCount(REEL);
   await pips.nth(0).click();
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
 
   // the preview stops at the board on a phone (owner, 2026-10-14): no transcript, no Reveal
   // pane (the whole replay has them), and the carriage, the board and the way to the whole game
@@ -880,9 +963,9 @@ test('landing: on an upright phone the controls sit under the stage, at reading 
 
 /**
  * The preview's lifecycle and its backdrop's density (audit 2026-10-11 §1, §2): nothing of it
- * is fetched while the carriage is under the fold; scrolled to, one backdrop sheet comes, the
- * smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
- * push-in (`pickScale`). The carriage's stage is 366 css px wide on a 390 phone (the screen
+ * is fetched while the carriage is under the fold; scrolled to, its backdrop sheets come, each
+ * the smallest whose pixels cover the stage's width × the screen's density × the camera's 1.32
+ * push-in (`pickScale`): one per car the reel's warmed scenes stand in (warm-reel.ts). The carriage's stage is 366 css px wide on a 390 phone (the screen
  * less 24px) and 1080 on a 1440 desktop (the carriage less its ends and doors).
  */
 const SHEET = /\/car-[a-z]+-[a-z]+-[a-z]+@([\d.]+)x\.[^/]*\.webp/;
@@ -900,7 +983,7 @@ for (const { name, viewport, dpr, sheet, px } of [
 ]) {
   test.describe(`landing preview on a ${name} at density ${dpr}`, () => {
     test.use({ viewport, deviceScaleFactor: dpr });
-    test('loads when scrolled to, with one backdrop sheet of the size it needs', async ({
+    test('loads once the first screen is up, before it is scrolled to, with backdrop sheets of the size it needs', async ({
       page,
     }) => {
       const sheets: string[] = [];
@@ -920,19 +1003,17 @@ for (const { name, viewport, dpr, sheet, px } of [
       });
       await routeLanding(page);
       await page.goto('/', { waitUntil: 'networkidle' });
-      // under the fold: the frame is drawn, nothing of the preview asked for
-      await expect(carriage(page)).toBeAttached();
-      await expect(mini(page)).toHaveCount(0);
-      expect(sheets).toEqual([]);
-      expect(replays).toBe(0);
-
-      await carriage(page).scrollIntoViewIfNeeded();
+      // under the fold, never scrolled to: asked for as soon as the hero is up (owner,
+      // 2026-10-18), so the whole scene is ready before it is seen
+      await expect(page.locator('html')).not.toHaveAttribute('data-gate');
       await expect(mini(page)).toBeAttached();
+      await expect(carriage(page)).toHaveAttribute('data-ready', 'true');
       const img = carriage(page).locator('[data-backdrop] img');
       await expect(img).toHaveJSProperty('complete', true);
       expect(await img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBe(px);
       await page.waitForLoadState('networkidle');
-      expect(sheets).toEqual([sheet]);
+      expect(sheets.length).toBeGreaterThan(0);
+      expect(new Set(sheets)).toEqual(new Set([sheet]));
       expect(replays).toBe(1);
     });
   });
@@ -948,7 +1029,7 @@ test('landing: the preview stops its clock while the page is hidden, and goes on
   const band = carriage(page).locator('[data-transport]');
   await band.getByRole('button', { name: 'Pause' }).click();
   await band.getByRole('slider', { name: 'Seek' }).click({ position: { x: 1, y: 4 } });
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
 
   const hidden = (on: boolean) =>
     page.evaluate((h) => {
@@ -963,9 +1044,11 @@ test('landing: the preview stops its clock while the page is hidden, and goes on
   await expect(mini(page)).toHaveAttribute('data-playing', 'true');
   // longer than the beat's hold (the first test sees it end inside six seconds)
   await page.waitForTimeout(7000);
-  await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+  await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
   await hidden(false);
-  await expect(mini(page)).not.toHaveAttribute('data-beat-index', '55', { timeout: 6000 });
+  await expect(mini(page)).not.toHaveAttribute('data-beat', 'deal.face-up', {
+    timeout: 6000,
+  });
 });
 
 for (const [name, viewport] of [
@@ -974,13 +1057,23 @@ for (const [name, viewport] of [
 ] as const) {
   test(`landing: ${name}`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    // at rest on the window's first beat: reduced motion stops the play, and so does ?still=1
+    // at rest on the reel's first beat: reduced motion stops the play, and so does ?still=1
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openLanding(page, '?still=1');
-    await expect(mini(page)).toHaveAttribute('data-beat-index', '55');
+    await expect(mini(page)).toHaveAttribute('data-beat', 'deal.face-up');
     await expect(page.locator('[data-game]')).toHaveCount(3);
     await expect(page.getByRole('contentinfo')).toContainText('212 games archived');
     await settle(page);
+    // the way in scrolls to the carriage and back, and on a phone the carriage is below the
+    // fold: the pinned strip may still be sliding away, so it is left out, as on the rooms'
+    await page.addStyleTag({
+      content: 'div:has(> nav[aria-label="Pinned"]) { display: none !important; }',
+    });
+    // a full-page capture lays the page out again and the pictures are decoded again; decoded
+    // async, the hero and the stage's room came out blank (2026-10-22): decoded with the paint
+    await page.evaluate(() => {
+      for (const img of document.images) img.decoding = 'sync';
+    });
     // the whole landing is over 5,000px tall: two captures in a row, which the check needs to
     // call a page settled, take longer than the default five seconds on the dev server
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 20_000 });
@@ -1032,6 +1125,28 @@ test('guide: your role card stands in your night room, drawn when its tab is fir
   await expect(card).toBeHidden();
 });
 
+test('guide: the seat cards’ steps show one at a time, and the fourth opens your own file', async ({
+  page,
+}) => {
+  await page.goto('/guide');
+  const steps = page.getByRole('tablist', { name: 'Steps' });
+  await expect(steps.getByRole('tab')).toHaveCount(5);
+  // the file opens on seat 9, its claim checked against the morning's Record
+  const file = page.locator('#tools [data-film]');
+  await expect(file.locator('[data-player-file="9"]')).toContainText('on the record');
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Next: Your guesses, their claims →' }).click();
+    await expect(
+      steps.getByRole('tab', { name: 'Your guesses, their claims' }),
+    ).toHaveAttribute('aria-selected', 'true', { timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
+  await steps.getByRole('tab', { name: 'Your own file' }).click();
+  await expect(page.getByRole('tabpanel', { name: 'Your own file' })).toContainText(
+    'Your seat has a file too.',
+  );
+  await expect(file.locator('[data-player-file="1"]')).toContainText('I claim');
+});
+
 test('guide: the day line steps by the arrows and by its next-stop button', async ({
   page,
 }) => {
@@ -1058,9 +1173,18 @@ test('guide: the day line steps by the arrows and by its next-stop button', asyn
 test('guide: the case file loads its recorded games when opened', async ({ page }) => {
   await page.goto('/guide');
   const file = page.getByRole('tablist', { name: 'The end of the line' });
-  await file.getByRole('tab', { name: 'Reveal' }).click();
+  // a tab clicked before the page is hydrated does nothing, and beside the whole suite the guide
+  // hydrates late (it flaked three times on 2026-10-18): click until the tab is the selected one
+  const open = async (name: string) => {
+    const tab = file.getByRole('tab', { name });
+    await expect(async () => {
+      await tab.click();
+      await expect(tab).toHaveAttribute('aria-selected', 'true', { timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
+  };
+  await open('Reveal');
   await expect(page.locator('#after [data-film]').first()).toBeVisible();
-  await file.getByRole('tab', { name: 'Transcript' }).click();
+  await open('Transcript');
   await expect(page.locator('#after [data-drawer]')).toBeVisible();
 });
 

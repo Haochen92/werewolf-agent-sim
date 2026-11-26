@@ -101,5 +101,10 @@ class BatchDedupRunConfig(BaseModel):
     # Run mode.
     apply: bool = False
     incremental: bool = False
+    new_keys: set[str] | None = None
+    """The entries an incremental run treats as new, named by the caller. When set, it replaces the
+    store folder's last-dedup marker: the learning tick builds a fresh folder from the database each
+    time, so it carries no marker, and an extracted observation's creation time can predate any marker.
+    An empty set means nothing is new, and the run does nothing."""
     cluster_report_only: bool = False
     preview_chars: int = 160

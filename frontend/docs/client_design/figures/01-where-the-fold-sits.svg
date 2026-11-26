@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" font-family="Helvetica, Arial, sans-serif">
+  <style>
+    .t { font-size: 15px; fill: #1f2937; }
+    .s { font-size: 13px; fill: #4b5563; }
+    .h { font-size: 17px; font-weight: bold; fill: #111827; }
+    .c { font-family: Menlo, Consolas, monospace; font-size: 12.5px; fill: #1f2937; }
+    .title { font-size: 20px; font-weight: bold; fill: #111827; }
+    .ev { fill: #fef3c7; stroke: #b45309; stroke-width: 1.2; }
+    .box { fill: #f9fafb; stroke: #9ca3af; stroke-width: 1.2; }
+    .store { fill: #eff6ff; stroke: #1d4ed8; stroke-width: 1.6; }
+    .view { fill: #dbeafe; stroke: #1d4ed8; stroke-width: 1.2; }
+    .live { fill: #fee2e2; stroke: #b91c1c; stroke-width: 1.2; }
+    .arrow { stroke: #374151; stroke-width: 1.8; fill: none; marker-end: url(#a); }
+  </style>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker></defs>
+  <rect width="960" height="560" fill="#ffffff"/>
+  <text x="24" y="36" class="title">Where the fold sits: one log on the server, everything on the page derived from it</text>
+
+  <!-- server -->
+  <rect x="24" y="64" width="236" height="340" rx="10" class="box"/>
+  <text x="40" y="92" class="h">Server</text>
+  <text x="40" y="114" class="s">The game engine writes one event</text>
+  <text x="40" y="131" class="s">per fact, numbered in order (seq).</text>
+  <rect x="40" y="148" width="204" height="28" rx="4" class="ev"/><text x="50" y="167" class="c">1  game_started</text>
+  <rect x="40" y="180" width="204" height="28" rx="4" class="ev"/><text x="50" y="199" class="c">2  role_assigned</text>
+  <rect x="40" y="212" width="204" height="28" rx="4" class="ev"/><text x="50" y="231" class="c">3  phase_change</text>
+  <rect x="40" y="244" width="204" height="28" rx="4" class="ev"/><text x="50" y="263" class="c">4  speech  (seat 3)</text>
+  <text x="50" y="292" class="c">…</text>
+  <rect x="40" y="304" width="204" height="28" rx="4" class="ev"/><text x="50" y="323" class="c">593  game_over</text>
+  <text x="40" y="358" class="s">The log is the truth.</text>
+  <text x="40" y="375" class="s">Nothing in it is ever edited.</text>
+
+  <!-- wire labels -->
+  <path d="M260,160 L392,160" class="arrow"/>
+  <text x="270" y="146" class="s">live game: SSE</text>
+  <text x="270" y="182" class="c" style="font-size:11px">/games/{id}/events</text>
+  <text x="270" y="200" class="s">one event at a time</text>
+  <path d="M260,330 L392,330" class="arrow"/>
+  <text x="270" y="316" class="s">finished game</text>
+  <text x="270" y="352" class="c" style="font-size:11px">GET /replays/{id}</text>
+  <text x="270" y="370" class="s">the whole log at once</text>
+
+  <!-- store -->
+  <rect x="396" y="64" width="290" height="226" rx="10" class="store"/>
+  <text x="412" y="90" class="h">Live: the store</text>
+  <text x="560" y="90" class="c">useGameSession</text>
+  <rect x="412" y="104" width="258" height="44" rx="6" class="ev"/>
+  <text x="424" y="123" class="t">events</text>
+  <text x="424" y="140" class="s">its copy of the log, sorted by seq</text>
+  <text x="541" y="164" class="c" text-anchor="middle">↓ fold</text>
+  <rect x="412" y="172" width="258" height="50" rx="6" class="view"/>
+  <text x="424" y="192" class="t">view  (GameView)</text>
+  <text x="424" y="210" class="s">seats, alive, days, my seat, my turn</text>
+  <rect x="412" y="230" width="258" height="44" rx="6" class="live"/>
+  <text x="424" y="249" class="t">liveSeqs</text>
+  <text x="424" y="266" class="s">which seqs it watched arrive</text>
+
+  <!-- replay -->
+  <rect x="396" y="302" width="290" height="102" rx="10" class="store"/>
+  <text x="412" y="328" class="h">Replay: the fold cache</text>
+  <text x="412" y="350" class="s">the same fold, run up to the scene</text>
+  <text x="412" y="367" class="s">the viewer is on (figure 5)</text>
+  <text x="412" y="390" class="c">ReplayTheatre · createFoldCache</text>
+
+  <!-- readers -->
+  <path d="M686,196 L752,196" class="arrow"/>
+  <path d="M686,350 L752,350" class="arrow"/>
+  <rect x="756" y="64" width="190" height="340" rx="10" class="box"/>
+  <text x="772" y="92" class="h">The stage</text>
+  <text x="772" y="116" class="s">Components read the</text>
+  <text x="772" y="133" class="s">slice of the view they</text>
+  <text x="772" y="150" class="s">draw: seat strip,</text>
+  <text x="772" y="167" class="s">transcript, ballots.</text>
+  <text x="772" y="204" class="c">beatsFor</text>
+  <text x="772" y="224" class="s">cuts the log into</text>
+  <text x="772" y="241" class="s">scenes, each naming</text>
+  <text x="772" y="258" class="s">how far into the log</text>
+  <text x="772" y="275" class="s">it shows.</text>
+
+  <!-- the rule -->
+  <rect x="24" y="426" width="922" height="116" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+  <text x="44" y="454" class="h">The one idea</text>
+  <text x="44" y="480" class="t">The view is not state that gets edited. It is calculated from the log, the way a bank balance is</text>
+  <text x="44" y="502" class="t">calculated from a statement. Throw it away, run the fold again, and the same view comes back.</text>
+  <text x="44" y="524" class="t">That is why a live game, a refresh, a reconnect and a replay can all share one function.</text>
+</svg>

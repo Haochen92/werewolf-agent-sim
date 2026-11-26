@@ -2,16 +2,16 @@
 
 /**
  * The seated human's speaking turn, in the box at the foot of the stage (bench 72, beat sheet
- * §2 row 4). Where the speech box would hold a seat's line, it holds the turn, on the speech
- * box's walnut board: "Your turn to speak", the hint and the countdown in red at its head, then
+ * §2 row 4). Where the speech box would hold a seat's line, it holds the turn, in the HUD's
+ * kit (dark bronze in the riveted frame, 2026-10-19): "Your turn to speak", the hint and the countdown in red at its head, then
  * three plaques in a row and no boxes (owner, 2026-10-01; until then the dock held the steer,
  * Draft and the reply box itself):
  *
- * - **Write your line** (brass, the keyboard before its words) opens the full-screen composer,
+ * - **Write your line** (cream, the keyboard before its words) opens the full-screen composer,
  *   where all the writing is done. Once there is a line it reads **Edit your line**.
- * - **Send** (brass) says the line. Greyed until there is one, live the moment the composer's
+ * - **Send** (cream, a paper plane) says the line. Greyed until there is one, live the moment the composer's
  *   box holds a line, with the composer open or closed; it waits too while a line is over the cap.
- * - **Pass** (walnut) says nothing.
+ * - **Pass** (light bronze) says nothing.
  *
  * Once there is a line, a row under the head previews it, on one line cut with "…", its word
  * count at the end ("23 words"); on a phone a tap on it opens the composer too. A line refused
@@ -36,15 +36,7 @@
  * the server. The dock is mounted for one request and is gone when the turn closes.
  */
 import { AnimatePresence, motion } from 'motion/react';
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type CSSProperties,
-  type KeyboardEvent,
-} from 'react';
-import { SPRITES } from '@/assets/manifest';
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { DayRound } from '@/types/contracts';
 import type { TurnClock } from '../countdown';
 import { useMotionScale } from '../motion';
@@ -52,6 +44,7 @@ import type { DockInput } from '../scenes/types';
 import { Overlay } from '../Stage';
 import { PHONE_QUERY, composerBox, composerShown } from './composer';
 import { CountText } from './CountText';
+import { KitIcon } from './KitIcon';
 import styles from './TurnDock.module.css';
 import {
   DRAFT_WORDS,
@@ -137,14 +130,12 @@ export function TurnDock({
     setOpen(false);
     expand.current?.focus();
   };
-  const board = { '--board': `url(${SPRITES.textures.walnut.src})` } as CSSProperties;
   if (pinned)
     return (
       <Composer
         dock={dock}
         c={c}
         clock={clock}
-        board={board}
         say={say}
         draft={draft}
         onPass={onPass}
@@ -156,7 +147,7 @@ export function TurnDock({
     <motion.div
       className={styles.dock}
       data-dock="discuss"
-      style={hidden ? { ...board, visibility: 'hidden' } : board}
+      style={hidden ? { visibility: 'hidden' } : undefined}
       initial={arrive ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 * k, delay: 0.3 * k }}
@@ -209,9 +200,11 @@ export function TurnDock({
           {c.writeLabel}
         </button>
         <button type="button" className={styles.pri} onClick={say} disabled={!c.canSend}>
+          <KitIcon name="send" />
           {dock.sending ? 'Sending…' : 'Send'}
         </button>
         <button type="button" onClick={onPass} disabled={c.busy}>
+          <KitIcon name="pass" />
           Pass
         </button>
       </div>
@@ -221,7 +214,6 @@ export function TurnDock({
             dock={dock}
             c={c}
             clock={clock}
-            board={board}
             say={say}
             draft={draft}
             onPass={onPass}
@@ -326,7 +318,6 @@ function Composer({
   dock,
   c,
   clock,
-  board,
   say,
   draft,
   onPass,
@@ -336,7 +327,6 @@ function Composer({
   dock: DockInput;
   c: DockControls;
   clock: TurnClock | null;
-  board: CSSProperties;
   say: () => void;
   draft: () => void;
   onPass?: () => void;
@@ -387,7 +377,7 @@ function Composer({
         if (!pinned && e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={`${styles.dock} ${styles.sheet}`} style={board}>
+      <div className={`${styles.dock} ${styles.sheet}`}>
         <header className={styles.head}>
           <strong>{heading.title}</strong>
           <span className={styles.hint}>
@@ -451,9 +441,11 @@ function Composer({
             ) : null}
           </div>
           <button type="button" onClick={onPass} disabled={c.busy}>
+            <KitIcon name="pass" />
             Pass
           </button>
           <button type="button" className={styles.pri} onClick={say} disabled={!c.canSend}>
+            <KitIcon name="send" />
             {dock.sending ? 'Sending…' : 'Send'}
           </button>
         </footer>

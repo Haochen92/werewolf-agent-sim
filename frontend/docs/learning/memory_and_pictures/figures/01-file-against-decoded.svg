@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="560" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">What travels against what is held</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The file is compressed for the wire; to draw or play it the browser holds it raw.</text>
+<line x1="300.0" y1="96" x2="300.0" y2="476" stroke="#e5e7eb"/>
+<text x="300.0" y="90" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">0 MB</text>
+<line x1="435.2941176470588" y1="96" x2="435.2941176470588" y2="476" stroke="#e5e7eb"/>
+<text x="435.2941176470588" y="90" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">10 MB</text>
+<line x1="570.5882352941176" y1="96" x2="570.5882352941176" y2="476" stroke="#e5e7eb"/>
+<text x="570.5882352941176" y="90" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">20 MB</text>
+<line x1="705.8823529411765" y1="96" x2="705.8823529411765" y2="476" stroke="#e5e7eb"/>
+<text x="705.8823529411765" y="90" font-size="12" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="middle">30 MB</text>
+<text x="24" y="126" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">backdrop sheet 1×</text>
+<text x="24" y="146" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">2200 × 900</text>
+<rect x="300" y="110" width="2.6230823529411764" height="18" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="310.6230823529412" y="124" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">file 194 KB</text>
+<rect x="300" y="134" width="107.15294117647059" height="18" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="415.15294117647056" y="148" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">held 7.9 MB</text>
+<text x="956" y="136" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="end">×41</text>
+<text x="24" y="188" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">backdrop sheet 1.5×</text>
+<text x="24" y="208" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">3300 × 1350</text>
+<rect x="300" y="172" width="3.55853294117647" height="18" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="311.55853294117645" y="186" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">file 263 KB</text>
+<rect x="300" y="196" width="241.09411764705882" height="18" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="549.0941176470589" y="210" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">held 17.8 MB</text>
+<text x="956" y="198" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="end">×68</text>
+<text x="24" y="250" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">backdrop sheet 2×</text>
+<text x="24" y="270" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">4400 × 1800</text>
+<rect x="300" y="234" width="4.606845882352941" height="18" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="312.60684588235296" y="248" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">file 341 KB</text>
+<rect x="300" y="258" width="428.61176470588236" height="18" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="736.6117647058824" y="272" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">held 31.7 MB</text>
+<text x="956" y="260" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="end">×93</text>
+<text x="24" y="312" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">a puppet&#x27;s pose</text>
+<text x="24" y="332" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">857 × 1186</text>
+<rect x="300" y="296" width="2" height="18" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="310" y="310" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">file 132 KB</text>
+<rect x="300" y="320" width="55.00528470588235" height="18" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="363.00528470588233" y="334" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">held 4.1 MB</text>
+<text x="956" y="322" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="end">×31</text>
+<text x="24" y="374" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">a seat&#x27;s head</text>
+<text x="24" y="394" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">384 × 384</text>
+<rect x="300" y="358" width="2" height="18" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="310" y="372" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">file 30 KB</text>
+<rect x="300" y="382" width="7.9799717647058825" height="18" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="315.9799717647059" y="396" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">held 0.6 MB</text>
+<text x="956" y="384" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="end">×20</text>
+<text x="24" y="436" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">the longest track</text>
+<text x="24" y="456" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4b5563" text-anchor="start">87.3 s, stereo</text>
+<rect x="300" y="420" width="28.43479176470588" height="18" rx="2" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+<text x="336.4347917647059" y="434" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#92400e" text-anchor="start">file 2.1 MB</text>
+<rect x="300" y="444" width="453.5491764705883" height="18" rx="2" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="761.5491764705882" y="458" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#1e3a8a" text-anchor="start">held 33.5 MB</text>
+<text x="956" y="446" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="end">×16</text>
+<text x="24" y="500" font-size="13.5" fill="#1f2937" text-anchor="start">A picture is held as width × height × 4 bytes; a sound as seconds × sample rate × channels × 4.</text>
+<text x="24" y="524" font-size="13" fill="#4b5563" text-anchor="start">Files as committed on 2026-10-26 (WebP; the track is MP3). The track is shown decoded at 48,000 samples a second;</text>
+<text x="24" y="544" font-size="13" fill="#4b5563" text-anchor="start">it is decoded at its AudioContext&#x27;s rate, so at 44,100 it holds 30.8 MB. KB and MB here are 1,000 and 1,000,000 bytes.</text>
+</svg>

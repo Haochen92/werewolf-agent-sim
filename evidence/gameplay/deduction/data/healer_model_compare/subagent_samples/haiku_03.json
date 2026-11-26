@@ -1,0 +1,20 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "claims trailseer; the follow on player_7 is unverified so far", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_4", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claims investigator; the Suspicious read on player_9 is unverified so far", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_6", "why": "asked the claimants for their results; fair, but no evidence yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "confirms the visit to player_8 and says nothing about a role; not enough to read yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_9", "why": "player_5 reads Suspicious, which is unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no statements yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked, so I have no results, and I cannot tell who else visited me. Stay quiet on day 2 unless addressed, and do not reveal my role without need. Abstain on the first vote unless one of the two role claims gets tested. Keep my healer protection for a Town claimant who is attacked.",
+  "pass_turn": true,
+  "message": "",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": []
+}

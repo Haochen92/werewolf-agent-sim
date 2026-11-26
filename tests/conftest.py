@@ -6,8 +6,8 @@ import os
 
 # The test suite must not report to Langfuse: a developer's .env carries real keys, and every
 # session test that starts a game would otherwise land as a one-observation trace in the
-# research project. Set before Agents.tracing is imported, which builds the client once per
-# process. An explicit LANGFUSE_TRACING_ENABLED=true in the environment still wins.
+# research project. Set before Agents.tracing builds the client, which it does once per process
+# on first use. An explicit LANGFUSE_TRACING_ENABLED=true in the environment still wins.
 os.environ.setdefault("LANGFUSE_TRACING_ENABLED", "false")
 # Nor call a paid model from a game's post-game extraction: the de-halo pass is on by default in
 # production (Agents/memory/persistence/config.py). Its own tests turn it on with a stubbed judge.
@@ -15,9 +15,17 @@ os.environ.setdefault("MEMORY_DEHALO_ENABLED", "false")
 # The model catalogue is rows in the database (Agents/llm_factory/catalog.py); the suite runs on
 # the seed in code, so a test never depends on what the live tables hold.
 os.environ.setdefault("WW_MODEL_CATALOG", "seed")
+# The house list follows the credits at hand; the house tests need several house-funded rows, so the
+# suite pins its own list rather than whatever the seed mirrors today.
+os.environ.setdefault("WW_HOUSE_MODELS",
+                      "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.6-flash,anthropic/claude-haiku-5-5")
 
 pytest_plugins = [
     "tests.fixtures.stream",
     "tests.fixtures.server",
+    "tests.fixtures.model",
+    "tests.fixtures.graph",
+    "tests.fixtures.database",
+    "tests.fixtures.collection",
     "tests.factories.events",
 ]

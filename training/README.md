@@ -14,8 +14,13 @@ that used to live under `evidence/fine_tuning/cross_encoder/`.
 - **Training runs on Modal only** (L4 GPU). Heavy deps (`datasets`, `accelerate`)
   live in the Modal image, not in the local environment.
 - **Local machines are inference-only.** Evaluating a saved model needs just
-  `sentence-transformers` (already a project dep) — cross-encoder inference is
-  cheap enough to run on CPU.
+  `sentence-transformers` — cross-encoder inference is cheap enough to run on CPU.
+- **Its own environment (since 2026-11-18).** `training/pyproject.toml` and
+  `training/poetry.lock` hold this folder's packages; the game's environment at the
+  repository root no longer has `sentence-transformers` or `torch`. Install once with
+  `poetry -P training install`, and run every command below from the repository root with
+  `poetry -P training run ...`. The environment has not been installed on the development
+  machine, so the commands below are unverified since the split.
 
 ## Layout
 
@@ -42,10 +47,10 @@ build_datasets()  pure transform — runs wherever training executes
 ## Train (Modal)
 
 ```bash
-poetry run modal run training/runner/modal_runner.py \
+poetry -P training run modal run training/runner/modal_runner.py \
     --adapter reranker --run-name reranker_v5 --epochs 20
 
-poetry run modal run training/runner/modal_runner.py \
+poetry -P training run modal run training/runner/modal_runner.py \
     --adapter dedup --run-name ce_minilm_dedup_v2 --epochs 10
 ```
 
@@ -59,11 +64,11 @@ modal volume get cross-encoder-training-output reranker_v5/ ./models/cross_encod
 ## Evaluate a saved model (CPU, no GPU)
 
 ```bash
-poetry run python -m training.evaluate \
+poetry -P training run python -m training.evaluate \
     --adapter reranker --model models/cross_encoder/reranker_v4 --split test
 # {"ndcg3": 0.885, "ndcg5": 0.882, "ndcg10": 0.866, "pearson_r": 0.570, ...}
 
-poetry run python -m training.evaluate \
+poetry -P training run python -m training.evaluate \
     --adapter dedup --model models/cross_encoder/ce_minilm_dedup_run1
 # {"average_precision": 0.839, "best_f1": 0.756, ...}
 ```

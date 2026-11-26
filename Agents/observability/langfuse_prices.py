@@ -1,17 +1,28 @@
-"""Langfuse prices from the model catalogue: the database's dated prices written as Langfuse model
-definitions, so a trace's cost uses the same rates as the game's usage meter.
+"""Copies the model prices from this project's catalogue into Langfuse, so that the cost shown on
+a trace uses the same rates as the game's own usage meter.
 
-Langfuse prices a generation by matching its model name to a model definition and multiplying each
-recorded token type by that definition's price: uncached input, cache reads, cache writes (at the
-model's write factor: 1.25x input on Claude and on OpenAI from GPT-5.6, plain input elsewhere) and
-output, each under every name a provider's client records it as (USAGE_TYPES). One
-definition per dated catalogue price, by the billed name; Langfuse applies the newest whose start date
-is before the call, at ingestion (a change prices new traces, not old ones). A definition cannot be edited, so a changed price is deleted and created again. DeepSeek's peak
-hours cannot be expressed and take the off-peak rates; batched calls carry their own cost.
+How Langfuse prices a model call. It keeps a list of model definitions. For each call it finds
+the definition whose pattern matches the call's model name, then multiplies each kind of token
+the call recorded by that definition's price for it. The kinds are uncached input, cache reads,
+cache writes and output. Providers' clients record the same kind under different names
+(USAGE_TYPES lists them), and a name with no price counts as free, so every name is given one.
+A cache write costs the input price times the model's write factor: 1.25 on Claude and on OpenAI
+from GPT-5.6, and 1 elsewhere.
 
-``sync`` is idempotent: it leaves a definition that already matches, removes the custom definitions
-for the catalogue's models that no longer do, and creates the missing ones. scripts/model_catalog.py
-runs it after every price change (``price``) and on demand (``sync-langfuse``).
+What this module writes. One definition for each dated price in the catalogue, under the name
+the provider bills the model by. Where a model has several, Langfuse uses the newest one that
+starts before the call. It decides this when the trace arrives, so a price change applies to
+new traces and not to old ones. A definition cannot be edited, so a changed price is deleted and
+created again.
+
+Two limits. DeepSeek's prices differ at peak hours, which a definition cannot express, so its
+off-peak rates are used. Batched calls record their own cost and are not priced from these
+definitions.
+
+``sync`` can be run any number of times. It leaves a definition that is already right, removes
+the catalogue's models' definitions that no longer match, and creates the missing ones.
+``scripts/model_catalog.py`` runs it after every price change (``price``) and on request
+(``sync-langfuse``).
 """
 
 from __future__ import annotations

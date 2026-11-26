@@ -1,0 +1,10 @@
+/* The switch off the stage: the stage's type at its full size (the stage's --legible-ui does
+   not reach outside the world), and the plaque's height on the strip */
+.sign {
+  display: inline-flex;
+  align-items: stretch;
+  height: 38px;
+  --legible-ui: 1;
+  --meta: 16px;
+  --font-ui: var(--font-stage-body, Literata), Georgia, serif;
+}

@@ -17,9 +17,9 @@ describe('the four added puppets', () => {
       const out = renderToStaticMarkup(
         <Puppet g={g} character={character} seat={3} state={state} shadow />,
       );
-      expect(out).toContain(`sprites/day/${character}/${state}.webp`);
+      expect(out).toContain(`sprites/characters/${character}/${state}.webp`);
       expect(SPRITES.shadow.day[character][state].src).toContain(
-        `sprites/shadow/day/${character}/${state}.webp`,
+        `sprites/shadow/characters/${character}/${state}.webp`,
       );
       // one body height on the stage, the figure's box inside the stage
       const box = puppetBox(g, character, state);
@@ -30,7 +30,7 @@ describe('the four added puppets', () => {
 
   it.each(ADDED)('%s shows its head portrait in a chip', (character) => {
     expect(renderToStaticMarkup(<ChipSprite character={character} />)).toContain(
-      `sprites/day/${character}/head.webp`,
+      `sprites/characters/${character}/head.webp`,
     );
   });
 });

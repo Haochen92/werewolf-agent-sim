@@ -12,6 +12,7 @@ from Agents.schemas.game_events import NightActionRecord, WolfChannel
 from Agents.schemas.roles import ROLE_SPECS, lineup
 from server.game.translate import Translator
 from tests.leak_test import (
+    check_gated_candidate_isolation,
     check_held_lines_reach_only_their_author,
     check_night_record_isolation,
     check_round_players_are_seat_ids,
@@ -105,9 +106,11 @@ def standing_checks(log: list[dict]) -> list[str]:
 # --- the round payloads ---------------------------------------------------------------------
 
 def test_opening_and_closing_payloads_pass_the_standing_leak_checks():
+    # Act
     opening = round_payloads("opening", SEATS)
     closing = round_payloads("closing", ["player_6", "player_4"])
 
+    # Assert
     assert len(opening) == 7
     assert len(closing) == 2
     assert standing_checks(prompt_log_for(opening)) == []
@@ -130,13 +133,17 @@ def test_a_round_payload_carries_each_private_field_to_its_own_role_only():
 
 
 def test_a_sweep_turn_payload_passes_the_standing_leak_checks():
+    # Arrange
     sweep = FiringReason(tier="proactive", sweep=1)
     payloads = []
+
+    # Act: build a sweep turn's send for every seat
     for player in SEATS:
         send = flow.build_speaker_send(day_state(), player, ROLES[player], sweep)
         assert send.arg["day_round"] == "proactive"
         payloads.append(send.arg)
 
+    # Assert
     assert standing_checks(prompt_log_for(payloads)) == []
 
 
@@ -145,9 +152,12 @@ def test_a_sweep_turn_payload_passes_the_standing_leak_checks():
 def test_a_held_line_reaches_nobody_not_even_its_author():
     # The transcript is the same for every seat (the shared-prefix layout); the author's note from the
     # held turn is dropped instead (Agents/nodes/day/actors.py).
+
+    # Act: build the prompts of a closing round and an opening round
     log = prompt_log_for(round_payloads("closing", ["player_3", "player_6"]))
     log.extend(prompt_log_for(round_payloads("opening", SEATS)))
 
+    # Assert
     assert any(entry["player_id"] == "player_3" for entry in log)
     for entry in log:
         assert HELD_TEXT not in entry["prompt_input"]["day_channel"]
@@ -156,18 +166,46 @@ def test_a_held_line_reaches_nobody_not_even_its_author():
 
 
 def test_the_held_line_check_flags_a_planted_leak():
+    # Arrange: player_3's held line planted in player_6's prompt
     log = prompt_log_for(round_payloads("closing", ["player_6"]))
     log[0]["prompt_input"]["day_channel"] += "\n" + HELD_TEXT
 
+    # Act
     leaks = check_held_lines_reach_only_their_author(log, [("player_3", HELD_TEXT)])
 
+    # Assert
     assert len(leaks) == 1
     assert "player_6" in leaks[0]
+
+
+def test_the_gated_candidate_check_finds_nothing_in_the_real_round_payloads():
+    # Arrange
+    log = prompt_log_for(round_payloads("opening", SEATS))
+
+    # Act
+    leaks = check_gated_candidate_isolation(log, [HELD_TEXT])
+
+    # Assert
+    assert leaks == []
+
+
+def test_the_gated_candidate_check_flags_a_held_line_planted_in_another_seats_prompt():
+    # Arrange
+    log = prompt_log_for(round_payloads("closing", ["player_6"]))
+    log[0]["prompt_input"]["day_channel"] += "\n" + HELD_TEXT  # player_3's held line, not player_6's
+
+    # Act
+    leaks = check_gated_candidate_isolation(log, [HELD_TEXT])
+
+    # Assert
+    assert len(leaks) == 1
+    assert leaks[0].startswith("LEAK: player_6 (serial_killer)")  # the held text names player_6 too
 
 
 # --- round_players on the wire --------------------------------------------------------------
 
 def test_round_players_reaching_the_wire_are_seat_ids_only():
+    # Arrange: the updates that start an opening round and a closing round
     state = day_state()
     opening = flow.start_opening(state)
     closing_state = day_state(day_channel=[
@@ -180,6 +218,7 @@ def test_round_players_reaching_the_wire_are_seat_ids_only():
     ])
     closing = flow.start_closing(closing_state, {})
 
+    # Act: translate the updates into the events the server sends
     translator = Translator()
     translator.roles = dict(ROLES)
     wire_lists = []
@@ -189,6 +228,7 @@ def test_round_players_reaching_the_wire_are_seat_ids_only():
             if event.type == "round_opened":
                 wire_lists.append(event.players)
 
+    # Assert
     assert wire_lists == [SEATS, ["player_4"]]
     assert check_round_players_are_seat_ids([opening["round_players"], closing["round_players"]], ROLES) == []
     assert check_round_players_are_seat_ids(wire_lists, ROLES) == []

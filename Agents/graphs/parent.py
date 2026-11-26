@@ -39,6 +39,7 @@ from Agents.config import (
     child_runnable_config,
     discussion_recursion_limit,
     game_config_from_runnable,
+    game_id_from_runnable,
 )
 from Agents.memory import store, checkpointer
 from Agents.schemas.roles import ROLE_SPECS, cast_role_counts, roles
@@ -66,6 +67,8 @@ def day_phase(
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
         "dead_roster": state.get("dead_roster", []),
+        "night_announcements": state.get("night_announcements", []),
+        "read_out_wills": state.get("read_out_wills", []),
         "wolf_channel": state.get("wolf_channel", []),
         "roles": state["roles"],
         "lineup": state.get("lineup", []),
@@ -78,6 +81,7 @@ def day_phase(
         "surviving_wolves": state["surviving_wolves"],
         "no_lynch_streak": state.get("no_lynch_streak", 0),
         "day_votes": [],
+        "game_id": game_id_from_runnable(config),
     }
     result = day_graph_compiled.invoke(
         payload,
@@ -108,6 +112,8 @@ def pack_night_phase(
         "day_channel": state.get("day_channel", []),
         "day_summaries": state.get("day_summaries", []),
         "dead_roster": state.get("dead_roster", []),
+        "night_announcements": state.get("night_announcements", []),
+        "read_out_wills": state.get("read_out_wills", []),
         "cast_role_counts": cast_role_counts(state.get("roles", {})),
         "lineup": state.get("lineup", []),
         "night_actions": state.get("night_actions", []),
@@ -123,6 +129,7 @@ def pack_night_phase(
         "carrier": pack_carrier(state["surviving_wolves"], state["current_day"]) or "",
         "wolves_target": None,
         "night_choices": [],
+        "game_id": game_id_from_runnable(config),
     }
     result = pack_night_graph_compiled.invoke(
         payload, config=child_runnable_config(config), context=runtime.context,

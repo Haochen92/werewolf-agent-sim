@@ -53,7 +53,8 @@ async function at1x(name, unitsW) {
   console.log(`${name}@1x.webp  ${info.width}x${info.height}  ${kb(info.size)}`);
 }
 
-await at1x('train', TRAIN_MASTER_W * TRAIN_K);
+// the train is felt since 2026-10-17, both its copies made by scripts/fit_felt_station.py
+(void TRAIN_MASTER_W, TRAIN_K);
 await at1x('sky', STAGE_W);
 
 // the lantern: scaled to its density, padded for the glow, the glow drawn under it as the SVG

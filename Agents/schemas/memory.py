@@ -832,7 +832,9 @@ TEN_SEAT_CELL_SHAPES: dict[tuple[str, str], tuple[type[BaseModel], ...]] = {
 }
 
 # A wolf's night is three turns in one cell (the pack's chat, the carrier's kill, its own skill), each
-# graded on its own (consolidation/grading.py), so its observations say which one they are about.
+# graded on its own (consolidation/grading.py), so its observations say which one they are about. Its
+# lessons say which of the pack's moves they are about (``pack_move``): a lesson followed in the chat
+# is graded by that move, since the chat itself decides nothing (owner, 2026-10-28).
 PACK_NIGHT_ROLES = ("chanteuse", "illusionist")
 
 _CELL_KINDS = {
@@ -856,7 +858,12 @@ def _ten_seat_cell(role: str, group: str, kind: str) -> type[BaseModel]:
         fields["pack_turn"] = (Literal["chat", "kill", "skill", "several"], Field(
             description="Which of the pack's turns that night the decision was: chat (the wolves' talk), kill "
             "(the carrier naming the victim), skill (your own block or conceal), or several."))
-    name = "".join(w.title() for w in role.split("_")) + group.title() + suffix
+    if kind == "strategy" and group == "night" and role in PACK_NIGHT_ROLES:
+        fields["pack_move"] = (Literal["kill", "conceal", "block"], Field(
+            description="The pack's move this rule is about, whichever turn it is applied on (the wolves' "
+            "talk included): kill (choosing or carrying the victim), conceal (the illusionist hiding the "
+            "victim's role and record), or block (the chanteuse's block)."))
+    name ="".join(w.title() for w in role.split("_")) + group.title() + suffix
     return create_model(name, __base__=(*TEN_SEAT_CELL_SHAPES[(role, group)], payload), **fields)
 
 

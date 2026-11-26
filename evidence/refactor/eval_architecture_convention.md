@@ -101,6 +101,12 @@ refactor it. Here the senior move is the opposite — recognizing that the archi
 faithful record, and that refactoring it would destroy the thing it exists to preserve. *Knowing when
 not to refactor* was the actual decision.
 
+> *Status 2026-10-26.* The freeze on the archive's **prose** was lifted by the owner on 2026-10-23:
+> reports, hubs and logs may now be rewritten and restructured, and folders moved, provided logs keep
+> their history (dated corrections, not rewritten hindsight) and every change is dated. The **code**
+> half of this decision stands: study code in the archive stays as a dated artifact, and graduates into
+> `evaluation/` only just in time. The operational rule is in `CLAUDE.md` ("Eval Architecture").
+
 ## 5. Why this is a strength, not a confession
 
 The instinct to hide a refactor — "won't it look like I didn't do it right the first time?" — is

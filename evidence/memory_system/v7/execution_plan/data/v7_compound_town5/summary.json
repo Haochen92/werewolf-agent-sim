@@ -1,0 +1,804 @@
+{
+  "runs": {
+    "loop_v7_compound_town5_gen1_off_g0": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g1": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g2": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g3": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g4": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g5": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g6": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g7": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g8": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_off_g9": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g0": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g1": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g2": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g3": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g4": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g5": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g6": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g7": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g8": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen1_on_g9": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g0": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g1": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g2": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g3": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g4": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g5": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g6": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g7": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g8": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_off_g9": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g0": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g1": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g2": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g3": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g4": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g5": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g6": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g7": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g8": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen2_on_g9": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g0": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g1": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g2": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g3": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g4": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g5": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g6": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g7": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g8": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_off_g9": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g0": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g1": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g2": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g3": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g4": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g5": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g6": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g7": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g8": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen3_on_g9": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g0": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g1": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g2": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g3": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g4": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g5": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g6": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g7": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g8": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_off_g9": {
+      "configs": [
+        "all_disabled"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g0": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g1": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g2": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g3": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g4": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g5": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g6": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g7": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g8": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    },
+    "loop_v7_compound_town5_gen4_on_g9": {
+      "configs": [
+        "town_only"
+      ],
+      "failures": 0,
+      "leak_games": 0,
+      "not_started": 0,
+      "status": "complete",
+      "successes": 1
+    }
+  }
+}

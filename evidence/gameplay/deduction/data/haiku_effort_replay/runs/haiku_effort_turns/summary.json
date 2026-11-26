@@ -1,0 +1,114 @@
+{
+  "label": "haiku_effort_turns",
+  "run_at": "2026-10-16T11:24:52.502406+00:00",
+  "config": {
+    "label": "haiku_effort_turns",
+    "dataset": "evidence/game_play_enhancement/data/haiku_effort_replay/turn_cases.jsonl",
+    "n": 5,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "haiku_low",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "haiku_medium",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "note": "Owner 2026-10-16 (after game 2f19d908): does more thinking fix Haiku's reasoning errors? Haiku 5.5 at low (the live catalogue level) against medium, both on the current tree (fea44f57, prompts unchanged), memory off. Cases: evaluation/experiments/haiku_effort_cases.py (403f4dbc's frozen turns and votes plus 2f19d908's day 2-3 failures; the 2f19d908 day-3 votes twice, as played and with today's closing line). Votes are scored by target (right = the actual threat); the goldens guard facts and name the reasoning errors. Record: discussion_evidence.md \u00a78.8."
+  },
+  "n_cases": 23,
+  "arms": {
+    "haiku_low": {
+      "bad": {
+        "all": "49/115 (43%)",
+        "phase:day_discussion": "49/115 (43%)",
+        "role:healer": "4/15 (27%)",
+        "role:illusionist": "8/10 (80%)",
+        "role:investigator": "6/15 (40%)",
+        "role:sentinel": "20/30 (67%)",
+        "role:sigilist": "5/10 (50%)",
+        "role:speculator": "4/10 (40%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "2/20 (10%)",
+        "slice:claim_read": "1/15 (7%)",
+        "slice:repeat": "25/30 (83%)",
+        "slice:self_reference": "0/5 (0%)",
+        "slice:visit": "12/40 (30%)",
+        "slice:vote_reason": "11/25 (44%)",
+        "source:live_checkpoint": "49/115 (43%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10154.5,
+        "cached": 7505.6,
+        "output": 1280.3,
+        "reasoning": 710.8,
+        "seconds": 6.7
+      },
+      "generation_samples_measured": 115
+    },
+    "haiku_medium": {
+      "bad": {
+        "all": "47/115 (41%)",
+        "phase:day_discussion": "47/115 (41%)",
+        "role:healer": "5/15 (33%)",
+        "role:illusionist": "6/10 (60%)",
+        "role:investigator": "7/15 (47%)",
+        "role:sentinel": "19/30 (63%)",
+        "role:sigilist": "4/10 (40%)",
+        "role:speculator": "3/10 (30%)",
+        "role:trailseer": "0/5 (0%)",
+        "role:vigilante": "3/20 (15%)",
+        "slice:claim_read": "1/15 (7%)",
+        "slice:repeat": "20/30 (67%)",
+        "slice:self_reference": "1/5 (20%)",
+        "slice:visit": "14/40 (35%)",
+        "slice:vote_reason": "11/25 (44%)",
+        "source:live_checkpoint": "47/115 (41%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 10154.5,
+        "cached": 7838.1,
+        "output": 2257.6,
+        "reasoning": 1675.5,
+        "seconds": 11.2
+      },
+      "generation_samples_measured": 115
+    }
+  },
+  "paired_vs_first": {
+    "haiku_medium": {
+      "cases": 23,
+      "better": 6,
+      "worse": 5,
+      "two_sided_sign_p": 1.0
+    }
+  },
+  "judge_usage": {
+    "calls": 0,
+    "batched_calls": 643,
+    "unvalidated_replies": 0,
+    "input_tokens": 226448,
+    "output_tokens": 142961,
+    "cache_read_input_tokens": 388480,
+    "cache_creation_input_tokens": 1821,
+    "cache_creation_1h_input_tokens": 0,
+    "cost_usd": 0.962953
+  }
+}

@@ -294,20 +294,21 @@ class AutoDedupDatasetBuildConfig(_DescribedConfig):
 
 _TAGGER_MODE_DEFAULT_GLOB = {
     "accuracy": "batch_results/v6ab_baseline.jsonl batch_results/v6ab_skboth.jsonl",
-    "skill": "evidence/v7_final/runs/v2_full/gen*_on.jsonl",
-    "deleak": "evidence/v7_final/runs/v2_full/gen*_on.jsonl",
+    "skill": "evidence/memory_system/v7/runs/v2_full/gen*_on.jsonl",
+    "deleak": "evidence/memory_system/v7/runs/v2_full/gen*_on.jsonl",
 }
 
 
 class TaggerEvalConfig(_DescribedConfig):
-    """Config for the discussion-tagger validation runner (``cli_runner/discussion_tagger_eval.py``).
+    """Config for the discussion-tagger validation runner (``cli_runner/discussion_tagger_eval.py``,
+    removed on 2026-11-18 with ``instrument_validation/tagger/``; nothing reads this class now).
 
-    One runner, three modes — each reproducing a frozen ``evidence/v7_final`` apparatus:
+    One runner, three modes — each reproducing a frozen ``evidence/memory_system/v7`` apparatus:
     ``accuracy`` (per-field tag correctness vs a deterministic self-claim detector + faction
     skews), ``skill`` (game-level wolf/SK partial ``r(disc_verdict, won | deluck[, verbosity])``
     leak/confound guard), ``deleak`` (2x2 outcome-withholding ablation isolating the outcome-leak
     from the mechanical silent-player effect). See the docstrings there and in
-    ``evidence/evaluation/discussion_tagger/`` for the methodology.
+    ``evidence/evaluation/llm_judge/discussion_tagger.md`` for the methodology.
     """
 
     mode: Literal["accuracy", "skill", "deleak"]

@@ -1,6 +1,7 @@
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 
+from Agents.llm_factory import GameModels
 from Agents.tracing import GraphContext
 
 # Day actor nodes (thin wrappers over the shared runtime engine).
@@ -135,6 +136,8 @@ def preview_discuss(
     config: RunnableConfig,
     runtime: Runtime[GraphContext],
     direction: str = "",
+    *,
+    models: GameModels | None = None,
 ) -> str:
     """What this seat's agent would say on the discussion turn in ``payload``, said nowhere.
 
@@ -142,6 +145,8 @@ def preview_discuss(
     over (see ``preview_agent_action``), but nothing is committed: no line, no strategy note.
     ``direction`` is the human's steer, sent after the prompt; empty = the prompt as is.
     Returns the line, or "" when the agent would pass. RuntimeError when every attempt failed.
+    The server calls this outside the graph, so ``models`` may be passed; None takes the
+    runtime context's, or the accessors'.
     """
     turn = preview_agent_action(
         payload,
@@ -152,6 +157,7 @@ def preview_discuss(
         day_discuss_output(payload["lineup"]),
         "day_channel",
         direction,
+        models=models,
     )
     entry = turn.entry if isinstance(turn, ResolvedDayDiscussion) else None
     if entry is not None and entry.pass_reason == DiscussionPassReason.GENERATION_FAILED:

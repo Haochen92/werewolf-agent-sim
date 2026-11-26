@@ -36,6 +36,24 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 
+def incremental_new_keys(config: BatchDedupRunConfig) -> set[str] | None:
+    """The keys an incremental run treats as new (every other entry is old and frozen), or None for a
+    system-wide run that judges everything. The caller's ``new_keys`` wins; otherwise the store
+    folder's last-dedup marker decides, and a folder without one is judged whole."""
+    if not config.incremental:
+        return None
+    if config.new_keys is not None:
+        logger.info("Incremental: %d new keys named by the caller", len(config.new_keys))
+        return set(config.new_keys)
+    last_dedup = _read_last_dedup_at(config.seed_store_dir)
+    if last_dedup is None:
+        logger.info("Incremental: no previous dedup timestamp found, processing all entries")
+        return None
+    new_keys = _collect_new_keys(config.seed_store_dir, last_dedup)
+    logger.info("Incremental: %d new keys since %s", len(new_keys), last_dedup.isoformat())
+    return new_keys
+
+
 def run_batch_memory_dedup(
     config: BatchDedupRunConfig,
     *,
@@ -62,20 +80,10 @@ def run_batch_memory_dedup(
         dump_store_dir=str(config.dump_store_dir),
     )
 
-    new_keys: set[str] | None = None
-    if config.incremental:
-        last_dedup = _read_last_dedup_at(config.seed_store_dir)
-        if last_dedup is None:
-            logger.info("Incremental: no previous dedup timestamp found, processing all entries")
-        else:
-            new_keys = _collect_new_keys(config.seed_store_dir, last_dedup)
-            logger.info(
-                "Incremental: %d new keys since %s",
-                len(new_keys), last_dedup.isoformat(),
-            )
-            if not new_keys:
-                logger.info("Incremental: no new entries, nothing to do")
-                return report
+    new_keys = incremental_new_keys(config)
+    if new_keys is not None and not new_keys:
+        logger.info("Incremental: no new entries, nothing to do")
+        return report
 
     for memory_kind in memory_kinds:
         for role in selected_roles:

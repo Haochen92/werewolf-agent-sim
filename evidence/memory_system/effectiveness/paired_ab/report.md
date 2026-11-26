@@ -1,5 +1,7 @@
 # Paired memory A/B — FULL report
 
+*Generated readout: written by `analyze_ab.py` from `batch_results/ab_*.jsonl` (2026-06-11); not a narrative report. The interpretation is in [`../report.md`](../report.md).*
+
 Same-epoch baseline: 30 games. * = Wilcoxon p<0.05 (uncorrected; Bonferroni over the ≤3 pre-registered primaries = 0.017).
 
 ## RAW arms (rerank off) — off vs on

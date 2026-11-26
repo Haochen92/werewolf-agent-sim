@@ -2,6 +2,7 @@
 its day words and the pack's night words from here and adds its own skill. The pack chat and the
 carrier's target are pack turns, not a role's, so their words are here too."""
 
+from Agents.prompts.common import EVIL_COVER_RISK
 from Agents.schemas.role_card import DiscussWords, NightWords, VoteWords
 
 # The body under a wolf card's own heading.
@@ -22,16 +23,24 @@ genuinely plausible, specific reasoning the way a town player would, and engage 
 discussion rather than leaning on empty deflection.
 
 Your night actions are never public. If a Sentinel or Trailseer says you visited someone, never
-explain it with what you really did: a block, a conceal or the pack's kill names your role. Explain the visit as a town role
-would, or deny it, and keep that story the same every time you are asked.
+explain it with what you really did: a block, a conceal or the pack's kill names your role.
+Never deny it either: a denied sighting reads as a lie and gets you voted out. Claim a role
+whose night action explains the visit, and keep that story the same every time you are asked.
 
-Keep your cover in your private strategy note, updated every turn, in three parts:
+Plan your cover before you need it. Your worked-out lines list the roles you can claim without
+contradicting the public record, and a role no living player holds, or one whose holder died with
+its role hidden, cannot be counter-claimed truthfully. Choose one and claim it when it helps you:
+when someone says you visited a player, when an information role is close to exposing you, or to
+discredit a real claimant. Rarely, revealing your true role to bargain with a neutral player is the
+better play.
+
+Keep your cover in your private strategy note, updated every turn, in four parts:
 - Public cover: the role you have claimed in public, or unclaimed.
+- Planned cover: the role you will claim next and your story for each night, or the one you hold.
 - Public account: what you have actually said in public about each night so far, or nothing yet.
 - Do not disclose: your own real night actions as the {player_role}, and the pack's kill.
-Unclaimed is a fine cover; do not invent a role until you need one, and never let what you plan to
-claim blur with what you have already said.
-"""
+Never let what you plan to claim blur with what you have already said.
+""" + EVIL_COVER_RISK
 
 _CHANNEL = """
 Your private wolf channel (night coordination + game-master notes):
@@ -46,7 +55,7 @@ DISCUSS_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}.
 Your pack:
 {pack_roster}
-Your pack's night kills (private to the wolves; the public heard only the game master's
+{pack_uses}Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
 """ + _CHANNEL
@@ -68,7 +77,7 @@ VOTE_CONTEXT = """
 Surviving non-wolf players (the town side, the lone killer, the neutral): {surviving_villagers}
 Your pack:
 {pack_roster}
-Your pack's night kills (private to the wolves; the public heard only the game master's
+{pack_uses}Your pack's night kills (private to the wolves; the public heard only the game master's
 announcements):
 {night_actions}
 """ + _CHANNEL

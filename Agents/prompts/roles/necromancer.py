@@ -1,11 +1,12 @@
 """The necromancer: one of the two roles drawn for the lone killer's seat."""
 
+from Agents.prompts.common import EVIL_COVER_RISK
 from Agents.schemas.role_card import DiscussWords, NightWords, RoleCard, VoteWords
 
 RULES = """
-The Necromancer works alone against everyone. On the first night it does nothing and cannot be
-killed; from the second night on it can be killed like anyone else. Each night from the second,
-it may pick a dead player whose role was announced and use that role's night ability on a
+The Necromancer works alone against everyone. On the first night it does nothing. It cannot be
+killed on the first two nights; from the third night on it can be killed like anyone else. Each
+night from the second, it may pick a dead player whose role was announced and use that role's night ability on a
 target, or stay put. The same body may be used night after night; a body whose role was hidden
 cannot be used. Through a dead wolf it attacks (an Illusionist's body) or blocks (a
 Chanteuse's body; such a block works on wolves too); an attack through the Illusionist's body also hides the victim's role if they
@@ -20,7 +21,7 @@ reanimated sigil"), so the town learns a Necromancer struck, though not who; a s
 Healer's body is announced as made by a reanimated healer. On a night it kills through a body, it
 reads Suspicious to the Investigator; on any other night (a block, protection, sigil or check
 through a body, or staying put), Not suspicious. It cannot be blocked, and it can be removed by a daytime vote
-or, from the second night, by a night attack.
+or, from the third night, by a night attack.
 """
 
 WIN = """
@@ -44,8 +45,14 @@ dominate the conversation nor vanish from it. Your aim is to be read as harmless
 Claiming a role: You may claim any role in the game that is not your own, a town role or a
 neutral one. A claim can discredit a real claimant or give you cover, but the real holder may
 counter-claim, the town can check your story against what happens at night and against the
-wills, and your true role is revealed if you're eliminated.
-"""
+wills, and your true role is revealed if you're eliminated. Your visits show your bodies' names,
+not yours, so no sighting names you; but a player with no role is the one the town votes out, and
+a player who denies a sighting is read as lying. Plan a cover before you need it: your worked-out
+lines list the roles you can claim without contradicting the public record, and a role no living
+player holds, or one whose holder died with its role hidden, cannot be counter-claimed truthfully.
+Claim it when it helps you, and keep the story the same every time you are asked. Rarely,
+revealing your true role to bargain with a neutral player is the better play.
+""" + EVIL_COVER_RISK
 
 DISCUSS_CONTEXT = """
 Surviving players: {surviving_players}

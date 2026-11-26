@@ -5,9 +5,8 @@
  * by BLEED_DARK units out, so the sides read as the theatre's dark around the stage rather than
  * as more room. The stage's outer box clips them to the screen.
  *
- * Each strip starts as dark as the room is at its own edge, so the seam never shows: the
- * station darkens its own sides (station.ts, `stationFront`), so its strips start near that
- * dark. The painted rooms (the dining car, the night compartments) cannot be carried on; their
+ * Each strip starts dark: the station's picture runs on past the world's right edge over it
+ * (station.ts, `picture`), and the wing covers its left. The painted rooms (the dining car, the night compartments) cannot be carried on; their
  * sides sink into the dark instead (instruments/Bleed.tsx, `PaintedBleed`).
  */
 import { BLEED, BLEED_DARK, STAGE_H, STAGE_W } from '../units';

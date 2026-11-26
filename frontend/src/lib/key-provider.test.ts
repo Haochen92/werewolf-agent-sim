@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { keyHint, keyProvider, keyRefusal, modelProvider } from './key-provider';
+import { backupFor, keyHint, keyProvider, keyRefusal, modelProvider } from './key-provider';
 import { ApiError } from './request';
 
 describe('keyProvider', () => {
@@ -67,5 +67,36 @@ describe('keyRefusal', () => {
     expect(keyRefusal(new ApiError(500, 'Anthropic refused this key: 401.'))).toBeNull();
     expect(keyRefusal(new Error('Anthropic refused this key: 401.'))).toBeNull();
     expect(keyRefusal(null)).toBeNull();
+  });
+});
+
+describe('backupFor', () => {
+  const backups = {
+    anthropic: 'anthropic/claude-haiku-5-5',
+    openai: 'openai/gpt-6-luna',
+    google: 'gemini-3.6-flash',
+    deepseek: 'deepseek/deepseek-v4-flash',
+  };
+  const saved = [
+    { provider: 'openai' as const, key: 'sk-proj-o' },
+    { provider: 'deepseek' as const, key: 'sk-d' },
+    { provider: 'anthropic' as const, key: 'sk-ant-a' },
+  ];
+
+  it('takes the first saved key in the fixed order, never the model’s own company', () => {
+    expect(backupFor(saved, 'deepseek/deepseek-flash', backups)).toEqual({
+      provider: 'anthropic',
+      key: 'sk-ant-a',
+      model: 'anthropic/claude-haiku-5-5',
+    });
+    expect(backupFor(saved, 'anthropic/claude-haiku-5-5', backups)?.provider).toBe(
+      'openai',
+    );
+  });
+
+  it('is null with no other company’s key, or no backup model for it on the menu', () => {
+    expect(backupFor([saved[1]], 'deepseek/deepseek-flash', backups)).toBeNull();
+    expect(backupFor(saved, 'deepseek/deepseek-flash', {})).toBeNull();
+    expect(backupFor(saved, 'deepseek/deepseek-flash', undefined)).toBeNull();
   });
 });

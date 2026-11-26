@@ -72,14 +72,15 @@ describe('the hand-over is each plate’s own (owner, 2026-10-17)', () => {
         agent={{ label: 'Let my agent choose', onClick: noop }}
       />,
     );
-    const buttons = [...out.matchAll(/<button[^>]*>([^<]*)<\/button>/g)];
-    expect(buttons.map((b) => b[1])).toEqual([
+    // each button's words, past its icon (KitIcon)
+    const buttons = [...out.matchAll(/<button([^>]*)>(.*?)<\/button>/g)];
+    expect(buttons.map((b) => b[2].replace(/<svg.*?<\/svg>/g, ''))).toEqual([
       'Protect seat 3',
       'Hold fire',
       'Let my agent choose',
     ]);
-    // only the act itself is the gold plate
-    expect(buttons[2][0]).not.toMatch(/class=/);
+    // only the act itself is the cream plate
+    expect(buttons[2][1]).not.toMatch(/class=/);
   });
 
   it('gives the pack’s chat round "Let my agent talk" beside Say it and Pass', () => {

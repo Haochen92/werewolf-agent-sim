@@ -1,5 +1,9 @@
 # The landing's middle section: three features (draft for the owner, 2026-09-28)
 
+Status (2026-10-26): Built 2026-09-28. Since 2026-10-14 served games read their lessons from the
+database's published store, not a snapshot from research runs; the card copy did not need to
+change, so only "Why this wording" is dated.
+
 Replaces "What's under the table" (`UnderTable.tsx`, three cards about one agent in one game:
 the private note, the reads, the lines held back). The owner's brief: lead with what makes
 the game fun, and give the mechanism as support. A player reads the headline; an interviewer

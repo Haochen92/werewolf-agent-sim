@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 520" width="980" height="520" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker><marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+<rect width="980" height="520" fill="#ffffff"/>
+<text x="24" y="36" font-size="20" font-weight="bold" fill="#111827" text-anchor="start">Measured before choosing: a GPU layer for every mover</text>
+<text x="24" y="62" font-size="14" fill="#4b5563" text-anchor="start">The owner&#x27;s iPhone, Safari Web Inspector&#x27;s Layers panel, one reading each, 2026-10-02.</text>
+<text x="24" y="122" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">Before the bake: the replay at rest</text>
+<text x="24" y="142" font-size="13" fill="#4b5563" text-anchor="start">one scrolling felt window lifted the stage</text>
+<rect x="300" y="106" width="341.76" height="28" rx="3" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+<text x="310" y="126" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">534 MB, 17 layers</text>
+<text x="24" y="192" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">After: the set baked, at rest</text>
+<text x="24" y="212" font-size="13" fill="#4b5563" text-anchor="start">the camera off its layer too</text>
+<rect x="300" y="176" width="72.96000000000001" height="28" rx="3" fill="#bbf7d0" stroke="#15803d" stroke-width="1.2"/>
+<text x="380.96000000000004" y="196" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">114 MB, 3 layers</text>
+<text x="24" y="262" font-size="14" font-weight="bold" fill="#1f2937" text-anchor="start">The vote with ?gpu=lift</text>
+<text x="24" y="282" font-size="13" fill="#4b5563" text-anchor="start">about 670 MB: the tab died</text>
+<rect x="300" y="246" width="428.8" height="28" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+<text x="310" y="266" font-size="13.5" font-family="Menlo, Consolas, monospace" fill="#1f2937" text-anchor="start">about 670 MB, 9 stage layers</text>
+<path d="M940.0,92 L940.0,310" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="934.0" y="328" font-size="13" fill="#b91c1c" text-anchor="end">roughly 1 GB, the page and its layers together: iOS ends the tab</text>
+<rect x="24" y="350" width="452" height="140" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+<text x="44" y="378" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="start">Why the layer route costs so much</text>
+<text x="44" y="404" font-size="13.5" fill="#1f2937" text-anchor="start">A mover on its own layer forces every layer</text>
+<text x="44" y="425" font-size="13.5" fill="#1f2937" text-anchor="start">painted above it onto a layer too: the light,</text>
+<text x="44" y="446" font-size="13.5" fill="#1f2937" text-anchor="start">the grade, the HUD, each a full-stage bitmap.</text>
+<text x="44" y="467" font-size="13.5" fill="#1f2937" text-anchor="start">(rendering_pipeline: the cascade.)</text>
+<rect x="504" y="350" width="452" height="140" rx="10" fill="#f0fdf4" stroke="#15803d" stroke-width="1.2"/>
+<text x="524" y="378" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="start">What was chosen instead</text>
+<text x="524" y="404" font-size="13.5" fill="#1f2937" text-anchor="start">No new layer; on a phone each move is</text>
+<text x="524" y="425" font-size="13.5" fill="#1f2937" text-anchor="start">stepped at 24 a second (stage_motion),</text>
+<text x="524" y="446" font-size="13.5" fill="#1f2937" text-anchor="start">and the movers&#x27; boxes cut to their loads.</text>
+<text x="524" y="467" font-size="13.5" fill="#1f2937" text-anchor="start">At rest the stage stays one layer, the world.</text>
+</svg>

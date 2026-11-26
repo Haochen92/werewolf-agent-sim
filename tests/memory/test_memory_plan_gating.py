@@ -178,13 +178,13 @@ def test_no_store_beats_role_off():
     assert meta["retrieval_skipped_reason"] == "no_store"
 
 
-def test_town_day_is_never_retrieved_but_town_night_and_evil_day_are():
+def test_town_discussion_is_never_retrieved_but_town_votes_and_nights_and_evil_days_are():
     store = object()
-    for role, phase, skipped in (("investigator", "day_discussion", True), ("healer", "day_vote", True),
+    for role, phase, skipped in (("investigator", "day_discussion", True), ("healer", "day_vote", False),
                                  ("investigator", "night_action", False), ("chanteuse", "day_discussion", False),
                                  ("speculator", "day_vote", False)):
         p = retrieval_plan(cfg(), payload(2, role), store, phase)
-        assert (p.skip_reason == "town_day") is skipped, (role, phase)
+        assert (p.skip_reason == "town_discussion") is skipped, (role, phase)
 
 
 # --- retrieval_plan: the policy object the pipeline executes ------------------
@@ -322,7 +322,7 @@ def test_retrieval_metadata_carries_resolved_sp_tiering():
     from unittest.mock import MagicMock, patch
 
     def meta_for(config):
-        with patch.object(tracing_mod, "langfuse", MagicMock()), \
+        with patch.object(tracing_mod, "get_langfuse", MagicMock()), \
                 patch("Agents.memory.retrieval.pipeline._generate_situations_for_agent",
                       return_value=([], [])):
             _, meta = enrich(day=2, role="chanteuse", config=config)

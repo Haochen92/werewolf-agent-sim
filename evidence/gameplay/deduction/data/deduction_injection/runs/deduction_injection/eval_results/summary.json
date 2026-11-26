@@ -1,0 +1,94 @@
+{
+  "label": "deduction_injection",
+  "run_at": "2026-10-16T11:37:28.854507+00:00",
+  "config": {
+    "label": "deduction_injection",
+    "dataset": "evidence/reasoning_failures/data/deduction_injection/cases.jsonl",
+    "n": 10,
+    "workers": 3,
+    "arms": [
+      {
+        "label": "haiku_low",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "low",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      },
+      {
+        "label": "haiku_medium",
+        "model": "anthropic/claude-haiku-5-5",
+        "env": {
+          "GOOGLE_GENAI_THINKING_LEVEL": "medium",
+          "LLM_STRUCTURED_MODE": "json_schema"
+        },
+        "memory": "none"
+      }
+    ],
+    "golden_model": "anthropic/claude-sonnet-5-5",
+    "note": "Case R1 (evidence/reasoning_failures/experiment_log.md): the healer's three passed day-2 turns of 2f19d908, each as played and with the roleblock's certain consequence in its night record (evaluation/experiments/deduction_injection_cases.py). Thinking low (live) and medium, current tree, memory off. Measures fixed before the run: spoke, claimed healer, read of player_7 = chanteuse, and the public message naming player_7 as the likely blocker (read by hand). The golden only guards the facts."
+  },
+  "n_cases": 6,
+  "arms": {
+    "haiku_low": {
+      "bad": {
+        "all": "0/60 (0%)",
+        "phase:day_discussion": "0/60 (0%)",
+        "role:healer": "0/60 (0%)",
+        "slice:as_played": "0/30 (0%)",
+        "slice:injected": "0/30 (0%)",
+        "source:live_checkpoint": "0/60 (0%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 8820.5,
+        "cached": 6330.6,
+        "output": 773.6,
+        "reasoning": 241.1,
+        "seconds": 4.0
+      },
+      "generation_samples_measured": 60
+    },
+    "haiku_medium": {
+      "bad": {
+        "all": "2/60 (3%)",
+        "phase:day_discussion": "2/60 (3%)",
+        "role:healer": "2/60 (3%)",
+        "slice:as_played": "1/30 (3%)",
+        "slice:injected": "1/30 (3%)",
+        "source:live_checkpoint": "2/60 (3%)"
+      },
+      "deception": 0,
+      "invalid": 0,
+      "generation_per_sample": {
+        "input": 8820.5,
+        "cached": 6655.3,
+        "output": 1338.7,
+        "reasoning": 793.9,
+        "seconds": 6.7
+      },
+      "generation_samples_measured": 60
+    }
+  },
+  "paired_vs_first": {
+    "haiku_medium": {
+      "cases": 6,
+      "better": 0,
+      "worse": 2,
+      "two_sided_sign_p": 0.5
+    }
+  },
+  "judge_usage": {
+    "calls": 0,
+    "batched_calls": 244,
+    "unvalidated_replies": 0,
+    "input_tokens": 78422,
+    "output_tokens": 79230,
+    "cache_read_input_tokens": 146894,
+    "cache_creation_input_tokens": 1214,
+    "cache_creation_1h_input_tokens": 0,
+    "cost_usd": 0.48343470000000005
+  }
+}

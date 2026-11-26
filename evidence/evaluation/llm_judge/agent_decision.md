@@ -1,5 +1,14 @@
 # Agent-Decision Funnel — Evaluation Apparatus Report
 
+> **Status 2026-10-23 (read this first).** A dated record of the nine-seat memory era (May–July 2026),
+> not current. What has changed: every judge now defaults to Claude Haiku 5.5, not Gemini
+> (`evaluation/src/judges/config.py`); the harnesses moved from `evaluation/src/experiments/` (gone) to
+> `evaluation/src/cli_runner/regen_replay/both/` (`eval-summary`, `eval-summary-rubric`, `eval-retrieval`,
+> `eval-application`); the retrieval judge's fewer-than-two-notes shortcut, listed below as an open bug
+> and upgrade (2), is fixed (`judges/retrieval.py:30`, excluded and counted by the runner); the retrieval
+> settings live in `Agents/config/run.py` (reranking still off by default); and the live game is ten-seat,
+> whose memory uses none of these three judges. The current account is [report.md](report.md).
+
 > **Scope: the apparatus, not the design.** Covers *how we measure* each stage of the agent-decision funnel
 > — what the agent **saw** (situation-summary) → what it **retrieved** → how it **used** it (application) —
 > and *how far to trust those measurements* (L1 + L2). The component **designs** stay in their original

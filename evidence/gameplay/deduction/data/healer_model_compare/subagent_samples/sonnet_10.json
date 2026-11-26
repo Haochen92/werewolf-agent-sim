@@ -1,0 +1,23 @@
+{
+  "reads": [
+    {"player": "player_2", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_3", "why": "player_7 admitted going to player_8, which matches the follow", "suspected_role": "trailseer", "confidence": "low"},
+    {"player": "player_4", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_5", "why": "claim is unchecked, but nothing contradicts it", "suspected_role": "investigator", "confidence": "low"},
+    {"player": "player_6", "why": "asked a useful question, no tells", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_7", "why": "went to player_8, I know I was visited and blocked that night by a wolf; gave no role", "suspected_role": "chanteuse", "confidence": "high"},
+    {"player": "player_9", "why": "Suspicious per player_5's claim; unverified", "suspected_role": "unclear", "confidence": "low"},
+    {"player": "player_10", "why": "no information yet", "suspected_role": "unclear", "confidence": "low"}
+  ],
+  "strategy_verdicts": [],
+  "memory_applicability": [],
+  "updated_strategy": "Night 1 I was roleblocked by the Chanteuse; player_7 admits visiting me, so player_7 is very likely the Chanteuse. Keep my healer role hidden for now; push player_7 as a vote without revealing why in detail. Tonight protect the claimed investigator player_5 if I am not blocked, and watch whether player_9 or player_7 gets defended.",
+  "pass_turn": false,
+  "message": "player_7 said they went to player_8, and that's me. I won't say what happened, but I wasn't doing anything that would make a friendly visit, and player_7 still gives no role. If the trailseer's follow holds, I'd vote player_7 today.",
+  "claim": "none",
+  "claimed_night_actions": [],
+  "addressed_targets": [
+    {"target": "player_7", "addressed_form": "mention", "stance": "accusation"},
+    {"target": "player_3", "addressed_form": "mention", "stance": "agreement"}
+  ]
+}

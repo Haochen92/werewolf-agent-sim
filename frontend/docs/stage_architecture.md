@@ -82,6 +82,9 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
   touches the geometry, `--chip`, `--gap` or the painted props. Below scale 0.75 (the same point
   the type starts growing) the box has `data-small`: the drawer's head loses its title (seats and
   Show still wrap, so both toggles stay in reach); the ballot's chips stay on one row.
+  `--grown` (0 at full size, 1 once the type grows) is for what a box does only then: the
+  replay's wolf chat widens 500 units left over the floor by the chair and, as the talk grows,
+  rises 200 units over the card to the photos, so a few lines show, not one (owner, 2026-10-22).
 - The HUD geometry the benches compute with `StageKit.geometry(W, H, …)` is **frozen once** into
   constants (`src/stage/units.ts`: rail, puppet box, wing, side slot, top strip, for `hud: live |
   replay | none`). The port's first job is to evaluate it at 1600×900 and commit the numbers.
@@ -99,9 +102,9 @@ The stage is a `16 / 9` box. Every position, size, radius and path in every scen
 
 **Layers** inside the box, bottom to top (each a positioned `div` filling the box):
 
-1. `paint` — the backdrop (the dining car's and the night rooms' paintings / station; the felt country in the glass; the shutter)
+1. `paint` — the backdrop (the dining car's and the night rooms' paintings / station; the night rooms' felt country in their glass; the shutter)
 2. `haze` — the atmosphere's back half: the key light on the wall, the pelmet's shadow, the veil
-3. `floor` — the trap (its hole, and its leaves while they move), lift
+3. `floor` — (unused since the trap went, 2026-10-19), lift
 4. `figures` — puppets, the night rooms' photos on their line, chips on strings, cards on strings
 5. `stand` — the stand, plaque, footlights
 6. `instruments` — table, jar, plates, verdict board, act marks, the night room's card
@@ -116,7 +119,9 @@ wing's tiles scale with everything else.
 a glass overlay: deep walnut boards (`--walnut-top`/`--walnut-bot`, the walnut texture as a still
 grain under the stain) with a thin brass edge (`--hud-brass`, a dark reveal and a fainter inner
 line), the words in lamp-glow cream (`--cream`, `--cream2`), brass the accent for "speaking" (the wing's lit tile). Two voices (§5): Young Serif for what is engraved
-or announced, Literata for what is said and read. The pieces: the **day plaque** (a sun or moon
+or announced, Literata for what is said and read. [2026-10-26: the faces are §5's and
+[typography.md](typography.md)'s; on 2026-10-16 EB Garamond took Young Serif's place
+(`frontend/src/stage/fonts.ts`).] The pieces: the **day plaque** (a sun or moon
 disc, "Day 3" large, the phase beneath; `TopStrip`), the **pane tabs** (File and Transcript as
 two tabs of one plaque split by a thin brass rule, the labels muted brass; File was greyed without
 the X-ray until 2026-10-04, when it began opening on the Record alone, the seats' tabs greyed
@@ -174,12 +179,13 @@ units) the rail is 310 units, ~134 css px, 51 of them in the letterbox; on a 16:
 192 (12% of the width; the kit's wing was 5.5%). What is left of the bleed past the rail darkens to
 the house's dark. A card is flex and a size container: the photo fills its width, up to 1.2× as tall and at most
 60% of the card (`min(120cqw, 60cqh)`), the numeral on its corner. The foot holds faint ruled
-lines where the seated player may write and their note on them (whole lines,
+lines where the seated player keeps a file and the claim they noted on them (whole lines,
 `round(down, 100%, 1lh)`, at `max(0.9 × --meta, 11px / --stage-scale)`, so never under 11 css
 px); under the stage's `data-small` (a phone) the words give way to a pencil scribble. Then a band (the
-role's ink, the X-ray's faction, "You" in amber) and the suspect's wax seal. The note editor is a
-dialog over a scrim (`z-index` 40–41 in the HUD layer), a walnut board with a ruled paper area;
-its presses keep a phone's 44 css px tap area (`--grown`). The notebook is `notebook.ts`: one
+role's ink, the X-ray's faction, "You" in amber). A tap on a card opens the player's file on it in
+the case file (`film/PlayerFile.tsx`, owner 2026-10-18: no card over the stage, nothing drawn
+beyond the file's own paper; its pick cards keep a phone's 38 css px a row, `38px /
+--stage-scale`). The notebook is `notebook.ts`: one
 store per game id over `localStorage` (`lib/storage.ts` `seatNotes`, every access guarded), read
 by every rail through `useSyncExternalStore`; `Presentation.game` is set only by the live
 container (and the workbench's live cuts), so a replay's cards are never editable. GPU: the lit
@@ -188,7 +194,8 @@ a small image; nothing moves.
 
 **The transcript (ruled 2026-09-29, pass 3a; beat sheet §11 "The drawer's look").** The drawer is
 a page, not a list of cards: a warm dark ground (`--ground-top`/`--ground-bot` on `.drawer`) with
-the HUD's brass edge, the chapters as Young Serif headings (the day large; the night in a cool
+the HUD's brass edge, the chapters as Young Serif headings [2026-10-26: EB Garamond since
+2026-10-16, §5] (the day large; the night in a cool
 pale blue-grey, `--night-ink`, never the serial killer's lavender), speeches as a small head, a
 brass-cream name and Literata words, the game master's reports as short sentences with the dead in
 terracotta (`--dead`), a run of passes as one italic line, and the vote as a tally of the voters'
@@ -222,7 +229,7 @@ platform has none), fills two layers:
   takes none): where the shutter is open behind them, the puppets' and the chips' shadows move in
   a still box clipped to everything but the glass (`offGlass` in `cast/CastShadow.tsx`), in step
   with their figure; the stand throws a soft pool off its right side; on the vote's table,
-  soft gradient ellipses under the table (the lift shadow, retuned), the jar (tipped with it),
+  soft gradient ellipses under the table (the lift shadow, retuned), the jar (at the back with it, for the count),
   each plate and each tower of chips.
 - GPU (§6): nothing moves or fades; normal alpha only, no blend mode and no CSS filter. The one
   SVG blur is `carHaze`'s, static. Baked shadows ride inside their
@@ -244,10 +251,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   figures and their heads) has its own recipe since 2026-09-28 ("The cast", below).
 - Location and names, mirroring the bundle:
   ```
-  src/assets/sprites/day/<character>/{base,talking,thinking,out,head}.webp
+  src/assets/sprites/characters/<character>/{base,talking,thinking,out,head}.webp
   src/assets/sprites/kits/{healer,investigator,vigilante,serial_killer,wolf,villager,clock,lamp}.webp
   src/assets/sprites/wood/walnut.webp               (the station's beam and ledge only)
-  src/assets/sprites/textures/{walnut,boards,velvet,cork,ink}.webp  (cork: scripts/make-cork.mjs;
+  src/assets/sprites/textures/{walnut,boards,cork,ink}.webp  (cork: scripts/make-cork.mjs;
     ink, the case file's stamp mask, a white tile whose alpha is the ink: scripts/make-stamp-ink.mjs)
   src/assets/sprites/station/{sky,floor,post,lamp,train,blind}.webp
   src/assets/sprites/window/{day,dusk,night,dawn}-{far,near}.webp
@@ -257,10 +264,14 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   src/assets/sprites/roles/{villager,wolf,investigator,vigilante,healer,serial_killer,
     sentinel,trailseer,sigilist,chanteuse,illusionist,necromancer,speculator,fortune_teller}.webp
     (the role cards' felt dolls, 720×960, figure at full height, centred, feet on the bottom edge)
-  src/assets/sprites/shadow/day/<character>/{base,talking,thinking,out}.webp
+  src/assets/sprites/shadow/characters/<character>/{base,talking,thinking,out}.webp
   src/assets/sprites/atmosphere/grain.webp
   ```
   Characters: `cat hare owl badger cyclops threeEyes dragon onion whale polarBear shade`.
+  [2026-10-26: the list above is the first set. Since then `rooms/` also holds
+  `{sentinel,trailseer,sigilist,speculator,necromancer,fortune_teller}.webp` (2026-10-07, "The
+  night rooms" below), eleven rooms in all, and the characters add `kitsune mushroom lionCub
+  automaton` (2026-10-03, "The cast" below), fifteen in all.]
 - Imported only from [src/assets/manifest.ts](../src/assets/manifest.ts) (the existing ruling:
   static imports through `next/image`, content-hashed URLs, inferred dimensions). The manifest
   exports typed handles — `SPRITES.day[character][state]`, `SPRITES.car[hour]`, `SPRITES.rooms[room]`,
@@ -330,7 +341,15 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   mean difference 2.5/255; the 2026-09-27 mockup's `.beam` is the same wood). The canopy's felt
   `fringe` was dropped that day: the mockup's top became a walnut beam with a brass trim, and
   its edge the paving's stone under a drift of snow. 12.4 MB of PNG → 1.4 MB of WebP, the train 708 KB of it.
-- The dining car's window (ruled 2026-09-27): the country behind the glass is painted felt, a
+  Since 2026-10-19 the sky, paving, posts and lanterns are gone: the platform is the owner's one
+  picture (`platform`, 1672×941: the beam, two stone pillars with their lanterns, the ledge, the
+  paving, the night through the arches), shipped whole for the back and again with the arches
+  clear for the front (`platformFront`, `scripts/fit_platform.py`), the train between them, its
+  snow line lowered to 164 so its wheels stand behind the ledge. 12.6 MB decoded against about
+  14 before. The game's loading cover waits for the train, both pictures and the ledge's walnut
+  (`StationReady`).
+- The dining car's window (ruled 2026-09-27; since 2026-10-19 the car's country is painted in
+  the owner's car, below, and only the night rooms keep the felt night): the country behind the glass is painted felt, a
   pair per hour, `SPRITES.window[hour].{far,near}`, drawn by `instruments/FeltWindow.tsx` over the
   car's paint, inside the glass: `far` (sky, peaks, hills) stands still and covers the glass;
   `near` (pines, fence, pole, with alpha) fills the bottom 52% and loops left one tile width,
@@ -340,6 +359,27 @@ anything that shows state is drawn over the sprite in vector, never baked in.
   first shifted down to register with day's (night 27 px, dusk 10 px: `-background none -gravity
   north -splice 0xN +gravity`), then crop `1536x520+0+440`; night's `near` also `-modulate 65,55`
   so the row is the darkest thing outside.
+- **The felt set (owner, 2026-10-17)** replaces every painted prop below: the table was a
+  photographed miniature while the cast are felt. The owner's ChatGPT masters are in
+  `claude_artifacts/design/rasters/felt/`, fitted by `scripts/fit_felt_props.py` (each file at or
+  under the pixels of the one it replaced; the numbers below each heading are the old set's). The
+  stand: stitched leather rails and riveted stiles round a bottle-green felt panel, 1487×440,
+  slices 169 211 144 211, darkened to the old front's mean, quality 75, with a phone copy
+  (`stand-front@small`, Stand.tsx scales `--slice`). The table (the owner's, 2026-10-19): a green
+  baize top in a studded walnut rim, a cream cloth with a fleur-de-lis and a scalloped hem, turned
+  legs, whole, 1412×657 (`TABLE_PX` in vote-geometry.ts; `scripts/fit_car_hours.py`). The plate: brushed pewter (2026-10-19, was cream stoneware). The jar: a footed
+  glass sweet jar with a domed glass lid on a ball knob, both cut from shots on black (alpha from
+  brightness, a warm white), `GLASS_PX`/`LID_PX`; it no longer tips: for the count it fades from the
+  centre to the table's right end (`jarGeometry().aside`), the plates' row moved left to leave it
+  that end, and the chips are lifted out of its mouth. The shutter: a burgundy felt roller blind
+  with a hem rod and brass ring (`PAINTED_SHUTTER`; raised, the rod hangs half under the pelmet).
+  The place cards are printed paper tacked with two brass tacks, in the display serif (the house's
+  facts are paper). Mobile cost: the props' decoded memory fell 20.1 → 18.1 MiB; nothing new moves.
+  The landing's carriage and the station's train are a wooden toy (owner, 2026-10-18: walnut, cream
+  panels, brass, a snowy roof; masters in `claude_artifacts/design/rasters/wood/`): the carriage one
+  picture per screen (Carriage.module.css `.paint`, `SPRITES.carriage.whole`/`wholePhone`), the
+  train joined from its pieces by `scripts/fit_felt_station.py` (`SET = 'wood'`; the felt set's
+  numbers kept beside it), within the felt train's pixels.
 - The painted props (ruled 2026-09-27, the polish pass): the jar's glass and lid, the stand's front
   and the vote's table are the owner's rasters, `SPRITES.props.{jarGlass,jarLid,stand,voteTable}`,
   replacing their vector bodies (plates, cards, chips, strings, footlights and plaque stay vector).
@@ -387,32 +427,31 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     they were shortened at conversion to squat turned feet: below row 596 the wood is cleared
     (`-channel A -fx "j>=628||(j>=596&&(lightness<0.45||max(max(r,g),b)-min(min(r,g),b)>0.3))?0:u"`)
     and the legs' lower bulb and foot (rows 662–719) laid under it at row 581.
-- The dining car (ruled 2026-09-29): the car is a painting, `SPRITES.car.{day,night}`
-  (`instruments/CarBackdrop.tsx`), replacing the kit's vector walls, window frame, floor and
-  trapdoor, and the painted wall clock and wall lamp of 2026-09-27 (the owner ruled the clock
-  out; the lantern and two table lamps are painted in). Masters:
-  `claude_artifacts/design/rasters/car-{day,night}.png`, 1600×900 RGBA, already fitted to the
-  stage: `scripts/fit-car.mjs` scales a ChatGPT painting so its glass lands on the kit's glass at
-  HUD `none` (x 401–1199, y 113–409, corner radius 28, cleared to transparent) and squashes the
-  plain panelling under the window so its floor strip lands on the rail (y ≈ 590–640, where the
-  trap is); `scripts/relight-car.mjs` makes the night from the day (dark and warm, pools kept on
-  the lamps), so every panel lines up through the fade. Converted as the rooms are (`sharp`,
-  quality 85, alpha quality 100, effort 6): 117 KB by day, 54 KB by night.
+- The dining car (ruled 2026-09-29; the owner's own car since 2026-10-19): the car is a
+  painting, `SPRITES.car.{day,dusk,night,dawn}` (`instruments/CarBackdrop.tsx`), replacing the
+  kit's vector walls, window frame, floor and trapdoor: walnut panels, the brass-framed window
+  with the country painted in it, a painting either side under a picture light, a red booth and
+  a table lamp at each edge, and the boards with a brass hatch. The four are one room relit (they
+  line up to the pixel), so an hour's fade never shifts a panel. Masters:
+  `claude_artifacts/design/rasters/live_ugrade/car-<hour>.png` (1672×941; the floorless first set
+  in `car-v1/`); `scripts/fit_car_hours.py` scales them by 1.021, the least that lays the floor's
+  line at the wall's foot (master row 628) on the kit's `floorY` (580.5) and still reaches the
+  frame's foot, centres the glass on the puppet, and crops 1600×900 (WebP quality 82: 129–241 KB
+  an hour). The glass, x 440–1160, y 77–389, corner radius 34 (`CAR_GLASS` in `paint/window.ts`),
+  is the car's window: `windowRect` returns it, so the shutter and the window's special follow it
+  (a departure from the kit, which the fidelity test swaps in).
   - **Placement** (`CAR_PICTURE`, `carOffset` in `paint/dining-car.ts`): the painting moves as
     the drawn car did, across with the puppet's centre line (`cx − 800`: +44 under the live
     wing, left with the open side slot, its right end under the slot) and up with the rail
     (`railY − 639`: 27 up in the replay's frame, where its own last 27 rows are laid again under
-    its foot so the floor reaches the frame's edge). The felt window takes the painted glass,
-    moved the same way. The shutter keeps the kit's window: its pelmet sits on the painted blind's
-    housing, its panel covers the glass and most of the brass.
-  - **Hours**: day and dawn show the day picture, dusk the day picture under a flat warm dark
-    (`CAR_TINT`, `rgba(78,24,4,.2)`, normal alpha: the kit's `#c0703a` multiply at 0.24 matched on
-    the walnut, since a fading backdrop carries no blend mode), night the night picture, with no
-    tint over it. An hour's change fades the old picture off over the new (opacity only).
+    its foot so the floor reaches the frame's edge). The shutter covers the painted glass and its
+    frame, its pelmet above the frame.
+  - **Hours**: each hour shows its own picture, untinted. An hour's change fades the old picture
+    off over the new (opacity only).
   - **Light**: the kit's plan still says where the light falls; the lantern's special and glow sit
-    on the painted lantern (1485,175) and each table lamp (45,400 and 1555,400) glows as the
-    lantern does, lit at dusk and night; the car draws no halo, pool or visible cone of its own
-    (the night picture has its pools painted in). `carHaze` casts only the drawn pelmet's shadow.
+    on the picture light over the right-hand painting (1311,90) and each table lamp (14,220 and
+    1589,220) glows as the lantern does, lit at dusk and night; the car draws no halo, pool or
+    visible cone of its own (each picture has its own light painted in). `carHaze` casts only the drawn pelmet's shadow.
     Over the painting the house is lighter than over the old drawn walls (2026-09-29: the room
     reads as lit, the speaker keeps a gentle pool): `light`'s dark, before → after, is day 50 → 24;
     deal 30/58/40 → 14/40/26 (day begins / your card / dealt); vote 50 → 30; lynch 58/72/74 →
@@ -423,10 +462,10 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     the painting's lamps in every layout) go to `light`'s `lamps`, each cut as an unblurred
     radial hole (clear to 0.4 of its radius, soft to its rim) and warmed by a screened
     `rgba(255,179,92,.2)` radial over the world and the bleed, in every car scene.
-  - **Floor**: the painting is the floor. The stand's dark gathers from nothing at the rail; a shut
-    trap at rest draws nothing; an opening or shutting trap draws the hole, the standing leaves
-    and flat leaves cut from the painting itself at the car's hour (an SVG pattern of the picture),
-    so they fold out of the painted floor and lie back into it.
+  - **Floor**: the painting is the floor, its brass hatch painted in. The stand's dark gathers
+    from nothing at the rail. There is no drawn trap (owner, 2026-10-19): the vote's table comes
+    up on the lift from below the frame and stands whole on the boards, its feet near the frame's
+    foot (`voteGeometry`, `TABLE_PX`); the lynch's card comes up behind the stand.
   - **The bleed**: `PaintedBleed` (below, "The night rooms").
   - Kit fidelity: `paint.test.ts` holds the car's plan (window, floor, slots, glows, specials) and
     the light over it to the kit's `scene()` and `light()`, the kit swapped as documented there:
@@ -461,10 +500,9 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     1254 and appended), so the seams fall on a regular beat and can be laid on the drawn ones;
     then resized and multiplied to `BOARD` `#5a3f26` (R 1.2441, G 1.4580, B 1.4971). Laid at a
     plank's width per eighth of the tile, stretched to twice its width along the grain (`boards`):
-    the car's floor strip and its trap (29 units a plank, a seam on the drawn one), the apron (45,
-    on its drawn seams), the trap's two leaves and the lift's slab (half the leaf each), the
-    shelf room's floor (36), and the bleed's.
-  - **Velvet** (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
+    the car's floor strip (29 units a plank, a seam on the drawn one), the apron (45, on its
+    drawn seams), the shelf room's floor (36), and the bleed's.
+  - **Velvet** (deleted 2026-10-19, with the rail's last use of it; git has it) (`velvet.webp`, 512², 12 KB, 400 units a repeat): the master's red channel only,
     as light and shade, times the valance's `#4a1418` (`-channel R -separate -evaluate multiply
     1.1102`, then `-compose multiply` with `rgb(148,40,48)`), so it has the valance's colour
     exactly and its folds and pile. It was the replay's valance and its bleed; since 2026-09-29
@@ -602,6 +640,47 @@ anything that shows state is drawn over the sprite in vector, never baked in.
     with an inner vignette, on a cream border yellowed at its edges; the numeral in IM Fell on
     its foot; a wooden peg on its top edge; a box shadow down-right on the wall; tilted by a
     fixed table per seat (±3.1°) about where it hangs.
+- **The seat rail and the hidden chip** (owner, 2026-10-18; masters in `claude_artifacts/
+  design/rasters/wood/kit/` and `…/live_ugrade/`). The rail is the owner's walnut frame with
+  brass brackets over the HUD kit's dark bronze (below; burgundy velvet until 2026-10-19), a brass plate at its head lettered with what a
+  tap does; each card is the owner's warm cream paper (a tile) with a baked shadow drawn round
+  it by the border image's outset, the seat number on a small brass tag (the plate's picture
+  again), two punches drawn where the photo meets the notes, and a footer that holds facts only
+  as the side's colour and the role's name, a two-word role short ("Serial K.", "Fortune T."), the
+  role's sigil on a disc at the photo's top left (owner, 2026-10-19: in the footer it was too small;
+  a darker fold of the paper while nothing is known). The role cards (deal, morning, lynch) are the
+  guide's: its paper under its frame, the frame drawn a tenth larger so its rule clears the words
+  (`--card-paper`, `--card-frame`). The vote decodes its chips and plate as the ballot opens, so a
+  first count never shows the drawn faces without their ring. The transcript's tiers are tinted
+  panels with filled tags (amber yours, verdigris another seat's, red the pack's) and the game
+  master's reports a kraft card with a bronze rule (owner, 2026-10-19: they were too muted).
+  Frame and plate are 9-slices cut to the size their borders show (`scripts/fit_rail.py`;
+  ~30 KB, ~2.2 MB decoded once a game). A chip back up in the jar is the owner's navy wooden
+  chip, squashed to the table's 0.42 tilt, 192 px and a 128 px phone copy
+  (`scripts/fit_chips.py`). A counted chip on a plate is the owner's maple ring (2026-10-19),
+  stretched to the same tilt so its edge is the towers' step (`TOWER_STEP` 0.42), the voter's face
+  inlaid in its hole at 0.74 of the radius, 288 px and a 192 px phone copy; a chip face up in the
+  jar stays drawn.
+- **The HUD's kit** (owner, 2026-10-19; masters in `claude_artifacts/design/rasters/live_ugrade/`:
+  `frame-bronze.png`, `bronze-dark.png`, `bronze-light.png`, `paper-cream.png`; reference
+  `hud-reference.png`). Every input HUD and what frames them is drawn from four pictures
+  (`SPRITES.hud`, `scripts/fit_hud_kit.py`: the riveted bronze frame as a 9-slice of 50 px
+  corners, the three tiles 512 px, the bronzes' sides blended so they repeat without a seam;
+  33 KB, ~3 MB decoded once a game), handed to CSS whole by `vars()` (materials.ts `--kit-*`):
+  `--kit-panel` (dark bronze: what is read: the dock, the composer, the ballot and the count's
+  line, the wolves' chat, in the riveted frame; the day plaque in a slimmer one; the count, the
+  night's countdown and its sealed act as tags), `--kit-button` (light bronze, inked: every tap:
+  Pass, the hand-overs, the strip's Reveal, tabs, door and way back, the transcript's filters and
+  days, the replay's ways on), `--kit-act` (cream paper: the act and the chosen: Write your
+  line, Send, Vote seat N, Protect seat N, Say it, the open tab, a pressed filter) and
+  `--kit-sheet` (cream paper written on: the composer's ruled sheet, the steer, the pack's line,
+  the transcript's page, its dark-ground colours remapped to the paper's inks), one edge
+  (`--kit-edge`) and one lift (`--kit-lift`) for every button. Brass is for what is only read
+  (the rail's head plate, the seat tags, the stand's plate), never a button. Icons
+  (`KitIcon.tsx`): send, pass, the agent's spark, a folder for File, a page for Transcript;
+  Reveal keeps its keyhole slider. Abstain is a blank white chip, face on, as the heads are. On
+  a phone the ballot's chips are ~30 css px and its buttons 12 css px type in one row, 34 tall.
+  The rail and the transcript keep the walnut frame round the dark bronze.
 - **Never upscale.** No sprite atlases: HTTP/2 makes many small files cheap and an atlas adds
   tooling.
 - Preload the game's nine characters (four states + head) at the deal; `next/image` `priority`
@@ -620,7 +699,7 @@ Two kinds, by whether they carry state:
   (the kits' `opts.id` rule). No `<mask>` and no CSS mask (§6): a dark sheet with soft holes
   (the house light, the car's veil, the night room's light and its chosen photo) is
   `paint/holes.ts`, an evenodd sheet with gradient rims.
-- **Instruments** — stand and plaque (the stand's front a raster, §4), trap and lift,
+- **Instruments** — stand and plaque (the stand's front a raster, §4), lift,
   cards (back, small, full, the framed card), chips and their strings, wing tiles, the shutter's
   motion, the verdict board, act marks, sigils, the jar/table/plates, film rows, the drawer.
   **JSX components with props**, because they carry state, need keys, and animate in and out.
@@ -658,7 +737,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - A scene rendered at rest passes `initial={false}` (and the beat's "settled" variant) so
   seeking, refresh and reconnect land instantly. Playing forward from beat N−1 to N animates the
   difference.
-- Enter/exit (a chip dropping through the trap, a card drawn up out of frame) is
+- Enter/exit (a chip dropping into the jar, a card drawn up out of frame) is
   `AnimatePresence`; sequencing within a beat is variants with `delay`.
 - Durations come from the beat sheet's `hold`, not from the component. A `MotionScale` context
   multiplies them: normal ×1, fast ×0.5 (skip, no motion at all, was removed 2026-09-29).
@@ -671,8 +750,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   2026-09-29, so it fades as an image; before that `PaintPicture` turned the generator's SVG
   into an image and faded the bitmap). A live filtered SVG fading on a GPU drops a whole black
   frame as Chrome gives it its own layer, and pinning that layer did not help.
-- A lift's load fades by its position, not the clock (`lift-fade.ts`), so nothing hangs over
-  the trap once the table has gone in; the load is its own layer while it moves.
+- A lift's load is its own layer while it moves.
 - **No mask of any kind on the stage beyond a glyph; CSS masks too** (found 2026-10-01 with the
   GPU probe, `styles/gpu-probe.css`): iPhone Safari kills the page ("A problem repeatedly
   occurred") when the stage carries full-stage SVG `<mask>`s; it survived only with masks removed,
@@ -705,7 +783,7 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   link that stays up is the scene's floor, and a change to what a beat rebuilds is measured as
   a change in that floor (build log §8.3).
 - **The car's set is a baked picture, not live sheets.** The paint and the haze of the dining
-  car (the car picture, the window and its felt country, the bleed, the key light, the wall
+  car (the car picture, the window, the bleed, the key light, the wall
   pieces' blurred shadows) are photographed once by `scripts/bake-sets.mjs` from the bake
   bench (`/workbench/bake?phase=day&hud=live&side=0`: the set alone, 2200×900, nothing in
   front of it) into `src/assets/sets/` at 1×, 1.5× and 2×, with `src/assets/sets.ts` as the
@@ -713,7 +791,9 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   a desktop, 1.5 on a phone) and fades the old hour's sheet off over the new, as `CarPaint`
   did. A scene with a backdrop passes `baked` to `Atmosphere`, which then draws the grade
   alone. Same drawing, one bitmap: the browser holds one layer where it held five (build log
-  §8.3). Rerun the bake when the car's paint or haze changes; the goldens say whether the
+  §8.3). One sheet per hour and HUD, baked with the side slot closed: the open slot (the
+  transcript, the case file) slides the same sheet with the room (`sheetFor`), so opening it
+  decodes no second sheet (owner, 2026-10-18). Rerun the bake when the car's paint or haze changes; the goldens say whether the
   sheets did. The light, the grade and everything that moves stay live.
 - **Nothing animates at rest inside the camera.** An element with a running animation (a CSS
   animation, `will-change`, a motion value in flight) gets its own GPU layer, and every stage
@@ -731,7 +811,8 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
   were SVG transforms on a group inside a full-stage drawing, and a phone stuttered through both:
   an SVG `transform` relays out and repaints the drawing every frame. Each now sits in an HTML
   box the picture's size (`Jar`, `Shutter`) with its own small `<svg>` inside, and motion moves
-  the box (`x`/`y`/`rotate`/`scale`, a CSS transform), so the browser repaints one finished
+  the box (`x`/`y`/`rotate`/`scale`, a CSS transform; the jar no longer moves since 2026-10-17,
+  it fades between two still boxes), so the browser repaints one finished
   picture through a transform. No layer is made for it (motion drives these in JavaScript, not
   the Web Animations API, so nothing is promoted), which keeps the rest and the move at the same
   memory. If a move still stutters, the next notch is `will-change: transform` on the box for the
@@ -770,14 +851,18 @@ The site around the stage (Mantine chrome, the token bridge where the theatre's 
 - **The backdrop belongs to the Stage.** A scene's `Backdrop` only describes the sheet
   (phase, HUD, side, the hour it comes from) and the Stage draws one `BackdropSheet` at the foot
   of the paint layer, kept across beats and across scenes, so a beat never remounts the
-  picture: on iPhone Safari a fresh `<img>` is black until it decodes (build log §8.8). Every
+  picture: on iPhone Safari a fresh `<img>` is black until it decodes (build log §8.8). The
+  wing is the Stage's the same way (owner, 2026-10-18: the HUD that stays all game is drawn
+  once): the car, a night room and the platform describe theirs with `StageWing` and the Stage
+  draws one at the foot of the HUD layer, updated in place across beats, rooms and scenes
+  (set.ts `WingHost`; the phone-rule gate fails a step that builds it again). Every
   other next/image in the stage carries `decoding="sync"` for the same reason: what a beat
   remounts (the wing's heads in a scene keyed whole) paints at once.
 - **The car's set belongs to one host; a scene is a body under it (`scenes/CarScene.tsx`).**
   Every scene played in the dining car (the deal, the day, the vote, the lynch, the night's
   lobby, the morning, the ending, the replay's night) is a body of `CarScene`, and describes
   the set it wants with `<CarSetSpec>` (the hour, the shutter's state and whether it plays,
-  the trap, the house light's pool and specials, the wing's options, the strip's words), as a
+  the house light's pool and specials, the wing's options, the strip's words), as a
   scene describes its backdrop to the Stage and its shot with `Camera`. The host draws the set
   once and keeps it from beat to beat and from scene to scene, updating it in place: a counted
   chip changes two wing tiles, a change of scene changes the light's sheet and the shutter's
@@ -857,6 +942,30 @@ this order before touching the choreography.
 The vote's `table-down` (beat 3) and `dusk→night` (beat 14) on 2026-09-25 are the reference
 cases; `PaintPicture`'s docstring (in git history, `Stage.tsx` before 2026-09-29) tells the second one.
 
+**Performance knobs not yet turned (audit 2026-10-18).** Motion that still animates a property
+the browser must repaint for (anything but `transform` and `opacity`), left as it is because
+nobody has seen it stutter. Owner, 2026-10-18: keep them here and turn one only if it shows up
+on a phone. Most costly first:
+- **The departure's agent curtains** (`StationScene.tsx` `WindowSeats`, `.blind`): unrolled by
+  animating `clip-path` for about a second, so each curtain repaints every frame. Knob: slide the
+  cloth down inside a still clipping box with `transform` (a blind unrolling is a slide; it looks
+  the same).
+- **The speculator's pennants** (`SideFlag.tsx`, `FILTER`): a `brightness` and `drop-shadow`
+  filter on every pennant at rest, and the filter itself animated over 0.6 s when one is lit or
+  dimmed. Knob: the shadow drawn once under the pennant, lit and dim as an `opacity` fade of a
+  light or dark sheet over it.
+- **SVG moved by its own transforms** (any `Tween` inside an inline `<svg>`): an attribute transform repaints the SVG each frame
+  (phone_lessons §6). Unmeasured: check with the paint profiler before changing anything. Knob:
+  the moving part in its own box, moved by CSS `transform`.
+- **The vote's table on a phone** rides the lift without a layer of its own, so it repaints as it
+  moves. Deliberate (build_log §8.7): the layer would be stage-sized there. Leave it unless the
+  memory picture changes.
+- **Hover and press brightening by `filter`** (`Button.module.css`, `Station.module.css` `.brass`,
+  `BallotRow.module.css`, `Features.module.css`): one short repaint of a small
+  element when touched. Knob: an `opacity` overlay. Low value.
+- **The archive's loading shimmer** (`page.module.css` `.skeletonCard`): animates
+  `background-position` while the latest games load. Knob: a highlight moved by `transform`.
+
 ## 7. The workbench
 
 `app/workbench/[scene]/page.tsx` (one route). It reads the URL, folds a bundled game (the
@@ -908,19 +1017,19 @@ src/stage/
 ├── Stage.tsx                # the box, the layers, --stage-scale, the paint memo
 ├── Atmosphere.tsx           # the key light, haze, shadows, vignette and grain (§3 "Atmosphere")
 ├── countdown.ts             # a prompt's `m:ss` and the share left (the dock, the ballot, the plate)
-├── textures.ts              # the room's surface pictures by URL (WOOD, VELVET), for the paints
+├── textures.ts              # the room's surface pictures by URL (WOOD), for the paints
 ├── paint/                   # string generators: station, window, shutter, light —
 │                            #   (phase, units) → svg string; dining-car.ts: the car's plan
 │                            #   (diningCarPlan: the painting's place, its glass, glows, specials);
-│                            #   texture.ts: the surfaces' SVG patterns (walnut, boards, velvet);
+│                            #   texture.ts: the surfaces' SVG patterns (walnut, boards);
 │                            #   bleed.ts: the platform's two strips past the world's sides (§3);
-│                            #   station.ts: the platform (stationBack/Front, stationPlan);
+│                            #   station.ts: the platform (stationPlan);
 │                            #   atmosphere.ts: the key light by hour, the car's haze;
 │                            #   compartment.ts: the night rooms' plan (roomPlan: the painting,
 │                            #   its glass, candle, card and photo line, ROOMS), the twine
 │                            #   (photoTwine), the candle light (roomLight) and a choice's
 │                            #   darkness (roomChoice), gradients only
-├── instruments/             # JSX: Stand, Plaque, Trap, Lift, Clock, Shutter, CarBackdrop (the
+├── instruments/             # JSX: Stand, Plaque, Lift, Clock, Shutter, CarBackdrop (the
 │                            #   dining car's painting at an hour), Bleed (the bleed's paint,
 │                            #   under a room's own; PaintedBleed, a painting's sides sinking),
 │                            #   FeltWindow (the felt country behind the car's glass, and
@@ -928,7 +1037,7 @@ src/stage/
 │                            #   room's painting, its window and its sinking edges), Photo
 │                            #   (a seat's print on the line),
 │                            #   RoleCard, CardBack, SmallCard, Chip, String, Wing (the seat
-│                            #   rail: cards, suspect slot, note editor; rail-layout.ts),
+│                            #   rail: cards and their taps; rail-layout.ts),
 │                            #   VerdictBoard, ActMark, Sigil, Jar, VoteTable, Plate,
 │                            #   ActPlate (the night room's plate, with its countdown: the room
 │                            #   has no clock since 2026-09-27; CarriageClock is gone), Pin (the
@@ -939,7 +1048,8 @@ src/stage/
 │                            #   CastShadow (a figure's baked shadow on the wall),
 │                            #   ChipSprite + headRect (the head portrait, framed by HEAD_FRAME)
 ├── film/                    # Film: the case file in the side slot (case-file.ts a seat's file,
-│                            #   film-model.ts the docket), ReadCard (the wing's read, a paper card)
+│                            #   film-model.ts the docket), ReadCard (the wing's read, a paper card),
+│                            #   PlayerFile (live: the seated player's own file on a seat)
 ├── drawer/                  # Transcript drawer: lines by kind, day tabs, seat chips, Show toggles
 ├── scenes/                  # StationScene (the waiting room; station.ts its rules) DealScene
 │                            #   DayScene VoteScene LynchScene NightLobbyScene ShelfRoomScene
@@ -947,6 +1057,17 @@ src/stage/
 ├── beats/                   # beatsFor(events, {xray}) → SceneBeat[]; types; fixture goldens
 ├── containers/              # ReplayTheatre (transport, chapters, slot) · LiveTheatre (queue, dock,
 │                            #   the platform and its hand-off to the deal)
+│                            # [2026-10-26: beside the two theatres, the pure files that make
+│                            #   the stage testable without timers:]
+│                            #   live-state.ts: the live stage's reducer, which beat is on and
+│                            #     the open turn; a test feeds a game one event at a time
+│                            #   replay-state.ts: the replay's reducer (cursor, play, speed,
+│                            #     the X-ray, the slot)
+│                            #   live-queue.ts: live pacing, every beat at its normal hold
+│                            #   transport.ts: where the replay's cursor lands, and each hold
+│                            #   fold-cache.ts: the log folded per beat, remembered (96 kept)
+│                            #   warm-reel.ts: a preview's pictures fetched and decoded before
+│                            #     it plays (2026-10-22)
 └── workbench/               # registry, ControlStrip, fixture loader
 app/workbench/[scene]/       # the route
 e2e/                         # Playwright
@@ -991,7 +1112,7 @@ Verified against the server before ruling; the handoff's bundled schema is byte-
 
 | Handoff says | The build does | Why |
 |---|---|---|
-| "names or seat numbers: open" | seat numbers | the wire's seats are `player_1..player_9`; there are no names |
+| "names or seat numbers: open" | seat numbers | the wire's seats are `player_1..player_9`; there are no names. [2026-10-26: nine or ten since the ten-seat pass, committed 2026-10-11 (`b73abbc5`): the stage lays out the seats from the game's roster, never a constant (`ten_seat_pass.md` §1).] |
 | the translator should buffer `wolf_vote` | nothing | it already does (`server/game/translate.py`, `_buffer_wolf_votes`) |
 | "your turn": Say it, Pass | + **Draft** from instructions to your agent, or its own line with none (three per turn, the wait credited back); **Send**, **Pass**; no hand-over on this turn (HUD pass 3b) | `POST /games/{id}/draft` landed 2026-09-17 (ux_journeys D25) |
 | `day_summary` "hidden from the live client until X-ray unlocks" | the live stage has no beat for it | it is public tier; the client never gates. Same picture, right words |
@@ -1015,6 +1136,8 @@ and `GameClient.tsx`. `SeatChip`, `RoleIcon`, `ReplayCard`, `Lobby*`, the forms 
 Done 2026-09-25 (step 7): all deleted, with the v1 scrubber's `useFilterState`; `WinnerChip` now lives in `ReplayCard.tsx`.
 
 ## 11. Order of work
+
+Done 2026-09-25 (the v1 theatre deleted in `4a0f6101`, §10); kept as the record of who built what.
 
 | # | Step | Who |
 |---|---|---|
@@ -1071,7 +1194,9 @@ The containers own the rules for when a moment counts as played: live, a beat th
 (`cursor.animate`), never what a refresh lands on; the replay, a beat played on, never a jump or a
 scrub, and a jump cuts a sting still sounding. The landing's preview and the guide's demos play
 nothing. The switch is `SoundButton`: on the strip (`SlotInput.sound`, the game and the full
-replay; the workbench has none, so its goldens are untouched) and, on a site page with music,
+replay; the workbench has none, so its goldens are untouched), on the platform's ledge after its
+plates (2026-10-18: one choice across the site, so music turned off on a site page silenced the
+platform with no way back there), and, on a site page with music,
 in the nav after the guide's sign, a speaker alone so it fits the phone's pinned strip
 (`TopNav` `Music`, shown while a page's opt-in bed is mounted: `optInPages`).
 `/workbench/music` auditions the files against the scenes' beats.

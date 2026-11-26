@@ -1,0 +1,21 @@
+{
+  "human_labels_path": "evidence/evaluation/labeling/owner_checks/echo_gate/human.json",
+  "model_label_paths": [
+    "evidence/evaluation/labeling/owner_checks/echo_gate/labels_readers.json"
+  ],
+  "model_sources": [
+    "readers"
+  ],
+  "stratum_path": "evidence/evaluation/labeling/owner_checks/echo_gate/strata.json",
+  "allowed_labels": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ],
+  "positive_label": null,
+  "min_agreement": 0.8,
+  "min_ci_lower": 0.75,
+  "bias_alpha": 0.05,
+  "output_dir": "evidence/evaluation/labeling/owner_checks/echo_gate/reports"
+}

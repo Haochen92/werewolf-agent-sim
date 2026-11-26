@@ -1,0 +1,47 @@
+{"id": "v001", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v005", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v009", "mech": 0, "chew": 0, "clear": 0, "note": "Mentions player_6 visiting player_7 but never presents it as own follow result."}
+{"id": "v013", "mech": 1, "chew": 1, "clear": null, "note": "Claims a follow on player_3 cannot yield 'player_3 visited player_4'; it can. Line is about wording."}
+{"id": "v017", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v021", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v025", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v029", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v033", "mech": 1, "chew": 0, "clear": 1, "note": "Concludes player_9 was the sigilist from a visit; a visit does not reveal the action."}
+{"id": "v037", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v041", "mech": 1, "chew": 1, "clear": null, "note": "Says a follow cannot put the followed player at your door; it can. Main point is wording."}
+{"id": "v045", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v049", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v053", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v057", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v061", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v065", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v069", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v073", "mech": 1, "chew": 0, "clear": 1, "note": "Treats own empty watch as proof player_3 never visited; a sentinel is never in its own result."}
+{"id": "v077", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v081", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v085", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v089", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v093", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v097", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v101", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v105", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v109", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v113", "mech": 1, "chew": 0, "clear": 1, "note": "Asks players visited by someone unexpected to say so; nobody learns their visitors."}
+{"id": "v117", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v121", "mech": 1, "chew": 1, "clear": null, "note": "Says a follow on player_3 could not name player_4 as destination; it can. Line is about wording."}
+{"id": "v125", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v129", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v133", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v137", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v141", "mech": 1, "chew": 0, "clear": null, "note": "Says a watch on player_4 would show the wolf carrier visiting whoever got bitten elsewhere."}
+{"id": "v145", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v149", "mech": 1, "chew": 0, "clear": null, "note": "Treats player_4's follow as showing visitors to player_4 rather than player_3's destination."}
+{"id": "v153", "mech": 0, "chew": 0, "clear": 0, "note": "Does not report own night result."}
+{"id": "v157", "mech": 0, "chew": 1, "clear": null, "note": "Main point is 'came to' vs 'went to' wording as the tell."}
+{"id": "v161", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v165", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v169", "mech": 0, "chew": 0, "clear": 1, "note": ""}
+{"id": "v173", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v177", "mech": 0, "chew": 0, "clear": null, "note": ""}
+{"id": "v181", "mech": 1, "chew": 1, "clear": 0, "note": "Says a follow on player_3 cannot yield 'player_3 visited player_4'; wording-focused; no own watch result."}
+{"id": "v185", "mech": 1, "chew": 1, "clear": null, "note": "Says follow and watch claims cannot both be true; they fit. Leads with ability wording."}

@@ -1,10 +1,18 @@
 # What the stage taught us about frontend work in general
 
+Status (2026-10-26): this file stays the log of lessons, numbered as written. The topic tutorials
+that teach them now live in `learning/<topic>/` (the first: [React identity](learning/react_identity/react_identity.md)).
+Two lessons share the number 29 and are labelled 29a and 29b in place; the small things at the end
+are numbered S1 to S23.
+
 Written for: the owner, to re-own and re-explain, and to carry to the next project. The phone
 story is told in `phone_lessons.md` (what iOS Safari did and why); this is the part of it that
 is not about phones at all: React, rendering, and how to work on a performance problem. Each
 entry is the mistake we made or nearly made, the rule we keep now, and where to see it in this
 repo. The dated numbers are in `build_log.md` §8.
+[2026-10-26: that holds for lessons 1 to 20, written out of §8 on 2026-10-02. The numbers for 32
+to 37 are in the follow-up of 2026-10-15 in `frontend-audit-2026-10-11.md`, and the later
+lessons carry their own.]
 
 The one sentence version: **the cost of a frontend is not the size of its JSX but what the
 browser has to redo when something changes: which subtrees React rebuilds, which rectangles get
@@ -110,6 +118,9 @@ the eye cannot see on a small screen. See §8.9.
 Tracing the light's holes cost 60–110 ms per distinct configuration; a bounded FIFO keyed by
 the generator's inputs makes a repeat free. Keying it by a component instance id would make a
 remount a miss for the same geometry.
+[2026-10-26: this was the key the cache was meant to have, not the one it had. Until 2026-10-15
+it was keyed on `useId` plus the options, so a remount did miss. Lesson 36 records the fix
+(`f30d4496`, `frontend/src/stage/Stage.tsx::drawn`); read the two as one lesson.]
 
 **13. Pictures cost by decoded pixels, not file size, and the decode is on the main thread
 at first paint.** Pick the asset by displayed size × device pixel ratio; keep separate copies
@@ -121,6 +132,9 @@ change its source. See §8.8, §8.9.
 does not fit 16 ms, the frames drop unevenly and that unevenness is the stutter. Sampling the
 same easing at 24 steps a second (`motion.tsx` `stepped`) gives each frame 42 ms and a steady
 beat. This is a presentation choice, not a fix for the paint cost, and it is honest to say so.
+[2026-10-26: "gives" is the aim, not a guarantee. `frontend/src/stage/motion.tsx::stepped`
+samples the curve at 24 positions a second; the 2026-10-11 audit (§4) notes that 24 positions a
+second are not guaranteed to be presented as evenly spaced frames.]
 
 ---
 
@@ -180,7 +194,7 @@ wait.** `next/dynamic` moves the code out of the first load, but a dynamic compo
 at once still loads at once, and a query enabled at once still fetches. The landing's preview
 now holds its frame (and the marquee's and the controls' room, so nothing shifts) and starts
 the chunk, the replay and the sheet together when the carriage is near (`FeaturedReplay.tsx`
-`useNear`); the chunk only since 2026-10-15, see 29. Assert it the way it fails: count the requests before the scroll, not the DOM
+`useNear`); the chunk only since 2026-10-15, see 29b. Assert it the way it fails: count the requests before the scroll, not the DOM
 after it (`e2e/site.spec.ts`, "loads when scrolled to").
 
 **24. When a derived list folds items together, whatever holds a place in it needs a rule for
@@ -229,7 +243,7 @@ zero (a page still settling, not a loop); measure the thing only once the page h
 on a shared machine interleave old and new runs and take the median of three (single runs here
 swung from 15 to 45 fps with the machine's load). Relates to 25.
 
-**29. A baked copy of something computed must cover everything the computation reads, or be
+**29a. A baked copy of something computed must cover everything the computation reads, or be
 tested against the live result.** The car's backdrop is baked (`scripts/bake-sets.mjs`) at two
 layouts, while the shutter over its window is placed live from the layout's geometry. The
 no-HUD layout got no sheets and reused the live HUD's, on a comment that the two were alike.
@@ -239,7 +253,7 @@ units short of the window. One invariant now holds them: for every layout, the g
 is the shutter's (`instruments/backdrop.test.ts`, `sheetFor`). When a shortcut maps one case
 onto another, write the test that says they agree, not a comment.
 
-**29. A dynamic component's code starts loading at its first render, not when you decide you
+**29b. A dynamic component's code starts loading at its first render, not when you decide you
 want it.** The carriage was meant to start its code, its replay and its pictures together
 (23), but it rendered `ReplayTheatre` only once the replay had arrived, so the three ran one
 after another. On a throttled phone (1.6 Mbps, 150 ms, 4× CPU, live site, 2026-10-15), after
@@ -284,9 +298,9 @@ would save almost nothing, and a stream that seems frozen is the failure already
 To test whether it is still needed, send an opening comment and heartbeats, as dota does,
 then try the stream without the header.
 
-**The carriage case, 2026-10-15** (29–31): the cause was mostly not the size of the event
+**The carriage case, 2026-10-15** (29b–31): the cause was mostly not the size of the event
 log. Of about 6 s to a painted stage on the throttled phone, the replay JSON was 1.2 s. The
-rest was the chain (29), 1.2 MB of pictures, 235 KB of them fetched twice (30), and nothing
+rest was the chain (29b), 1.2 MB of pictures, 235 KB of them fetched twice (30), and nothing
 compressed (31). Steps:
 - Commit `a4411355`: the code is requested beside the replay.
 - Commit `fec8cf40`: the stage measures before it draws.
@@ -403,6 +417,8 @@ hidden under it, and the replay starts playing only then. The wait for the pictu
 (`stage/pictures-of.ts`) is the one the replay page's curtain already used, now shared. The
 general check: for every place the viewer waits, ask what they see at each step (nothing, a
 dark ground, half the pictures), not only whether the data have arrived. Not deployed yet.
+[2026-10-26: deployed 2026-10-16 with the frontend at `87499f98`; `TrainLoader` in its place
+followed the same day at `aceaf93f`.]
 
 **40. A transform set from script moves a picture only if it has a layer of its own; otherwise
 every frame repaints it.** The owner saw a speaker's puppet rise into the stand at a low frame
@@ -460,76 +476,184 @@ what a beat shows from its first frame to its last, not what it opens with, and 
 that one beat's pictures (a pose decodes to about 4 MB, 37). The probe that settles it: record
 each picture's first request against the time its beat began.
 
+**44. A layout that only moves a baked picture is that picture moved, not a second bake.** The
+car's set was baked twice per hour, once for each place the room can stand (the side slot
+closed and open), so opening the transcript swapped in a second sheet: on a phone a fresh
+~17 MB decode on every tap, and twice the sheets to bake and download. Sliding one sheet onto
+the other showed the car was the same painting 296 units over; only the felt country behind
+its glass and the dark past its ends stayed put, because the bake had anchored them to the
+stage instead of the car. Now one sheet slides by the room's change of centre (`Backdrop.tsx`
+`sheetFor`): 24 sheets instead of 48, and the goldens moved only behind the glass. Before
+baking a variant of a picture, ask whether it is the base shifted; settle it by sliding one onto
+the other and diffing, and the leftover says what is anchored elsewhere (2026-10-18).
+
+**45. A page drawn on pictures shows its words before its pictures: hold it whole, and run the
+hold before React.** On a first visit with nothing cached (the owner, in a private window,
+2026-10-18), the departures board's words and empty rows stood on bare black with no case
+round them, the guide's text sat on black while its wall painted in from the top, and the
+landing carriage's window and loader hung in the night with no carriage. Each was the page's
+HTML arriving seconds before its pictures, and none showed on a cached browser, which is where
+every check had been made. Three fixes in turn, each kept or dropped for a reason:
+
+- A blurred stand-in under each picture (next's `blurDataURL`, ~80 bytes inline) and a hold on
+  the board alone until its case was decoded. Better, but the page still came up in pieces.
+- One gate per page (`components/site/PageGate.tsx`), and one for the carriage's whole scene
+  (`FeaturedReplay` `.gate`): the page is hidden behind the house's loader until the pictures on
+  its first screen and its fonts are decoded, then fades in at once. The gate finds the pictures
+  itself (every `<img>` on screen, and every computed background, `::before` and `::after`
+  included), so a page lists nothing and the stylesheet stays the one place that says which
+  picture a screen uses. The loader appears only after 0.3 s, and 8 s ends the wait. The section
+  after the first screen starts loading the moment the first screen is up (`usePageOpen`), so
+  it is usually ready before it is seen.
+- The gate's first version waited in a React effect, so it could not open before the page had
+  hydrated: a *cached* revisit took 1.4–1.9 s and showed the loader. The wait now runs from an
+  inline script written into the page (`gate.toString()`), as the page is parsed; React runs the
+  same function only for a page reached by a click (React does not run a script it renders). A
+  cached visit comes up in 100–230 ms, a click in 100–340 ms, the loader never seen. A function
+  sent as text must use nothing from outside itself: no imports, no module constants, and
+  nothing a compiler turns into a helper call (async/await, spreading a NodeList); check the
+  built HTML.
+
+Why nothing off the shelf: Suspense and `loading.tsx` wait on code and data, not pictures;
+`next/image` knows one picture at a time and nothing about CSS backgrounds; Mantine's
+`LoadingOverlay` is a cover with a switch; `imagesLoaded` reads backgrounds only off the
+elements you name (never `::before`/`::after`) and waits for the download, not the decode.
+
+Rules: hide with script, never with the stylesheet alone, so a crawler or a reader without
+script gets the page as it is (the stylesheet shows it after 10 s should the script never run),
+and keep the page's boxes in their place while hidden (opacity, not `display`), so nothing moves
+when it appears. Never gate behind something heavy that the first screen does not need: gating
+the hero on the carriage would have put every first visit behind the theatre's code. Check any
+page drawn on pictures cold: a fresh browser context, the network throttled (CDP
+`Network.emulateNetworkConditions`, ~1 Mbps), a screenshot every second; then the cached
+revisit and a click, timed.
+
+**46. Before fixing a stall, find where its time goes: decoding, or each frame's work.** The
+owner saw the landing's deal lag on a phone (2026-10-22). The first reading, from long tasks
+lined up with beat changes, was pictures arriving mid-animation, and warming the reel's
+pictures under the cover cut the blocking by 38% at the price of a longer cover. The owner said
+it was the animation, and it was: a trace of the face-up beat (phone frame, CPU 4× slower)
+read 1.2 s of main thread in 2 s, nearly all the per-frame lifecycle (style, layout, paint,
+layerize, commit) and 24 ms of decoding. Rule: trace one beat and sum its time by kind before
+choosing a fix; anchor the trace with `console.timeStamp` at each beat change
+(`browser.startTracing`, then the `TimeStamp` events). A fix can be right for one stall and
+miss the one the viewer means.
+
+**47. An instant swap animated as opacity is still a layer: switch it with `visibility`.** The
+card's turn (`instruments/Flip.tsx`) swapped back for face with opacity keyframes `[1, 1, 0,
+0]`, a jump at the edge that looks instant, but an animated opacity holds a layer for the whole
+animation (lesson 10). Ten cards turning held twenty. Animating `visibility` instead takes no
+layer and reads the same: the deal's drawing layers went from 34 to 13, its Layerize time
+halved and its paint fell by a third. Rule: a discrete change is `visibility` or a state
+change, never an opacity animation that jumps.
+
+**48. Don't start the first move under a fading cover.** The carriage began its first beat
+while its loading cover was still fading off. A fade over the whole stage lifted the page onto
+79 layers (17 once it had gone), just as the chips came down. The reel now waits until the
+cover and the window's loader have gone (`FeaturedReplay`, `lifted && !covered`), 0.4 s
+later. Rule: a cover's fade and the content's first animation must not overlap; the fade is a
+cascade (lesson 10).
+
+**49. When one page lags and another with the same scene doesn't, diff the pages, in the
+viewer's engine.** The deal lagged on the owner's iPhone in the landing's carriage and not on
+the replay page, the same beats in the same theatre. Chrome traces (throttled 4×) read the two
+pages alike, and the other page sections and first-load work made no difference. In WebKit the
+landing's snow did: two sheets falling behind the carriage doubled a frame of the cards' drop
+and turn. The snow was held for the deal and deployed, and on the iPhone it changed nothing.
+Desktop WebKit renders in software and composites on the CPU, where two moving full-width
+sheets are expensive; a phone's GPU composites them for almost nothing. The difference the
+first pass skipped was in the pages' own settings: the carriage plays at `fast` (half the
+time), so the deal's freeze at each beat's start (lesson 46's remount) lands inside the first
+cards' moves instead of before them. Rule: list what the slow page has and the fast one lacks,
+its settings included, not only its contents. A cost found in an emulated engine is a lead to
+confirm on the device before shipping a fix for it. For WebKit, headless Playwright fires about
+one animation frame per beat and can't time anything; headed under `xvfb-run` it can, in
+software.
+
 ---
 
 ## Small things that cost an afternoon
 
-- Two rules for one class name in a CSS module are one class: a `.head` for a page's header and a
+- **S1.** Module state is not shared just because two files import the same module: the build can put a
+  copy of a module into two bundles (here the site loader's and the pages'), each copy with its
+  own variables. The page gate read "is the site loader's train up?" from a variable only the
+  other copy ever wrote, so the train blinked, went dark, and came back (2026-10-18). State that
+  two parts of the app hand to each other goes on `window` (or a context), and a check of the
+  built chunks (`grep -rl` a distinctive string in `.next/static/chunks`) shows the copies.
+
+- **S2.** Two rules for one class name in a CSS module are one class: a `.head` for a page's header and a
   `.head` for a 2px playhead further down the same file merged, and the header became a 2px
   absolute strip. Name each part for what it is (`.playhead`).
-- A browser starts sound only after the viewer has pressed something on the page; Safari only
+- **S3.** A browser starts sound only after the viewer has pressed something on the page; Safari only
   inside the press's own handler. Make or resume the `AudioContext` in a press listener, not in
   an effect that runs after it (`src/music/music.ts`). Fade with gain nodes: an iPhone ignores
   an audio element's `volume`.
-- iPhone Safari gives an `AudioContext` a state the standard does not have: `interrupted`, when
+- **S4.** iPhone Safari gives an `AudioContext` a state the standard does not have: `interrupted`, when
   the viewer switches app or takes a call. A resume on returning to the page may be refused, and
   a check for `'suspended'` never matches it, so the music came back only when Safari got round
   to it. On a press, close an interrupted context and make a new one (`src/music/player.ts`).
 
-- `--update-snapshots` rewrites only the goldens that fail, and a golden fails only past its
+- **S5.** `--update-snapshots` rewrites only the goldens that fail, and a golden fails only past its
   tolerance (`maxDiffPixelRatio` 0.005 here), so a deliberate change to a few lines of text (a
   colour, a size) passes against the old golden and is never written: the golden keeps the old
   look. After a deliberate change run `--update-snapshots=all` on the build that has it, then put
   back every golden whose pixels did not really move (a page you did not touch re-renders with
   sub-pixel noise), comparing each against HEAD.
-- A production build prefetches every `<Link>` that scrolls into view (the dev server does not),
+- **S6.** A production build prefetches every `<Link>` that scrolls into view (the dev server does not),
   as a `fetch` with an `rsc: 1` header to the page's own path. A test counting requests by path
   (`/replays/<id>`) counts the prefetch too and fails on production only; filter on the header.
   For a dynamic route with a `loading.tsx` the prefetch is only the page's shell, no data.
-- A wall capped short of its box ends in an edge if any layer over it is darker than the page's
+- **S7.** A wall capped short of its box ends in an edge if any layer over it is darker than the page's
   ground (a black vignette is): the page's own colour below the cap shows lighter. Fade the foot
   to the ground as the topmost layer (`StationWall.module.css`, `Rooms.module.css`).
-- An absolutely placed wall taller than a short page lengthens the page past its footer. Place it
+- **S8.** An absolutely placed wall taller than a short page lengthens the page past its footer. Place it
   against a positioned wrapper with `overflow: clip` (the site layout's `.station`): clip cuts it
   at the page's foot and, unlike `hidden`, makes no scroll box, so sticky menus still stick.
-- `pgrep -f pattern` matches the shell that is running the loop containing the pattern, so a
+- **S9.** `pgrep -f pattern` matches the shell that is running the loop containing the pattern, so a
   "wait until it finishes" loop never ends. Use `grep -c '[p]attern'`.
-- A percentage move (`y: '115%'`) is relative to the moving element; shrink the element and the
+- **S10.** A percentage move (`y: '115%'`) is relative to the moving element; shrink the element and the
   move shrinks with it. Give moves in your own units.
-- Safari's timeline: a blue Composite record means the layer tree was rebuilt (a keyed-whole
+- **S11.** Safari's timeline: a blue Composite record means the layer tree was rebuilt (a keyed-whole
   remount); the orange band is memory, not CPU; its charts interpolate sparse samples.
-- A dev server's numbers are not a production build's; compare production against production
+- **S12.** A dev server's numbers are not a production build's; compare production against production
   (the preview on 3118 is a production build of the working tree).
-- A `z-index: -1` backdrop vanishes when both `html` and `body` set a background: `body` is an
+- **S13.** A `z-index: -1` backdrop vanishes when both `html` and `body` set a background: `body` is an
   in-flow block, and its background paints over negative-z children of the root context. Make the
   backdrop's own section a stacking context (`isolation: isolate`) instead.
-- `overflow-x: clip` on `html` keeps a desktop from scrolling sideways, but `scrollWidth` still
+- **S14.** `overflow-x: clip` on `html` keeps a desktop from scrolling sideways, but `scrollWidth` still
   counts the overflow and an iPad can still pan to it. Clip the wide element itself.
-- A rounded `overflow: hidden` round an animating layer costs a mask the size of the clip. Clip
+- **S15.** A rounded `overflow: hidden` round an animating layer costs a mask the size of the clip. Clip
   moving content with a plain rectangle and draw the rounded corner on the frame around it.
-- Headless Chromium here reports no `LayerTree` events, headed under Xvfb included. Read layer
-  memory on a device (Safari's Layers tab); headless can still count paints and raster time
-  from a trace (`browser.startTracing`), though `Paint` clip areas are layer-space and do not sum.
-- `next dev` drops a `next/dynamic` chunk's stylesheet on a hot reload and never loads it back
+- **S16.** Read layer memory on a device (Safari's Layers tab). Headless Chromium can count layers over
+  CDP (`LayerTree.enable`, then `layerTreeDidChange`; 2026-10-22, the deal's counts; an earlier
+  note here said it reported none), and paints and raster time from a trace
+  (`browser.startTracing`), though `Paint` clip areas are layer-space and do not sum.
+- **S17.** A grid row can keep a height from before its content measured itself. The guide's tools tray
+  (a grid) kept its row at the seat card's height from before the card's demo had sized its crop
+  (a container query plus an `aspect-ratio` box), and the card ran out of the tray until a tab
+  switch made the browser lay it out again (2026-10-22). A flex column has no such row: the tray
+  is one now. Suspect it when `getBoundingClientRect` gives a grid's track the right size and the
+  grid itself the wrong one.
+- **S18.** `next dev` drops a `next/dynamic` chunk's stylesheet on a hot reload and never loads it back
   (2026-10: the landing's lazily loaded theatre lost its styles when a stage file was saved). The
   stage then draws unclipped at full size, with no HUD, which looks like a framing bug. A
   production build keeps every sheet. Hard-reload before you chase it.
-- A component rendered by a server component that starts calling a client hook needs
+- **S19.** A component rendered by a server component that starts calling a client hook needs
   `'use client'`. Neither `tsc` nor lint notices; only `next build` fails, at prerender:
   "Attempted to call useSmall() from the server". `ChipSprite` was imported by the landing's
   server-rendered cards.
-- Two things with the same `z-index` in one layer are ordered by where they sit in the page,
+- **S20.** Two things with the same `z-index` in one layer are ordered by where they sit in the page,
   and with portals that is the order they happened to be added in. The card's veil and the
   notes hint were both 5, and the veil covered the hint only because the hint mounted first.
   Making renders less frequent (lesson 33) changed the order, and the hint came out above the
   veil. Give anything that must cover something else a higher number; never rely on a tie.
-- A full-page screenshot of a page whose sections mount as they come near (`useNear`) can be
+- **S21.** A full-page screenshot of a page whose sections mount as they come near (`useNear`) can be
   taken before they have mounted: the guide's golden came back with its demos blank. Scroll
   each one into view and wait for it before the whole-page shot.
-- A Playwright run proves nothing until you know whose server answered on its port: another
+- **S22.** A Playwright run proves nothing until you know whose server answered on its port: another
   session's build held 3121 (2026-10-15), mine failed to start, and the suite ran against theirs.
   Check the port's process first (`ss -ltnp`, then `readlink /proc/<pid>/cwd`).
-- Don't make a `<button>` the box whose layout matters. iPadOS 18's Safari did not lay a button out
+- **S23.** Don't make a `<button>` the box whose layout matters. iPadOS 18's Safari did not lay a button out
   as the flex column its CSS asked for, so the seat card's children with no in-flow content (the
   photo, an absolutely placed image; the empty ruled foot) fell to zero width, while iPhone and
   desktop drew it whole (2026-10-17). It hit every tappable card and no plain one, which made it

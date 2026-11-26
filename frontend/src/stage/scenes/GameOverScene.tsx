@@ -8,9 +8,9 @@
  *
  * - `over.where-it-ended`: the last scene's frame, held. After a morning: the night behind the
  *   shutter, the room empty (the last card drawn up). After a lynch: dusk, the shutter down,
- *   the trap's leaves standing open, the card gone.
+ *   the card gone.
  * - `over.winners-hour`: the shutter rises on the winners' hour (the town's day, the wolves'
- *   night, the lone killer's dusk, a draw's grey dawn); open leaves fold.
+ *   night, the lone killer's dusk, a draw's grey dawn).
  * - `over.verdict`: the walnut board comes down on its two strings.
  * - `over.winners-stand`: the board goes up; the stand comes up widened for the winning
  *   side's survivors, who rise into it; their tiles in the wing are lit, the rest dimmed. A
@@ -49,7 +49,7 @@ import type { Special } from '../paint/draw';
 import type { Phase } from '../paint/materials';
 import { ROLE_ARTICLE } from '../paint/role-kit';
 import { FactionMark } from '../instruments/FactionMark';
-import { ROLE_NAME, seatNumber, winnerFaction, winnerKey, type WinnerKey } from '../roles';
+import { ROLE_NAME, seatNumber, winnerFaction, type WinnerKey } from '../roles';
 import { useSmall } from '../set';
 import { bandNarrows, sideOpen } from '../slot';
 import { STAGE_H, geometry } from '../units';
@@ -59,6 +59,7 @@ import {
   WINNERS_HOUR,
   WINNER_LINE,
   endedAt,
+  endingWinner,
   knownRole,
   lastStanding,
   neutralLine,
@@ -102,8 +103,9 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
   // the side slot open: the room is laid out beside it (bench 73 drew the film up)
   const side = sideOpen(presentation);
   const g = geometry(hud, side);
-  // the winner as a key (a draw is `draw`), and the side whose colour it wears (none for a draw)
-  const winner = winnerKey(view.winner);
+  // the winner as a key (a draw is `draw`, a neutral's game its role), and the side whose colour
+  // it wears (none for a draw)
+  const winner = endingWinner(view);
   const tone = winnerFaction(winner) ?? undefined;
   const ended = endedAt(view);
   const left: Phase = ended === 'lynch' ? 'dusk' : 'night';
@@ -162,15 +164,15 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
     <>
       <CarSetSpec
         phase={phase}
-        backdrop={{ from: animate && step === 1 ? left : null, fadeDelay: 1.2 }}
+        backdrop={{
+          from: animate && step === 1 ? left : null,
+          fadeDelay: 1.2,
+          ahead: step === 0 ? hour : null,
+        }}
         shutter={{
           state: step === 0 ? 'closed' : 'open',
           animate: animate && step === 1,
           delay: 0.4,
-        }}
-        trap={{
-          state: ended === 'lynch' && step === 0 ? 'open' : 'closed',
-          animate: animate && step === 1 && ended === 'lynch',
         }}
         light={{ pool, specials, dark }}
         wing={{
@@ -276,7 +278,7 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
 
       <Layer name="hud">
         {step !== 5 || shut ? (
-          <NoticeZone hud={hud} side={bandNarrows(presentation, beat)} aside={side}>
+          <NoticeZone hud={hud} side={bandNarrows(presentation, small)} aside={side}>
             {myRole ? (
               <CardButton role={myRole} gone={myDead} onOpen={turn?.onCard} />
             ) : null}
@@ -309,7 +311,8 @@ function OverBeat({ view, beat, me, presentation, turn, wayOut }: SceneProps) {
             ) : onStand ? (
               <EndBox
                 winner={winner}
-                neutral={neutralLine(view)}
+                // a neutral that won the game no side did is the headline, not the line under it
+                neutral={tone === 'neutral_benign' ? null : neutralLine(view)}
                 won={!!myRole && roleWon(myRole, winner, view.neutralResult)}
                 winners={winners}
                 me={me}

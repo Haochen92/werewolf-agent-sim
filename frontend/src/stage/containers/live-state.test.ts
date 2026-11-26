@@ -445,6 +445,25 @@ describe('the live stage: the seated human’s prompt', () => {
     expect(s.beat).toMatchObject({ id: 'day.speech', seq: 202, subject: ME });
   });
 
+  it('an answered prompt the stage reaches after the log has stopped growing is passed, not stood on (2026-10-21)', () => {
+    // a reload while the server waits on a later prompt: the stage plays its way through the
+    // earlier one, already answered, and no event will come to move it on
+    const s = new Session().arrive(upTo(190), false);
+    s.arrive(
+      [
+        ...MINE.filter((e) => e.seq > 190 && e.seq <= 200),
+        request(201, 'discuss'),
+        ...MINE.filter((e) => e.seq > 201 && e.seq <= 215),
+      ],
+      true,
+    );
+    const prompt = s.state.beats.findIndex((b) => b.id === 'day.your-turn' && b.seq === 201);
+    expect(prompt).toBeGreaterThan(s.state.cursor.index);
+    expect(prompt).toBeLessThan(s.state.beats.length - 1);
+    s.drain();
+    expect(s.state.cursor.index).toBe(s.state.beats.length - 1);
+  });
+
   it('a prompt with no deadline waits for the stage: every beat before it plays its whole hold (2026-10-12)', () => {
     const s = new Session().arrive(upTo(190), false);
     s.arrive(

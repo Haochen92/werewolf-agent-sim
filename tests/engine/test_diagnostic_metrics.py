@@ -90,6 +90,8 @@ def _compute(day_channel, day_res=None, night_res=None):
 def test_town_accusation_precision_counts_only_town_accusers_on_threats():
     # Town accusations: v1->w1 (threat), v2->v1 (town), inv->sk (threat). Wolf w1->v2 is NOT a town
     # accusation (excluded from denominator). Self-accusation and passes ignored.
+
+    # Arrange
     dc = [
         _msg(1, 0, "v1", [("w1", "accusation")]),
         _msg(1, 1, "v2", [("v1", "accusation")]),
@@ -98,7 +100,11 @@ def test_town_accusation_precision_counts_only_town_accusers_on_threats():
         _msg(1, 4, "v1", [("v1", "accusation")]),        # self-accusation -> skipped
         _msg(1, 5, "v2", passed=True),                    # pass -> skipped
     ]
+
+    # Act
     m = _compute(dc)
+
+    # Assert
     assert m.town_accusations_total == 3
     assert m.town_accusations_on_threat == 2
     assert abs(m.town_accusation_precision - 2 / 3) < 1e-9
@@ -111,11 +117,16 @@ def test_town_accusation_precision_none_when_no_town_accusations():
 
 
 def test_town_accusation_precision_only_accusation_stance():
+    # Arrange
     dc = [
         _msg(1, 0, "v1", [("w1", "defense")]),      # not an accusation
         _msg(1, 1, "v2", [("w2", "agreement")]),    # not an accusation
     ]
+
+    # Act
     m = _compute(dc)
+
+    # Assert
     assert m.town_accusations_total == 0
     assert m.town_accusation_precision is None
 
@@ -126,6 +137,8 @@ def test_town_accusation_precision_only_accusation_stance():
 def test_find_next_round_convergence_mean_over_finds():
     # Wolf w1 found on night 1 -> actionable day 2. Day-2 town votes: inv->w1, v1->w1, v2->w2.
     # w2 found on night 2 -> actionable day 3. Day-3 town votes: inv->v1 (0 on w2).
+
+    # Arrange
     night_res = [
         _night(1, investigator_target="w1", investigator_target_role="wolf"),
         _night(2, investigator_target="w2", investigator_target_role="wolf"),
@@ -134,7 +147,11 @@ def test_find_next_round_convergence_mean_over_finds():
         _day(2, [("inv", "w1"), ("v1", "w1"), ("v2", "w2"), ("w1", "v1")], "w1", "wolf"),
         _day(3, [("inv", "v1")], "v1", "villager"),
     ]
+
+    # Act
     m = _compute([], day_res=day_res, night_res=night_res)
+
+    # Assert
     # day2: 2 of 3 town votes on w1 = 2/3 ; day3: 0 of 1 on w2 = 0 ; mean = 1/3
     assert abs(m.investigator_find_next_round_convergence - (2 / 3 + 0) / 2) < 1e-9
 
@@ -147,9 +164,15 @@ def test_find_next_round_convergence_none_without_finds():
 
 def test_find_next_round_convergence_skips_find_with_no_next_round_town_votes():
     # Find on night 2, but there is no day-3 resolution -> skipped -> None.
+
+    # Arrange
     night_res = [_night(2, investigator_target="w1", investigator_target_role="wolf")]
     day_res = [_day(2, [("inv", "w1")], "w1", "wolf")]
+
+    # Act
     m = _compute([], day_res=day_res, night_res=night_res)
+
+    # Assert
     assert m.investigator_find_next_round_convergence is None
 
 
@@ -158,12 +181,18 @@ def test_find_next_round_convergence_skips_find_with_no_next_round_town_votes():
 
 def test_wolf_power_kill_rate_is_kills_over_power_alive_nights():
     # Two nights, a power role (healer/inv/vig) alive both. Night 1 the wolves kill the healer.
+
+    # Arrange
     night_res = [
         _night(1, wolves_target="healer", wolf_target_role="healer", kill_successful=True),
         _night(2, wolves_target="v1", wolf_target_role="villager", kill_successful=True),
     ]
     day_res = [_day(1, [("v1", "w1")], None, None)]
+
+    # Act
     m = _compute([], day_res=day_res, night_res=night_res)
+
+    # Assert
     assert m.power_roles_killed_by_wolves == 1
     assert m.power_role_alive_nights == 2
     assert abs(m.wolf_power_kill_rate - 0.5) < 1e-9
@@ -179,21 +208,32 @@ def test_wolf_power_kill_rate_none_without_power_alive_nights():
 
 def test_wolf_skconfirm_to_lynch_counts_confirmed_sk_lynched_later():
     # Night 1 the wolves whiff on the (night-immune) SK, confirming it; day 2 the SK is lynched.
+
+    # Arrange
     night_res = [_night(1, wolves_target="sk", wolf_target_role="serial_killer")]
     day_res = [
         _day(1, [("v1", "v2")], "v2", "villager"),
         _day(2, [("v1", "sk")], "sk", "serial_killer"),
     ]
+
+    # Act
     m = _compute([], day_res=day_res, night_res=night_res)
+
+    # Assert
     assert m.wolf_skconfirms_total == 1
     assert m.wolf_skconfirms_lynched == 1
     assert abs(m.wolf_skconfirm_to_lynch_rate - 1.0) < 1e-9
 
 
 def test_wolf_skconfirm_to_lynch_zero_when_confirmed_sk_never_lynched():
+    # Arrange
     night_res = [_night(1, wolves_target="sk", wolf_target_role="serial_killer")]
     day_res = [_day(2, [("v1", "v2")], "v2", "villager")]
+
+    # Act
     m = _compute([], day_res=day_res, night_res=night_res)
+
+    # Assert
     assert m.wolf_skconfirms_total == 1
     assert m.wolf_skconfirms_lynched == 0
     assert m.wolf_skconfirm_to_lynch_rate == 0.0
@@ -203,8 +243,11 @@ def test_wolf_skconfirm_to_lynch_zero_when_confirmed_sk_never_lynched():
 
 
 def test_diagnostic_metrics_are_tiered_diagnostic_and_present_on_dump():
+    # Act
     m = _compute([_msg(1, 0, "v1", [("w1", "accusation")])])
     dump = m.model_dump()
+
+    # Assert
     for name in DIAGNOSTIC_METRICS:
         assert name in dump, name
         assert _metric_tier(name) == "diagnostic", name
@@ -219,11 +262,15 @@ def test_diagnostic_metrics_are_tiered_diagnostic_and_present_on_dump():
 
 def test_a_ten_seat_game_leaves_the_nine_seat_only_metrics_unscored():
     from Agents.compute_metrics import NINE_SEAT_ONLY_METRICS, SERIAL_KILLER_METRICS
+
+    # Round 1: a ten-seat game
     roles = {"c": "chanteuse", "i": "illusionist", "n": "necromancer", "v": "vigilante",
              "h": "healer", "inv": "investigator", "s": "speculator"}
     ten_seat = compute_game_metrics({**_result([]), "roles": roles}, Metrics()).model_dump()
     for name in NINE_SEAT_ONLY_METRICS | SERIAL_KILLER_METRICS:
         assert ten_seat[name] is None, name
+
+    # Round 2: a nine-seat game
     # The nine-seat records still score as they did.
     nine_seat = _compute([]).model_dump()
     assert nine_seat["sk_kills_landed"] == 0 and nine_seat["serial_killer_lynched"] == 0
@@ -242,6 +289,7 @@ def test_a_ten_seat_game_is_scored_from_its_night_records():
 
     from Agents.schemas.roles import ROLE_SPECS, WOLVES
 
+    # Arrange: the pilot game's record, and the end-of-game state rebuilt from it
     r = json.loads((Path(__file__).parents[1] / "fixtures" / "ten_seat_game_record.json").read_text())
     m = Metrics(day_resolutions=r["day_resolutions"], night_resolutions=r["night_resolutions"])
     dead = {d.voted_player for d in m.day_resolutions if d.voted_player} | {p for n in m.night_resolutions for p in n.deaths}
@@ -250,7 +298,11 @@ def test_a_ten_seat_game_is_scored_from_its_night_records():
               "neutral_result": r["neutral_result"], "day_channel": [],
               "surviving_wolves": [p for p in alive if ROLE_SPECS[r["roles"][p]].side == WOLVES],
               "surviving_villagers": [p for p in alive if ROLE_SPECS[r["roles"][p]].side != WOLVES]}
+
+    # Act
     g = compute_game_metrics(result, m)
+
+    # Assert
     # Lynched the illusionist, the chanteuse and the serial killer.
     assert g.correct_elimination_rate == 1.0 and g.lone_killer_lynched == 1
     assert g.healer_save_count == 1 and g.healer_town_save_rate == 0.5

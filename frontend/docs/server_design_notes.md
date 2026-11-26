@@ -1,5 +1,27 @@
 # Server design notes — write-up seeds
 
+Status (2026-10-26): Server rulings, dated, 2026-08-08 to 2026-09-30, with one amendment of
+2026-10-21 to §13. Each section is the ruling as made; dated notes mark where the build moved on,
+and the index below says where each ruling's detailed home now is. The three refactors behind §8
+and §9 (2026-08-22) are told as they were verified in `build_log.md` §6.1 to §6.3.
+
+| § | Date | Ruling | Status 2026-10-26 | Detailed home |
+|---|---|---|---|---|
+| 1, 2 | 08-08 | The translator keeps its own shadow and never calls `get_state` | holds | here |
+| 3 | 08-08 | One handler per node; ballots arrive and are released apart | holds; the names predate the registry rewrite and Phase 3 | here, dated note |
+| 4 | 08-08 | `NIGHT_START` marker node, the owner's reversal | built 2026-08-18 | here |
+| 5 | 08-08 | `astream` on the loop, sync nodes in the executor | built | here |
+| 5b | 08-12 | The live-machine dict and the two scaling steps | durability done (§8); distribution not built | here |
+| 5c | 08-17 | Fault model, five modes | statuses superseded 2026-09-09 | `seat_continuity.md` §1 |
+| 6 | 08-08 to 09-30 | Slim `input_request`; day summary text; annotation join; reconnect lifetimes and cursors (08-18); BYOK built (08-12); BYOK restart packet (08-22); model registry (08-12); stalls (09-30) | packet reversed by §13; registry moved to the database 2026-10-12; stalls told in the agentic log | reconnect: transport §7; stalls: `docs/agentic_ai_encountered_issues.md` §1; the rest here |
+| 7 | 08-20 | AFK: delegate the turn to the seat's own agent | extended 2026-09-09, 2026-10-11 and 2026-10-15 | `seat_continuity.md` §4, §5, §5b |
+| 8 | 08-22 | One game identity, one event log; retention not ruled | built; retention still not ruled | here |
+| 9 | 08-22 | Routers expose resources, never own them | built (`admin`, `characters` routers added) | here |
+| 10 | 09-10 | Three nested lifecycles; `LiveGameRegistry` | built; transitions grew | here, dated note |
+| 11 | 09-11 | The registry holds only live games | built | here |
+| 12 | 09-12 | Rooms are not persisted | built; amended 2026-09-27 (leave, close, rooms expire) | here, dated note |
+| 13 | 09-12 | Funding: purse, menu, key resubmission | built; default model, catalogue and backup key moved on | here, dated notes |
+
 > Parking doc (started 2026-08-08, during the owner's events.py/translate.py review). Each entry
 > is a design argument that surfaced in review and deserves long-form treatment in the write-up's
 > backend chapter — captured here so it isn't lost, NOT polished prose. Sibling docs:
@@ -47,6 +69,14 @@ The one deliberate break in handler locality: entitlement buffers. Ballot conten
 `_h_vote` / `_h_wolf_night_vote` (emit nothing, store) and ships from `_h_collect_votes` /
 `_h_collect_wolf_votes` (empty delta, flush the batch). Arrival ≠ release is the blind-voting
 ruling made visible in code shape.
+
+[2026-10-26: the names here predate two changes. Since 2026-09-13 the translator is a registry of
+`@node(name, writes=...)` entries (`server/game/translate.py::node`, `::silent_node`); the
+`_h_<node>` handlers and `_FOLDS` are gone, and a field a node writes without declaring it raises
+`TranslationError`. Phase 3 (2026-10-09) removed the pack vote, so `_h_wolf_night_vote` and
+`_h_collect_wolf_votes` have no successor; the day ballots are still buffered and released at the
+tally (`Translator._day_ballots`). The principle holds: one entry per node, and arrival is not
+release.]
 
 ## 4. NIGHT_START: the owner overruled the lazy flag (a good reversal story)
 
@@ -161,7 +191,8 @@ undetected. (Terminology: these are the server's *failure modes*; the list as a 
    Recovery = reconnect and replay: the client reopens the stream from its last-seen event
    number and rebuilds its screen by re-folding events. This is what event sourcing buys —
    the recovery path IS the ordinary read path. (Remaining polish: honor the browser's
-   automatic Last-Event-ID reconnect header — open ruling.)
+   automatic Last-Event-ID reconnect header — open ruling.) [2026-10-26: ruled the next day,
+   2026-08-18 (§6, "The reconnect model"): the header wins when present.]
 2. **One game crashes** (exception in the engine, e.g. a dead BYOK key) — **surfaced
    cleanly; resumption possible but deliberately unwired.** The session records a redacted
    error, other games are untouched, the player starts a new game (ruled 2026-08-12).
@@ -169,7 +200,12 @@ undetected. (Terminology: these are the server's *failure modes*; the list as a 
    still exist in memory — a retry endpoint (re-enter the resume loop, e.g. with a fresh
    key) would continue the game from its last committed step with nothing lost. ~20 lines
    plus policy questions (which errors retryable, how often). Unbuilt by scoping choice,
-   not capability.
+   not capability. [2026-10-26: two changes since. A player's key is tried with the provider
+   before a game or room opens on it, so a refused key is a 422 at the door
+   (`server/game/live_game_registry.py::LiveGameRegistry._try_key`, 2026-10-17). And a failure
+   after `game_over` archives the game instead of dropping it
+   (`server/game/game_session.py::GameSession._drive_graph`, 2026-10-17). Resumption after an
+   engine exception is still unwired.]
 3. **The server process dies** (crash, container restart, deploy) — **recovery built
    2026-08-20.** Persistence is continuous rather than save-on-crash (a crash grants no
    notice): each graph superstep commits through `AsyncPostgresSaver`, and each translated
@@ -197,6 +233,9 @@ recovery problems.
 
 > 2026-09-09: mode 5 ruled — presence + two clocks + park; the lifecycle map is
 > [`seat_continuity.md`](seat_continuity.md).
+
+[2026-10-26: the current statuses of all five modes are `seat_continuity.md` §1, the detailed
+home of the fault model; this section is the 2026-08-17 original. Mode 4 is still unbuilt.]
 
 ## 6. Smaller ruled arguments worth one paragraph each
 
@@ -253,9 +292,20 @@ recovery problems.
   over vertex — the player's key is a Developer-API key, and billing it is the point.
   Mid-game key death: surfaces via `GameSession.error` (key-redacted before viewers see
   it), player restarts with a valid key — ruled acceptable for v1. Tests: tests/test_byok.py
-  (factory isolation, task-local delivery, redaction).
+  (factory isolation, task-local delivery, redaction). [2026-10-26: the fingerprint is stamped
+  into batch run records; served games carry none, and the rule stands either way. The tests
+  are now `tests/server/test_byok.py`.]
 - **BYOK restart recovery by credential resubmission: DEFERRED; implementation packet recorded
-  2026-08-22.** A browser disconnect does not lose the key because the live server process still
+  2026-08-22.**
+  - **Question:** after a restart, who may restore a game funded by a player's key, and how?
+  - **Decision:** 2026-08-22, only the original `host_key`, through a new
+    `POST /games/{id}/credential`; recorded as a build packet, not built.
+  - **Answer:** reversed 2026-09-12 (§13): any seat holder, through `POST /games/{id}/key`;
+    host-only is listed there as rejected.
+  - **What followed:** built 2026-09-12 (`server/game/live_game_registry.py::LiveGameRegistry.resume_with_key`,
+    `server/routes/games.py::fund_game`). The packet below is the dated original.
+
+  A browser disconnect does not lose the key because the live server process still
   owns the `GameSession`; a process restart does. Today boot recovery therefore marks a persisted
   BYOK game dropped even though its game row, events and LangGraph checkpoint survived. The owner
   ruled that only the game's original `host_key` may restore funding. Keep lifecycle and blockage
@@ -310,23 +360,32 @@ recovery problems.
   entitlement (not metered API), are restricted to the provider's own/approved clients,
   and exist for no backend in our factory — a raw key is the only credential every
   provider shares.
+  [2026-10-26: the registry moved on. Since 2026-10-12 the catalogue lives in the database,
+  tables `models` and `model_prices`, edited by `scripts/model_catalog.py` and re-read every few
+  seconds (`server/game/model_catalog.py`, `server/housekeeping/catalog_refresh.py`);
+  `SUPPORTED_GAME_MODELS` is gone. The tested-models-only policy and the same-credential rescue
+  stand. The Gemini default above is history: the site default seat model is Claude Haiku 5.5
+  since 2026-10-15. "Never ask for a second key" was relaxed on 2026-10-21: a player may offer a
+  second company's key, which runs the game's rescue (§13, dated note).]
   Stalls (2026-09-30): a served game on Vertex's shared pool saw single requests held for
-  2–5 minutes and then bounced (429 RESOURCE_EXHAUSTED), with the SDK re-sending each bounce
-  five times — nothing failed, so the rescue never fired. Now the game model carries a
-  request budget (`GAME_LLM_TIMEOUT_S`=30, `GAME_LLM_ATTEMPTS`=2; summaries 90 s, their
-  failure path being the raw transcript), a timed-out or bounced call counts as a STALL, and
-  a stalled primary is not asked again that turn: the rescue takes it at once. A per-game
-  count (`GameLLM.health`, `llm_factory/health.py`) sends turns straight to the rescue after
-  `GAME_STALL_RESCUE_AFTER`=2 stalls in a row, for `GAME_STALL_RESCUE_COOLDOWN_S`=300, then
-  tries the primary once more; one good answer clears it. Drafts share the turn code, so a
-  human's draft is rescued the same way. Extraction models are untouched.
+  minutes and nothing failed, so the rescue never fired. Now a timed-out or bounced call counts
+  as a stall and the rescue takes the turn at once, and two stalls in a row move the game to the
+  rescue for five minutes. [2026-10-26: the full account, with its numbers, commits and the move
+  to Haiku 5.5 with Sonnet 5.5 as rescue, is
+  [`docs/agentic_ai_encountered_issues.md`](../../docs/agentic_ai_encountered_issues.md) §1, its
+  one home. This paragraph was a full copy of it until 2026-10-26.]
 
 ## 7. The AFK fail-safe: delegate the turn to the seat's own agent (ruled 2026-08-20)
 
 > Extended 2026-09-09 with presence detection and parking — see [`seat_continuity.md`](seat_continuity.md) §4–§5.
 
 A solo game can wait forever — leave for lunch mid-turn and the game is simply paused for
-you; nobody minds. Multiplayer breaks that luxury: the moment two humans share a table, one
+you; nobody minds. [2026-10-26: since 2026-10-11 a solo game does more than wait at its
+player's turn: while its living player has no stream open it suspends at the end of the step it
+is in, so the agents cannot play on without them (`seat_continuity.md` §5b). Since 2026-10-15 a
+multi-human seat whose agent has played two turns in a row while it was away is taken to have
+left (`seat_continuity.md` §4). `seat_continuity.md` is the one home for absence; this section is
+the 2026-08-20 original.] Multiplayer breaks that luxury: the moment two humans share a table, one
 absent player at a vote freezes everyone else, indefinitely. So multiplayer games carry a
 pre-planned fail-safe — designed in from the start, not a patch — that keeps the game moving
 without a missing player's input.
@@ -460,6 +519,11 @@ a session depending on the registry that created it would be a cycle. Dependency
 routes and housekeeping → registry → lobby, runtime, repository; nothing below knows the
 registry exists.
 
+[2026-10-26: the transitions grew: `resume_with_key` (2026-09-12, §13), `leave`, `close` and
+`expire_rooms` (2026-09-27, §12's note) and `choose_character` (2026-10-03). The module docstring
+of `server/game/live_game_registry.py` carries the current state diagram. The boundary holds: the
+registry still never looks inside a session and never speaks HTTP.]
+
 Considered and rejected on the way: forcing solo games through a room so there is one door
 (uniformity, not simplicity — the lobby's host key, lock and name would be created and
 discarded, role choice would become a conditional inside the one path, and the only UX-neutral
@@ -536,6 +600,12 @@ no record of rooms that never started (nobody had asked for one). **Side effect:
 waiting-room retention question (seat_continuity §9.4) mostly dissolves, since no room outlives
 an uptime.
 
+[2026-10-26: amended 2026-09-27. A guest can leave a room and the host can close it
+(`POST /games/{id}/leave`, `/close`), and the sweeper closes a room nobody departed within
+`ROOM_LIST_TTL_SECONDS` (2 h). A closed room's URL answers 410 with the reason, kept in memory as
+the room was (`server/game/live_game_registry.py::LiveGameRegistry.closed_reason`). Rooms are
+still not persisted.]
+
 ## 13. Funding: the house's purse, a menu that says who pays, and resuming a key-funded game (2026-09-12)
 
 **The fact that forced it.** The Vertex credits behind house-funded games run out on
@@ -558,7 +628,9 @@ validated with the provider, then the game continues.
   and is never counted. A house-funded row is paid for only while the house is on and today's
   cap is not spent; the count is the games table itself (`byok=false` rows created this UTC
   day), so nothing extra is kept and two concurrent starts may exceed the cap by one, which is
-  accepted. The doors answer 422 (unknown model, or player-funded row without a key) or 402
+  accepted. [2026-10-26: the code states the race more widely: the check reserves no slot, so
+  any number of concurrent starts can all take the last one; a hard ceiling would need an atomic
+  reservation at launch (`server/house.py::HousePolicy.authorize`). Still accepted.] The doors answer 422 (unknown model, or player-funded row without a key) or 402
   with `Retry-After` (house off, or spent). A room is checked at creation, for the early
   message, and again at start, the moment it costs anything.
 - *Live knobs.* `enabled`, `default_model`, `games_per_day` live in a new `settings` table
@@ -592,4 +664,27 @@ one sentence and the reset time is on the wire).
 costs about forty percent more per game than 3.1; with a tight cap that is the first knob to
 revisit. A room checked at start while the house is spent has no way to add a key at that
 moment; the host sees the 402 and must open a new room with a key.
+
+[2026-10-26: the default-model paragraph predates the move to Claude: the site default seat model
+is Claude Haiku 5.5 since 2026-10-15, set through the live `default_model` knob, so the Gemini
+cost comparison, and the Vertex credit date that opened this section, no longer govern the
+house's default.]
+
+**Amended 2026-10-21 (recorded 2026-10-26): the catalogue in the database, and a backup key.**
+Two changes to who pays and what the menu offers, so they belong here.
+
+- *The catalogue.* Since 2026-10-12 the menu is rows in the database (tables `models` and
+  `model_prices`), edited with `scripts/model_catalog.py` and re-read every few seconds, so a
+  model is added, listed, re-priced or retuned without a deploy (`server/game/model_catalog.py`,
+  `server/housekeeping/catalog_refresh.py`). A model is still listed only once it has carried
+  real games. The default row is still the house's live setting.
+- *A backup key.* Since 2026-10-21 a player may give a second key for another company; that
+  company's steadiest listed model then runs the game's rescue, so a game whose own provider
+  stalls or goes down goes on through the other company, on the player's own key
+  (`server/game/model_catalog.py::BACKUP_MODELS`, `::backup_model`). A backup is taken only
+  beside the player's own key for the game model, and must be another company's. Both keys are
+  tried with their providers before the game opens
+  (`server/game/live_game_registry.py::LiveGameRegistry._try_keys`). The backup is held in memory
+  and dropped at the game's end like the key; after a restart only the main key is asked for
+  again.
 

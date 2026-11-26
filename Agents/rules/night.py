@@ -1,6 +1,6 @@
 """The night, resolved once for every role.
 
-Rules located at ``evidence/game_play_enhancement/role_sheet.md``.
+Rules located at ``evidence/gameplay/roles/role_sheet.md``.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from Agents.schemas.night import (
     NightOutcome,
     NightVerdict,
 )
-from Agents.schemas.roles import BORROWED_ABILITY, ROLE_SPECS, TOWN, WOLVES, NightKind
+from Agents.schemas.roles import BORROWED_ABILITY, NECROMANCER_IMMUNE_NIGHTS, ROLE_SPECS, TOWN, WOLVES, NightKind
 from Agents.schemas.roles import side_of  # noqa: F401  (re-exported: the record and the nodes read it here)
 
 
@@ -26,11 +26,11 @@ def can_be_blocked(role: str) -> bool:
 
 def is_night_immune(role: str | None, night: int) -> bool:
     """Whether a role cannot be killed at night: the serial killer always; the necromancer on
-    night 1 only (the sheet's rule, kept here so immunity has one home)."""
+    its first nights only (the sheet's rule, kept here so immunity has one home)."""
     if role is None:
         return False
     if role == "necromancer":
-        return night == 1
+        return night <= NECROMANCER_IMMUNE_NIGHTS
     return ROLE_SPECS[role].night_immune
 
 
@@ -232,7 +232,9 @@ def resolve_night(choices: list[NightChoice], roles: dict[str, str], night: int,
             concealed.append(choice.target)
     # A conceal that took also hides the attacking trace: the carrier's visit to that victim is
     # not among the visits the sentinel and trailseer see (balance ruling 2026-10-09). The
-    # carrier's other visit that night, and the illusionist's own, stay visible.
+    # carrier's other visit that night stays visible, and so does the illusionist's conceal visit,
+    # unless the illusionist carried the kill itself: then its kill and its conceal are the same
+    # visit, both hidden, and the attack leaves no trace at all.
     carriers = [c.actor for c in in_effect if is_pack_kill(c) and c.target in concealed_by_illusionist]
     visits = [(visitor, visited) for visitor, visited in visits
               if not (visitor in carriers and visited in concealed_by_illusionist)]

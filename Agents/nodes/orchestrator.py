@@ -20,7 +20,7 @@ from langgraph.runtime import Runtime
 
 from Agents.game_config import game_config_from_runnable
 from Agents.rules.night import usable_bodies
-from Agents.rules.night_record import disclosure
+from Agents.rules.night_record import disclosure, read_out_will
 from Agents.rules.resolution import tally_day_vote
 from Agents.rules.seats import alive_holder, seat_order, survivors
 from Agents.schemas import DayChannel, DaySummary, DeathRecord
@@ -53,7 +53,7 @@ from Agents.schemas.evaluation import ExtractionCase
 from Agents.tracing import (
     DayResolutionMetric,
     GraphContext,
-    langfuse,
+    get_langfuse,
 )
 
 
@@ -196,14 +196,14 @@ def day_resolution(state: OrchestratorGraph, runtime: Runtime[GraphContext]):
         no_vote=not bool(day_votes),
     )
     runtime.context["metrics"].day_resolutions.append(metric)
-    with langfuse.start_as_current_observation(
+    with get_langfuse().start_as_current_observation(
         as_type="span",
         name=f"day_resolution_day_{current_day}",
     ) as span:
         span.update(metadata=metric.model_dump())
 
     # "voted for X" reads as support in everyday English; agents misread a ballot to eliminate a
-    # player as defending them (evidence/game_play_enhancement/discussion_evidence.md §6.4).
+    # player as defending them (evidence/gameplay/discussion_evidence.md §6.4).
     vote_summary = "\n".join(
         f"  {v.voter} voted to abstain" if v.votee == "abstain" else f"  {v.voter} voted to eliminate {v.votee}"
         for v in day_votes
@@ -220,6 +220,9 @@ Player {lynched} has been voted out and was a {state['roles'][lynched].replace('
         record_line = disclosure(lynched, state["roles"][lynched], list(state.get("night_actions", [])))
         if record_line:
             message = message + record_line + "\n"
+        # The same record as data, for the deduction engine (public from now on; never rendered).
+        will = read_out_will(lynched, state["roles"][lynched], list(state.get("night_actions", [])),
+                             current_day, "day")
         state_update = {
             "voted_player": lynched,
             "no_lynch_streak": no_lynch_streak,
@@ -244,6 +247,7 @@ Player {lynched} has been voted out and was a {state['roles'][lynched].replace('
                     phase="day",
                 )
             ],
+            "read_out_wills": [will] if will is not None else [],
         }
         remove_from_buckets(state_update, state, [lynched])
         return state_update
@@ -558,7 +562,7 @@ def post_game_analysis(
         formatted_discussions=inputs["formatted_discussions"],
         formatted_strategy_notes=inputs["formatted_strategy_notes"],
     )
-    with langfuse.start_as_current_observation(as_type="span", name=case.span_name,
+    with get_langfuse().start_as_current_observation(as_type="span", name=case.span_name,
                                                metadata={"eval_schema": case.schema_version}) as span:
         payload = freeze_case(span, case, kind="extraction_input", case_key="extraction_case",
                               sink=runtime.context.get("eval_sink"))

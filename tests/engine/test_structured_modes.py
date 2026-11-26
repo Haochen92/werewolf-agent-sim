@@ -34,6 +34,7 @@ def test_auto_tool_reply_without_the_tool_call_is_a_parse_failure():
 
 
 def test_json_mode_appends_the_schema_last_and_turns_on_json_output(monkeypatch):
+    # Arrange
     seen = {}
 
     def fake_bind(self, **kwargs):
@@ -42,6 +43,8 @@ def test_json_mode_appends_the_schema_last_and_turns_on_json_output(monkeypatch)
 
     monkeypatch.setattr(_ToolCallStructuredChatOpenAI, "bind", fake_bind)
     llm = _ToolCallStructuredChatOpenAI(model="m", api_key="k", structured_mode="json_mode")
+
+    # Act and assert
     assert llm.with_structured_output(Vote).invoke("Who do you vote for?") == Vote(target="Ivy")
     assert seen["bind"] == {"response_format": {"type": "json_object"}}
     first, last = seen["messages"][0], seen["messages"][-1]
@@ -55,7 +58,10 @@ def _deepseek(monkeypatch, **kwargs):
 
 
 def test_deepseek_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeypatch):
+    # Arrange
     thinking = lambda llm: llm.extra_body["thinking"]["type"]
+
+    # Act and assert
     assert thinking(_deepseek(monkeypatch, thinking_level="medium")) == "disabled"  # default forced_tool
     llm = _deepseek(monkeypatch, thinking_level="medium", structured_mode="json_mode")
     assert (thinking(llm), llm.structured_mode) == ("enabled", "json_mode")
@@ -63,10 +69,13 @@ def test_deepseek_thinks_only_when_its_mode_does_not_force_the_tool_call(monkeyp
 
 
 def test_the_catalogue_mode_applies_and_an_explicit_mode_overrides_it(monkeypatch):
+    # Arrange: a catalogue whose DeepSeek row says auto_tool
     cat = catalog.seed()
     rows = tuple(replace(m, structured_mode="auto_tool") if m.model == "deepseek/deepseek-v4-pro" else m
                  for m in cat.models)
     monkeypatch.setattr(catalog, "_installed", replace(cat, models=rows))
+
+    # Act and assert
     assert _deepseek(monkeypatch).structured_mode == "auto_tool"
     assert _deepseek(monkeypatch, structured_mode="forced_tool").structured_mode == "forced_tool"
 
@@ -85,31 +94,44 @@ def test_a_mode_is_rejected_where_it_means_nothing(monkeypatch):
 
 
 def test_an_openrouter_model_is_pinned_to_its_makers_servers_with_reasoning_mapped(monkeypatch):
+    # Arrange
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+    # Round 1: a Qwen model with medium thinking
     llm = _build_chat_model("openrouter/qwen/qwen3.8-flash", temperature=1.0, thinking_level="medium")
     assert llm.model_name == "qwen/qwen3.8-flash"
     assert llm.extra_body == {"provider": {"order": ["alibaba"], "allow_fallbacks": False},
                               "reasoning": {"effort": "medium"}}
+
+    # Round 2: a MiniMax model with minimal thinking
     off = _build_chat_model("openrouter/minimax/minimax-m3", thinking_level="minimal")
     assert off.extra_body["reasoning"] == {"enabled": False}
+
+    # Round 3: a GLM model with minimal and with medium thinking
     # GLM reads an effort level as a cap on thinking and refuses it off: its lightest is effort
     # low, and full thinking is the plain switch
     light = _build_chat_model("openrouter/z-ai/glm-5.3-flash", thinking_level="minimal")
     assert light.extra_body["reasoning"] == {"effort": "low"}
     on = _build_chat_model("openrouter/z-ai/glm-5.3-flash", thinking_level="medium")
     assert on.extra_body["reasoning"] == {"enabled": True}
+
+    # Round 4: a model family with no pinned host
     with pytest.raises(ValueError):  # a family with no pinned host is refused, not left to routing
         _build_chat_model("openrouter/some-lab/some-model")
 
 
 def test_openai_reasoning_effort_follows_the_thinking_level(monkeypatch):
+    # Arrange
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+    # Act and assert
     assert _build_chat_model("openai/gpt-6-luna", thinking_level="low").reasoning_effort == "low"
     assert _build_chat_model("openai/gpt-6-luna", thinking_level="minimal").reasoning_effort == "none"
     assert _build_chat_model("openai/gpt-6-luna").reasoning_effort is None
 
 
 def test_json_schema_mode_asks_for_the_providers_strict_structured_output(monkeypatch):
+    # Arrange
     seen = {}
 
     def fake(self, schema=None, **kwargs):
@@ -118,11 +140,14 @@ def test_json_schema_mode_asks_for_the_providers_strict_structured_output(monkey
 
     monkeypatch.setattr(openai_compat.ChatOpenAI, "with_structured_output", fake)
     llm = _ToolCallStructuredChatOpenAI(model="m", api_key="k", structured_mode="json_schema")
+
+    # Act and assert
     assert llm.with_structured_output(Vote) == "runnable"
     assert seen == {"method": "json_schema", "strict": True}
 
 
 def test_only_a_json_mode_model_on_openais_servers_retries_with_the_strict_schema(monkeypatch):
+    # Arrange
     seen = {}
 
     def fake(self, schema=None, **kwargs):
@@ -131,9 +156,15 @@ def test_only_a_json_mode_model_on_openais_servers_retries_with_the_strict_schem
 
     monkeypatch.setattr(openai_compat.ChatOpenAI, "with_structured_output", fake)
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+    # Round 1: an OpenAI model in json_mode retries with the strict schema
     luna = _build_chat_model("openai/gpt-6-luna", structured_mode="json_mode")
     assert luna.enforced_structured_output(Vote) == "runnable"
     assert seen == {"method": "json_schema", "strict": True}
+
+    # Round 2: an OpenAI model already in json_schema mode does not
     assert _build_chat_model("openai/gpt-6-luna", structured_mode="json_schema").enforced_structured_output(Vote) is None
+
+    # Round 3
     # Another provider's json_mode (GLM on OpenRouter, DeepSeek) has no strict schema here.
     assert _deepseek(monkeypatch, structured_mode="json_mode").enforced_structured_output(Vote) is None

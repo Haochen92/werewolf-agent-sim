@@ -4,13 +4,21 @@ Reads extraction inputs (the post-game node's ``extraction_input`` records in a 
 a backfill file), extracts every dealt role's discussion, vote and night as one batch (each game's
 first call direct, to write its prefix to the cache), runs the de-halo pass as a second batch, and
 writes ``extracted.jsonl`` (extraction cases, the eval-case format), ``dehalo.jsonl`` and
-``summary.json`` (counts, tokens and cost at the catalogue's batch prices). A ``gemini-*`` model runs
-the live extractor's path instead, online, with its explicit prefix cache (Gemini batch is not
-built). Writing the lessons into a store or a served game's replay is a separate step.
+``summary.json`` (counts, tokens and cost at the catalogue's batch prices). A stopped run is resumed by
+running it again with the same ``--name``: its journal (``batches.json``) holds the games it took and
+the batches it paid for, which are collected rather than sent again. A ``gemini-*`` model runs
+the per-cell extractor's online path instead, online, with its explicit prefix cache (Gemini batch is not
+built). Writing the lessons into a store is the learning tick's step.
+
+Served games (``--from-db``) are read from the database instead of case files: the ones a run selects
+(memory on by default; ``--humans``, ``--since``, ``--games``, ``--sample``), skipping games already
+extracted unless ``--redo``. Their lessons are written back (``game_lessons``, shown by the replay and
+folded by the learning tick) unless ``--no-write-back``.
 
   poetry run python scripts/extract_batch.py --inputs batch_results/extraction_inputs/backfill_2026-10-12.jsonl \\
       --games 286816b0 cc80ecdf --model claude-haiku-5-5 --thinking off --name check_haiku
   ... --dry-run   # count the calls and estimate the input tokens; no model is called
+  poetry run python scripts/extract_batch.py --from-db --sample 10 --name served_2026_10_27
 """
 
 from __future__ import annotations
@@ -28,6 +36,8 @@ from Agents.memory.extraction.offline import (
     extract_cases_gemini,
     load_inputs,
 )
+from Agents.memory.extraction.run_journal import RunJournal
+from Agents.memory.extraction.served_games import ServedSelection, select_served_games, write_back
 from Agents.memory.persistence.config import DehaloConfig
 
 OUT = Path("batch_results/extraction_runs")
@@ -38,13 +48,52 @@ def _record(metadata: dict, case, kind: str = "postgame_extraction") -> dict:
             "metadata": metadata, "input": None, "output": {"extraction_case": case.model_dump(mode="json")}}
 
 
+def _resumed(loaded: list, journal: RunJournal) -> list:
+    """The inputs a resumed run took, in its order (its batches' request ids are positional); a new
+    run's inputs unchanged. A resumed run whose games can no longer all be found stops."""
+    taken = journal.games()
+    if taken is None:
+        return loaded
+    by_id = {c.game_id: (m, c) for m, c in loaded}
+    missing = [g for g in taken if g not in by_id]
+    if missing:
+        raise SystemExit(f"Resuming {journal.path.parent.name}: {len(missing)} of its games are not in the "
+                         f"inputs ({', '.join(g[:8] for g in missing[:5])}); pass the same inputs, or a new --name")
+    print(f"Resuming {journal.path.parent.name}: the {len(taken)} games it took")
+    return [by_id[g] for g in taken]
+
+
+def _served(args, journal: RunJournal) -> list:
+    """The served games this run takes: a resumed run's own games, by id, whatever the flags say
+    (a new selection could differ: a sample, or games finished since); else the flags' selection."""
+    choice = {"on": True, "off": False, "any": None}
+    if journal.games() is not None:
+        selection = ServedSelection(memory=None, games=journal.games(), redo=True)
+    else:
+        selection = ServedSelection(memory=choice[args.memory],
+                                    humans={"with": True, "without": False, "any": None}[args.humans],
+                                    since=args.since, games=args.games, sample=args.sample, seed=args.seed,
+                                    redo=args.redo)
+    return select_served_games(selection)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--inputs", nargs="+", required=True, help="case files holding extraction inputs")
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--inputs", nargs="+", help="case files holding extraction inputs")
+    source.add_argument("--from-db", action="store_true", help="served games, from the database")
+    parser.add_argument("--memory", choices=("on", "off", "any"), default="on", help="--from-db: memory switch")
+    parser.add_argument("--humans", choices=("with", "without", "any"), default="any",
+                        help="--from-db: games with a human seat, AI-only games, or either")
+    parser.add_argument("--since", help="--from-db: games finished after this ISO time")
+    parser.add_argument("--sample", type=int, help="--from-db: this many of the matching games, at random")
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--redo", action="store_true", help="--from-db: also games already extracted")
+    parser.add_argument("--no-write-back", action="store_true", help="--from-db: write the files only")
     parser.add_argument("--games", nargs="*", default=[], help="game id prefixes (default: every input)")
     parser.add_argument("--sources", nargs="*", default=[],
                         help="keep inputs whose recorded source contains one of these (e.g. v8_seed)")
-    parser.add_argument("--model", default="claude-haiku-5-5")
+    parser.add_argument("--model", default="claude-sonnet-5-5")  # Haiku writes seat ids into lessons (v8 batch check)
     parser.add_argument("--thinking", default=None, help="off, or an effort level (low..max); default: the model's")
     parser.add_argument("--no-warm", action="store_true", help="send every call in the batch")
     parser.add_argument("--no-dehalo", action="store_true")
@@ -52,9 +101,13 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    loaded = [(m, c) for m, c in load_inputs(args.inputs)
-              if (not args.games or any(c.game_id.startswith(g) for g in args.games))
-              and (not args.sources or any(src in m.get("source", "") for src in args.sources))]
+    if args.from_db:
+        loaded = _served(args, RunJournal(OUT / args.name / "batches.json"))
+    else:
+        loaded = [(m, c) for m, c in load_inputs(args.inputs)
+                  if (not args.games or any(c.game_id.startswith(g) for g in args.games))
+                  and (not args.sources or any(src in m.get("source", "") for src in args.sources))]
+    loaded = _resumed(loaded, RunJournal(OUT / args.name / "batches.json"))
     cases = [c for _m, c in loaded]
     calls = {c.game_id: cell_calls(c) for c in cases}
     n_calls = sum(len(v[1]) for v in calls.values())
@@ -64,6 +117,10 @@ def main() -> None:
           f"and {tail_tokens:,} uncached tail tokens")
     if args.dry_run:
         return
+    out = OUT / args.name
+    journal = RunJournal(out / "batches.json")
+    journal.record_games([c.game_id for c in cases])
+    print(f"Journal: {journal.path} (if stopped, rerun with --name {args.name} to collect what was paid for)")
 
     started = time.time()
     gemini_usage = None
@@ -72,13 +129,12 @@ def main() -> None:
         os.environ["GOOGLE_GENAI_PRO_MODEL"] = args.model
         extracted, gemini_usage = extract_cases_gemini(cases)
     else:
-        extracted = extract_cases(cases, args.model, args.thinking, warm=not args.no_warm)
+        extracted = extract_cases(cases, args.model, args.thinking, warm=not args.no_warm, journal=journal)
     dehalo_config = DehaloConfig(enabled=not args.no_dehalo)
-    dehalo = dehalo_cases(cases, extracted, dehalo_config)
+    dehalo = dehalo_cases(cases, extracted, dehalo_config, journal=journal)
 
-    out = OUT / args.name
     out.mkdir(parents=True, exist_ok=True)
-    rows, dehalo_rows = [], []
+    rows, dehalo_rows, filled_cases = [], [], []
     for metadata, case in loaded:
         result = extracted[case.game_id]
         model_used = f"{args.model} (thinking: {args.thinking or 'default'})" + (
@@ -86,6 +142,7 @@ def main() -> None:
         filled = case.model_copy(update={
             "observations": [o.model_dump(mode="json") for o in result["observations"]], "model_used": model_used})
         rows.append(_record({**metadata, "extraction_model": args.model, "thinking": args.thinking}, filled))
+        filled_cases.append(filled)
         if case.game_id in dehalo:
             dehalo_rows.append({"kind": "dehalo", "game_id": case.game_id, "output": {"dehalo": dehalo[case.game_id]}})
     (out / "extracted.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
@@ -99,8 +156,11 @@ def main() -> None:
         "gemini_usage": gemini_usage,
         "cost_usd": claude_structured.usage_cost_usd(), "minutes": round((time.time() - started) / 60, 1),
     }
+    if args.from_db and not args.no_write_back:
+        summary["write_back"] = write_back(args.name, filled_cases, dehalo)
     (out / "summary.json").write_text(json.dumps(summary, indent=2))
-    print(json.dumps({k: summary[k] for k in ("games", "calls", "missing", "usage", "cost_usd", "minutes")}, indent=2))
+    print(json.dumps({k: summary[k] for k in ("games", "calls", "missing", "usage", "cost_usd", "minutes",
+                                              "write_back") if k in summary}, indent=2))
 
 
 if __name__ == "__main__":

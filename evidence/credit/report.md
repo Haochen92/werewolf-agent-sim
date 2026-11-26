@@ -1,373 +1,244 @@
-# The credit layer — how a decision becomes a learning signal
+# Credit: scoring each lesson by the decisions it was followed at
 
-> **Scope:** the mechanism. How one recorded decision turns into per-memory utility: the two ledgers,
-> the per-channel valence rules with the reasoning behind each, the baselines, the shrinkage, and the
-> line between credited signals and diagnostics. This doc is also the wiring spec for the v1 build —
-> every component is marked **as built** (running code) or **v1 — ruled, wiring pending**. All five
-> judgment calls that were open in the 2026-07-11 draft have since been ruled by the owner
-> (2026-07-11 → 2026-07-13) and are absorbed inline with dates. **The v1 wiring was BUILT 2026-07-13**
-> (same day, after the rulings closed): every row below marked "as built (2026-07-13)" is running code
-> with tests — `evaluation/src/loop/` (credit, read_ledger, first_link, tells/tell_credit/tell_fold)
-> plus the live book channel `Agents/memory/tell_book.py`.
-> **Companions:** the *why* of the redesign, with alternatives and rejections, is the design record
-> ([`read_tactic_credit_redesign.md`](read_tactic_credit_redesign.md));
-> the game-grain, win-validated A/B ruler is [`../metrics/report.md`](../metrics/report.md); how far
-> to trust the surrounding loop machinery is the eval hub's job
-> ([`../evaluation/loop/report.md`](../evaluation/loop/report.md)).
-> **Status:** active record, rewritten 2026-07-13 (supersedes the 2026-07-11 draft in place).
+**Scope:** how the agents' memory scores its lessons from finished games, without an AI judge: how one decision is graded, how grades become a lesson's score, how that scoring was checked, and the July case where it failed and was fixed. It describes the ten-seat code in `Agents/memory/consolidation/`. The nine-seat research loop of July 2026, where the design was built and measured, appears as history and as the case study.
+**Revised against the code:** 2026-10-22 at `e765a18e` (the consolidation package has no uncommitted edits). *Note, 2026-10-28:* since then the day-matched baseline (§3) and grading of wolf-chat lessons by the move they are about (§2) were added; the memory tests (325) pass on the working tree; these changes are not yet committed.
+**Companion docs:** [the design record](read_tactic_credit_redesign.md) (why beliefs and actions are scored apart) · [the tell report](../extraction/tell_extraction/report.md) (the research-only tell channel) · [the blind-spot log](blindspot_fix/experiment_log.md) (the §6 investigation in full) · [the ten-seat decisions](../memory_system/v8/decisions.md) §12–14 (why the ten-seat rules are what they are).
 
-> **Orientation — one pipeline, two ledgers.** Every credit signal is built along one path:
+> **Orientation: one game's path through credit.**
 >
-> **decision → facts → valence → attribution → baseline → shrinkage → ledger**
+> **a game ends → each "I followed lesson X" decision gets a rule's grade → each lesson's grades are compared with memory-off play → lessons that keep doing worse are pruned, lessons doing better are protected, and synthesis sees each well-used lesson's score**
 >
-> *Facts* are what happened (who was voted, what the target's true role was). *Valence* is whether
-> that was good **for the actor's own faction**. *Attribution* is which memory item the signal lands
-> on. *Baseline* subtracts what happens anyway without memory. *Shrinkage* damps thin evidence.
-> The pipeline feeds two ledgers with two mechanisms: **strategy points** (usage-gated — an SP must
-> be followed to earn anything) and **tells** (off-policy — a tell scores on every player who
-> exhibits it, shown to an agent or not). That asymmetry is why the two mechanisms cannot be one.
+> A *lesson* (stored as a *strategy point*) is a short piece of advice for one role in one kind of situation, written by a model from past games. At a decision, an agent is shown the few lessons that best match its situation. For each one it reports a verdict: it followed the lesson, overrode it, or found it not relevant. Credit reads those reports after the game. Everything below hangs on this path.
 
 ---
 
-## 1. What credit is for — and what is never credited
+## 1. Why credit exists, and what it never scores
 
-Credit exists for the v7 compounding loop's curation steps: **consolidation** decides per strategy
-point whether to keep, prune, or synthesize over it (`loop/consolidate.py`), and the **tell fold**
-(`loop/tell_fold.py`) decides per tell whether it stays on the detector checklist and enters the
-injected book. (The fold is the periodic curation tick that runs every ~10 games, *folding* newly
-mined tells into the store — dedup against canon, probation, retirement. The name has nothing to do
-with cross-validation folds.) Both need a per-item utility, and the two obvious sources fail:
+The memory keeps hundreds of lessons: 498 in the ten-seat store when its first credit pass ran. Some help, some do nothing, and some hurt. A memory that cannot tell them apart keeps serving the harmful ones in every game. Credit is the signal that decides which lessons are removed, which are protected, and which are shown as a track record to the model that writes new lessons (*synthesis*).
 
-- The game's **win** is too sparse and too noisy to grade a single lesson. Sparse: one bit per
-  game, shared by every lesson every agent used that game. Noisy: a large share of outcome variance
-  is role-assignment and night-target luck rather than skill (the metrics campaign's estimate:
-  roughly a third), so a single lesson's true effect would need hundreds of games to show through.
-- The agent's own **follow/override choice** is degenerate. Measured on the v6ab town arms (1,748
-  memory-on decisions with verdicts): when an agent judged a shown SP applicable it followed 1,943
-  times and overrode 26 — a **98.7% follow rate** (the G3a finding; the real filtering happens one
-  step earlier, at the "not relevant" verdict, 3,155 times). A bit that is almost always "followed"
-  cannot separate good SPs from bad ones — it is true of the best and the worst SP alike. The same
-  measurement settles a related question: most decisions follow exactly one SP, but ~24% follow two
-  or three at once (mean 1.11 per decision), which is why the attribution risk in §3 is *dilution
-  across co-followed SPs*, not a single-SP mistake.
+Two obvious signals do not work.
 
-What remains is the middle grain — *when an agent used this memory and then acted, was that one
-action good, judged against the true hidden roles?* — many small per-decision rewards, dense enough
-that one mis-graded turn washes out.
+- **Winning is too blunt.** A ten-seat game runs for several days and nights, and a lesson may be followed at one decision in it. Whether that side won says little about that one decision. Giving every lesson the winners followed a point would reward lessons that happened to ride along with a win.
+- **"I followed it" is not "it helped".** The follow report says the agent adopted the advice. It says nothing about whether the advice was good.
 
-Three things are deliberately **never** outcome-credited:
+So credit grades the decision itself: the single vote, night action or day's discussion at which the agent said it followed the lesson. The grade comes from a fixed rule in code, applied to what the game record shows happened.
 
-- **Observations** — descriptive records ("I did X in situation Y and Z happened"). You don't
-  "follow" one, so there is nothing to credit; they are the substrate synthesis distills SPs from
-  and ride frequency plus the deterministic extraction anchor.
-- **The Brier ledger** — the agent's read accuracy against revealed roles. It is a meter on the
-  *agent*, never on a memory item, and it must stay separate: mixing application quality into a
-  fact's credit makes the fact's score depend on who applied it (design record §3, Layer 2).
-- **Diagnostics** — instruments that watch the same games without paying credit (§5). The main
-  two: the **discussion tagger**, an LLM judge that reads a full day's transcript with the true
-  roles visible and issues one per-player verdict on how well that player worked the discussion —
-  "holistic" because it judges the whole day at once rather than any single move — and the
-  **first-link read-delta**, which asks whether an addressed player's next stated read moved the
-  way a push intended. A diagnostic may explain a result; it never feeds prune, protect, or
-  synthesis.
+Three things in the memory system are deliberately never credited this way:
 
-Two standing boundaries. First, **credit never referees an A/B.** Credit is the loop's *internal*
-reward: its only job is deciding which memories to keep, prune, or synthesize. It has never itself
-been validated against winning, so "average credit went up" is not evidence that memory helps — a
-loop that graded its own effect with its own reward would be marking its own homework. Whether
-memory helped is always answered outside the loop, by the win-validated proxy basket and the
-end-point A/B (the metrics report). Second, **credit is v7-only**: v5/v6 recorded follows live but
-nothing joined outcomes back until `credit_backfill.py` closed the join.
+- **Observations.** These are short accounts of a play and its effect, extracted from finished games by a model. They are the raw material synthesis writes lessons from. Each carries the extraction model's own verdict on whether the play worked. That verdict reaches synthesis but never credit.
+- **Read accuracy.** A *read* is an agent's stated suspicion about another player's hidden role. How often reads match the true roles is measured separately, as a property of the agent, not of any lesson.
+- **Diagnostic judgments.** An AI judge can rate how persuasive or credible a day's talk was, or whether one message moved another player's suspicion. These help explain results. They never decide which lesson is pruned.
 
-## 2. The facts/valence split
+## 2. How one decision is graded
 
-The layer is two modules on purpose:
+Grading separates two questions. The first is what happened: the decision's target, the role that target turned out to have, and the outcome (the kill landed, the healer saved them, the vote went the other way). The second is what that meant for the player who acted. The same event can be good for one side and bad for another: a town player lynched is a loss for the town and a gain for the wolves. So one step reads the facts from the game record. A separate rule for each role and action turns them into **good**, **neutral** or **bad** for that player. Good counts +1, neutral 0, bad −1.
 
-- **Facts** — `evaluation/src/loop/decision_scoring.py` (**as built**): one frozen decision in,
-  deterministic facts out. Votee's true role, threat-hit, mislynch, abstain, night target class,
-  the original choice set, and board pivotalness (`query_criticality`). No LLM, no opinion about
-  whether an outcome was *good*.
-- **Valence** — `credit_backfill._vote_credit` / `_night_credit` (**as built**; reused live):
-  interprets those facts per faction — "did this action advance the actor's own win condition?"
+The rules come from three questions the project owner asked of every role in October 2026: what outcome is ideal for this role, what is neutral, and what is undesirable. Applying them role by role gave four general reasons, which most rows below follow (added 2026-10-28, from [v8 decisions](../memory_system/v8/decisions.md) §12):
 
-The split exists because the facts have ~15 importers (replay screens, audits, instrument
-validation, credit) that must all agree on ground truth, while the *interpretation* legitimately
-differs per consumer. Without the split every consumer re-derives "was this vote correct" and they
-drift.
+- **Grade what the player controls.** Where the outcome was another player's doing, the rule grades the choice. A vigilante who shoots a wolf the healer then saves still made the right choice.
+- **A failure the player could foresee is the player's.** The killers must attack someone every night, so their skill is choosing the target. Attacking someone the healer is likely to protect, or a player immune at night, wastes the night.
+- **Being seen is a cost.** A kill witnessed by a Sentinel or a Trailseer is bad for the killer, whom the witness can then name in the day.
+- **A limited use spent for nothing is bad**: a watch that saw no one, a sigil on someone who did not attack, a conceal on a body with nothing to hide. An Investigator's check on the Serial Killer is bad too: it spends a check and gives the town a false clear.
 
-One ruling lives on the facts side: **criticality stays out of credit magnitude** (ruled
-2026-07-11). *Criticality* (pivotalness) measures how close the board is to a decided game. It is
-deterministic arithmetic over the game's three terminal clocks (`Agents/board_clocks.py`) — each
-faction's countdown of eliminations until its win condition: the wolf clock (non-wolves left to
-remove), the SK clock (everyone-but-one left to remove), the town clock (threats left to remove). A
-**swing-board decision** is one taken when any clock is at ≤1 — the game can end within one
-elimination, so a single mislynch or landed kill can decide it. The ruling says that decision still
-earns the same ±1 as a sleepy day-1 vote. The reason: pivotalness is a property of the *board*, not
-of the lesson — an SP followed at a pivotal moment is not thereby a better SP, and weighting credit
-by board tension would concentrate credit noise into exactly the highest-variance moments.
-Criticality is used in two other places instead: **lesson selection** — extraction mines new memory
-candidates preferentially from pivotal decisions, since that is where a lesson is worth writing —
-and **audit ground truth** — the periodic quality audit samples pivotal decisions, where a grading
-error would matter most.
+### The ten-seat rule table
 
-## 3. The strategy-point ledger
+The game deals ten seats from twelve roles, split across four sides (role glosses added 2026-10-28, from [the role sheet](../gameplay/roles/role_sheet.md)):
+- the town, six roles:
+  - **Investigator**: checks one player at night; wolves read "Suspicious", everyone else (the Serial Killer included) "Not suspicious". Two checks a game.
+  - **Sentinel**: watches one player's door at night and learns everyone who visited. Two watches a game.
+  - **Trailseer**: follows one player each night and learns whom they visited, or "no one".
+  - **Vigilante**: shoots one player at night. Two bullets.
+  - **Sigilist**: places a sigil on one player; if that player attacks anyone that night, the Sigilist kills them. Two sigils.
+  - **Healer**: protects one other player from attacks each night.
+- two wolves, who kill together each night and each have one skill:
+  - **Chanteuse**: blocks one player's night action.
+  - **Illusionist**: hides the pack's victim's role and night record. Two conceals.
+- a lone killer, one of:
+  - **Serial Killer**: attacks every night; immune at night.
+  - **Necromancer**: from night 2, uses a dead player's night ability.
+- two neutrals who bet on others, one of which is dealt:
+  - **Speculator**: once, privately picks the side it predicts will win, and wins when that side does.
+  - **Fortune Teller**: each night bets on who will die; wins at two points.
 
-### Step 1 — attribution: the follow join (as built)
+The rules below are read from `Agents/memory/consolidation/grading.py`.
 
-A decision's credit lands on every SP the agent reported following at that decision
-(`strategy_verdicts` → `strategy_index_to_key`). Self-report is the accepted v1 attribution because
-its failure mode is benign: at ~99% follow the risk is **dilution, not bias** — an SP that didn't
-really shape the action gets the outcome smeared onto it, weakening contrast rather than tilting
-it, because the valence itself is deterministic. The bound is now MEASURED (2026-07-13, n=15 seeded
-sample, AI-adjudicated — `attribution_spot_check.json` beside this report). The check: draw 15
-claimed follows and read each transcript asking *did the action actually enact what this SP
-advises?* 13 of 15 did (**enacted**); 2 were **empty claims** — the agent reported following the SP
-but the action shows no trace of it, so any credit would have landed on an SP that did nothing.
-Fifteen samples is small, so the honest number is a confidence bound, not the raw 2/15: at 95%
-confidence the true empty-claim rate is **at most 36%** (Clopper–Pearson, the standard exact bound
-for small samples). Read plainly: even in the worst case consistent with this sample, roughly
-two-thirds of credit lands on SPs that genuinely shaped the action — and the failure direction is
-dilution (added noise), never a systematic tilt. Both observed misses had one shape — a follow
-claimed on a turn the agent then PASSED (said nothing) — so the discussion ledger now credits
-SPOKEN turns only (the pass-gate, `credit.py::_spoke`, applied to the OFF base too), which removes
-the only observed failure mode structurally. The outcome-blind matcher that would replace
-self-report stays deferred future work.
+**Day votes**
 
-### Step 2 — valence: the per-channel rules
+| Who votes | Good | Neutral | Bad |
+|---|---|---|---|
+| Town (and a Speculator that bet on the town) | votes for a wolf or the lone killer | abstains on a day when someone was lynched | votes for a town player or a neutral; abstains on a day that ended with no lynch |
+| A wolf (and a Speculator that bet on the wolves) | votes with the room's largest bloc (abstaining counts as a bloc) | | votes any other way |
+| The lone killer (and a Speculator that bet on itself or on the killer) | votes for anyone but itself (or the killer it backs) | abstains | votes for itself (or the killer it backs) |
+| The Fortune Teller; a Speculator before it bets | unscored | | |
 
-Each row states the rule, the validated proxy it mirrors, and its status. Every credited channel
-traces to the win-validated proxy campaign ([`../metrics/candidate_ledger.md`](../metrics/candidate_ledger.md));
-where a channel is deliberately weak or generous, the owner ruling that accepted it is dated inline.
+**Day discussion.** A lesson is graded once per player per day, and only if the player actually spoke on a turn where it said it followed the lesson.
 
-| Channel | Roles | Rule | Validating evidence | Status |
-|---|---|---|---|---|
-| Day vote | town | **+** threat lynch (wolf *or* SK) · **−** townmate · abstain neutral | town vote basket (validated, \|r\|≈0.6 family) | as built |
-| Day vote | wolf | **+** vote matches the day's final plurality, **−** off-plurality | G2 day-blend r=+0.22; blend-with-majority audit r=+0.20 | as built |
-| Day vote | SK | **+** any non-self lynch | none — near information-free; **ruled 2026-07-13: keep for v1** (concealment floor now carries SK day-skill) | as built |
-| Day discussion, day grain | all | every followed discussion SP gets one tick, signed by what the day's lynch was worth to the actor's faction | M1 vote endpoint, held-out Pearson +0.51 (n=51 SPs, v6ab) | as built (2026-07-13) |
-| Day discussion, move grain | all | a followed SP that produced a stance-tagged push at a specific player: **did it work** (lynch landed where pushed) × **target's faction value** | reuses the validated vote-endpoint + roles lookup; deterministic | as built (2026-07-13) |
-| Day discussion, concealment | wolf, SK | per-day suspicion-delta credited to a followed concealment-type SP, behind two guards (below) | guarded slice; luck-of-attention residual named and accepted | as built (2026-07-13; SPs are typed `sp_type=concealment` at synthesis, so legacy untyped stores earn nothing here) |
-| Night | investigator | **+** threat found · miss **neutral**, never − | raw find-rate is a validated *null*; the validated construct is conversion (`investigator_find_to_lynch_rate`, basket member) — **ruled 2026-07-13: keep neutral-miss** | as built |
-| Night | vigilante | **+** threat shot · **−** friendly fire · held bullet neutral | both sides: friendly fire −0.29 (N=180, validated error-companion); landed wolf-kills rate +0.16 (p=.035, validated secondary); threat-hit rate +0.18 (n.s., n=53 — directional, logically-anchored) | as built |
-| Night | wolf / SK | **+** power-role-or-threat kill · plain-townie kill neutral | direct positives: `wolf_power_kill_rate` +0.31 (p=.002, `sk_lynched=1` stratum; pooled ~null) · `sk_power_roles_killed` +0.32; mirror ★ `power_roles_killed_by_evil` −0.40 from the town ledger | as built |
-| Night | healer | **+** saved a town player who was actually attacked · **−** shielded a threat from an attack · heal on an unattacked player neutral | ★ `healer_town_save_rate` +0.36/+0.33 (v5), **+0.40 at N=180**; the friendly-fire split validates negative | as built (2026-07-13) |
+| Situation | Grade |
+|---|---|
+| The speaker was lynched that day | bad |
+| The speaker accused the player who was lynched, on a turn that followed the lesson | good for a wolf, the lone killer or a Speculator that has bet; for a town speaker, good if the lynched player was evil, otherwise left out (§4) |
+| Otherwise | the day's lynch graded as if it were the speaker's own vote (a wolf is graded on whether a packmate died; a day with no lynch is neutral) |
+| An evil player's lesson about keeping a low profile | its own rule, on a day the player spoke: drawing at most half its fair share of the day's accusations is good, at least twice its share is bad, anything between is neutral; a day with no accusations at all is unscored |
 
-Rationale for the rows that aren't self-evident:
+**Night actions.** A blocked action is neutral for every role: it spent nothing and was not the player's choice. An action whose result was never made public (the player died that night) is unscored.
 
-- **Abstain is neutral, not negative** (town): inaction is its own failure mode, but collapsing it
-  into − would make "did nothing" indistinguishable from "spent town's one removal tool on a
-  townmate," which is strictly worse.
-- **Wolf day skill is blending, and plurality-matching is bussing-aware by construction.** The rule
-  is a lookup against the day's final `vote_counts` plurality (abstain-majority counts; not
-  conditioned on whether the lynch landed). When the room is already lynching your packmate,
-  blending *means* voting the packmate — the correct cover play. A naive "voted an ally = negative"
-  rule would punish exactly the sophisticated move.
-- **Blend and steering never net** (ruled 2026-07-13). A deliberate off-plurality frame scores
-  blend-negative *and* may score move-grain positive; both fire, because they measure different
-  skills (concealment vs steering) and the real wolf skill is choosing *when* to do which — a
-  late-game off-plurality gamble that protects parity must surface as (blend −, steer +), not be
-  averaged to zero.
-- **The move-grain rule has a failed ancestor, and the difference is load-bearing.** A
-  deterministic per-turn advocacy credit — "score every accusation exactly as a vote at its target"
-  — was built and measured in June (tagger log §1b) and failed its pre-registered gate. Not because
-  the arithmetic was wrong, but because it could not stand *alone*: only accusatory turns are
-  scorable at all, just 41 SPs survived the ≥3-turn support filter (too thin for any held-out
-  check), and what signal remained duplicated the vote channel. v1 does not re-run that bet. The
-  credited floor is the day-grain endpoint (validated held-out +0.51), and move-grain reuses the
-  advocacy primitive only as a *refinement on top* — sharpening attribution where a stance-tagged
-  push exists, falling back to the endpoint everywhere else, never asked to rank SPs by itself.
-  What was *not* revived from June is influence scoring (did the push move the room?); that is
-  first-link's job, and it stays a diagnostic (§5).
-- **The endpoint carries a self-lynch guard** (wiring catch, 2026-07-13): the reused vote rule is
-  blind to the actor being the day's lynch — a lynched SK's followed discussion SPs would have read
-  "positive" under "any non-self lynch." The endpoint scores the actor's own lynch as negative first,
-  before any other rule.
-- **SK day generosity is a known hole, accepted.** Any non-self lynch scores +, so a healer
-  mislynch and a wolf lynch look identical. Ruled acceptable for v1 because the channel is
-  sign-safe and SK day-skill now has a better home (the concealment floor); revisit after the
-  first compounding run.
-- **The investigator's real value is conversion, not finding** — the validated proxies say so (raw
-  find-rate null; find→lynch validated). Night credit therefore stays generous (miss neutral), and
-  whether an investigator's *push* moved the room is a transmission question handled in §5.
-- **Night-confirmation → day-lynch conversion is credited piecewise, never as a linked bonus.**
-  Three night actions privately confirm a threat without removing it: the investigator's find, and
-  the vigilante's or (since this epoch's whiff disclosure) the wolf's attack on the night-immune
-  SK — the target survives, which is itself the confirmation. Each step of cashing that knowledge
-  in already has its own channel: the night action earns **+** for picking a threat
-  (`_night_credit` grades the choice, not the kill), a day push at the confirmed player earns
-  through move-grain if the lynch lands, and the vote earns through the vote channel. What is
-  deliberately NOT paid is a bonus for the chain *as a chain* ("you knew, then it died"): the join
-  "confirmed player was later lynched" cannot tell cause from coincidence, which is exactly the
-  influence claim reserved for the ablation-replay gate (§5). The chain is instead measured at
-  game grain, in the metrics layer: investigator find→lynch ★ +0.40 (validated, N=180); the
-  vigilante `skconfirm` mirror r=+0.48 but n=9 (far too thin); the wolf mirror added 2026-07-14,
-  untestable on the archive (wolves only learned of the whiff this epoch). The pattern behind all
-  of this is one rule: a night action that **changes the board** carries win signal alone (landed
-  wolf-kill +0.16 validated); one that only **produces knowledge** is ~null alone (raw SK-shots
-  r≈+0.04) and pays its faction only through conversion. Night credit's + for the SK-shot is
-  therefore knowingly generous — it rewards a correct choice whose win-value hangs on a
-  conversion credit does not track, the same generosity as the investigator's find.
-- **The healer rule mirrors its validated construct exactly.** A save is observable only when the
-  heal target was attacked that night (by any attacker — wolf, SK, or the vigilante's mistake) and
-  survived; the validated split is *who* was saved: a town save is the good-play half (★ basket
-  member), shielding a threat is the validated error half. An unattacked heal is a prediction miss,
-  neutral like the held bullet. This channel sat uncredited behind a stale blocker: the rule needs
-  the attack-join from `night_resolutions`, and the credit pass historically read only eval dumps —
-  but the wolf-blend rule already made it load each game record, so the join is now a free lookup
-  (`night_resolutions` carries `healer_target`, both attacker targets, `vigilante_target`,
-  `deaths`). Ruled into v1 on 2026-07-13.
-- **`sp_type` is a new schema field, added for the concealment channel** (2026-07-13,
-  `Agents/schemas/memory.py`): every synthesized SP is now stamped `general`, `concealment`, or
-  `risk_policy`, and the concealment floor pays only `concealment`-typed SPs — one SP family, one
-  instrument, so a generic wolf SP can never farm the suspicion-delta. Legacy stores predate the
-  stamp, default to `general`, and earn nothing here until re-synthesized.
-- **The concealment floor's two guards** exist because the naive score ("low suspicion + survived")
-  collapses into "won," most completely for the SK. Guard 1: normalize by the day's total
-  accusation volume, so a day when the room was busy elsewhere credits nobody's concealment.
-  Guard 2: the agent must have spoken that day, so silence cannot farm the credit. The residual —
-  believed-because-plausible vs believed-because-unscrutinized — is named, accepted, and assigned
-  to the diagnostic tagger, never to credit.
+| Role and action | Good | Neutral | Bad |
+|---|---|---|---|
+| Wolves' kill | lands on a town player or the lone killer | lands on a neutral | the healer saved the victim; the victim was immune; the kill was seen by a Sentinel or a Trailseer |
+| Chanteuse block | blocks a town action that would have hurt the wolves | blocks a town action that changed nothing; the block did not take | blocks someone who had no action that night, or a non-town player |
+| Illusionist conceal (hides a dead victim's role and night record) | hides a town victim who had a record to read out | the victim survived, so the conceal is kept; declined while the victim's record was harmless | spent on a body with nothing to hide; declined while the victim's record named a wolf |
+| Serial Killer kill | lands on a non-neutral | lands on a neutral | saved, immune, or seen |
+| Necromancer | unscored: its borrowed actions interact too much for one grade | | |
+| Investigator check | the result reads Suspicious | any other result; declined | checked the Serial Killer, who reads as clear (a false clear and a spent check) |
+| Sentinel watch | saw an evil visitor, or a dead player's body (the Necromancer's) | saw only town visitors; declined | saw no one |
+| Trailseer follow | followed an evil player who went somewhere | followed a town player who went somewhere | followed someone who went nowhere |
+| Healer protect | saved a town player from an attack | no attack came; saved a neutral | saved an evil player |
+| Vigilante shot | shot an evil player, even one the healer saved or who was immune | held fire; shot a neutral | shot a town player |
+| Sigilist sigil | placed on an evil attacker | | placed on someone who did not attack; placed on the Vigilante, who then shot |
+| Speculator bet | the side it bet on won | declined to bet yet | the side it bet on lost; died on its last night without ever betting |
+| Fortune Teller bet | scored one or two points; bet on itself on a night it was attacked | | a miss; bet on itself on a night no one attacked it |
 
-### The read-partition (as built 2026-07-13)
+The wolves' night chat decides nothing itself, so a lesson followed there takes the row of the move it is about: the kill, the Chanteuse's block or the Illusionist's conceal. Until 2026-10-28 every lesson followed in the chat took the kill's grade, so a lesson about when to spend a conceal was scored on whether the kill landed. (Source: each wolf night lesson records its move in the `pack_move` tag; v8 decisions §18.)
 
-One uniform rule sits on top of the night and targeted-day rows: **if the actor's own stated read
-on the target turns out wrong, the outcome is excluded from the SP ledger and the read ledger
-(Brier) takes the penalty instead.** A tactic is a procedure over a belief; when the belief was
-wrong, the outcome says nothing about the procedure. The worked case: a vigilante follows "shoot
-your highest-confidence threat," shoots a player it read as the SK, and the player is town.
-Without the partition, the SP eats a −1 for a failure that belongs to the read; with it, the SP
-gets nothing and the wrong read is penalized where reads are measured.
+Two rows need a word.
 
-Three boundaries keep the rule honest:
+**A wolf's vote scores well for voting with the room, even when the room is lynching the wolf's own packmate.** The rule measures one skill, blending in, because a wolf who votes against a clear majority draws attention to itself. Losing the packmate is a real cost to the wolves, but it shows up in the game's outcome, not in this vote's grade. The grade measures one skill, not the full value of the move.
 
-- **It fires only on a stated-and-wrong read** (the per-target read list makes this a lookup). No
-  stated read, or only a low-confidence one, means the outcome credits normally — exclusion
-  requires evidence of a wrong belief, not the absence of one.
-- **It applies uniformly but visibly matters in two places**: the vigilante shot and town's
-  targeted day moves. The other night channels have no negative outcome to rescue (miss and filler
-  kill are already neutral), so there the partition is nearly a no-op — implemented anyway, as one
-  code path that cannot drift.
-- **It never applies to deceivers or to risk policies.** Deception decouples belief from move (a
-  wolf can correctly read a villager and frame them anyway), so deceiver moves are scored by the
-  two move-grain questions alone. And an SP whose whole point is acting under uncertainty ("at
-  parity, shoot even when unsure") prices its misses in — excluding its read-wrong instances would
-  delete exactly the cases the policy exists to manage, so such SPs score as an aggregate over
-  every firing.
+**A harsh "bad" does not bias a lesson's score.** A role whose turns mostly grade bad simply has a low memory-off average, and a lesson is scored against that average (§3).
 
-### Step 3 — baseline: subtract what happens anyway (as built)
+### One decision, graded
 
-A raw followed-outcome rate is a **level**, and a level can be free. The standing example: the
-last-standing SK's night kill lands almost every night no matter how well it played, so any SP it
-followed would look brilliant on raw outcomes. Every channel is therefore differenced against the
-**same cell's memory-OFF base rate** (`baselined_sum += value − base_rate`) — credit measures what
-following the SP added *over the ambient rate of that role and phase without memory*.
+This lesson and decision come from a July nine-seat game, one of fifteen sampled for the attribution check in §5. Here is the lesson's text as stored in the check's record, which cuts it at 120 characters:
 
-The invariant that guards this: `invariants.py::assert_baseline_coherence` — every credited channel
-must be differenced against a base produced by the **same grading instrument** on the OFF arm. A
-level graded by one instrument minus a floor graded by another masquerades as lift; this error
-class was caught three times before the invariant made it structural. The tell ledger's cast-prior
-baseline (§4) registers as a second baseline *family* under the same invariant.
+> *Lesson (vigilante, night):* "Do not shoot. Firing while under direct suspicion is extremely risky. If you hit a villager, you confirm the accusations"
+>
+> *Decision:* the vigilante, under active accusation, held fire that night and reported following the lesson.
 
-### Step 4 — shrinkage and windowing (as built)
+Under the ten-seat table a vigilante who holds fire scores **neutral** (0). The July rule scored it the same way. The lesson's score then depends on how memory-off vigilantes do at night. If they usually shoot and hit evil players, their average is above 0, and a lesson that only ever holds fire falls below it. If their shots usually go wrong, their average is below 0, and holding fire comes out ahead. The rule does not decide whether caution was wise. The comparison with play without memory does.
 
-Thin evidence flatters. An SP followed twice with two lucky positives must not outrank one followed
-twenty times at a modest rate, so the ranked quantity is the lift pulled toward zero in proportion
-to support: `shrunk = lift × follow/(follow + K)`, `SHRINK_K = 5` — empirical-Bayes damping. The
-construction reproduces out of sample (held-out reproduction r=+0.54, n=31 SPs). Counts are
-**recomputed over a rolling window each tick** (set, not accumulated), so stale credit ages out as
-the meta shifts; out-of-window and never-followed SPs are zeroed by the same pass.
+## 3. From grades to a lesson's score
 
-## 4. The tell ledger (as built 2026-07-13)
+A lesson's grades are averaged, then compared with the same role's same kind of decision in games played with memory off. A vigilante's night lesson is compared with memory-off vigilante nights; a wolf's chat lesson about the kill with memory-off wolf chats, and one about a conceal or a block with memory-off conceal or block turns. This comparison matters because some decisions succeed most of the time anyway. Without it, a lesson attached to an easy decision would look excellent for doing nothing.
 
-A **tell** is a falsifiable `behavior → role` claim, stored as an atomic list item — e.g. *"voted a
-player who had drawn no discussion" → evil*. Its credit is its **empirical accuracy**: of all
-players who exhibited the behavior, what fraction were evil, minus the cast prior (3 evil of 9), so
-a behavior everyone exhibits prices itself to zero. The same shrinkage as SPs (K=5) damps thin
-support. Sign is direction: positive lift marks evil, negative lift marks town.
+The memory-off games must be graded by exactly the same rules. A memory-off average computed any other way would differ from the lesson's average for reasons that have nothing to do with the lesson. Sometimes a lesson has followed decisions of a kind for which no memory-off games exist. It is then left unscored, and an unscored lesson is never pruned. A missing baseline is not treated as a baseline of zero.
 
-What makes this ledger structurally different from the SP ledger is that it is **off-policy**: the
-detector counts every exhibitor in every game, so a tell earns or loses credit whether or not it
-was ever shown to an agent. That is why the injected book needs no exploration slot — candidates
-mature in the background for free — and why tell credit needed no follow join.
+The difference is then damped toward zero when the lesson has few uses. With one follow, a lesson keeps a sixth of its difference; with five, half; with twenty, four fifths. One lucky game therefore cannot make a lesson a star, and one unlucky game cannot sink it.
 
-The counting instrument is the **role-blind behavior detector**: per game, per player, per channel,
-it marks which checklist behaviors are present in the transcript, blind to roles (otherwise the
-hit-rate is circular — "the wolf did wolf-things"). As built and certified: temp-0 flash-lite,
-cached k=2 union (a full-view pass plus a vote-tally-stripped split-view pass), measured against
-the temp golden at 0.93 precision / 87% recall on discussion and 0.83/77% on vote cells, and
-against the owner's detector-blind adjudication of game 1 at 7/8 precision. Provisional
-(AI-adjudicated) labels were **ruled sufficient to wire credit on** (2026-07-13); the remaining
-owner golden games are an upgrade path, not a gate. Detection overhead ≈ $0.17–0.20/game.
+A few counting rules keep the evidence honest:
 
-One valence ruling governs what the ledger pays out (**ruled 2026-07-13**): **positive-lift tells
-only; town-markers stay diagnostic.** A tell's negative evil-lift *is* its positive town-signal
-read from the other side — faction shares are complementary — so crediting both directions counts
-one piece of information twice. And paying agents for "looking town" is farmable by a compounding
-loop: it optimizes appearance rather than outcomes.
+- **One grade per lesson per decision.** A player sees the same lessons on every turn of one day's discussion, one day's vote, one night's wolf chat, or one night's action. The lesson is graded once in each, at the first graded decision that followed it, so one decision is not counted several times.
+- **Recomputed, not accumulated.** Each credit pass recounts every lesson over the window of games it is given. Old evidence leaves when the window moves.
+- **Only AI seats' decisions are graded.** A game with a human seat is read, and the human seat's own decisions are dropped before grading (`credit_rules.iter_eval_cases`); a game whose human seats are not named is dropped whole. A human's play is not the agents' play. Until 2026-10-26 any game with a human seat was dropped; the owner relaxed the rule because most served games will have one, and credit can only grade the agents' own moves by fixed rules (v8 decisions §15). Extraction, which writes lesson text, stays AI-only.
+- **A merged duplicate's follows count for the lesson it was merged into.**
+- **Compared on the same game day (since 2026-10-28).** Each followed decision is compared with memory-off play by the same role, in the same kind of decision, on the same game day (days 1 to 3 each, later days together). Lessons fire at particular stages, and an average over all days mixes easy late days with hard early ones. A day with fewer than 20 memory-off decisions falls back to all days (`TickConfig.baseline_by_day`, `baseline_min_n`). On the ten-seat demo no day reaches 20 (12 memory-off seed games), so every follow still falls back and the demo pass's results are unchanged; why the day matters, and the nine-seat re-scoring that found it, are in [`day_matched_baseline/`](day_matched_baseline/README.md).
 
-Tell lifecycle (mining, dedup-at-fold, probation, the frozen checklist epochs) is the fold's
-mechanism, specified in the design record's ledger spec; this doc owns only the credit arithmetic.
+The scores then act. The thresholds were carried over from July and are labelled unvalidated for ten seats (`TickConfig` in `config.py`):
 
-## 5. What stays diagnostic — and the one promotion gate
+- **Prune** a lesson whose score is below −0.15 after at least 8 follows.
+- **Protect** a lesson whose score is above 0 after at least 2 follows. A protected lesson is never removed.
+- **Evict** a lesson shown at least 8 times, never followed, and overridden at least as often as marked not relevant. A lesson mostly marked "not relevant" is spared: that points to the search serving it in the wrong situation, not to bad advice.
+- **Give synthesis a track record**: when it rewrites a cell (one role's one kind of decision), it sees each lesson there with at least 5 follows, alongside its score.
 
-Two instruments run alongside credit without touching it, plus the retired one:
+These steps run as a command that makes no model call: `tick credit`, in `Agents/memory/consolidation/tick.py`. It reads batch-run game files and the server's finished games. It rewrites every lesson's counts, prunes and evicts, and records each change with its numbers. The paid steps (extracting observations and synthesizing lessons) run separately, in batches.
 
-- **The tagger** (as built): the omniscient per-day LLM verdict keeps running as a watch metric —
-  its validated readout (discussion-verdict partial r +0.56 wolf / +0.60 SK with faction win,
-  N=24, single epoch) covers exactly the residual credit cannot see: credibility, tone, diffuse
-  concealment beyond the floor. Its **night read-quality override is retired** — night credit is
-  the deterministic scorer above, refined by the read-partition — so the loop carries one night
-  mechanism instead of two.
-- **First-link read-delta** (as built 2026-07-13 — computed, uncredited): did an addressed player's next stated read
-  move the way the push intended? It carries a momentum adjustment (subtract the target's
-  pre-utterance trend, so joining a pile-on scores ~0) and two named caveats: ~40% of "unchanged"
-  read entries are cold filler (undercounts deltas), and the delta lattice is coarse. Its job is to
-  show whether move-level attribution discriminates driver from rider better than the day-grain
-  smear.
-- **Within-day trajectory shift** (owner-directed 2026-07-13): the room's stance toward a target
-  before vs after the first informed push — observational, confounded, diagnostic-grade.
+> **The formula**, over a lesson's followed decisions:
+>
+> ```text
+> raw average  = (good − bad) / follows
+> difference   = raw average − memory-off average
+>                (each follow compared with memory-off play by the same role, in the
+>                 same kind of decision, on the same game day (since 2026-10-28); all
+>                 days when that day has fewer than 20 memory-off decisions; the lesson
+>                 is unscored if any of those kinds has no memory-off games)
+> score        = difference × follows / (follows + 5)
+> ```
+>
+> Code: `SPCredit.base` in `credit_rules.py`; `sp_lift` in `credit.py`.
 
-The line between these and the credited move-grain channel is *causality*. The credited channel
-scores facts (the lynch landed on the pushed target; the target was worth pushing). The
-diagnostics try to measure *influence* — whether the push moved the room. Influence claims get
-credited only through the pre-registered promotion gate: **ablation replay** — checkpoint just
-before a push, replay the day's remainder with the push present vs removed on paired seeds, compare
-P(target lynched). The same gate serves the wolf steering channel. It is not funded until the
-diagnostics show pushes that look load-bearing.
+## 4. Beliefs and actions are scored apart
 
-## 6. Known gaps and open work
+Before acting, an agent answers two questions: what to believe about the other players, and what to do given that belief. These fail independently. A good tactic carried out on a wrong belief still ends badly. "Shoot the player you most strongly suspect" is sound advice, and it still kills a villager when the suspicion is wrong. Credit therefore tries not to let a wrong belief sink a sound tactic.
 
-Ordered by criticality; all freshness-dated 2026-07-13.
+Take a town player's night action that grades bad. If the player had stated a high-confidence belief that its target was evil, and the target turned out not to be, the bad grade is left out of the lesson's score. The failure belongs to the belief, which is measured separately as read accuracy (§1). The same applies when a town speaker's accusation landed on a player who was not evil; there the accusation itself is the stated belief. At night, with no stated read, the bad grade stands.
 
-1. **Injection-channel replay screen — RUN 2026-07-13, channel ALIVE.** 40 frozen v6ab day-vote
-   decisions replayed ± the book through the real injection path: 27.5% of decisions changed under
-   the (channel-balanced) book, discordant pairs 5 wrong→right vs 1 right→wrong — direction positive,
-   magnitude not established (n=6 discordant; old-epoch decisions). The hedge behind dropping
-   observation injection is discharged: a flat compounding result cannot be blamed on a dead
-   delivery channel. Record: tell_extraction log §17 + `outputs/book_screen*.json`.
-2. **Cross-epoch seed book — open, near-free.** The v1 book seeds from tells mined on the v6ab
-   archive, but the run executes in the 2026-07-09 prompt epoch, and one family (role-claim,
-   0/28 evil held-out) is already known epoch-fragile. Spot-check head tells on current-epoch games
-   (piggybacks on gap 1's games) or curate the seed conservatively.
-3. **Self-report attribution spot-check — DONE 2026-07-13** (§3 Step 1): 13/15 enacted; the
-   pass-while-claiming-follow failure it surfaced is now structurally closed by the pass-gate.
-   Caveat: AI-adjudicated (owner spot-adjudication is the upgrade path, same as the tell goldens).
-4. **Post-run / conditional:** the ablation replay (funded only if §5 diagnostics warrant), the
-   outcome-blind tactic matcher and its golden set, the conditioned tell split (if
-   stage-conditional hit-rates diverge), detector k=2→k=1 (cost, once stability data accumulates),
-   owner golden g2–g6 (label upgrade path).
+Before this design, credit came from an AI judge that read each player's whole day and gave one verdict. It could not say whether the belief or the action had gone wrong, so it was replaced by the rules above.
 
-## Sources
+**Tells: research only, not served.** The redesign's other half stores beliefs as *tells*: public behaviors counted against the roles revealed at game end. One example from the 34-entry seed book reads: "A player asserts high confidence in an accusation while refusing to disclose the source of their information." Ten of the eleven players detected doing this in the sampled July games were investigators. A tell is scored by how much more often one role shows the behavior than that role's share of the seats, damped for small counts. Tells were built and tested in the July research loop, and the ten-seat game does not use them. The prompt hook (`Agents/memory/tell_book.py`) adds nothing unless the `WW_TELL_BOOK` environment variable points at a book, and nothing in the server's code or configuration sets it. Detection, scoring and evidence are in the [tell report](../extraction/tell_extraction/report.md).
 
-- Code (maintained): `evaluation/src/loop/decision_scoring.py` · `credit_backfill.py` · `credit.py`
-  · `invariants.py` · `consolidate.py` · `read_ledger.py` · `first_link.py` · `tells.py` ·
-  `tell_credit.py` · `tell_fold.py` · `Agents/memory/tell_book.py` — module table in
-  [`evaluation/src/loop/README.md`](../../evaluation/src/loop/README.md). Healer construct
-  reference: `Agents/compute_metrics.py` (healer save split).
-- Validation cited: G2/G3a (`evaluation/src/instrument_validation/credit/`), held-out credit
-  reproduction (same package), the proxy campaigns
-  ([`../metrics/candidate_ledger.md`](../metrics/candidate_ledger.md)), detector goldens
-  (`../extraction/tell_extraction/`, log §13–16).
-- Design lineage: [`read_tactic_credit_redesign.md`](read_tactic_credit_redesign.md)
-  (the 2026-07-11 decision record this doc implements) · owner rulings 2026-07-11→13 recorded
-  inline above.
+## 5. How we know the scoring works
+
+Three checks bear on whether the scores mean what they say, and one run shows the ten-seat pass working. None of them shows that memory guided by credit plays better (§7).
+
+**Do "followed" claims match what the agent did?** Credit trusts the agent's report that it followed a lesson. In July, 15 such claims were drawn at random from 2,387 in the nine-seat runs. A model then compared each lesson with the decision actually taken. In **13 of the 15** the action matched the advice. Fifteen cases are few: by the standard one-sided 95% bound, the true mismatch rate could be as high as about 36%. So the check shows attribution was usually right in the sample, not that it is reliable. The two misses differed:
+
+- A serial killer said it was following advice to discredit its accuser aggressively, then passed its speaking turn and said nothing.
+- A villager said it was following advice to turn on its accuser, then gave a conciliatory defence and pointed at other players instead.
+
+The first kind is now closed: a discussion lesson is credited only on a turn where the player actually spoke (`_spoke` in `credit.py`). The second is not; a spoken turn can still contradict the lesson it claims to follow. Source: [the 15 cases and verdicts](attribution_spot_check.json).
+
+*Larger check, 2026-10-28.* 100 follow reports from the ten-seat demo games (35 discussion, 30 vote, 35 night), read by model readers: of the 81 they could judge, 74 matched (91%; 95% interval 83–96%) and 5 matched in part; 19 could not be judged, 10 of them wolf night chats whose content the sample left out. The owner hand-labelled 20 of them against the game records and agreed with every case the readers judged; 3 of the 4 they could not judge were matches once the record was read. Record: [`attribution_check_ten_seat/`](attribution_check_ten_seat/README.md).
+
+**Are the scores repeatable?** If scores were noise, a lesson's score from one set of games would not predict its score from another. In July, the archive of games was split in half by game, and each lesson was scored on each half separately. For the **31 lessons** with enough follows in both halves, the two sets of scores agreed (correlation r = +0.54, where noise would give about 0).
+
+The second question is whether a lesson flagged as a loser stays a loser. Nine lessons scored below the prune line (−0.15) on the first half. On the second half, 8 of those 9 (89%) still scored below memory-off play (but see the 2026-10-28 note below). For comparison, 61% of all 31 lessons scored below memory-off play on the second half, whatever their first-half score. A flagged lesson was therefore more likely than a typical one to stay negative: 89% against 61%. With nine lessons, that shows the direction, not the size. The one lesson that flipped had only 3 follows, fewer than the 8 the prune rule requires; all 4 flagged lessons with 8 or more follows stayed negative.
+
+This shows the ranking repeats across games. It does not show that removing the losers improves play.
+
+*Note, 2026-10-28.* Repeating is reliability, not correctness. Four of the nine flagged lessons score identically in both halves because every follow got the same grade against a baseline both halves share, so "8 of 9" is partly built in; and a systematic error repeats in both halves too, as the all-days baseline did (§3, [`day_matched_baseline/`](day_matched_baseline/README.md)). What the split supports is the follow floor: the one lesson that flipped had 3 follows. Record: [the strategy-point store](../store_curation/strategy_points.md) §6.
+
+**Do the rules do what the table says?** Unit tests pin the ten-seat table. `tests/memory/test_ten_seat_grading.py` has a test for each row that has a case of its own. It also covers the once-per-decision count, the unscored baseline, and the prune and evict lists. `tests/memory/test_consolidation_graduation.py` covers three things: the town abstain rule (§6), that only the AI seats of a game with a human seat are graded (since 2026-10-26; before then such a game taught nothing), and a full credit pass with no model calls. The 50 test cases in these two files passed at `e765a18e`; the human-seat tests were added with the 2026-10-26 change. *Note, 2026-10-28:* the two files now hold 54 tests, and the whole memory suite (325) passes on the working tree with the day-matched baseline and the chat-lesson grading, not yet committed.
+
+**Does the ten-seat pass run end to end?** Once, as a demonstration. In October 2026, Claude Haiku 5.5 played 20 memory-on games, compared with the 12 memory-off games that seeded the store. Of 498 lessons, 148 were followed and scored; the pass pruned 4, evicted 4 and protected 50. Twenty games give at most a few dozen follows per lesson. So these numbers show the mechanism working, not which lessons are good ([the v8 log](../memory_system/v8/experiment_log.md), 2026-10-14). *Note, 2026-10-28:* that pass graded every lesson followed in the wolves' chat by the kill (§2). One of the four pruned lessons is about the conceal, so a rerun under the current rule may not prune it.
+
+## 6. Case study: a harmful lesson the score could not see
+
+**The lesson.** The July nine-seat research loop kept this lesson for the vigilante's day vote:
+
+> "Abstain from voting when the information landscape is entirely speculative and no clear consensus exists, in order to preserve your vigilante identity and avoid creating a public voting record that can be scrutinized by wolves."
+
+Agents followed it 19 times. The store it sat in was then tested on 30 paired boards, each board dealt once and played twice, with memory and without. The town did worse with memory on 19 of the 30. In the memory games, 111 of 117 town abstains fell on a day that ended with nobody voted out.
+
+**Why credit missed it.** Two gaps in the scoring code worked together:
+
+1. **Every town abstain was graded neutral.** An abstain's harm is a vote that never happened, so there was nothing for the rule to grade. The lesson's 19 follows came out 2 good, 15 neutral, 2 bad: an average of exactly zero.
+2. **The comparison with memory-off play was missing, and the code used zero in its place.** An average of zero compared with zero gives a score of 0.00, which never reaches the prune line (−0.15). Compared with how memory-off vigilantes actually voted, the lesson would have scored −0.16, only just past the line.
+
+**The fix.** The ten-seat code closes both gaps:
+
+1. A town abstain on a day that ended with nobody voted out is graded bad. The same 19 follows become 2 good and 17 bad, and the lesson scores −0.62, far past the line.
+2. A lesson with no memory-off comparison is left unscored instead of being compared with zero (§3).
+
+**What it shows.** A score can stay safe while the play it produces gets worse, if the score cannot see the harm. This is Goodhart's law: a measure that becomes the target stops tracking what it was meant to track.
+
+**Limits.**
+- The town result leans negative but is not statistically established: a gap that size would appear about 6% of the time by chance (p ≈ .06).
+- The July players answered with no reasoning step (zero reasoning tokens), so it is a result for players that do not reason.
+- The fix was checked on recorded games only: re-scoring pruned this lesson and kept three lessons chosen in advance as good. It was never tested in new games.
+- *Note, 2026-10-28.* Matched by day ([`day_matched_baseline/`](day_matched_baseline/README.md)): against memory-off vigilante votes on the lesson's own days (15 follows on day 2, 4 on day 3), the lesson scores −0.08 under the July grades (kept) and −0.38 under the corrected rule (pruned), beside the all-days −0.16 and −0.62 above. The −0.62 was still computed against zero: the lesson is typed as concealment, and no memory-off concealment comparison existed for the vigilante's vote. Against all memory-off vigilante votes under the corrected rule it is −0.64. The three control lessons were re-scored against all days only. Day matching alone would have kept this lesson; only the grading rule removes it. Case write-up: [`writeup/memory/curating_lessons/abstention_credit.md`](../../writeup/memory/curating_lessons/abstention_credit.md).
+- Until 2026-10-27 the ten-seat game showed town players no lessons on day turns, so the abstain rule graded only memory-off votes. Town vote lessons are served since then ([v8 decisions](../memory_system/v8/decisions.md) §17), so it now grades served lessons too; no served game has been credited yet.
+
+## 7. What is not established
+
+- **No gameplay benefit has been shown** for memory guided by credit. The July test leaned negative before the fix, and the fixed version was never played live. The ten-seat version has run once as a demonstration and has not been tested at scale.
+- **Attribution errors are not shown to be random.** Agents might claim to follow lessons more often on decisions that went well. That would bias the scores, and the 15-case check cannot rule it out.
+- **Tells are not served** in the ten-seat game.
+- **On the live site, memory is a per-game choice that starts off.** A player can switch it on because the production settings turn on the deployment's switch (`WW_MEMORY_ENABLED`, `server/config.py`); where that switch is off, a request for a memory-on game is refused. So the site offers a memory whose benefit to play has not been shown.
+
+## Sources and implementation
+
+| What | Where |
+|---|---|
+| Decision grades (the §2 table) | `Agents/memory/consolidation/grading.py` |
+| Counting, baselines, the belief exclusion, the human-seat rule | `Agents/memory/consolidation/credit_rules.py` |
+| Discussion and low-profile rules; writing counts into the store; the score | `Agents/memory/consolidation/credit.py` |
+| Prune, protect, evict, the synthesis track record | `Agents/memory/consolidation/store_ops.py`; thresholds in `config.py` |
+| The credit pass and the learning step | `Agents/memory/consolidation/tick.py` (`tick credit`, `tick learn`) |
+| Tests | `tests/memory/test_ten_seat_grading.py`, `tests/memory/test_consolidation_graduation.py` |
+| Why the ten-seat rules are what they are; the credit-pass split | [v8 decisions](../memory_system/v8/decisions.md) §12–14 |
+| The ten-seat demonstration run | [v8 log](../memory_system/v8/experiment_log.md), 2026-10-14 |
+| Why beliefs and actions are scored apart | [Design record](read_tactic_credit_redesign.md) |
+| Attribution check (15 cases, 2026-07-13, seed 20260713) | [attribution_spot_check.json](attribution_spot_check.json) |
+| Repeatability check (31 lessons) | [Strategy-point store](../store_curation/strategy_points.md) §6 |
+| The abstain blind spot, its fix and checks | [Blind-spot log](blindspot_fix/experiment_log.md); [step-1 table](blindspot_fix/step1_validation.md); the lesson's record in `blindspot_fix/scored_stores/loop_run__neutral/strategy_points.json`; base averages in `blindspot_fix/scored_stores/loop_run__neutral/base_rates.json` |
+| Tells | [Tell report](../extraction/tell_extraction/report.md); `Agents/memory/tell_book.py` |
+| The July nine-seat code (frozen, kept so old runs reproduce) | `evaluation/src/loop/` (`credit`, `credit_backfill`) |

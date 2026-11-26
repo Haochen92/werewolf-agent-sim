@@ -1,5 +1,7 @@
 # Pages review: five mockups against the repo (2026-09-26)
 
+Status (2026-10-26): Executed 2026-09-26 to 2026-09-29; the rulings in §F are current except where `site_architecture.md` records a later change.
+
 Read-only verification of `frontend/claude_artifacts/design/pages/{landing,rooms,waiting-room,replays,ticket-office}.html`
 (`M/` below) and the pasted build brief, against `src/`, `../server/` (`S/`) and the ruled docs. Line numbers are
 from the files as of `13eb753` + working tree. "Ours" = a name that exists today in `src/types/contracts` /

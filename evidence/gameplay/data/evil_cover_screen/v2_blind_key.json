@@ -1,0 +1,1948 @@
+{
+ "c000": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "before",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c001": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "sigilist"
+ },
+ "c002": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c003": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c004": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "trailseer"
+ },
+ "c005": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c006": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "healer"
+ },
+ "c007": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c008": {
+  "turn": "persona/voices-08.on:4:player_8:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c009": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c010": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c011": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c012": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c013": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c014": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c015": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c016": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "vigilante"
+ },
+ "c017": {
+  "turn": "persona/voices-08.on:4:player_8:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c018": {
+  "turn": "persona/voices-06.off:5:player_5:1",
+  "arm": "before",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c019": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c020": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "covers",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c021": {
+  "turn": "silence/voices-02.on:3:player_10:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c022": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c023": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c024": {
+  "turn": "persona/voices-05.on:5:player_6:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c025": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c026": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c027": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c028": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "card",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c029": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c030": {
+  "turn": "persona/voices-08.on:4:player_8:1",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c031": {
+  "turn": "persona/voices-04.on:4:player_2:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c032": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "speculator"
+ },
+ "c033": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c034": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c035": {
+  "turn": "persona/voices-05.off:3:player_7:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c036": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c037": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c038": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "trailseer"
+ },
+ "c039": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c040": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c041": {
+  "turn": "persona/voices-04.on:4:player_2:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c042": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c043": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c044": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c045": {
+  "turn": "silence/voices-02.on:3:player_10:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c046": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c047": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c048": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c049": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c050": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c051": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c052": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c053": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c054": {
+  "turn": "persona/voices-05.on:5:player_6:1",
+  "arm": "before",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c055": {
+  "turn": "persona/voices-08.on:4:player_8:1",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c056": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c057": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c058": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c059": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c060": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c061": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c062": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c063": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c064": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c065": {
+  "turn": "silence/voices-02.on:3:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c066": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c067": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c068": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c069": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c070": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c071": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c072": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c073": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c074": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c075": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "sigilist"
+ },
+ "c076": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c077": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c078": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c079": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c080": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c081": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "sentinel"
+ },
+ "c082": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "sigilist"
+ },
+ "c083": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c084": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c085": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "vigilante"
+ },
+ "c086": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c087": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c088": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c089": {
+  "turn": "persona/voices-04.on:4:player_2:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c090": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c091": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c092": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c093": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "card",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c094": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c095": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c096": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "investigator"
+ },
+ "c097": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c098": {
+  "turn": "persona/voices-05.on:5:player_6:1",
+  "arm": "card",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c099": {
+  "turn": "persona/voices-08.on:4:player_8:1",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c100": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "trailseer"
+ },
+ "c101": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c102": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c103": {
+  "turn": "persona/voices-06.off:5:player_5:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c104": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c105": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c106": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "card",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "investigator"
+ },
+ "c107": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "before",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c108": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "sentinel"
+ },
+ "c109": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c110": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c111": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c112": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "sigilist"
+ },
+ "c113": {
+  "turn": "silence/voices-02.on:3:player_10:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c114": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "before",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c115": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c116": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c117": {
+  "turn": "silence/voices-02.on:3:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c118": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c119": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c120": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c121": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c122": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c123": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c124": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c125": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "speculator"
+ },
+ "c126": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c127": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c128": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "trailseer"
+ },
+ "c129": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c130": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c131": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "sigilist"
+ },
+ "c132": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c133": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c134": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c135": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "trailseer"
+ },
+ "c136": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c137": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c138": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c139": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c140": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c141": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c142": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "vigilante"
+ },
+ "c143": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c144": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c145": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c146": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "sentinel"
+ },
+ "c147": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c148": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c149": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "covers",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c150": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c151": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c152": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c153": {
+  "turn": "persona/voices-05.on:5:player_6:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c154": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c155": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c156": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "card_now",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c157": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "investigator"
+ },
+ "c158": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c159": {
+  "turn": "persona/voices-05.off:4:player_7:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c160": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "fortune_teller"
+ },
+ "c161": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c162": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "sentinel"
+ },
+ "c163": {
+  "turn": "persona/voices-06.off:4:player_10:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c164": {
+  "turn": "silence/voices-02.on:3:player_10:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "healer"
+ },
+ "c165": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c166": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c167": {
+  "turn": "persona/voices-05.on:5:player_6:1",
+  "arm": "before",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c168": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "fortune_teller"
+ },
+ "c169": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c170": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c171": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c172": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c173": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c174": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c175": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c176": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c177": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c178": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c179": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c180": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c181": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "trailseer"
+ },
+ "c182": {
+  "turn": "persona/voices-05.on:5:player_6:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c183": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c184": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c185": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c186": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c187": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c188": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c189": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c190": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c191": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "fortune_teller"
+ },
+ "c192": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c193": {
+  "turn": "persona/voices-04.on:4:player_2:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c194": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "trailseer"
+ },
+ "c195": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c196": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c197": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c198": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "fortune_teller"
+ },
+ "c199": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c200": {
+  "turn": "persona/voices-06.off:3:player_4:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c201": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c202": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c203": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c204": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c205": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c206": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c207": {
+  "turn": "persona/voices-03.on:4:player_9:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c208": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "sentinel"
+ },
+ "c209": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c210": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "trailseer"
+ },
+ "c211": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c212": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c213": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "covers",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c214": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c215": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c216": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "card",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "sentinel"
+ },
+ "c217": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c218": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c219": {
+  "turn": "persona/voices-06.off:3:player_10:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c220": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "covers",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c221": {
+  "turn": "silence/voices-03.on:2:player_5:2",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c222": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c223": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "fortune_teller"
+ },
+ "c224": {
+  "turn": "persona/voices-05.off:3:player_7:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c225": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "card",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c226": {
+  "turn": "silence/voices-02.on:3:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c227": {
+  "turn": "persona/voices-05.off:3:player_7:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c228": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "sigilist"
+ },
+ "c229": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "sentinel"
+ },
+ "c230": {
+  "turn": "persona/voices-02.off:4:player_9:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c231": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c232": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "before",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c233": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "card",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c234": {
+  "turn": "persona/voices-06.on:3:player_4:3",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c235": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "trailseer"
+ },
+ "c236": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c237": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c238": {
+  "turn": "persona/voices-06.off:6:player_5:2",
+  "arm": "before",
+  "k": 1,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c239": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c240": {
+  "turn": "silence/voices-02.on:3:player_9:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "healer"
+ },
+ "c241": {
+  "turn": "persona/voices-02.off:2:player_4:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c242": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c243": {
+  "turn": "persona/voices-06.on:5:player_10:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c244": {
+  "turn": "persona/voices-02.off:3:player_9:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c245": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "sentinel"
+ },
+ "c246": {
+  "turn": "persona/voices-02.on:2:player_4:1",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c247": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "covers",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "speculator"
+ },
+ "c248": {
+  "turn": "persona/voices-03.on:4:player_5:3",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "speculator"
+ },
+ "c249": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c250": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c251": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c252": {
+  "turn": "persona/voices-02.off:6:player_10:1",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c253": {
+  "turn": "persona/voices-06.off:3:player_5:3",
+  "arm": "card_now",
+  "k": 0,
+  "role": "necromancer",
+  "claim": "none"
+ },
+ "c254": {
+  "turn": "persona/voices-01.on:4:player_1:2",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c255": {
+  "turn": "silence/voices-01.on:3:player_1:2",
+  "arm": "covers",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ },
+ "c256": {
+  "turn": "persona/voices-04.on:3:player_4:2",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c257": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c258": {
+  "turn": "silence/voices-02.on:3:player_10:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "healer"
+ },
+ "c259": {
+  "turn": "persona/voices-08.on:4:player_8:1",
+  "arm": "card",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "none"
+ },
+ "c260": {
+  "turn": "silence/voices-04.on:4:player_4:2",
+  "arm": "card_now",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c261": {
+  "turn": "persona/voices-03.on:3:player_9:2",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c262": {
+  "turn": "persona/voices-05.off:3:player_1:1",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "sigilist"
+ },
+ "c263": {
+  "turn": "persona/voices-05.on:4:player_1:2",
+  "arm": "card",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "speculator"
+ },
+ "c264": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c265": {
+  "turn": "persona/voices-03.off:4:player_5:1",
+  "arm": "before",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c266": {
+  "turn": "silence/voices-02.on:4:player_10:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "vigilante"
+ },
+ "c267": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c268": {
+  "turn": "silence/voices-03.on:3:player_9:1",
+  "arm": "card",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c269": {
+  "turn": "silence/voices-04.on:5:player_2:2",
+  "arm": "card",
+  "k": 0,
+  "role": "illusionist",
+  "claim": "none"
+ },
+ "c270": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c271": {
+  "turn": "silence/voices-02.on:2:player_4:2",
+  "arm": "before",
+  "k": 0,
+  "role": "serial_killer",
+  "claim": "healer"
+ },
+ "c272": {
+  "turn": "persona/voices-05.off:4:player_7:1",
+  "arm": "before",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c273": {
+  "turn": "silence/voices-02.on:3:player_10:1",
+  "arm": "card_now",
+  "k": 1,
+  "role": "illusionist",
+  "claim": "healer"
+ },
+ "c274": {
+  "turn": "persona/voices-06.on:4:player_4:1",
+  "arm": "covers",
+  "k": 1,
+  "role": "chanteuse",
+  "claim": "sigilist"
+ },
+ "c275": {
+  "turn": "persona/voices-03.off:5:player_9:1",
+  "arm": "before",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c276": {
+  "turn": "persona/voices-03.off:4:player_9:1",
+  "arm": "card_now",
+  "k": 0,
+  "role": "chanteuse",
+  "claim": "none"
+ },
+ "c277": {
+  "turn": "persona/voices-07.off:3:player_2:1",
+  "arm": "before",
+  "k": 1,
+  "role": "serial_killer",
+  "claim": "investigator"
+ }
+}

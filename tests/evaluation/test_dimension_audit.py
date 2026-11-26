@@ -10,7 +10,7 @@ from evaluation.src.instrument_validation.dimensions.dimension_audit import (
     players_alive_true,
     rows_for_case,
 )
-from evaluation.src.loop.decision_scoring import query_criticality
+from Agents.memory.consolidation.decision_scoring import query_criticality
 
 
 def _case(role="wolf", pid="player_1", day=3, phase="day_vote", situation_dimensions=None, **pc):

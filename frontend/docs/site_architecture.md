@@ -1,7 +1,14 @@
 # Site architecture: the pages around the theatre
 
+Status (2026-10-26): Living spec for the site pages, current to 2026-10-18.
+
+Where a game's puppets come from (the `characters` and `game_cast` tables, the picker on the
+boarding pass and the solo ticket, `src/stage/cast/castForGame.ts::resolveCast`) is recorded in
+[`cast_expansion_brief.md`, "The cast record"](cast_expansion_brief.md#the-cast-record-built-2026-10-03-commits-9f531ebe9c82b0)
+(built 2026-10-03).
+
 The app has two halves with two toolkits. The **site** is the pages you move between: `/`, `/play`,
-`/rooms`, `/rooms/new` and `/replays`. It is built from Mantine components themed from the page
+`/rooms`, `/play/room` and `/replays`. It is built from Mantine components themed from the page
 mockups (`claude_artifacts/design/pages/*.html`, with `landing.html` as the style source). The
 **theatre** is the stage: `/games/[id]`, `/replays/[id]` and `/workbench`. It is CSS modules over
 `stage/paint/materials.ts` and never imports Mantine (stage_architecture.md). Rulings: review
@@ -63,14 +70,13 @@ Which face goes where (three voices, three props) is ruled in [typography.md](ty
 
 | Component | What it is |
 |---|---|
-| `TopNav` | The station's signboard (redesign 2026-10-14 §1): the headlamp mark and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip keeps the book at its right end (owner 2026-10-15). On a phone the doors share a second row. |
+| `TopNav` | The station's signboard (redesign 2026-10-14 §1): the gold 9 badge (2026-10-18) and the name in EB Garamond, and Play · Rooms · Replays as recessed wells on a board hung from two brass rods; the current page is the cream plate (`aria-current`). Rooms carries a split-flap count of the tables boarding (`hooks/useBoarding`, the same query as the departures board). The guide is not a fourth door but an enamel sign (`SITE.guide`, owner 2026-10-14): after the doors and a brass line, an open book and "Guide"; the book alone under 1060px; on a phone the book at the end of the name's row (the board is a grid there, so the sign never falls onto a row of its own, and the name shrinks to leave it room). Once the board scrolls away a slim strip of it pins to the top (`inert` while hidden); its name drops cleanly when the doors need the room; on a phone the strip keeps the book at its right end (owner 2026-10-15). On a phone the doors share a second row. |
 | `Board.module.css` | The signage's materials, composed by every board on the site: `board` (wood in a brass frame: what you operate), `rivets`, `well` (a recessed button; `aria-current`/`-pressed`/`-selected` make it the cream plate), `plate` (the primary action), `enamel` (a navy sign screwed to a board: somewhere to read, not a door) and `flap` (one split-flap tile). Paper carries what you read; brass is for lines and hardware, never a small flat fill. |
-| `StationWall` | A page's wall: the landing's rooms behind the other pages (owner 2026-10-14). `records` (the archive: platform tile, oxblood band, pendant) and `granite` (the ticket office: granite under the caged wall light, `StationLamps`); the departures hall stands on the landing's `PlatformBackdrop`. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), capped where its light runs out, its foot faded to the page's ground. `cards` is the guide's: the roles' green tile, lit from over the board. Further down, each side of the guide's roles stands on the same tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
+| `StationWall` | A page's wall: each a picture of its room's wall (owner 2026-10-18, below): `records` the archive, `granite` the ticket office, `cards` the guide; the landing and the departures hall have pictures of their own. Placed against `.station` from the page's top, under the page's own stacking context (`wallPage` on its `<main>`), its foot faded to the page's ground. Further down, each side of the guide's roles stands on a tile in its own colour (ochre, oxblood, aubergine, slate; `Guide.module.css` `.side::before`, owner 2026-10-15). |
 | `SiteFooter` | The GitHub link with its icon, the other links, and the credit line, whose "N games archived" is live (`GamesArchived`, the archive's `X-Total-Count`). |
 | `Button` | Mantine Button narrowed to the kit's three variants (below): `well` (the default), `plate` and `text`. Polymorphic. |
-| `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tags, under the roles. |
-| `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. |
-| `HangTag` | The hung paper tag. With `href` it is a link (a door); with `onClick` and `pressed` it is a choice. On a phone it is a stub, two to a row (below). |
+| `GuideSign` | The guide's one look wherever a page points at it: the navy enamel and the open book (`Book`, which the nav's sign draws too), a size up for a page: under the hero's tickets, under the roles. |
+| `PlateTabs.module.css` | The site's plain tabs, composed by any tab set that is not itself a picture: dark tabs, the chosen one a brass plate; `small` inside a panel. The material-kit boards (the landing's features, the guide's tools) draw their own: every tab the kit's brass plate, the unchosen dimmed. |
 | `Paper` | The paper surface for things inside the fiction. Polymorphic Box. |
 | `Flapword` | Split-flap tiles for one word, with `tone` `hot` or `dim`. |
 | `Icon` / `IconSprite` | One `<symbol>` sprite, rendered once by the site layout. It holds `i-*` (the mockups' icons plus `i-lock-open`, `i-ticket` and `i-github`) and `sg-*`, whose paths are the stage's `Sigil`. |
@@ -105,17 +111,37 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 
 ## The landing's platform and carriage (redesign 2026-10-14 §2–4)
 
-- `PlatformBackdrop` puts the hero on a night platform: a glazed-tile wall (`assets/site/wall-tile.svg`)
-  under one mask so it shows only where light falls, two wall lamps, roof trusses, a vignette. One
-  still box, capped at 1250px, under the landing's own stacking context (`isolation: isolate`: the
-  body's ground would otherwise paint over a `z-index: -1` layer). `--lx`/`--rx`/`--ly` on the
-  landing place the lamps and their light; the carriage's platform reads them too.
-- The hero is a poster (owner, 2026-10-16, docs/typography.md): the game's name as the sign
-  (`h1`, Garamond 600, `--name-size`), the hook "Watch AIs lie to each other" as its tagline, then
-  the tags. `--hero-top` is the room under the nav (150px wide, 64px on a phone), and the lamps
-  are worked out from the numbers that place the name (`.heroScene`: the nav board's foot,
-  `--hero-top`, half the name's line), so moving the name moves them. The wall's light round the
-  doors (`--doors-y`) follows the lamps. The story is no longer in the hero (the rooms, below).
+- The hero is a picture (owner, 2026-10-18): the night platform as a handmade set (felt cast, the
+  wooden toy carriage), filling the first screen from the page's top, behind the nav's board, to the
+  fold. Two files, `assets/site/hero-wide.webp` (1536×1024) and `hero-tall.webp` (1024×1536, a
+  screen taller than wide), in one `<picture>`, so a screen fetches only its own; still, no filter;
+  its foot fades to the ground; on a wide screen the carriage's section starts just under it, on a
+  phone after a breath of dark, below the first screen (owner 2026-10-18). Masters in
+  `claude_artifacts/design/rasters/wood/hero/`, fitted by `scripts/fit-hero.mjs`.
+- The words stay words over its calm sky (Landing.module.css `.heroText`): the game's name, a gold
+  rule with the brand's 9 (`HeroRule`, vector), the hook, the two tickets, the purse (HouseDoorNote,
+  outlined to read over the picture) and the guide's sign. On a wide screen they sit centre-left,
+  their middle at 31% of the screen (27% under 1366px, smaller again under 1100px) so the tickets
+  clear the cat and the fox; on a phone centred, the name on two lines, the passengers under them, and the purse and the
+  guide's sign at the screen's foot (`.heroFoot`, owner 2026-10-18). The foot keeps at least the
+  passengers' height under the tickets, so a short phone runs the hero past the fold rather than
+  lay the sign over them.
+- The tickets (`HeroTicket`, the landing's, the departures hall's and the ticket office's, where
+  `current` marks the page's own kind) are
+  flat cream card on the scene: the shape (scalloped ends, a notch each side, a bite out of the top)
+  is a mask, so it stays round at any size, and the fibre is one 512 px tile (`ticket-paper.webp`)
+  under both. A wide screen shows the kicker, the line and a ruled foot ending in the arrow (the
+  tables boarding are the nav's count alone); a
+  phone, and a portrait tablet (860px and under, the site's phone layout), the title and the way
+  in. A hover lifts the ticket and nudges its arrow.
+- `.landing` sets `--lx`/`--rx`, where the platform's lamps hang, which the carriage's light
+  reads. (`PlatformBackdrop`, the vector wall the landing and then the hall stood on, is in git
+  history.)
+- Behind the carriage, the night (owner, 2026-10-18: a gradient, not a second picture after the
+  hero's): black for the top half, then a dark blue down to the wheels, with snow falling through
+  the black and gone by two thirds of the way down (`.night`). The page's one idle motion outside the theatre, kept cheap: two sheets of flakes
+  drawn once, each moved by a transform (two layers, behind the carriage, never over the game's
+  window), started when the carriage comes near, still for reduced motion.
 - `FeaturedReplay` is the replay theatre's mini mode in the big window of a carriage standing at the
   platform. Over 860px the whole carriage (end, door, window, door, end) with the replay's controls
   on the stage; at 860px and under, the window edge to edge and the controls on the platform beneath
@@ -124,13 +150,35 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
   Reveal pane drew a second stage); the whole replay has both, and the gameplay guide explains
   them. A roof board names the game (its ID as split-flap tiles, read once as
   `role="img"`) and its model; under the platform, the details and "Watch the whole game".
+- What the carriage plays (owner, 2026-10-22; it was one vote): a reel of the game in the
+  X-ray's cut, Reveal on, round and round (`lib/featured-reel.ts`): the deal done (its cards
+  face up, arrived at still: the cards' drop and turn lagged on the owner's iPhone in this
+  window and not on the replay page, and three rounds of fixes did not cure it), the first night's
+  hub and the pack's room (its chat line by line), that morning's bodies, the featured lines and
+  the featured day's vote through the card to the wing. Between parts the stage arrives still.
+  The game is e45eda20 (DeepSeek Flash, a human at the table): on day 3 the Illusionist,
+  claiming the Investigator, gets the real one voted out. The fallback game's reel has the same
+  parts without the lines, its first vote for the vote.
+  Before it plays, the theatre visits the scenes of the reel's first 50 s (the deal, the night,
+  the morning) once, still, under the loading picture, and fetches and decodes every picture
+  they show (`stage/containers/warm-reel.ts`, capped at 6 s; the whole reel kept the cover up
+  3 s longer for scenes a minute away): on a phone at 4x CPU each new scene had stalled 100–190 ms while its pictures came (the
+  role cards, the night car), and the cover now stays a moment longer instead (owner,
+  2026-10-22).
 - The carriage is painted with pieces cut from the waiting room's train (`scripts/cut-carriage.mjs`
   → `SPRITES.carriage`): the snowy roof's bay, the brass rail, a mirrored seamless teak tile, the
   window's brass rim (a 9-slice laid round the glass with `border-image-outset`, so it never paints
   over the game; its rivets repeat), a bogie, the solebar and the bellows. Each shows at half its
   painted size (sharp on a 2× screen; the painting is only 700px tall, so nothing is enlarged).
-  They arrive with the theatre when the carriage comes near (`data-art` and `--art-*` on the
-  figure), over a CSS stand-in drawn until then. The doors stay drawn in CSS over the teak: the
+  They arrive with the theatre when the carriage comes near, over a CSS stand-in drawn until
+  then; `data-art` and `--art-*` go on the figure only once the screen's whole-carriage picture
+  is decoded (`useDecoded`): switched at once, a cold first visit showed the window and its loader
+  alone in the night for seconds (owner, 2026-10-18). The whole scene comes up at once (owner,
+  2026-10-18): until the picture is in and the game is painted in its window, the section (the
+  night, the board, the carriage, the details) is the house's loading picture (`.gate`,
+  `data-ready`), 10 s at most. It is asked for as soon as the page's first screen is up
+  (`usePageOpen`), not when it comes near, so it is usually ready before it is seen: a visitor
+  who never scrolls now fetches it too (owner's call over the audit of 2026-10-11 §2). The doors stay drawn in CSS over the teak: the
   painting's doors are a third of the height this carriage needs; sharper doors, ends and bogies
   for a desktop want a larger source.
 - Performance rules it keeps: nothing decorative is painted over the game's window (an overlay above
@@ -142,66 +190,138 @@ and `ChipSprite`, never from the strips inlined in the mockups (review §B6).
 
 ## The landing's rooms (rooms benches, owner 2026-10-14)
 
-- Under the carriage each section is a room of the station (`Rooms.module.css`), and each fades
-  into the next through the dark: no threshold between them, only one brass threshold left before
-  the closing word. Chosen on the comparison bench (`station-rooms-compare`) over panelling, felt
-  and pigeonholes, which lost the station: "What makes it different" is dark granite in dressed
-  blocks under a caged wall light (`WallLight` in `RoomLamps.tsx`), and it opens with the
-  story (owner, 2026-10-16): on the wall, no paper, in Literata, with the Reveal line set apart
-  under it in the site's sans; the replay section ("At the
-  end of the line, the secrets come out", then "Latest games") is the platform's own tile
-  (`wall-tile.svg`) with an oxblood band near the ceiling, under a pendant (`Pendant`). Each
-  tiled room has its own band colour, as old stations did. "Take a seat" is gone: the hero's
-  tags and the nav's Play and Rooms are the way in. The roles' green-tile room left the landing
-  with the roles (owner, 2026-10-15); the green tile is the guide's now.
+- Under the carriage the story, the features and the replay (with the latest games) stand on one
+  wall (owner, 2026-10-18): the station's navy panelling, a band of it repeated as far as the
+  rooms run, laid upright and mirrored so no join shows (`.navy` in `Rooms.module.css`;
+  `scripts/fit_walls.py`, a tall set for a screen taller than wide). Its lamp, cut from the
+  picture with the wall round it fading to clear, hangs just above "What makes it different"
+  (`.lamped`), and the board runs close into the replay's room. The
+  wall rises out of the dark from the carriage above and sinks back into it before the brass
+  threshold and the closing word, which stand on the page's own dark. The story opens it: its
+  line "Ten puppets share a carriage, but not a destination." as the title, the brand's gold rule
+  under it (`HeroRule`), then the rest centred in Literata and the Reveal line in the site's
+  sans. The footer follows the closing close (`.last`). The drawn rooms before it (granite under
+  a caged wall light, the platform's tile under a pendant) are in git history.
+- "What makes it different" is drawn in the owner's material kit (2026-10-18;
+  `scripts/fit_kit.py` → `src/assets/site/kit/`, masters in `claude_artifacts/design/rasters/wood/kit/`):
+  a walnut board (a 314px tile) in a brass rim with a screw in each corner, each card on one sheet
+  of the kit's card paper and each slip on its cream (laid once, never repeated: the masters'
+  light falls off to their corners), the brass name plates a 9-slice of the kit's plate (screwed
+  ends kept, the middle stretched to the name; narrower ends as the phone's tabs, the unchosen
+  ones dimmed by opacity), the paperclip on the lesson slip, and the FOLLOWED stamp masked by the
+  worn-ink speckle. About 70 KB, nothing moves. The mock's shorter copy was not taken (owner: the
+  card text stays, the lesson and the drafted line are real).
+- "At the end of the line" (the replay's exhibit, `ReplayMoment`) in the same kit (owner,
+  2026-10-18, mock-replay-moment): a case file on walnut under the stage's Reveal switch, shown
+  on (`RevealSign`; owner 2026-10-22, it was a brass plate with the file's name), its "Day 3 ·
+  Seat 10, the Illusionist" beside it in cream; in a kraft folder (its top edge the kit's tab as a 9-slice) the line said aloud
+  on card paper ruled in red under a red ribbon, a brass pin (`brass-disc` heads) down to its
+  private note typed on ruled cream with the paperclip, the note's own "Do not disclose" marked
+  in red pencil, and what came of it inside a ruled edge on the kraft. Copy unchanged.
+- The guide's tools board (`ToolsTray`) is the features board's twin in the kit (owner,
+  2026-10-18): walnut in a brass rim, every tab the brass plate (the unchosen dimmed), the tool on
+  card paper, its steps numbered on brass discs; it no longer composes `PlateTabs`. The seat
+  cards' five steps (owner's copy, 2026-10-22) are tabs, brass coins 1 to 5 beside the demo, one
+  step shown with a "Next" under it; step 4 opens your own seat's file. The demo opens on
+  day 3 with the game's Record (`fixtures/ledger-phase3.json`, rebuilt by the server's
+  `ledger_days`) and, into an empty demo notebook, seat 9's and seat 3's claims as the Record has
+  them, so "✓ on the record" shows. The board is a flex column, not a grid: a grid's row kept the
+  cards' height from before the seat card's demo had measured itself. The case file's Reveal tab
+  shows the stage's Reveal switch, on, over its demo (`RevealSign`).
+- The role cards (`RoleCard`, the guide's rows) are on the kit's card paper under its card frame
+  (`card-frame.webp`, a 9-slice: cream band, fine rule, corner flourishes), no walnut tray (owner:
+  the phone's row scrolls sideways). The replay slates (`Slate`, the landing, the archive, the
+  guide) are on the same card paper. Both pictures are shared by every card and slate on a page:
+  one fetch and one decode each, nothing drawn per card.
+- The carriage's board and track (owner, 2026-10-18): the game-ID board is the owner's walnut
+  sign in its brass frame (`train-sign.webp`, a 9-slice: the frame and its four rivets kept, the
+  walnut stretched to the board), and the painted carriage stands on the owner's railway
+  (`rail.webp`, a strip repeated across the screen, cut where its ends match: the sleepers'
+  spacing drifts across the master), its wheels `--rail-top` into it, the platform's edge below
+  the track instead of across the wheels. 64px of track on a desktop, 40px on a phone.
+- The guide's "The end of the line" (`CaseFile`) in the same kit (owner, 2026-10-18,
+  mock-guide-replay): the kraft folder and its index tabs (the tabs behind a shade darker) on a
+  walnut board in a brass rim, each exhibit on a walnut mount under the kit's brass clip, each
+  index card on cream with its title's red double rule drawn as a border (a gradient rule on the
+  tilted card stair-stepped), round red bullets, and the "Memory on" stamp in worn ink (a still
+  mask; it was a multiply blend). Copy unchanged.
 - The landing's words (owner, 2026-10-15): every quoted agent line is a real one, verbatim, at
   the seq `landing/features.ts` names. The memory card's slip is game 2f19d908's Sigilist
-  following a lesson; the replay section's moment is game 68c26e83's Chanteuse claiming the
-  Investigator (also the carriage's game, day 2); the draft card's notes are the one thing
+  following a lesson; the replay section's moment is game e45eda20's Illusionist claiming the
+  Investigator on day 3, its note trimmed where the "…" are (also the carriage's game); the draft card's notes are the one thing
   written for the demo, and its caption says so. The closing states the research as it stands:
   the pipeline is built, earlier versions were tested (gains and failures), and the current
   version (v8) has not been tested at scale, so whether it improves play is open. Its "Read the
   case study" plate goes to `SITE.caseStudy`, for now the memory research's history in the repo
-  (`evidence/memory_system/store_progression.md` on `main`).
-- The walls and the light span the screen from the section's `::before`/`::after` (`.lit`),
-  behind its content. The light is gradients over the wall, darkest away
-  from the lamp; a lit room rises out of the dark at its top (`--fade-in`) and the pendant's wall
-  stops where its light runs out (520px), so the page's own ground carries on below. The reading
-  room has one light for the story and the features, hung level with "What makes it different":
-  it is drawn from the features' own box (`.lamplit::before`, reaching 1000px up over the story),
-  so however the story wraps the lamp stays by the heading, and the room clips its height
-  (`overflow: visible clip`) so the light never reaches the carriage above. Its wall spans the
-  whole room. No masks, no filters, no drop shadows.
-- The granite is one 512px seamless square (`assets/site/granite.webp`, 59 KB, about 1 MB
-  decoded), baked once from SVG noise by `scripts/bake-granite.mjs`, with its joints a separate
-  SVG over it; a noise filter on the wall itself is what it replaces. No phone copy: the square
-  is small and a smaller one would coarsen the grain.
-- The wall light stands in the gutter from 1300px up (the section's own 50% is the screen's
-  centre, so it is placed from there, not from `--bx`, which only the full-width light reads);
-  narrower, its light comes in from the left edge without it.
-- Paint census (production build, scrolling the rooms, animations still, median of three):
-  the rooms add about 190 ms of one-off raster on a 3× phone and 480 ms on a 2× desktop, against
-  130 / 700 ms for the rooms they replaced, measured the same way (frontend_lessons §25).
+  (`evidence/memory_system/report.md` on `main`).
 
 ## The other pages' walls
 
-Each site page stands in one of the landing's rooms (`StationWall`, above): the archive in the
-latest games' room, the ticket office (`/play`, `/rooms/new`) in the reading room, the departures
-hall on the platform. Paint census (production, scrolling the first 1400px, animations still,
-median of three, wall on against off): the archive +44 ms on a 3× phone / +177 ms on a 2×
-desktop, the ticket office within noise / +135 ms, the departures hall +234 / +445 ms. The
-departures hall stands on the landing's platform cut short (`PlatformBackdrop short`: 820px, its
-foot faded to the ground), since its page is short; the full 1250px platform cost it +416 /
-+1085 ms.
+Each site page has its room's wall behind it (`StationWall`, owner 2026-10-18,
+`scripts/fit_walls.py`): the guide (`cards`) a green room with a lamp by the title, its wood trim
+cut off; the ticket office (`granite`, `/play` and `/play/room`) brick over panelling beside a
+window. The archive (`records`) keeps its drawn room, the platform's tile with an oxblood band
+under a pendant: its filing-room picture was tried and the owner preferred the drawn one. The
+guide's wall runs to the page's foot (the picture, then a mirrored band of its lower wall); the
+ticket office's lower wall is panelling and floor, which would stack if repeated, so its picture
+fades out. Each has a tall picture for a screen taller than wide. A screen fetches its own
+picture and band, about 60–150 KB.
 
-## The tags on a phone
+## The departures hall (owner's mock and raster kit, 2026-10-18)
 
-At 700px and under a `HangTag` is its torn-off stub (owner, 2026-10-14): a strip of the tag's
-paper with a perforated left edge, the kicker and title at its left and an arrow at its right;
-the line and the footer stay on the tag, and `note` (the tables boarding, on the landing) sits
-under the title. Two stubs share a row on the landing, the ticket office and the departures
-hall. The current page's stub keeps its ring inside the paper (the perforation's mask would cut
-one outside) and loses its arrow.
+- The night platform's wall, one still picture from the page's top; over it the title beside the
+  landing's two paper tickets (`HeroTicket`, a size down). At 860px and under (owner) the title
+  is larger and centred alone over the tickets, the lede left out, the tickets stubs. A
+  passenger waits on the bench, and the board never stands over them (owner):
+  - a screen wide enough (`BESIDE` in rooms/page.tsx, the same three aspect bands in the module:
+    width at least 922px + 0.575 × height): the wall is the bench itself (`hall-wide.webp`,
+    1774×887) and the column (940px) stands right of the passenger;
+  - any other: the wall is empty (`hall-wall.webp` on a landscape screen; on a portrait one the
+    tall picture's wall above its bench, `hall-tall.webp`, drawn wide), and the bench is the
+    page's last picture, a band after the board (`.bench`: the wide picture's lower part, or the
+    tall one's, capped at 420px on a tablet). It is lazy, so a wide screen never fetches it, and
+    a phone draws both from its one tall file.
+- The board's case is three pictures, backgrounds so a screen fetches only its size's set: the
+  head (brass plate, clock, plaque), a middle repeated down as far as the rows go, the foot;
+  the phone has its own (thinner rims). The words on the plate and the plaque are live and scale
+  with the board (`cqi`); the plaque says whether the board is kept up to date (`Live`,
+  `Retrying`, `Reading`, `Offline`), never the count, which is the nav's. Fitted by
+  `scripts/fit_hall.py` from `claude_artifacts/design/rasters/wood/rooms/`: it cleans the
+  masters' cut-out fringe, builds each middle from its own head's sides, and tapers each foot
+  into them. A screen fetches 230–280 KB of pictures; nothing moves.
+
+## Pages come up whole (owner, 2026-10-18)
+
+Every site page (the landing, the departures hall, the archive, the guide, the ticket office)
+starts with `PageGate` in its `<main>`: until the pictures on its first screen and its fonts are
+decoded, the page under the nav and the footer are hidden (`html[data-gate]`) behind the house's
+loading picture, then fade in at once while the loader fades off. A cold first visit had shown
+the words on bare black and each wall painting in from the top. The gate finds the pictures
+itself (the `<img>`s and the computed backgrounds, `::before`/`::after` included, of whatever is
+on the screen), so a page lists nothing; what is further down loads as before. The loader comes
+up after 1 s (under a second a wait needs no sign) and, once up, stays at least 2 s so it is seen,
+never a blink (owner, 2026-10-18); a page ready before 1 s is simply there, with no fade, so a
+cached visit never sees it. A page reached by a click counts that second from the click, and the
+site loader (`(site)/loading.tsx`, also 1 s) hands its train to the page's gate without a break;
+what the two share is kept on the window (`__gateNav`), since the build gives each its own copy
+of PageGate's module, and follows `(site)/loading.tsx`'s at once
+(`RouteWaitMark`) so the train never goes and comes back; 8 s ends the wait. The wait itself
+(`gate`) is written into the page as its inline script, so it runs as the page arrives, not once
+React is up: a cached visit comes up 100–230 ms after the request, a click between pages 100–340
+ms, the loader never seen (measured 2026-10-18; waiting for React first had cost a cached visit
+over a second). A click runs the same function from React, which does not run a script it puts
+on the page. The page is hidden by that script, never by the stylesheet alone, so a crawler or a
+reader without script gets the page as it is (a stylesheet fallback shows it after 10 s should
+the script never run). The function must stay plain script that uses nothing from outside itself
+(`toString`). Next, React and Mantine have nothing for this: Suspense waits on code and data, not
+pictures, and `next/image` only knows one picture at a time.
+
+## The tickets on a phone
+
+At 860px and under (the site's phone layout) a `HeroTicket` is its stub: the title and an arrow
+on one line, two side by side, centred under the page's title on the departures hall and the
+ticket office, under the tagline on the landing. The ticket office's other kind is faded
+(`opacity`), full on hover. (`HangTag`, the hung tag before them, is in git history.)
 
 ## Tests
 
