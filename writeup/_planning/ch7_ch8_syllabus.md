@@ -13,6 +13,28 @@ part of this syllabus review.
 
 ## Organising principle
 
+**Current reading scope for U10 and U11 (2026-11-16).** The owner chose a shorter pass after
+discussing the time remaining before applications. For these two notes, stop when the system,
+reason for the design, one trade-off and one gap can be explained without notes in about two
+minutes. U11 also keeps one brief application to an agent with tools, since Werewolf alone
+does not illustrate that risk. The fuller unit descriptions below remain a reference, not
+unfinished requirements for this pass. This local decision does not settle the other priorities
+in the still-unreviewed `interview_prep/job_search_plan.md`.
+
+**Where deeper study waits.** Keep the existing units below as the scope map, the notes'
+Appendix B sections as the evidence pointers, and `engineering_notes/improvements.md` as the
+implementation-gap record. There is no separate deferred-detail document or required expansion.
+Revisit a topic when a build decision, a failed explanation or an interview question needs it:
+
+| Unit | Already preserved | Add depth when needed |
+|---|---|---|
+| U10 | Lifecycle, storage and redaction alternatives, attribution, and the SaaS transfer check below; current paths and gaps in the note | When storing credentials for unattended work: secret-store access, replacement/revocation, cache invalidation and deletion; when claiming coverage: tests across sinks and credential routes |
+| U11 | Direct/indirect injection, capability limits, alternative controls and the three-design transfer check below; project boundaries and lesson paths in the note | When adding acting tools: destination and payload authorisation, approval tied to an exact action, constrained reader/actor hand-over and output-renderer egress; when claiming resistance: a small adversarial evaluation with stated limits |
+
+The notes link focused OWASP sections for those questions. These are future entry points, not
+extra reading required to finish the current pass. Missing template exercises need not be
+written later unless they solve an actual learning gap.
+
 The goal is transferable understanding: finishing the course, the student can say "I understand
 checkpointing and replay, and here is how my project uses them", and separately can narrate what
 happens when this server restarts. Being able to explain the portfolio pages follows from the first; it

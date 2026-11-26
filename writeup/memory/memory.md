@@ -25,9 +25,13 @@ advice during future decisions. The stored advice is inspectable, editable and r
 changing the player's model weights. The challenge is determining what deserves remembering, when a
 lesson applies and whether following it improves play.
 
-Earlier experiments produced mixed or negative results. The latest ten-seat pipeline has not completed
-an end-to-end learning cycle, and its gameplay benefit remains untested. Memory is available as an
-optional feature and starts off.
+Across successive versions, experiments and transcript reviews shaped how the system produces,
+retrieves and retains advice. Whole-role strategy documents gave way to situation-specific retrieval.
+Later comparisons found that agents could retrieve and follow lessons without playing better, which
+shifted my attention towards lesson quality and led to decision-level scoring and pruning.
+
+Earlier versions were tested against memory off, with mixed results. The current ten-seat version has
+component checks but no gameplay comparison yet; memory remains optional and off by default.
 
 #### The memory pipeline: extraction, synthesis and retrieval
 
@@ -59,8 +63,7 @@ flowchart TB
     C --> S
 ```
 
-*Offline processing produces and curates lessons; gameplay retrieves them. Individual stages have
-run on the ten-seat game, but its full learning cycle has not yet run end to end.*
+*Offline processing produces and curates lessons; gameplay retrieves them.*
 
 **Link:** Extracting and synthesising lessons — extraction, outcome review and synthesis.
 Planned Level 2: `extraction_synthesis/extraction_synthesis.md`.

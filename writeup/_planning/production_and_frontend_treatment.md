@@ -180,3 +180,138 @@ decision. For each report the owner marks, before drafting:
 3. Report C: revise `evidence/tracing/report.md` in place (dated), or a new report that points at it?
 4. Whether the fingerprint keeps its own page or folds into C can wait for report C; confirm that order.
 5. The open implementation issue above (the Sonnet batch fallback) is logged, not decided here.
+
+---
+
+## Review against the engineering notes (2026-11-14)
+
+Added at the owner's request. Nothing above this line was changed. The map was written on
+2026-10-30, before the engineering notes (`evidence/_study/engineering_notes/`, U0 to U15)
+existed. U0 to U5 are now written and read by the owner. This section says what that changes.
+
+### 1. What the notes replace
+
+- **The "Lesson" treatment is superseded.** All six lesson candidates became notes. The home is
+  `evidence/_study/engineering_notes/`, not `interview_prep/lessons/`.
+
+  | Lesson candidate | Note | State |
+  |---|---|---|
+  | Failure handling for remote calls | U1 | written, read |
+  | Blocking work and the event loop | U2 | written, read |
+  | Durable execution for long-running agents | U3, U4, U5 | written, read |
+  | LLM observability and provenance | U8, U9 | not written |
+  | Trust boundaries: untrusted input in agents | U11 (with U10) | not written |
+  | The authoritative server | U7 (with U6) | not written |
+
+- **A report's concept section is now mostly written elsewhere.** The map says the concept section
+  "is where the teaching happens". For rows 1 to 10 and 16 the notes already do that teaching.
+- **"Understanding to establish" is established for rows 1 to 10 and 16**, through the note
+  walkthroughs. It is still open for rows 11 to 15 and 17 to 20.
+
+### 2. Which note holds each row
+
+| Rows | Note | Ready for a report? |
+|---|---|---|
+| 1 to 4 (report B) | U1 | Yes |
+| 5 (backup key) | U1; U10 when written | Partly |
+| 6 | U2 | Yes |
+| 7, 8 | U3, U4 sections 3.2 and 3.5, U5 section 3.5 | Yes |
+| 9, 10 | U5 sections 3.2 and 3.4 | Yes |
+| 11 to 14 (report C) | U8 | No |
+| 15 | U9 | No |
+| 16 | U4 section 3.2 | Yes |
+| 17, 18, 19 (report E) | U10, U11, U14 | No |
+| 20 | U13, U14 | No |
+| S2 | U5 Part 3 | Yes |
+| S1, S4 | U6 | No |
+| S3, S8 | U7 | No |
+| S6 | U13 | No |
+| S10 | U12 | No |
+
+So reports **B**, **A** and **S2** have their notes. **C** waits for U8 and U9. **E** waits for
+U10 and U11.
+
+### 3. Rows whose description the notes have sharpened or corrected
+
+These rows are not wrong, but a report written from the row alone would now be behind the notes.
+
+- **Row 6.** U2 found more than the row says: the per-phase thread pool was Python's default and
+  is now one thread per seat; the checkpoint saver and the lesson store each allow one operation
+  at a time for the whole server (improvements rows 4 and 5, chosen to build); the trace send at
+  the end of a game blocks the event loop (row 7). The row's pool description should be re-read
+  against U2 sections 3.3 to 3.7 before report A states it.
+- **Row 7.** Still no restart drill (improvements row 9). U5 adds what a restart costs a waiting
+  game: the turn clock resets, an accepted answer not yet checkpointed is lost, the AI seats of
+  the paused step are called again. One thing is unverified: that a pause inside a called subgraph
+  always appears at the top level of the saved state.
+- **Row 8.** Claim (a) is three layers, not one: the turn cache, the "cached" label, and
+  send-once guards keyed by game facts. The guards are what protect viewers after a restart, when
+  the cache is empty (U4 section 3.2). Two more ordering windows now belong beside claim (b):
+  events are sent to viewers before they are saved (improvements row 18), and a "your turn" event
+  can be saved before the checkpoint that holds its pause (U5 section 3.5). Both are read in the
+  code, not reproduced.
+- **Row 9.** The sweeper drops a game when its wait is 1 or 24 hours old and nobody is connected
+  at that moment, not after that long disconnected. Two gaps: the turn deadline is not saved
+  across a restart, and a solo player who is connected but idle never times out (improvements
+  rows 25 and 26).
+- **Row 10.** Add the early announcement of a human's turn, and the limit that an answer is
+  matched by seat and not by question (U4 gap 1; improvements row 20).
+- **Row 16.** Tests are now named: `tests/engine/test_turn_cache_key.py`. Accurate wording:
+  "fixed, covered by tests, deployed; no recurrence reported".
+- **Row 18.** A related gap: "create a game" has no idempotency key, so two requests make two
+  games and both count against the daily limit (improvements row 21).
+- **S5.** The "no stall watchdog" gap is improvements row 27.
+
+### 4. Material the notes found that has no row
+
+- The two library locks: a design, its problem, a measured before, and a chosen fix
+  (improvements.md, "Records for the write-up"). A chapter 7 candidate once the fix is built and
+  measured again.
+- Two records that cannot change as one: the checkpoint against the game's row, and what
+  recovery does about it (U4 section 3.5).
+- Capacity: how many games one process holds is not measured, and nothing refuses a game
+  (improvements row 8; U15). Row 6 says "capacity needs evidence" and stops there.
+- Testing as a practice for agentic coding (the owner's U13 scope, 2026-11-14). The map has
+  only S6.
+- Error reporting on the frontend. Sentry is installed there too; rows 11 and 14 cover the
+  server only.
+
+### 5. Added questions for the owner to rule
+
+These add to the five above.
+
+6. With the notes in place, does a report keep a concept section, or open with a pointer to the
+   note and hold four parts (this project, implementation and records, what the checks
+   establish, limits)? Recommendation: the pointer.
+7. Confirm the Lesson column and `interview_prep/lessons/` are retired in favour of the notes.
+8. Report S2: still a separate report, or do U5 Part 3 and the existing design records serve?
+9. Do testing and observability sit in chapter 7 once, for the whole system, with chapter 8
+   pointing to it?
+10. Order of work. B and A can start now. C follows U8 and U9; E follows U10 and U11. Does the
+    owner want B piloted before more notes are written, or the chapter 7 notes finished first?
+
+### 6. The owner's rulings on questions 6 to 10 (2026-11-14)
+
+- **6. Concept section.** A report points to the note and also carries a short summary of the
+  concept, so it can be read without opening the note. Not a full concept section.
+- **7. Lesson treatment.** Explained to the owner again; no ruling given yet.
+- **8. Report S2.** Explained to the owner again; no ruling given yet.
+- **9. Testing and observability.** Once, in chapter 7, for the whole system (backend and
+  frontend). Chapter 8 points to it.
+- **10. Order.** The chapter 7 notes are finished first (U8, U9, U10, U11, U13, U14, U15), then
+  the reports. Report B is not piloted before that.
+
+Questions 1 to 5 above are still open.
+
+### 7. The owner's rulings of 2026-11-18
+
+All chapter 7 notes are now written and read (U13 closed on 2026-11-17).
+
+- **Question 1, the report rule.** The wider rule: every claim needs identifiable supporting
+  evidence (code, an incident or deploy record, a test or an experiment).
+- **Question 7, lessons.** Retired. The engineering notes replace them.
+- **Question 8, report S2.** A new report.
+- **The reports are still written.** The engineering notes are the basis for which topics and
+  what content each report considers. What each report is and contains is still to be settled.
+
+Questions 2 to 5 are still open.
