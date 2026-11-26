@@ -17,13 +17,14 @@ owner. Open facts are listed in the sources comment at the foot.*
 
 **A hosted multi-agent system built around a social deduction game, playable by people.**
 
-The Ninth Express is a social deduction game played by ten AI agents, each a separately called
-language model. A person can take any seat and play alongside them in a browser, and anyone can
-watch a game live or replay a finished one.
+Ten passengers share a train carriage, and some of them are killers. The Ninth Express is a social
+deduction game played by ten AI agents, each a separately called language model. A person can take
+any seat and play alongside them in a browser, and anyone can watch a game live or replay a
+finished one.
 
 ![The live stage during a day: a dining car, the ten seats in a panel on the left, and the speaking seat at the stand with its line](frontend/exhibits/live_stage_day.jpg)
 
-[Play or watch a game: link to add] · [Source code: link to add]
+[Play or watch a game: link to add] · [Source code](https://github.com/Haochen92/werewolf-agent-sim)
 
 *LangGraph · Python · FastAPI · PostgreSQL · Server-Sent Events · Next.js · React · TypeScript ·
 Langfuse · Sentry*
@@ -33,24 +34,66 @@ Langfuse · Sentry*
 | **players, AI or human** | **model calls in a game** | **model cost of a game** | **model providers** |
 | twelve roles on four sides | from two recorded games | average per completed game, by model | the model is chosen for each job |
 
+### The question behind it
+
+**Can small, inexpensive models become better players without being retrained?**
+
+A game of hidden roles puts memory and reasoning under pressure. An agent has to act on incomplete
+information while other players deliberately mislead it. In my games, smaller models also missed
+connections between clues, misread results and invented facts, even when the evidence they needed
+was already in front of them.
+
+The project explores two kinds of help that leave the model itself unchanged: **experience**, as
+lessons carried over from past games, and **reasoning support**, as conclusions computed in code
+from the evidence of the current game. The harder half of the work is finding out which help
+actually improves decisions. A won game can hide bad decisions, and a plausible lesson can
+reinforce the wrong strategy.
+
 ### The game
 
-The game belongs to the family of Mafia and Werewolf. A hidden minority, the wolves, know one
-another and try to pass as ordinary players. The majority, the town, must find and vote them out.
-By day everyone talks and votes. At night, players with special roles act in secret.
+The game belongs to the family of Mafia and Werewolf, and takes its design from Town of Salem:
+several sides, each role with its own ability.
 
-My version takes its design from Town of Salem: more sides and role-specific abilities. Ten
-players sit on four sides, dealt from twelve roles. I designed the roles around one aim, **evidence
-worth arguing about**. In my first version one role could learn another player's exact role, and
-the evil players never claimed a role of their own, so there was nothing to debate. Now three town
-roles each see a different, true but incomplete part of the night. The game never reports a false
-result, so a lie has to be spoken: evil players plan a cover role and claim it.
+| Side | Seats | Aim |
+|---|:---:|---|
+| Town | 6 | Find and eliminate the wolves and the lone killer |
+| Wolves | 2 | They know each other and hunt together, until they equal or outnumber everyone else |
+| A lone killer | 1 | Works alone and wins by outliving almost everyone |
+| A neutral player | 1 | Has a wager of its own and can win alongside any side |
+
+By day the passengers share what they know, question one another and vote someone off the train.
+By night each role acts in private. Everyone knows which roles are aboard. Who holds each role is
+the secret.
+
+I designed the roles around one aim, **evidence worth arguing about**. In my first version one role
+could learn another player's exact role, and the evil players never claimed a role of their own, so
+there was nothing to debate. Now three Town roles each see a different, true but incomplete part of
+the night. The game never reports a false result, so a lie has to be spoken: evil players plan a
+cover role and claim it.
 
 ![Ten players on four sides, what is public and what is private, and one day and night](game_design_orchestration/exhibits/game_at_a_glance.svg)
 
+### What a player gets
+
+- **Reveal.** When a game ends, a replay shows each agent's private notes beside what it told the
+  table: its suspicions, its plan, and any lesson it weighed.
+- **An agent of your own.** A player can give their seat's agent a few rough notes and let it draft
+  the line, or hand it a whole turn. It works only with what that seat knows.
+- **A table that plays on.** Friends can share a game with agents in the other seats. If someone
+  disconnects or misses a turn, their seat's agent takes over when the timer runs out.
+
+One recorded moment, from day 3 of a game. The last wolf has claimed to be the Investigator and
+accuses the real one:
+
+| What it said to the table | What it wrote in private |
+|---|---|
+| "I published my Investigator claim on day 2 with an empty night to show. You sat silent and surfaced yours only after the chanteuse was confirmed wolf. That's not two investigators at dawn — that's one man correcting his story." | "Lone wolf. Public cover: Investigator, held nights 1 and 2. player_1 counter-claims Investigator, so the day's fight is his word against mine … vote player_1 today. … Do not disclose the conceal or the pack kill." |
+
+The table voted the real Investigator out, with 3 of the 5 votes.
+
 ### Why it is hard to build
 
-I chose this game because it puts the open problems of agent systems in one place.
+The game also puts the general problems of agent systems in one place.
 
 - **Agents with different, partly secret information.** One program holds every secret, because it
   applies the rules. Each agent must still act only on what its role may know.
@@ -140,44 +183,33 @@ the schema enforced by the provider, and if that fails, a legal fallback move ta
 *Explore: [Information boundaries](information_boundaries/information_boundaries.md) ·
 [Context engineering](context_engineering/context_engineering.md)*
 
-#### 3. Reproducible evaluation of agent behaviour
+#### 3. Reasoning support: conclusions computed from this game's evidence
 
-**A failing decision is rebuilt from saved state and replayed, so a fix is tested on the exact
-situation that failed.**
+**When a model keeps missing an inference, code makes the inference and the model decides what to
+do with it.**
 
-```mermaid
-flowchart LR
-    G["A recorded game<br/>with a bad decision"] --> T["Rebuild that turn<br/>from saved state"]
-    T --> A["Replay it many times<br/>with the original input"]
-    T --> B["Replay it many times<br/>with the candidate fix"]
-    A --> C["Compare"]
-    B --> C
-    C --> R["Keep the turn<br/>as a regression test"]
-```
+Some failures were about reading. In one game an Investigator announced a check it had never made,
+and the town voted out an innocent player. Rewording how its results were presented fixed that turn
+(highlight 5 shows how that was tested).
 
-In one game an Investigator announced a check it had never made, and the town voted out an innocent
-player. With the original input, all 20 replays of that turn invented an investigation. With the
-results reworded, all 20 reported the real one.
+Others were about reasoning. A Healer recorded that it had been blocked and still did not work out
+who must have visited it: only one role can block, and blocking needs a visit. After trying prompt
+changes and more thinking effort, I chose to supply selected inferences in code. A **deduction
+engine** starts from the facts a seat is allowed to know and uses **constraint propagation** over
+the game's rules to rule out what cannot be true. It writes the conclusions into the prompt, each
+marked as certain, conditional on a named claim, or a set of remaining alternatives. A test changes
+the hidden roles while holding the seat's own view fixed and checks that the deductions do not
+change.
 
-Some failures were not about wording. A Healer recorded that it had been blocked and still did not
-work out who must have visited it. For those I supply the inference in code: a **deduction engine**
-uses constraint propagation over the facts a seat may know and writes the conclusions into the
-prompt. On replays of that turn the agent named the right role in 8 of 10 attempts with the
-deductions and 2 of 10 without. These results are for single recorded situations. They show a
-specific failure fixed, not a rate across games.
+On replays of the Healer's turn, the agent named the right role in 8 of 10 attempts with the
+deductions and 2 of 10 without. That is one recorded situation. Stronger models made the same
+connection without the engine.
 
-The evaluators are checked as well. Code checks an answer wherever the game record holds it. Where
-the question is about meaning, an LLM judge is used, and then the judge is tested. Three models
-labelled 863 memory cases, and in the cases I reviewed their majority vote to discard was wrong 37%
-of the time. Whole-game comparisons use matched starting deals, with both versions run in the same
-period.
+*Explore: [Context engineering](context_engineering/context_engineering.md)*
 
-*Explore: [Evaluation](evaluation/evaluation.md) ·
-[Context engineering](context_engineering/context_engineering.md)*
+#### 4. Experience: lessons carried over from past games
 
-#### 4. Memory across games, held to that standard
-
-**A retrieval system that carries lessons between games. It was tested, the benefit was not
+**A retrieval system over the agents' own past games. It was tested, the benefit was not
 confirmed, and it ships switched off.**
 
 ```mermaid
@@ -196,19 +228,53 @@ flowchart LR
     C --> S
 ```
 
-This is retrieval-augmented generation (RAG) over the system's own experience. Testing shaped each
-stage. A growing strategy document per role gave conflicting advice, so lessons are now retrieved
-by situation. Merging similar entries into rewritten ones introduced unsupported facts in three of
-nine reviewed cases, so entries are kept or discarded and never rewritten. The extraction model
-judged good decisions harshly when the team lost, so a second review reassesses each verdict.
+This is retrieval-augmented generation (RAG) over the system's own experience. A stronger model
+reviews finished games offline and turns what happened into lessons, so that a smaller model can
+use them during play. Testing shaped each stage. A growing strategy document per role gave
+conflicting advice, so lessons are now retrieved by situation. Merging similar entries into
+rewritten ones introduced unsupported facts in three of nine reviewed cases, so entries are kept or
+discarded and never rewritten. The extraction model judged good decisions harshly when the team
+lost, so a second review reassesses each verdict.
 
 Early versions showed gains on some town decisions in games on matched deals. Later comparisons did
 not confirm them, and the current ten-seat game has not been tested with memory against without.
-Memory is therefore an optional switch, off by default.
+Memory is therefore an optional switch, off by default. In a replay, a viewer can see which lessons
+an agent weighed and whether it followed them.
 
 *Explore: [Memory](memory/memory.md)*
 
-#### 5. Inference cost and latency
+#### 5. Finding out whether the help works
+
+**A failing decision is rebuilt from saved state and replayed, so a change is tested on the exact
+situation that failed.**
+
+```mermaid
+flowchart LR
+    G["A recorded game<br/>with a bad decision"] --> T["Rebuild that turn<br/>from saved state"]
+    T --> A["Replay it many times<br/>with the original input"]
+    T --> B["Replay it many times<br/>with the candidate fix"]
+    A --> C["Compare"]
+    B --> C
+    C --> R["Keep the turn<br/>as a regression test"]
+```
+
+The same input gives a different answer each time, so one good game proves little. For the
+Investigator's invented check, all 20 replays with the original input invented an investigation,
+and all 20 with the reworded results reported the real one. A replayed turn shows that a specific
+failure is fixed. It does not show how often agents are right across games, so whole-game
+comparisons are run as well, on matched starting deals with both versions in the same period.
+
+The evaluators are checked too. Code checks an answer wherever the game record holds it. Where the
+question is about meaning, an LLM judge is used, and then the judge is tested. Three models
+labelled 863 memory cases, and in the cases I reviewed their majority vote to discard was wrong 37%
+of the time. Agreement between models had hidden errors they shared.
+
+Where this leaves the question: both kinds of help fixed specific, recorded failures. Whether they
+make a small model play better across whole games is not yet established.
+
+*Explore: [Evaluation](evaluation/evaluation.md)*
+
+#### 6. Inference cost and latency
 
 **With about 200 model calls in a game, cost is a property of the whole design.**
 
@@ -239,7 +305,7 @@ an estimated 3 to 5% of playing time.
 
 *Explore: [Cost and latency](cost_and_latency/cost_and_latency_codex.md)*
 
-#### 6. Reliability and observability in production
+#### 7. Reliability and observability in production
 
 **A hosted game keeps moving when a model stalls, survives a server restart, and records how every
 turn was decided.**
@@ -272,7 +338,7 @@ failed generation. The cache key now includes the game.
 
 *Explore: [Running it in production](running_in_production/running_in_production.md)*
 
-#### 7. Real-time play for many viewers
+#### 8. Real-time play for many viewers
 
 **One event history gives every viewer a different, authorized view.**
 
@@ -331,6 +397,7 @@ throughout: they built the browser frontend and the deduction engine's solver to
 | [8. Client-server architecture](frontend/frontend.md) | The event stream, per-viewer authorization, and performance on a phone |
 
 <!-- Sources and open facts.
+Fourth pass, 2026-11-26, after reading the hosted site's own pages in frontend/src/app/(site): page.tsx (the landing's story, the closing section "Can smaller models become better players?" and its two threads), _components/landing/features.ts and Features.tsx (the three features; the bluff in game e45eda20, day 3, seat 10, quotes trimmed from `BLUFF.said` and `BLUFF.note`; 3 of the 5 votes), _components/guide/Introduction.tsx (six Town, two wolves, one lone killer, one neutral, and each side's aim). The project's question now opens the page; memory and the deduction engine are told as the two kinds of help and evaluation as how they were tested. The source link is frontend/src/lib/site.ts `SITE.github`. Still OPEN: the live site's address.
 Third draft: figures reused from chapter 1 (game_at_a_glance.svg, phase_execution.svg, context_isolation.svg) and chapter 8 (live_stage_day.jpg, same_night_two_viewers.jpg); the memory diagram follows chapter 4's; the prompt layout block follows chapter 6's; the replay and failure-handling diagrams are new and drawn from chapters 5 and 7. Added from the chapters: Town of Salem and the design aim (chapter 1); structured output, validation, enforced retry and fallback (chapter 1); 3 to 5% visible wait across seven hosted games, an estimate (chapter 6); the dual-write gap and the 142-call ledger (chapter 7).
 Every claim is taken from a Level 1 page as it stood on 2026-11-26; nothing was re-derived from evidence/ for this draft.
 At a glance: "ten players on four sides" (chapter 1); twelve roles in the pool (server/schemas/events.py, `PoolRole`).
