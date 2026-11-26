@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 414" font-family="Helvetica, Arial, sans-serif" font-size="14">
+<rect width="760" height="414" fill="#ffffff"/>
+<defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#718096"/></marker></defs>
+
+<text x="24" y="30" font-size="16" font-weight="bold" fill="#111">Read the log first: event 42 can be lost</text>
+<rect x="250" y="62" width="260" height="76" rx="8" fill="#fdecec" stroke="#c53030" stroke-width="1.5" stroke-dasharray="7 5"/>
+<line x1="60" y1="100" x2="716" y2="100" stroke="#718096" stroke-width="2" marker-end="url(#a)"/>
+<text x="716" y="124" text-anchor="end" font-size="12" fill="#555">time</text>
+<circle cx="250" cy="100" r="8" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+<circle cx="510" cy="100" r="8" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+<circle cx="380" cy="100" r="9" fill="#c53030"/>
+<text x="250" y="52" text-anchor="middle" font-weight="bold" fill="#222">1. Read the log</text>
+<text x="510" y="52" text-anchor="middle" font-weight="bold" fill="#222">2. Subscribe to live events</text>
+<text x="380" y="86" text-anchor="middle" font-weight="bold" fill="#c53030">Event 42</text>
+<text x="380" y="162" text-anchor="middle" fill="#c53030" font-weight="bold">Missed by both sources</text>
+<text x="380" y="182" text-anchor="middle" fill="#555" font-size="13">Too late for the log read, too early for the live queue</text>
+
+<line x1="24" y1="210" x2="736" y2="210" stroke="#e2e8f0" stroke-width="1.5"/>
+
+<text x="24" y="246" font-size="16" font-weight="bold" fill="#111">Subscribe first: event 42 arrives twice</text>
+<rect x="250" y="278" width="260" height="76" rx="8" fill="#e9f6ee" stroke="#2f855a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<line x1="60" y1="316" x2="716" y2="316" stroke="#718096" stroke-width="2" marker-end="url(#a)"/>
+<text x="716" y="340" text-anchor="end" font-size="12" fill="#555">time</text>
+<circle cx="250" cy="316" r="8" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+<circle cx="510" cy="316" r="8" fill="#ffffff" stroke="#2d3748" stroke-width="2"/>
+<circle cx="380" cy="316" r="9" fill="#2f855a"/>
+<text x="250" y="268" text-anchor="middle" font-weight="bold" fill="#222">1. Subscribe to live events</text>
+<text x="510" y="268" text-anchor="middle" font-weight="bold" fill="#222">2. Read the log</text>
+<text x="380" y="302" text-anchor="middle" font-weight="bold" fill="#2f855a">Event 42</text>
+<text x="380" y="378" text-anchor="middle" fill="#2f855a" font-weight="bold">Caught by both sources</text>
+<text x="380" y="396" text-anchor="middle" fill="#555" font-size="13">In the log read and in the live queue. The server sends it once and skips the copy</text>
+</svg>

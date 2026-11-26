@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 392" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="820" height="392" fill="#ffffff"/>
+  <text x="20" y="24" font-size="15" font-weight="bold" fill="#111">Three ways to deliver the same answer</text>
+  <!-- time grid -->
+  <line x1="150.0" y1="56" x2="150.0" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="150.0" y="352" text-anchor="middle" fill="#555" font-size="12">0 s</text>
+  <line x1="253.3" y1="56" x2="253.3" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="253.3" y="352" text-anchor="middle" fill="#555" font-size="12">2 s</text>
+  <line x1="356.7" y1="56" x2="356.7" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="356.7" y="352" text-anchor="middle" fill="#555" font-size="12">4 s</text>
+  <line x1="460.0" y1="56" x2="460.0" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="460.0" y="352" text-anchor="middle" fill="#555" font-size="12">6 s</text>
+  <line x1="563.3" y1="56" x2="563.3" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="563.3" y="352" text-anchor="middle" fill="#555" font-size="12">8 s</text>
+  <line x1="666.7" y1="56" x2="666.7" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="666.7" y="352" text-anchor="middle" fill="#555" font-size="12">10 s</text>
+  <line x1="770.0" y1="56" x2="770.0" y2="334" stroke="#e2e2e2" stroke-width="1"/>
+  <text x="770.0" y="352" text-anchor="middle" fill="#555" font-size="12">12 s</text>
+  <!-- the work on the server -->
+  <text x="20" y="74" font-weight="bold" fill="#222">Work on the</text>
+  <text x="20" y="90" font-weight="bold" fill="#222">server</text>
+  <text x="20" y="106" fill="#555" font-size="12">(same in all three)</text>
+  <rect x="150.0" y="62" width="413.29999999999995" height="34" rx="5" fill="#edf0f4" stroke="#718096" stroke-width="1.3"/>
+  <text x="356.65" y="84" text-anchor="middle" fill="#222">A tool looks up the order (8 s)</text>
+  <rect x="563.3" y="62" width="206.70000000000005" height="34" rx="5" fill="#eef7ee" stroke="#2f855a" stroke-width="1.3"/>
+  <text x="666.65" y="84" text-anchor="middle" fill="#1c4532">The model writes (4 s)</text>
+  <!-- row A -->
+  <text x="20" y="146" font-weight="bold" fill="#222">A. Finished answer</text>
+  <text x="38" y="162" font-weight="bold" fill="#222">only</text>
+  <line x1="150.0" y1="150" x2="770.0" y2="150" stroke="#999" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <!-- row B -->
+  <text x="20" y="216" font-weight="bold" fill="#222">B. Stream the</text>
+  <text x="38" y="232" font-weight="bold" fill="#222">tokens</text>
+  <line x1="150.0" y1="220" x2="770.0" y2="220" stroke="#999" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <!-- row C -->
+  <text x="20" y="286" font-weight="bold" fill="#222">C. Step message,</text>
+  <text x="38" y="302" font-weight="bold" fill="#222">then the tokens</text>
+  <line x1="150.0" y1="290" x2="770.0" y2="290" stroke="#999" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <circle cx="770.0" cy="150" r="8" fill="#2f855a"/>
+  <text x="756.0" y="174" text-anchor="end" fill="#1c4532" font-size="12">Nothing for 12 s, then the whole answer at once</text>
+  <rect x="568.3" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="585.6" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="603.0" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="620.3" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="637.6" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="655.0" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="672.3" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="689.7" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="707.0" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="724.3" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="741.7" y="211" width="6" height="18" rx="2" fill="#2f855a"/><rect x="759.0" y="211" width="6" height="18" rx="2" fill="#2f855a"/>
+  <text x="770.0" y="244" text-anchor="end" fill="#1c4532" font-size="12">Nothing for 8 s, then the text appears as the model writes it</text>
+  <circle cx="150.0" cy="290" r="8" fill="#dd8a1f"/>
+  <text x="164.0" y="314" fill="#9c5a0a" font-size="12">"Looking up the order" at 0 s</text>
+  <rect x="568.3" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="585.6" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="603.0" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="620.3" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="637.6" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="655.0" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="672.3" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="689.7" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="707.0" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="724.3" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="741.7" y="281" width="6" height="18" rx="2" fill="#2f855a"/><rect x="759.0" y="281" width="6" height="18" rx="2" fill="#2f855a"/>
+  <text x="770.0" y="314" text-anchor="end" fill="#1c4532" font-size="12">then the text, as the model writes it</text>
+  <text x="20" y="378" fill="#222">All three finish at 12 s. They differ in when the person first sees something: 12 s, 8 s and 0 s.</text>
+</svg>
