@@ -25,7 +25,7 @@ chapters in four groups, under one overview page. Status as of 2026-10-31.
 | | **D. Serving it to people** | | |
 | 6 | Cost and latency | [`cost_and_latency/`](cost_and_latency/cost_and_latency_codex.md) | Self-contained Level 1 drafted (direction approved 2026-10-30); no Level 2; one Level 3 (caching across providers) drafted 2026-10-31, owner's review pending |
 | 7 | Running it in production | [`running_in_production/`](running_in_production/content_plan.md) | Content plan only (candidate, not approved) |
-| 8 | Frontend: the live stage and replays | — | Not started; source material in [`../frontend/docs/`](../frontend/docs/README.md) |
+| 8 | Client-server architecture: streaming a live game to the browser | [`frontend/`](frontend/frontend.md) | Level 1 page and three Level 2 pages (event stream, per-viewer authorization, performance on a phone) drafted 2026-11-22 and revised with the owner 2026-11-26; no fresh-reader review yet. Source material in [`../frontend/docs/`](../frontend/docs/README.md) |
 
 ## What a chapter folder holds
 
