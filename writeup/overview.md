@@ -1,374 +1,243 @@
 # The Ninth Express
 
-*An interactive multi-agent AI system for social deduction, strategic reasoning and human–AI collaboration.*
+A multiplayer social deduction game for humans and AI agents, staged as a puppet theatre aboard a 1920s railway carriage.
 
-[Live application](https://wolf.liuhaochen.com/) · [Game guide](https://wolf.liuhaochen.com/guide) · [GitHub](https://github.com/Haochen92/werewolf-agent-sim)
+[Play or watch](https://wolf.liuhaochen.com/) · [Game guide](https://wolf.liuhaochen.com/guide) · [Source code](https://github.com/Haochen92/werewolf-agent-sim)
 
-**Engineering focus**
+Ten passengers share the carriage, each dealt a role from a pool of twelve across four factions. By day they question one another and vote someone out. At night the wolves choose a victim while other passengers investigate, protect or kill in secret. A person can take a seat alongside the agents, play with friends, or watch. Players can write their own dialogue, give their seat’s agent rough notes to turn into a response, or delegate the turn entirely.
 
-[Multi-agent orchestration](#01--stateful-multi-agent-orchestration) · [Context engineering](#02--context-engineering-and-hybrid-reasoning) · [Information isolation](#02--context-engineering-and-hybrid-reasoning) · [Human-in-the-loop workflows](#03--durable-execution-and-human-in-the-loop-workflows) · [LLM evaluation](#04--reproducible-llm-debugging-and-evaluation) · [RAG and agent memory](#05--experience-based-agent-memory) · [Inference cost and latency](#06--inference-economics-and-responsiveness) · [Event-driven architecture](#07--hosted-application-architecture) · [Reliability and observability](#07--hosted-application-architecture)
+The hidden roles and competing factions draw on Werewolf and *Town of Salem*. For the stage, I drew on the railway mystery of *Murder on the Orient Express* and the staged confrontations of *Danganronpa*. *Sea of Stars* influenced the visual style.
 
-**Technology stack**
-
-AI and backend: Python · LangGraph · FastAPI · PostgreSQL · Langfuse · LLM APIs · Server-Sent Events · Docker · Sentry
-
-Frontend: TypeScript · React · Next.js · Mantine
+![The ten seats of the dining car during the day, with the current speaker at the stand](frontend/exhibits/live_stage_day.jpg)
 
 I designed and developed The Ninth Express independently, with assistance from AI coding agents.
 
-![The live stage during a day: a dining car, the ten seats in a panel on the left, and the speaking seat at the stand with its line](frontend/exhibits/live_stage_day.jpg)
+### One accusation, seen twice
 
-## The project
+At the end of a game, **Reveal** lets a viewer revisit what an agent said alongside the private notes it wrote at the time. On day three of one archived game, two passengers claimed to be the Investigator. Seat 10 had claimed the role first.
 
-The Ninth Express is a multiplayer social deduction game in which humans and LLM-powered agents play alongside one another, pursuing competing objectives with incomplete information.
-
-Inspired by Town of Salem, it extends the traditional Werewolf format with twelve possible roles across four factions. Players investigate one another, construct arguments from incomplete evidence, conceal their identities and coordinate actions with allies. The game is presented as a puppet theatre aboard a 1920s railway carriage, with a visual direction inspired by Inscryption and Sea of Stars. Public discussions take place on a shared stage, while private nighttime decisions unfold in individual passenger rooms.
-
-Players can join a game alone or with friends, with agents filling the remaining seats. Humans can make their own decisions, provide rough notes for an agent to formulate into dialogue, or delegate a turn entirely. If someone disconnects or misses a deadline, their agent can take over.
-
-After the game, **Reveal** allows players to revisit the conversation alongside the agents' private assessments, plans and retrieved lessons. An accusation that appeared to be an honest suspicion can turn out to be a deliberate bluff.
-
-### Behind the agents' words
-
-*Day 3 · Seat 10, the Illusionist · From an archived game*
-
-| Public speech | Private strategy notes |
+| Seat 10 speaking to the carriage (excerpt) | Seat 10’s private note (excerpt) |
 |---|---|
-| Seat 1, by the book: I published my Investigator claim on day 2 with an empty night to show. You sat silent and surfaced yours only after the chanteuse was confirmed wolf. That's not two investigators at dawn — that's one man correcting his story. I'll be voting Seat 1; the SK hunt can wait until the liar is off the board. | Lone wolf. Public cover: Investigator, held nights 1 and 2. Seat 1 counter-claims Investigator, so the day's fight is his word against mine — lean on the fact his block story mirrors the dead chanteuse's and that he surfaced the claim only after mine. … vote Seat 1 today. … Do not disclose the conceal or the pack kill. |
+| “That's not two investigators at dawn — that's one man correcting his story.” | “Lone wolf. Public cover: Investigator, held nights 1 and 2. … lean on the fact … that he surfaced the claim only after mine.” |
 
-Seat 1 was the real Investigator. It had correctly identified Seat 10 as suspicious, but the table voted Seat 1 out with three of the five votes.
+Seat 1 was the real Investigator and had checked Seat 10 as suspicious. The table voted Seat 1 out with three of the five votes.
 
-### Designing a game that requires reasoning and deception
+Making room for that kind of bluff took a change to the game itself. In my original nine-seat version, the Investigator could identify a player’s exact role. Across 28 games with memory off, no wolf or Serial Killer claimed a role. The town could believe the Investigator or call the result fabricated. It rarely had a second account to weigh.
 
-The original nine-seat game gave players relatively little evidence to debate. The Investigator could identify another player's exact role, while opposing agents rarely offered competing accounts. An exploratory analysis of 28 games found no role claims from wolves or the Serial Killer.
+I split the town’s evidence across three roles. One learns whether a passenger appears suspicious, another who visited a passenger, and a third where a passenger went. Each result is true and incomplete. I also gave opponents a reason to prepare a cover role and a story for each night. A false claim can now account for a real observation, giving the other players something to challenge. When I replayed 41 recorded situations twice under each version of the instructions, role claims rose from 13 to 33 of 82 responses, by a model judge’s first labels. [Designing evidence worth debating](game_design_orchestration/evidence_design/evidence_design.md)
 
-I redesigned the game around three complementary observations: whether a player appears suspicious, who visited a player, and where a player went. Each observation is truthful but incomplete. Players must reconcile these observations with potentially false claims. Opposing agents also received explicit instructions to prepare and maintain plausible cover identities.
+### Engineering focus
 
-To isolate the effect of the instructions, I replayed 41 recorded situations twice under each version, keeping the other inputs fixed. Model judges identified **13 role claims in 82 responses** with the original instructions and **33 in 82** with the revised ones. These are the first model-judge labels; a later, stricter judging pass changed some of them. The increase in claiming does not establish better overall gameplay.
+[Orchestration](#multi-agent-orchestration) · [Context and deduction](#context-engineering-and-hybrid-reasoning) · [Human turns](#human-in-the-loop-and-checkpointed-execution) · [Evaluation](#llm-debugging-and-evaluation) · [Agent memory](#experience-based-memory-and-rag) · [Cost and latency](#inference-cost-and-latency) · [Live delivery and reliability](#production-architecture-and-reliability)
 
-[Explore the environment redesign](game_design_orchestration/evidence_design/evidence_design.md)
+**Stack:** Python, LangGraph, FastAPI, PostgreSQL, Langfuse, Sentry, Docker, Next.js, React, TypeScript and Mantine.
 
 ## System overview
 
-All ten players act within the same evolving game, but each has access to different information. The engine must coordinate their decisions without exposing private information or allowing unpredictable model outputs to override the rules. It must also keep games running through human interruptions and provider failures.
-
-Beyond keeping the game running, two questions shaped the AI engineering work: how can agent behaviour be evaluated and improved, and how can agents learn from earlier games without retraining their models?
-
-| Player seats | Role pool | Inference workload | Observed inference cost |
-|---|---|---|---|
-| 10 | 12 roles across 4 factions | Hundreds of model calls per game | $0.09–0.15 per completed game |
-
-*Cost figures are recorded model-specific averages for four models, not a controlled comparison, and exclude hosting.*
-
-### Architecture
-
-The game engine is implemented as a stateful LangGraph workflow. Deterministic code manages game progression, legal actions, information access and the resolution of player decisions; language models generate dialogue, strategic assessments and actions.
-
-The hosted application adds session management, human-in-the-loop execution, persistent checkpoints and authorised event delivery. Offline evaluation reconstructs recorded decisions for controlled experiments. An experience-based memory pipeline extracts and curates lessons from completed games for optional situational RAG during play.
-
-```mermaid
-flowchart LR
-    BR["Browsers<br/>players and spectators<br/>(Next.js, React)"]
-    subgraph SV["Server (FastAPI)"]
-        GS["Game session<br/>events, viewers, deadlines"]
-        EN["Game engine<br/>a LangGraph graph"]
-        GS <--> EN
-    end
-    LLM["Model providers"]
-    DB[("PostgreSQL<br/>event history,<br/>engine checkpoints,<br/>lesson store")]
-    OBS["Langfuse traces<br/>Sentry errors"]
-    OFF["Offline<br/>evaluation runs,<br/>memory extraction"]
-    SV -->|"event stream (SSE)"| BR
-    BR -->|"a player's move (HTTP)"| SV
-    EN --> LLM
-    SV --> DB
-    SV --> OBS
-    DB --> OFF
-```
-
-## Selected engineering stories
-
-### 01 — Stateful multi-agent orchestration
-
-`LangGraph` · `structured outputs` · `sequential and parallel execution` · `output validation`
-
-Human players can listen continuously and respond when challenged. LLM agents, by contrast, receive a snapshot of the conversation each time they are called.
-
-An early implementation generated dialogue in simultaneous rounds. Because agents responded to the same conversation state, they could repeat one another: in one round, five of eight agents opened with essentially the same question.
-
-Generating responses one at a time solves that problem, but raises another: who should speak next? A fixed order can delay relevant replies, polling every agent after each message increases inference costs, and letting response speed determine participation favours faster models.
-
-I replaced simultaneous rounds with a **reply-driven conversation scheduler**. When an agent questions or accuses another player, the scheduler prioritises a reply from that player. To track these obligations, agents return structured metadata alongside their dialogue, identifying whom they address and the purpose of the message. The scheduler also gives quieter players opportunities to contribute, limits repetitive exchanges and bounds discussion length.
-
-Code decides who speaks and when; the model decides what to say.
-
-The LangGraph workflow combines sequential discussion, where each response informs later speakers, with parallel voting and most private night decisions, where players must act independently. Interacting night actions are collected before deterministic resolution, so their effects do not depend on the order model responses arrive.
-
-![A day and a night, showing which steps run one at a time, which run all at once, and where the rules take over](game_design_orchestration/exhibits/phase_execution.svg)
-
-The engine knows which actions are legal before asking an agent to decide, so it requests structured responses rather than using an open-ended tool-calling loop. It validates the result before applying it, using correction attempts, rescue models or legal fallback actions when necessary.
-
-**Explore:** [Game design and orchestration](game_design_orchestration/game_design_orchestration.md)
-
-### 02 — Context engineering and hybrid reasoning
-
-`least-privilege context` · `prompt construction` · `constraint propagation` · `summarisation`
-
-The engine knows every player's identity and private actions. Individual agents must not. Instead of giving a model the complete game state and asking it to ignore secrets, role-specific payload builders select only the information its seat is entitled to receive.
-
-Unit tests and post-game audits check these boundaries. One audit found private fields in other seats' payloads, even though the prompt templates did not render them. The fix was made at the data-selection layer, rather than relying on templates to keep secrets out of prompts.
-
-![The full game state, the step that builds each player's input, and what an Investigator and a wolf each receive](game_design_orchestration/exhibits/context_isolation.svg)
-
-Receiving the right information does not guarantee that an agent will draw the right conclusion. In one recorded turn, a Healer knew it had been prevented from acting but failed to identify the Chanteuse, the only role capable of causing that effect.
-
-Rather than leaving this inference entirely to the model, a rule-based **deduction engine** uses constraint propagation to eliminate possibilities that contradict the rules and the facts available to each seat. It supplies conclusions that necessarily follow from known facts, those that depend on a player's claim being true, and alternatives that remain possible.
-
-| Without supplied deductions | With supplied deductions |
+| Model calls per game | Observed inference cost per completed game |
 |---|---|
-| 2/10 correctly identified the visitor's role | 8/10 correctly identified the visitor's role |
+| **197–228** | **USD 0.09–0.15** |
+| Two sampled Haiku games with memory enabled | Four model-specific site averages, excluding hosting |
 
-*Repeated generations of one recorded Healer turn, not a general gameplay improvement. Stronger models and higher reasoning settings could also make the inference.*
+The call counts and cost averages come from separate sets of games. [Cost measurements](cost_and_latency/cost_and_latency_codex.md)
 
-The deduction engine must respect the same boundary as the agent. A test changes the hidden roles while keeping the seat's visible information fixed, and checks that the deductions do not change.
-
-Agents also need to carry information from one turn to the next. Day summaries preserve earlier discussion, a structured claim ledger records what players have asserted, and private strategy notes carry forward each agent's assessments. These representations distinguish authoritative game facts from player claims and model-generated judgements.
-
-**Explore:** [Information boundaries](information_boundaries/information_boundaries.md) · [Context engineering](context_engineering/context_engineering.md)
-
-### 03 — Durable execution and human-in-the-loop workflows
-
-`LangGraph interrupts` · `checkpointing` · `node caching` · `regression tests`
-
-Humans and AI agents use the same downstream decision pipeline. A human may submit a decision or delegate it to the seat's agent. LangGraph interrupts suspend the workflow during human input; persistent checkpoints preserve its progress.
-
-In an early two-human game, resuming an interrupted step regenerated AI votes that had already completed. Some votes changed, leaving the server's ballot count inconsistent with the engine's result. I introduced node caching so repeated execution can reuse completed AI decisions rather than resample them.
-
-![A vote step with one human seat: the step is interrupted, saved, and resumed, and the AI votes that had already finished are reused](game_design_orchestration/exhibits/human_resume.svg)
-
-Caching introduced a second failure. The node cache was shared across games in the same process, and its key did not identify the game. In one hosted game an agent recorded a generation failure despite having no corresponding prompt capture; the usage ledger counted 142 model calls without a failure. Comparing these records pointed to a cached failed decision from an earlier game.
-
-The cache key now includes the game identifier. Regression tests verify stability after checkpoint serialisation and isolation between games. In a controlled two-game test with a scripted model, cross-game opening-cache hits fell from five to zero.
-
-Checkpoints and cached decisions offer different guarantees. Checkpoints preserve progress across restarts; the in-memory cache preserves completed decisions when a step repeats within the same process. Restarting can still regenerate those decisions.
-
-**Explore:** [Game design and orchestration](game_design_orchestration/game_design_orchestration.md) · [Cache-key investigation](game_design_orchestration/human_in_the_loop/cache_key.md)
-
-### 04 — Reproducible LLM debugging and evaluation
-
-`frozen-turn replay` · `LLM judges` · `matched comparisons` · `regression cases`
-
-One agent's mistake can change every subsequent decision. If a game is played again after a prompt change, the agents may never encounter the original failure. **Frozen-turn replays** reconstruct a recorded decision so alternative inputs and models can be tested repeatedly in the same situation. Whole-game evaluations complement these tests by allowing other agents to react to the changed decisions.
+Follow a single turn. LangGraph selects a seat. The engine builds that seat’s private input, asks the model for a structured decision and checks it against the legal moves. In a hosted game, the FastAPI session translates the accepted action into a numbered event and sends it to the viewers entitled to receive it. A saved decision input can later become an evaluation case.
 
 ```mermaid
 flowchart LR
-    G["A recorded game<br/>with a bad decision"] --> T["Rebuild that turn<br/>from saved state"]
-    T --> A["Replay it many times<br/>with the original input"]
-    T --> B["Replay it many times<br/>with the candidate fix"]
-    A --> C["Compare"]
-    B --> C
-    C --> R["Keep the turn<br/>as a regression test"]
-```
-
-In one game, an Investigator invented an investigation result and the town eliminated an innocent player. Replaying that turn reproduced the failure; rewording the investigation results corrected it.
-
-| Original input | Revised input |
-|---|---|
-| 20/20 invented a result | 0/20 invented a result |
-
-*Repeated generations of one recorded failing turn, retained as a regression case; not a general hallucination rate.*
-
-#### Are the measurements reliable?
-
-Deterministic checks assess computable facts and legal actions; LLM judges assess semantic questions such as whether summaries misrepresent claims. Decision-level metrics supplement noisy win rates.
-
-The memory system initially used model-generated descriptions of the current situation to retrieve relevant lessons. One field indicated whether a vote was a swing vote. Checking it against the game record revealed that it was correct in only 61% of 439 cases, compared with 83% for always answering no.
-
-Earlier retrieval experiments could therefore have been testing the accuracy of the situation descriptions rather than the effectiveness of the matching strategy. Fields that could be computed from the game state were moved into code.
-
-Another problem arose when comparing summary quality. A broad LLM-judge rubric consistently awarded perfect scores for a criterion that largely rewarded the presence of a section already required by the summarisation prompt. The score could not distinguish versions on that criterion. Later rubrics focused on narrower requirements and supplied the evidence needed to assess them. Validation of the current ten-seat judges remains incomplete.
-
-#### Is the comparison valid?
-
-An earlier memory experiment initially relied on historical baseline games. Fresh baseline games produced fewer town victories despite unchanged prompts and game logic. Reanalysis of twenty starting deals played in both periods found 12 earlier wins and seven fresh wins. The difference was statistically inconclusive (p = 0.18); its cause remained unresolved.
-
-The shift made the historical baseline questionable even though provider drift was not established. Comparisons now use fresh baselines from the same time window, matched inputs, consistent scoring and repeated trials. Some runners enforce same-window execution; others require manual scheduling.
-
-**Explore:** [Evaluation](evaluation/evaluation.md)
-
-### 05 — Experience-based agent memory
-
-`RAG` · `embedding retrieval` · `offline batch pipeline` · `lesson curation`
-
-How can agents reuse experience from earlier games without retraining their underlying models? The first memory implementation supplied each role with a growing strategy document. As lessons accumulated, recommendations became redundant, conflicting or inappropriate to the current situation.
-
-The system evolved into **situational retrieval-augmented generation (RAG)**. An offline pipeline extracts observations from completed games, reviews decision verdicts and synthesises reusable lessons. During play, semantic retrieval matches the current situation against lessons scoped by role and decision phase, using only information available to the seat.
-
-```mermaid
-flowchart LR
-    subgraph OFFL["After games: offline"]
-        R["Finished games"] --> O["Extract observations"]
-        O --> L["Review, deduplicate,<br/>synthesise lessons"]
-        L --> S[("Lesson store")]
+    B["Browser<br/>Next.js and React"]
+    subgraph S["FastAPI server"]
+        G["Game session<br/>viewers and deadlines"]
+        E["LangGraph engine<br/>state, turns and rules"]
+        G <--> E
     end
-    subgraph LIVE["During a game (optional)"]
-        Q["The agent's<br/>permitted view"] --> F["Describe the situation,<br/>retrieve by embedding similarity"]
-        F --> D["Decision, and whether<br/>each lesson was followed"]
-    end
-    S --> F
-    D --> C["Offline: score lessons<br/>by decisions, prune"]
-    C --> S
+    M["Model providers"]
+    D[("PostgreSQL<br/>events, checkpoints and captures")]
+    T["Langfuse traces"]
+    O["Offline evaluation<br/>and memory extraction"]
+    B -->|"human move over HTTP"| G
+    G -->|"authorised events over SSE"| B
+    E <-->|"seat input and decision"| M
+    S --> D
+    E --> T
+    D --> O
 ```
 
-Agents record whether they follow or override each retrieved lesson, or consider it irrelevant. Decisions that follow a lesson are compared with memory-off decisions for the same role and phase. Lessons that repeatedly accompany poor decisions can become candidates for removal. These comparisons guide pruning but do not establish that a lesson caused the outcome.
+Beyond building a game that people could play alongside AI agents, I wanted to find out whether the agents could make better decisions without retraining their models. I explored two forms of help: making the deductions available from a seat’s evidence explicit, and retrieving lessons from earlier games. Both raise a measurement problem. A wolf can win by persuading the town, or because an Investigator misread its own evidence. The final score alone cannot tell those games apart.
 
-Earlier experiments showed promising improvements in selected decisions but no consistent gameplay benefit. The current ten-seat pipeline has undergone component checks; its full learning cycle and gameplay effectiveness remain unvalidated. Memory is optional and off by default.
+## Multi-agent orchestration
 
-**Explore:** [Memory architecture](memory/memory.md)
+*LangGraph · structured outputs · parallel night actions*
 
-### 06 — Inference economics and responsiveness
+My first scheduler asked everyone to speak at once. Five of eight agents opened one day with essentially the same question. Each had read the same transcript before any of the other questions appeared.
 
-`token accounting` · `prompt caching` · `model selection` · `batch inference`
+Calling one speaker at a time gave the next player something to answer. But who should speak next? A fixed queue can leave an accusation unanswered. Polling everyone after each line costs nine extra calls at a full table. I built a **reply-driven scheduler** around the tags on each line. The agent identifies whom it addresses and labels the exchange, for example as a question or an accusation. Either gives the named player a reply to make. The scheduler prioritises outstanding replies, newest first, and a player can answer several accusers in one turn. When nobody owes a reply, seats that have yet to speak get priority. The scheduler caps exchanges between the same two players and gives outstanding questions one last answer when discussion reaches its limit.
 
-With hundreds of model calls per game, inference efficiency is a system-level concern. Usage accounting distinguishes ordinary input, cached input, cache writes and generated output.
+A speaker needs to hear the previous line. A voter must choose before seeing the other ballots. LangGraph therefore runs discussion sequentially and voting in parallel. Night actions can affect one another: a protection can stop an attack. The engine collects the decisions before applying the rules, so who survives the night is independent of which model answers first.
 
-Across sixteen AI-only Haiku games with memory disabled, approximately 90% of tokens were input, yet output accounted for roughly half the inference bill.
+![Day and night phases showing sequential discussion, parallel choices and the rule-based resolution step](game_design_orchestration/exhibits/phase_execution.svg)
 
-| | Share of tokens | Share of the bill |
-|---|---|---|
-| Input | about 90% | about half |
-| Output | about 10% | about half |
+The engine knows the legal choices before it calls the model. A Vigilante, for example, can choose an eligible target or decline to shoot. An open-ended tool-calling loop would add a discovery step to a choice the engine can already enumerate, so I ask for a structured response. The engine validates the reply, retries an invalid response, and supplies a legal fallback if it still has no usable move. [Game execution and turn design](game_design_orchestration/game_design_orchestration.md)
 
-Much of the agents' context is shared, including the rules and public conversation. Placing this material before seat-specific information allows model providers to reuse a longer cached prompt prefix across agents. In a small matched-deal experiment, Luna's cost per call fell by 28%. Haiku, however, generated additional reasoning that offset the input savings, while increased participation raised the overall cost per game.
+## Context engineering and hybrid reasoning
 
-Improved cache reuse therefore needs to be evaluated alongside changes in generated output and the number of calls. Model selection and reasoning settings are also tailored to individual tasks, while discounted batch inference reduces the cost of offline processing.
+*Role-specific prompts · constraint propagation · information isolation*
 
-Responsiveness also depends on when a player actually needs the next model output. During live play, the browser presents committed events at a readable pace while the server continues generating subsequent decisions. If the next event is ready before the current one finishes displaying, the player does not experience that inference delay. Across seven hosted Haiku development games, inference-related waiting was an estimated 3–5% of stage playing time, excluding human decision time.
+The engine needs every role to resolve a night. A Healer choosing whom to protect should never receive the wolves’ chosen target. I build a separate input for each seat before its prompt is written. A discussion refactor once put wolf identities and private investigation results into other speakers’ inputs. The prompt templates omitted those fields, so the models never saw the secrets. The post-game audit caught the error in the prepared inputs, where I could restore selection by role. [Information boundaries](information_boundaries/information_boundaries.md)
 
-**Explore:** [Cost and latency](cost_and_latency/cost_and_latency_codex.md)
+![The engine builds different inputs for an Investigator and a wolf from the same game state](game_design_orchestration/exhibits/context_isolation.svg)
 
-### 07 — Hosted application architecture
+Even a correctly isolated input can leave an agent struggling with an inference. A Healer recorded that it had been prevented from acting. Only the Chanteuse could cause that effect, and doing so required a visit. The Healer therefore knew the Chanteuse had visited. A witness naming one visitor still wouldn’t prove that particular passenger was the Chanteuse: someone else could have visited too.
 
-`FastAPI` · `Server-Sent Events` · `PostgreSQL` · `circuit breaker` · `Langfuse tracing`
+The deduction engine uses **constraint propagation** to eliminate possibilities incompatible with the seat’s evidence and the rules. It tells the agent which conclusions are certain, which depend on another player’s claim, and which alternatives remain open. Across ten generations of that Healer turn in the game’s live output mode, the agent identified the blocking role twice without supplied deductions and eight times with them. Stronger models could also make the inference unaided. To check the solver’s information boundary, a test changes the hidden roles, holds the seat’s visible facts fixed, and checks that its deductions stay the same.
 
-A game must continue to function when a player closes their browser or loses a connection. The server manages the game session, human deadlines and agent takeover independently of the browser. A numbered history of committed events supports **live play, reconnection and replay** without requiring separate representations of the game.
+Every turn is a new model call, so earlier information has to be carried forward. Day summaries preserve past discussion, a claim ledger records what each player has asserted, and private notes hold the agent’s own assessments. Each keeps game facts apart from players’ claims. [Context engineering](context_engineering/context_engineering.md)
 
-Server-Sent Events deliver updates; HTTP requests submit human decisions. Events are authorised on the server according to the viewer's seat or faction. After the game, previously withheld information becomes available through Reveal.
+## Human-in-the-loop and checkpointed execution
+
+*LangGraph interrupts · checkpointing · node caching*
+
+In the first two-human voting test, the server counted enough ballots to eliminate a player. The engine said nobody had been eliminated. I initially suspected duplicate delivery. Capturing the stream showed that some AI seats had actually voted twice and changed their choices.
+
+A human seat calls LangGraph’s `interrupt()` to wait for an answer. **Checkpointing** preserves execution state in PostgreSQL. The voting round ran in a subgraph invoked by a wrapper that prepared its restricted input. On resume, execution re-entered the wrapper, and its fresh invocation repeated the round, including AI turns that had already returned. I kept that input boundary and used **node caching** to reuse completed AI ballots. The human seat goes through an uncached node to accept the answer the person just submitted.
+
+![A voting round resumes with cached AI ballots and a freshly submitted human answer](game_design_orchestration/exhibits/human_resume.svg)
+
+Later, a hosted game recorded a generation failure for one seat. That seat had no opening prompt capture, and the usage ledger counted 142 model calls across the game with zero failures. Nine minutes earlier, the same seat in another game had failed to produce its opening. The cache key omitted the game ID. Matching the earlier turn to the missing capture and the clean usage ledger pointed to reuse of the earlier failure. At the time the engine had no per-turn record of cache hits.
+
+I added the game ID to the key. In a scripted two-game test, cross-game opening cache hits fell from five to zero. The checkpoint survives a server restart; the in-memory node cache is lost. A restarted game can therefore resume while asking AI seats in the interrupted round to decide again. [Human turns](game_design_orchestration/human_in_the_loop/human_in_the_loop.md) · [Cache-key investigation](game_design_orchestration/human_in_the_loop/cache_key.md)
+
+## LLM debugging and evaluation
+
+*Frozen-turn replay · LLM judges · matched comparisons*
+
+In a different game from the opening bluff, I watched a genuine Investigator announce a check on player 9 that it had never made. The village eliminated the innocent player four votes to one. A fresh game might never reproduce that situation. I used **frozen-turn replay** to reconstruct the Investigator’s decision from saved state and vary what it saw.
+
+The Investigator had checked player 5, who died that same night. Its private result sounded like the public announcement of the dead player’s role. I also suspected a previous strategy note that referred to “my investigation result from last night.” I tried both changes separately and together, reading 20 replies per version.
+
+| Input for that turn | Replies inventing a check |
+|---|---:|
+| Original: “Day 3: player_5 was revealed as healer” | 20 of 20 |
+| Original, with the earlier note removed | 20 of 20 |
+| Revised: “Night 3 (last night): you investigated player_5, who is the healer” | 0 of 20 |
+| Revised, with the earlier note removed | 0 of 20 |
+
+With the revision, every reply in both groups reported the real check. I kept that situation as a regression case. Measuring how often the error occurs across games requires a separate sample. [Investigator replay](evaluation/factual_errors/factual_errors.md)
+
+**Can I trust the measurement?** One memory experiment asked the model to label whether a player’s ballot could change the outcome of the vote — a *swing vote*. The label agreed with the game record in 61% of 439 cases. Always answering “no” scored 83%. This meant a retrieval comparison could be measuring errors in the description used to find lessons. I moved computable fields into code. For questions that need an LLM judge, I also checked what its rubric rewarded. One criterion kept awarding full marks for a section the writing prompt already required. For factual-error checks, the judge gets a narrower task: identify the supplied game fact that a statement contradicts. Validation of the current ten-seat judges remains incomplete.
+
+**Can I trust the baseline?** In a memory experiment, fresh baseline games with unchanged prompts and game logic produced fewer town wins than the historical baseline. On 20 starting deals played in both periods, town won 12 earlier and seven later. The difference was inconclusive (p = 0.18) and its cause remains unresolved. It was enough to change how I run comparisons: match the deals and run a fresh baseline alongside the candidate. [Evaluation and fair comparisons](evaluation/evaluation.md)
+
+## Experience-based memory and RAG
+
+*Embedding retrieval · offline extraction · lesson curation*
+
+My first memory system gave each role a growing strategy document. A lesson learned in one game could be poor advice in the next. I switched to **retrieval-augmented generation (RAG)**. After games, an offline pipeline extracts observations and turns them into lessons. During play, the agent receives a few lessons retrieved by embedding similarity for its role, decision phase and current situation.
 
 ```mermaid
-flowchart LR
-    E["Engine commits<br/>a change"] --> H[("Numbered event history<br/>(PostgreSQL)")]
-    H --> F["Per-viewer filter<br/>on the server"]
-    F --> L["Live updates (SSE)"]
-    F --> C["Catch-up after<br/>a disconnection"]
-    F --> R["Replay and Reveal<br/>after the game"]
+flowchart TD
+    A["Finished games"] --> B["Extract observations, review decisions and synthesise lessons"]
+    B --> C[("Lesson store")]
+    S["Current seat’s permitted evidence"] --> Q["Describe the situation"]
+    C --> R["Retrieve matching lessons"]
+    Q --> R
+    R --> V["Agent decides and records which lessons it used"]
+    V --> P["Offline: review decisions and flag lessons for pruning"]
+    P --> C
 ```
 
-![The same night of one game on two screens: a spectator sees the dining car and a progress bar, a wolf sees the pack's room and the control to choose a target](frontend/exhibits/same_night_two_viewers.jpg)
+Offline analysis can see who the wolves really were. A useful lesson still has to describe a situation the player could recognise before the reveal. Agents record whether they followed, overrode or set aside each lesson. If decisions made with a lesson repeatedly score poorly against memory-off decisions for the same role and phase, that lesson becomes a candidate for review. The association alone cannot establish that the advice caused those outcomes.
 
-In one hosted game, a player waited **301 seconds** for an AI response. A rescue model was already available, but failover could not begin until the stalled primary request returned control to the engine.
+Earlier versions helped on some town decisions, but later comparisons found no clear benefit. I haven’t run the current ten-seat learning cycle end to end or compared its gameplay against memory off. Memory is available and off by default. [Memory pipeline and evidence](memory/memory.md)
 
-Per-attempt timeouts now limit individual requests on supported clients. A per-game circuit breaker temporarily bypasses a repeatedly stalled primary model where a rescue model is configured. Legal fallback actions keep play moving when no usable response is available, but there is still no whole-turn deadline.
+## Inference cost and latency
 
-PostgreSQL stores game events and engine checkpoints separately. If the server stops after recording an AI decision but before saving the corresponding checkpoint, recovery may regenerate a decision that differs from the one already recorded in the event history.
+*Prompt caching · token accounting · stage timing*
 
-Langfuse traces, prompt captures and usage records help investigate these kinds of discrepancies by connecting recorded game behaviour with the engine operations and model calls behind it.
+Across 16 AI-only Haiku games with memory disabled, input accounted for about 90% of tokens and output for about half the bill. I changed the prompt layout to make **prompt caching** work across seats. The rules and public transcript now come first, followed by private material. That gives the provider a longer prefix it can reuse when the next seat speaks.
 
-**Explore:** [Running it in production](running_in_production/running_in_production.md) · [Client-server architecture](frontend/frontend.md)
+On the same two deals per version, Luna’s cost per call fell 28%. Haiku generated more reasoning and spent the input saving on output. Its cost per call stayed about the same, and it participated more in discussion, raising the total bill per game. A cache-hit rate alone would have hidden that result.
 
-## Engineering deep dives
+For a player, the question is how often inference holds up the stage. The browser leaves each line on screen long enough to read while the engine generates subsequent decisions. If the next line is ready when the current one finishes, the viewer sees no delay. Across seven hosted Haiku development games, I estimated that inference accounted for 3–5% of stage playing time, excluding time spent waiting for a human. The range reflects two assumptions about how much material was already queued. [Inference cost and latency](cost_and_latency/cost_and_latency_codex.md)
 
-Explore the full technical work, including contributions beyond the selected stories above.
+## Production architecture and reliability
 
-### Agent architecture
+*FastAPI · Server-Sent Events · circuit breakers · Langfuse*
 
-#### Game design and orchestration
+![During the same night a spectator sees the progress bar and a wolf has access to the pack room and target selection](frontend/exhibits/same_night_two_viewers.jpg)
 
-Designing the environment and coordinating agent participation.
+**What reaches the browser.** A wolf receives the pack’s private messages during play. A spectator receives those same messages when the game ends. The server keeps one numbered event history and checks each viewer’s access before delivering an event over **Server-Sent Events (SSE)**. The browser builds its view by applying events in order. The same history supports live play, catch-up after a disconnection, and replay.
 
-- Calibrated repetition filtering to decide when an agent should speak or remain silent.
-- Compared revised cover strategies in whole games, where competing claims sometimes persuaded the town to eliminate genuine investigators.
-- Tested game rules and balance separately; observed balance results apply to the tested model and configurations.
+The first client discarded any arrival numbered below the latest event it had seen. That lost the final reveal: a spectator who already has event 50 can still be missing private event 32. The client now checks whether it holds that exact number and inserts newly released events where they belong. [Event stream and client synchronisation](frontend/event_stream_and_sync/event_stream_and_sync.md)
 
-[Read chapter](game_design_orchestration/game_design_orchestration.md)
+**What keeps play moving.** In one hosted game a player waited 301 seconds for a single AI response. A rescue model was available, but the primary delayed returning a rate-limit error and its client retried. Until control returned to the engine, failover could never begin. Attempts now have a 30-second limit on supported clients. After two consecutive stalls, a **per-game circuit breaker** sends requests to the rescue model for five minutes where one is configured. Scoping the breaker to a game matters because a rate limit may belong to one player’s API key. If neither model supplies a usable move, a rule supplies a legal fallback. A turn can take several attempts and still has no end-to-end deadline.
 
-#### Information boundaries
+A fallback vote can look perfectly ordinary on stage. The game records rescue and fallback turns in PostgreSQL so I can tell who supplied the move. **Langfuse** traces show which engine steps and model calls ran and where time went. Prompt captures preserve the input prepared for the seat, including cases needed for replay. A resumed game starts a new trace under the same game ID. [Provider stalls](running_in_production/stalled_model_call/stalled_model_call.md) · [Observability](running_in_production/observability/observability.md)
 
-Testing whether agents receive only the information they are entitled to.
+**What a restart can change.** PostgreSQL holds the event history and the engine’s checkpoints as separate writes. If the server stops after an AI decision is recorded as an event but before its checkpoint is saved, recovery can regenerate a decision that differs from the one viewers already saw. [Crash recovery](running_in_production/restart_recovery/restart_recovery.md)
 
-- Tested post-game information audits using deliberately planted leaks.
-- Examined how offline lesson extraction can use complete game records without passing hidden facts into live agent context.
+## Explore the engineering
 
-*The audit inspects recorded prompt variables, not the final rendered prompt.*
+### Game design and orchestration
 
-[Read chapter](information_boundaries/information_boundaries.md)
+How do ten independently called language models play one coherent game? Follow a day and a night, from designing evidence worth debating to deciding who speaks next, coordinating simultaneous actions and keeping every decision within the rules. The chapter also explores how human players join the same workflow without disrupting the game's progress.
 
-#### Context engineering
+*Multi-agent orchestration · LangGraph · Structured outputs · Human-in-the-loop*
 
-Making evidence and strategy usable by language models.
+[Explore game design and orchestration](game_design_orchestration/game_design_orchestration.md)
 
-- Reworked ambiguous descriptions of nighttime visits after agents misinterpreted who visited whom.
-- Investigated summaries that turned disputed player statements into apparent facts.
-- Separated written assessments from final decisions so both could be inspected during replay.
+### Information boundaries
 
-[Read chapter](context_engineering/context_engineering.md)
+The engine holds every secret, but a model cannot unsee its input. Explore how each agent receives only the information its role permits, where those boundaries are enforced, and how automated tests and post-game audits uncover mistakes that might otherwise go unnoticed.
 
-#### Memory
+*Information isolation · Least privilege · Prompt construction · Leak testing*
 
-Maintaining the quality of accumulated strategic experience.
+[Explore information boundaries](information_boundaries/information_boundaries.md)
 
-- Reviewed past decisions to avoid treating a good move as a mistake simply because the player eventually lost.
-- Stopped merging similar observations after three of nine reviewed merges introduced unsupported facts. Deduplication now retains or discards observations without rewriting them.
-- Used recorded lesson adoption and decision scores to identify potentially unhelpful lessons.
+### Context engineering
 
-*These comparisons do not establish causal effects.*
+Giving an agent the right information does not mean it will draw the right conclusions. Follow how a turn's context is constructed, how earlier discussion is preserved without turning claims into facts, how prompts guide strategic reasoning, and which deductions are better worked out in code.
 
-[Read chapter](memory/memory.md)
+*Context engineering · Prompt engineering · Summarisation · Chain-of-thought prompting · Rule-based deduction*
 
-### Evaluation and optimisation
+[Explore context engineering](context_engineering/context_engineering.md)
 
-#### Evaluation
+### Experience-based agent memory
 
-Testing the measurements and experiments, not just the agents.
+What should an agent remember from a game, and when should it use that experience again? Follow a lesson from a completed game into a future decision, exploring how strategic knowledge is extracted, synthesised, retrieved and curated, and how experiments assess whether remembering actually helps.
 
-- Review overturned about one fifth of the examined cases where multiple model judges unanimously recommended discarding a memory observation.
-- Found that healer save rate no longer distinguished winning from losing games after the ten-seat redesign.
-- Tested candidate models with integration probes, saved-turn quality checks and live games.
-- Checked whether requested model settings actually took effect, rather than relying on the recorded configuration alone.
+*Retrieval-augmented generation (RAG) · Agent memory · Embedding retrieval · Memory curation*
 
-[Read chapter](evaluation/evaluation.md)
+[Explore agent memory](memory/memory.md)
 
-#### Cost and latency
+### Evaluation
 
-Measuring and optimising inference across the complete application.
+A winning agent is not necessarily a good decision-maker, and a high evaluation score does not necessarily mean the evaluator is right. Explore how individual failures become reproducible experiments, how code checks and LLM judges are validated, and how fair comparisons distinguish improvements from variation between runs.
 
-- In a saved-vote experiment, higher reasoning effort increased the share of votes targeting a real threat from 62% to 77%, but raised output from about 1,440 to 2,120 tokens per vote. The benefit did not carry over to discussion turns.
-- An offline batch run cost $19.99 rather than the estimated $9.50, because validation retries created new cache entries instead of reusing shared input.
+*LLM evaluation · LLM-as-judge · Regression testing · Reference labels · Experimental design*
 
-[Read chapter](cost_and_latency/cost_and_latency_codex.md)
+[Explore evaluation](evaluation/evaluation.md)
 
-### Production engineering
+### Cost and latency
 
-#### Running it in production
+Which model calls drive the bill, and which ones actually make a player wait? Explore how token consumption, model choice, reasoning effort, prompt caching and offline batching affect the cost of a complete game, the quality of agent decisions and the experience of watching them unfold.
 
-Investigating operational failures and securing player-supplied inputs.
+*Cost optimisation · Latency measurement · Model selection · Prompt caching · Batch inference*
 
-- Ran blocking engine steps on worker threads to keep the web server responsive while games waited for models or humans.
-- Recorded when rescue models or fallback rules made decisions, exposing failures that a completed game might otherwise conceal.
-- Explicitly attributed player speech to reduce the influence of forged game announcements. Votes targeting an innocent player fell from 24/33 to 14/33 in repeated votes across three saved situations; protection remains partial.
-- Moved API-key redaction to the point where provider errors are caught, after a rejected key appeared in a saved checkpoint.
+[Explore cost and latency](cost_and_latency/cost_and_latency_codex.md)
 
-*Concurrent game capacity remains unmeasured.*
+### Running in production
 
-[Read chapter](running_in_production/running_in_production.md)
+A game that runs successfully in an experiment faces different challenges when real people start playing. Explore how sessions survive disconnections and server restarts, how the system handles unreliable model providers, how failures are investigated through traces, and how player-supplied credentials and messages are handled securely.
 
-#### Client-server architecture
+*Crash recovery · Circuit breakers · LLM observability · Prompt injection · API key redaction*
 
-Handling client state, information leakage and rendering performance.
+[Explore production engineering](running_in_production/running_in_production.md)
 
-- Reconciled turn prompts with server status because the event stream alone does not record every way a turn closes.
-- Deduplicated events by individual ID rather than discarding every event older than the latest received ID. This allows previously withheld events to arrive later.
-- Examined indirect information leakage through progress indicators and event numbering; some side channels remain.
-- Investigated iPhone rendering crashes through on-device isolation and reduced unnecessary React remounts, with structural regression coverage.
+### Client-server architecture
 
-[Read chapter](frontend/frontend.md)
+Two people can watch the same game while being entitled to different information. Follow an event from the engine to the browser, exploring how live updates, reconnection and replay share one event history, how viewer access is enforced, and how the React stage was made less expensive to render on mobile devices.
+
+*Server-Sent Events · Event-driven architecture · Authorization · Web performance*
+
+[Explore client-server architecture](frontend/frontend.md)
